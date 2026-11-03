@@ -16,9 +16,12 @@ import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAppareilsRouteImport } from './routes/_authenticated/appareils'
 import { Route as AuthenticatedAutoEvaluationRouteImport } from './routes/_authenticated/auto-evaluation'
+import { Route as AuthenticatedCaisseRouteImport } from './routes/_authenticated/caisse'
+import { Route as AuthenticatedComptabiliteRouteImport } from './routes/_authenticated/comptabilite'
 import { Route as AuthenticatedDispensationRouteImport } from './routes/_authenticated/dispensation'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedEcheancesRouteImport } from './routes/_authenticated/echeances'
+import { Route as AuthenticatedFacturationRouteImport } from './routes/_authenticated/facturation'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
 import { Route as AuthenticatedLocauxRouteImport } from './routes/_authenticated/locaux'
 import { Route as AuthenticatedModelesRouteImport } from './routes/_authenticated/modeles'
@@ -67,6 +70,17 @@ const AuthenticatedAutoEvaluationRoute =
     path: '/auto-evaluation',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCaisseRoute = AuthenticatedCaisseRouteImport.update({
+  id: '/caisse',
+  path: '/caisse',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedComptabiliteRoute =
+  AuthenticatedComptabiliteRouteImport.update({
+    id: '/comptabilite',
+    path: '/comptabilite',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDispensationRoute =
   AuthenticatedDispensationRouteImport.update({
     id: '/dispensation',
@@ -83,6 +97,12 @@ const AuthenticatedEcheancesRoute = AuthenticatedEcheancesRouteImport.update({
   path: '/echeances',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFacturationRoute =
+  AuthenticatedFacturationRouteImport.update({
+    id: '/facturation',
+    path: '/facturation',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedJournalRoute = AuthenticatedJournalRouteImport.update({
   id: '/journal',
   path: '/journal',
@@ -155,9 +175,12 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRoute
   '/appareils': typeof AuthenticatedAppareilsRoute
   '/auto-evaluation': typeof AuthenticatedAutoEvaluationRoute
+  '/caisse': typeof AuthenticatedCaisseRoute
+  '/comptabilite': typeof AuthenticatedComptabiliteRoute
   '/dispensation': typeof AuthenticatedDispensationRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/echeances': typeof AuthenticatedEcheancesRoute
+  '/facturation': typeof AuthenticatedFacturationRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/locaux': typeof AuthenticatedLocauxRoute
   '/modeles': typeof AuthenticatedModelesRoute
@@ -178,9 +201,12 @@ export interface FileRoutesByTo {
   '/app': typeof AuthenticatedAppRoute
   '/appareils': typeof AuthenticatedAppareilsRoute
   '/auto-evaluation': typeof AuthenticatedAutoEvaluationRoute
+  '/caisse': typeof AuthenticatedCaisseRoute
+  '/comptabilite': typeof AuthenticatedComptabiliteRoute
   '/dispensation': typeof AuthenticatedDispensationRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/echeances': typeof AuthenticatedEcheancesRoute
+  '/facturation': typeof AuthenticatedFacturationRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/locaux': typeof AuthenticatedLocauxRoute
   '/modeles': typeof AuthenticatedModelesRoute
@@ -203,9 +229,12 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/appareils': typeof AuthenticatedAppareilsRoute
   '/_authenticated/auto-evaluation': typeof AuthenticatedAutoEvaluationRoute
+  '/_authenticated/caisse': typeof AuthenticatedCaisseRoute
+  '/_authenticated/comptabilite': typeof AuthenticatedComptabiliteRoute
   '/_authenticated/dispensation': typeof AuthenticatedDispensationRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/echeances': typeof AuthenticatedEcheancesRoute
+  '/_authenticated/facturation': typeof AuthenticatedFacturationRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/locaux': typeof AuthenticatedLocauxRoute
   '/_authenticated/modeles': typeof AuthenticatedModelesRoute
@@ -228,9 +257,12 @@ export interface FileRouteTypes {
     | '/app'
     | '/appareils'
     | '/auto-evaluation'
+    | '/caisse'
+    | '/comptabilite'
     | '/dispensation'
     | '/documents'
     | '/echeances'
+    | '/facturation'
     | '/journal'
     | '/locaux'
     | '/modeles'
@@ -251,9 +283,12 @@ export interface FileRouteTypes {
     | '/app'
     | '/appareils'
     | '/auto-evaluation'
+    | '/caisse'
+    | '/comptabilite'
     | '/dispensation'
     | '/documents'
     | '/echeances'
+    | '/facturation'
     | '/journal'
     | '/locaux'
     | '/modeles'
@@ -275,9 +310,12 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/_authenticated/appareils'
     | '/_authenticated/auto-evaluation'
+    | '/_authenticated/caisse'
+    | '/_authenticated/comptabilite'
     | '/_authenticated/dispensation'
     | '/_authenticated/documents'
     | '/_authenticated/echeances'
+    | '/_authenticated/facturation'
     | '/_authenticated/journal'
     | '/_authenticated/locaux'
     | '/_authenticated/modeles'
@@ -350,6 +388,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAutoEvaluationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/caisse': {
+      id: '/_authenticated/caisse'
+      path: '/caisse'
+      fullPath: '/caisse'
+      preLoaderRoute: typeof AuthenticatedCaisseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/comptabilite': {
+      id: '/_authenticated/comptabilite'
+      path: '/comptabilite'
+      fullPath: '/comptabilite'
+      preLoaderRoute: typeof AuthenticatedComptabiliteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dispensation': {
       id: '/_authenticated/dispensation'
       path: '/dispensation'
@@ -369,6 +421,13 @@ declare module '@tanstack/react-router' {
       path: '/echeances'
       fullPath: '/echeances'
       preLoaderRoute: typeof AuthenticatedEcheancesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/facturation': {
+      id: '/_authenticated/facturation'
+      path: '/facturation'
+      fullPath: '/facturation'
+      preLoaderRoute: typeof AuthenticatedFacturationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/journal': {
@@ -462,9 +521,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedAppareilsRoute: typeof AuthenticatedAppareilsRoute
   AuthenticatedAutoEvaluationRoute: typeof AuthenticatedAutoEvaluationRoute
+  AuthenticatedCaisseRoute: typeof AuthenticatedCaisseRoute
+  AuthenticatedComptabiliteRoute: typeof AuthenticatedComptabiliteRoute
   AuthenticatedDispensationRoute: typeof AuthenticatedDispensationRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedEcheancesRoute: typeof AuthenticatedEcheancesRoute
+  AuthenticatedFacturationRoute: typeof AuthenticatedFacturationRoute
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
   AuthenticatedLocauxRoute: typeof AuthenticatedLocauxRoute
   AuthenticatedModelesRoute: typeof AuthenticatedModelesRoute
@@ -483,9 +545,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedAppareilsRoute: AuthenticatedAppareilsRoute,
   AuthenticatedAutoEvaluationRoute: AuthenticatedAutoEvaluationRoute,
+  AuthenticatedCaisseRoute: AuthenticatedCaisseRoute,
+  AuthenticatedComptabiliteRoute: AuthenticatedComptabiliteRoute,
   AuthenticatedDispensationRoute: AuthenticatedDispensationRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedEcheancesRoute: AuthenticatedEcheancesRoute,
+  AuthenticatedFacturationRoute: AuthenticatedFacturationRoute,
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
   AuthenticatedLocauxRoute: AuthenticatedLocauxRoute,
   AuthenticatedModelesRoute: AuthenticatedModelesRoute,

@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\NonConformiteController;
 use App\Http\Controllers\Api\OfficineController;
 use App\Http\Controllers\Api\ParametreController;
 use App\Http\Controllers\Api\PointageController;
+use App\Http\Controllers\Api\CaisseSessionController;
+use App\Http\Controllers\Api\ComptabiliteController;
 use App\Http\Controllers\Api\DispensationController;
 use App\Http\Controllers\Api\PreparationController;
 use App\Http\Controllers\Api\ProduitController;
@@ -19,6 +21,7 @@ use App\Http\Controllers\Api\ReleveTemperatureController;
 use App\Http\Controllers\Api\StockLotController;
 use App\Http\Controllers\Api\StupefiantController;
 use App\Http\Controllers\Api\SyncController;
+use App\Http\Controllers\Api\VenteCaisseController;
 use Illuminate\Support\Facades\Route;
 
 // Routes publiques d'authentification
@@ -128,4 +131,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/preparations', [PreparationController::class, 'index']);
     Route::post('/preparations', [PreparationController::class, 'store']);
     Route::post('/preparations/{id}/viser', [PreparationController::class, 'viser']);
+
+    // ==========================================
+    // PARTIE 4 : CAISSE POS, FACTURATION DGI E-MECEF, FEEXPAY & SYSCOHADA
+    // ==========================================
+
+    // Sessions de caisse & Clôtures X/Z
+    Route::get('/caisse/session-active', [CaisseSessionController::class, 'sessionActive']);
+    Route::post('/caisse/ouvrir', [CaisseSessionController::class, 'ouvrir']);
+    Route::get('/caisse/session/{id}/ticket-x', [CaisseSessionController::class, 'ticketX']);
+    Route::post('/caisse/session/{id}/fermer', [CaisseSessionController::class, 'fermer']);
+
+    // Ventes comptoir & Encaissement POS
+    Route::get('/caisse/ventes', [VenteCaisseController::class, 'index']);
+    Route::post('/caisse/ventes', [VenteCaisseController::class, 'store']);
+
+    // Facturation normalisée DGI e-MECeF
+    Route::get('/facturation/emecef', [ComptabiliteController::class, 'facturesEmecef']);
+
+    // Comptabilité & Clôtures SYSCOHADA
+    Route::get('/comptabilite/journal-ventes', [ComptabiliteController::class, 'journalVentes']);
+    Route::get('/comptabilite/clotures', [ComptabiliteController::class, 'cloturesCaisse']);
 });

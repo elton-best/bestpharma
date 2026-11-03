@@ -369,6 +369,63 @@ export function TableauDeBord() {
         </Link>
       </section>
 
+      {/* SECTION ENCAISSEMENT POS, FACTURATION DGI & COMPTABILITÉ (PARTIE 4) */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Link
+          to="/caisse"
+          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium">Caisse POS Tactile</span>
+            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+              <Receipt className="size-4" />
+            </div>
+          </div>
+          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+            Vente & FeexPay
+          </p>
+          <p className="text-[11px] text-emerald-700 font-medium mt-1">
+            Espèces & Mobile Money Bénin
+          </p>
+        </Link>
+
+        <Link
+          to="/facturation"
+          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium">Facturation DGI</span>
+            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600">
+              <ShieldCheck className="size-4" />
+            </div>
+          </div>
+          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+            e-MECeF Bénin
+          </p>
+          <p className="text-[11px] text-blue-700 font-medium mt-1">
+            NIM, Compteur & QR Fiscal
+          </p>
+        </Link>
+
+        <Link
+          to="/comptabilite"
+          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium">Comptabilité OHADA</span>
+            <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600">
+              <BookOpenCheck className="size-4" />
+            </div>
+          </div>
+          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+            SYSCOHADA
+          </p>
+          <p className="text-[11px] text-purple-700 font-medium mt-1">
+            Journal VT & Tickets Z
+          </p>
+        </Link>
+      </section>
+
       {/* SECTION RÔLE SPÉCIFIQUE */}
       {role === "pharmacien_titulaire" && (
         <DashboardPharmacienTitulaire

@@ -76,8 +76,20 @@ class ApiClient {
     localStorage.setItem(CLE_OFFICINES, JSON.stringify(officines));
   }
 
+  private formatUrl(url: string): string {
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return url;
+    }
+    const clean = url.startsWith("/") ? url : `/${url}`;
+    if (!clean.startsWith("/api/")) {
+      return `/api${clean}`;
+    }
+    return clean;
+  }
+
   async get<T>(url: string): Promise<T> {
-    const res = await fetch(url, {
+    const formatted = this.formatUrl(url);
+    const res = await fetch(formatted, {
       method: "GET",
       headers: this.getHeaders(),
     });
@@ -89,7 +101,8 @@ class ApiClient {
   }
 
   async post<T>(url: string, body?: unknown): Promise<T> {
-    const res = await fetch(url, {
+    const formatted = this.formatUrl(url);
+    const res = await fetch(formatted, {
       method: "POST",
       headers: this.getHeaders(),
       body: body ? JSON.stringify(body) : undefined,
@@ -102,7 +115,8 @@ class ApiClient {
   }
 
   async put<T>(url: string, body?: unknown): Promise<T> {
-    const res = await fetch(url, {
+    const formatted = this.formatUrl(url);
+    const res = await fetch(formatted, {
       method: "PUT",
       headers: this.getHeaders(),
       body: body ? JSON.stringify(body) : undefined,
@@ -115,7 +129,8 @@ class ApiClient {
   }
 
   async delete<T>(url: string): Promise<T> {
-    const res = await fetch(url, {
+    const formatted = this.formatUrl(url);
+    const res = await fetch(formatted, {
       method: "DELETE",
       headers: this.getHeaders(),
     });

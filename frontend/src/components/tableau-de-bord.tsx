@@ -26,6 +26,7 @@ import {
   Snowflake,
   CheckSquare,
   Wrench,
+  BookOpenCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -164,34 +165,40 @@ export function TableauDeBord() {
   return (
     <div className="grid gap-6">
       {/* BANNIÈRE DE STATUT RÉGLEMENTAIRE ART. 1.11 BPD BÉNIN */}
-      <Card
-        className={`border-2 transition-all shadow-sm ${
+      <div
+        className={`rounded-2xl border p-5 sm:p-6 transition-all shadow-xs ${
           pharmacienPresent
-            ? "border-emerald-500/40 bg-gradient-to-r from-emerald-500/10 via-background to-background"
-            : "border-amber-500/50 bg-gradient-to-r from-amber-500/10 via-background to-background"
+            ? "border-[#18AA38]/40 bg-[#EFF7F1]/80"
+            : "border-amber-400 bg-amber-50/70"
         }`}
       >
-        <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5">
             <div
-              className={`p-2.5 rounded-xl shrink-0 ${
-                pharmacienPresent ? "bg-emerald-500 text-white" : "bg-amber-500 text-white animate-pulse"
+              className={`p-3 rounded-2xl shrink-0 ${
+                pharmacienPresent ? "bg-[#023010] text-white shadow-sm" : "bg-amber-600 text-white animate-pulse"
               }`}
             >
-              {pharmacienPresent ? <ShieldCheck className="size-6" /> : <ShieldAlert className="size-6" />}
+              {pharmacienPresent ? <ShieldCheck className="size-6 text-[#18AA38]" /> : <ShieldAlert className="size-6" />}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-foreground text-base">
+                <span className="font-display font-extrabold text-[#1F2420] text-base">
                   {pharmacienPresent
                     ? "Présence Pharmaceutique Conforme (Art. 1.11 ABMed)"
                     : "Alerte Présence : Aucun pharmacien diplômé pointé"}
                 </span>
-                <Badge variant={pharmacienPresent ? "default" : "outline"} className={pharmacienPresent ? "bg-emerald-600" : "border-amber-500 text-amber-600"}>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    pharmacienPresent
+                      ? "bg-[#18AA38] text-white"
+                      : "bg-amber-200 text-amber-900 border border-amber-300"
+                  }`}
+                >
                   {pharmacienPresent ? "Conforme" : "Attention"}
-                </Badge>
+                </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5 max-w-2xl">
+              <p className="text-xs text-[#5C6660] mt-1 max-w-2xl font-sans leading-relaxed">
                 {pharmacienPresent
                   ? "Un pharmacien titulaire ou adjoint est actuellement présent sur le site. Les dispensations de toutes catégories sont légalement autorisées."
                   : "Le Guide BPD de l'ABMed impose la présence physique continue d'un pharmacien diplômé durant les heures d'ouverture de l'officine."}
@@ -200,227 +207,231 @@ export function TableauDeBord() {
           </div>
 
           {!pharmacienPresent && (role === "pharmacien_titulaire" || role === "pharmacien_adjoint") ? (
-            <Button
+            <button
+              type="button"
               onClick={pointerPrise}
               disabled={pointageEnCours}
-              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold shrink-0 shadow-sm"
+              className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2.5 shrink-0 shadow-sm transition-all"
             >
-              <Clock className="size-4 mr-1.5" /> Pointer ma présence
-            </Button>
+              <Clock className="size-4 inline mr-1.5" /> Pointer ma présence
+            </button>
           ) : (
-            <Button asChild variant="outline" size="sm" className="shrink-0 text-xs">
-              <Link to="/pointage">Voir les présences ({pointageActif?.pointages_actifs?.length ?? 0})</Link>
-            </Button>
+            <Link
+              to="/pointage"
+              className="rounded-xl border border-[#CFE3D5] bg-white hover:bg-[#EFF7F1] text-[#023010] font-bold text-xs px-4 py-2.5 shrink-0 shadow-xs transition-all"
+            >
+              Voir les présences ({pointageActif?.pointages_actifs?.length ?? 0})
+            </Link>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* SECTION CONSERVATION, TEMPÉRATURES & AUTO-ÉVALUATION BPD (PARTIE 2) */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         <Link
           to="/temperatures"
-          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">Frigo Vaccins (2-8°C)</span>
-            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600">
+            <span className="text-xs text-[#5C6660] font-semibold">Frigo Vaccins (2-8°C)</span>
+            <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
               <Snowflake className="size-4" />
             </div>
           </div>
-          <p className="font-display text-2xl font-extrabold text-foreground mt-2">
+          <p className="font-display text-2xl font-black text-[#1F2420] mt-3">
             {tempStats?.zones?.refrigeree_2_8?.temp_actuelle !== undefined && tempStats?.zones?.refrigeree_2_8?.temp_actuelle !== null
               ? `${tempStats.zones.refrigeree_2_8.temp_actuelle}°C`
               : "—"}
           </p>
-          <p className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
+          <p className="text-[11px] text-[#18AA38] font-bold mt-1.5 flex items-center gap-1">
             <CheckCircle2 className="size-3" /> Chaîne du froid BPD
           </p>
         </Link>
 
         <Link
           to="/temperatures"
-          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">Magasin (&lt; 25°C)</span>
-            <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600">
+            <span className="text-xs text-[#5C6660] font-semibold">Magasin (&lt; 25°C)</span>
+            <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
               <Thermometer className="size-4" />
             </div>
           </div>
-          <p className="font-display text-2xl font-extrabold text-foreground mt-2">
+          <p className="font-display text-2xl font-black text-[#1F2420] mt-3">
             {tempStats?.zones?.magasin_reserve?.temp_actuelle !== undefined && tempStats?.zones?.magasin_reserve?.temp_actuelle !== null
               ? `${tempStats.zones.magasin_reserve.temp_actuelle}°C`
               : "—"}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-[#5C6660] font-medium mt-1.5">
             Ambiance stockage
           </p>
         </Link>
 
         <Link
           to="/auto-evaluation"
-          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">Conformité 267 Arts</span>
-            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+            <span className="text-xs text-[#5C6660] font-semibold">Conformité 267 Arts</span>
+            <div className="size-8 rounded-xl bg-[#18AA38]/10 text-[#18AA38] flex items-center justify-center">
               <CheckSquare className="size-4" />
             </div>
           </div>
-          <p className="font-display text-2xl font-extrabold text-emerald-600 mt-2">
+          <p className="font-display text-2xl font-black text-[#18AA38] mt-3">
             {bpdCampagne?.statistiques?.score_global !== undefined ? `${bpdCampagne.statistiques.score_global}%` : "—"}
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-[#5C6660] font-medium mt-1.5">
             Score officiel ABMed
           </p>
         </Link>
 
         <Link
           to="/locaux"
-          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">Locaux & Matériel</span>
-            <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600">
+            <span className="text-xs text-[#5C6660] font-semibold">Locaux & Matériel</span>
+            <div className="size-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
               <Wrench className="size-4" />
             </div>
           </div>
-          <p className="font-display text-2xl font-extrabold text-foreground mt-2">
+          <p className="font-display text-2xl font-black text-[#1F2420] mt-3">
             Étalonné
           </p>
-          <p className="text-[11px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-[#5C6660] font-medium mt-1.5">
             Carnet de vie & Hygiène
           </p>
         </Link>
       </section>
 
       {/* SECTION COEUR MÉTIER : DISPENSATION & GESTION DES STOCKS FEFO (PARTIE 3) */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         <Link
           to="/dispensation"
-          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">Poste Dispensation</span>
-            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+            <span className="text-xs text-[#5C6660] font-semibold">Poste Dispensation</span>
+            <div className="size-8 rounded-xl bg-[#18AA38]/10 text-[#18AA38] flex items-center justify-center">
               <PackageSearch className="size-4" />
             </div>
           </div>
-          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+          <p className="font-display text-lg font-black text-[#023010] mt-3">
             Ordonnancier
           </p>
-          <p className="text-[11px] text-emerald-700 font-medium mt-1 flex items-center gap-1">
+          <p className="text-[11px] text-[#18AA38] font-bold mt-1.5 flex items-center gap-1">
             <ArrowRight className="size-3" /> Délivrance ordonnances
           </p>
         </Link>
 
         <Link
           to="/stock"
-          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">Stock par Lots</span>
-            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600">
+            <span className="text-xs text-[#5C6660] font-semibold">Stock par Lots</span>
+            <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
               <Layers className="size-4" />
             </div>
           </div>
-          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+          <p className="font-display text-lg font-black text-[#1F2420] mt-3">
             Règle FEFO
           </p>
-          <p className="text-[11px] text-blue-700 font-medium mt-1">
+          <p className="text-[11px] text-blue-700 font-bold mt-1.5">
             Priorité périmés en 1er
           </p>
         </Link>
 
         <Link
           to="/stupefiants"
-          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">Registre Stupéfiants</span>
-            <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600">
+            <span className="text-xs text-[#5C6660] font-semibold">Registre Stupéfiants</span>
+            <div className="size-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
               <ShieldAlert className="size-4" />
             </div>
           </div>
-          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+          <p className="font-display text-lg font-black text-[#1F2420] mt-3">
             Tableau B
           </p>
-          <p className="text-[11px] text-purple-700 font-medium mt-1">
+          <p className="text-[11px] text-purple-700 font-bold mt-1.5">
             Balance inaltérable
           </p>
         </Link>
 
         <Link
           to="/preparations"
-          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">Préparatoire</span>
-            <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600">
+            <span className="text-xs text-[#5C6660] font-semibold">Préparatoire</span>
+            <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
               <FileSignature className="size-4" />
             </div>
           </div>
-          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+          <p className="font-display text-lg font-black text-[#1F2420] mt-3">
             Magistrales
           </p>
-          <p className="text-[11px] text-amber-700 font-medium mt-1">
+          <p className="text-[11px] text-amber-700 font-bold mt-1.5">
             Cahier & Visa Dr
           </p>
         </Link>
       </section>
 
       {/* SECTION ENCAISSEMENT POS, FACTURATION DGI & COMPTABILITÉ (PARTIE 4) */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         <Link
           to="/caisse"
-          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">Caisse POS Tactile</span>
-            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+            <span className="text-xs text-[#5C6660] font-semibold">Caisse POS Tactile</span>
+            <div className="size-8 rounded-xl bg-[#18AA38]/10 text-[#18AA38] flex items-center justify-center">
               <Receipt className="size-4" />
             </div>
           </div>
-          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+          <p className="font-display text-lg font-black text-[#023010] mt-3">
             Vente & FeexPay
           </p>
-          <p className="text-[11px] text-emerald-700 font-medium mt-1">
+          <p className="text-[11px] text-[#18AA38] font-bold mt-1.5">
             Espèces & Mobile Money Bénin
           </p>
         </Link>
 
         <Link
           to="/facturation"
-          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">Facturation DGI</span>
-            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600">
+            <span className="text-xs text-[#5C6660] font-semibold">Facturation DGI</span>
+            <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
               <ShieldCheck className="size-4" />
             </div>
           </div>
-          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+          <p className="font-display text-lg font-black text-[#1F2420] mt-3">
             e-MECeF Bénin
           </p>
-          <p className="text-[11px] text-blue-700 font-medium mt-1">
+          <p className="text-[11px] text-blue-700 font-bold mt-1.5">
             NIM, Compteur & QR Fiscal
           </p>
         </Link>
 
         <Link
           to="/comptabilite"
-          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium">Comptabilité OHADA</span>
-            <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600">
+            <span className="text-xs text-[#5C6660] font-semibold">Comptabilité OHADA</span>
+            <div className="size-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
               <BookOpenCheck className="size-4" />
             </div>
           </div>
-          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+          <p className="font-display text-lg font-black text-[#1F2420] mt-3">
             SYSCOHADA
           </p>
-          <p className="text-[11px] text-purple-700 font-medium mt-1">
+          <p className="text-[11px] text-purple-700 font-bold mt-1.5">
             Journal VT & Tickets Z
           </p>
         </Link>

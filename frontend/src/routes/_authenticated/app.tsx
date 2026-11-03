@@ -83,23 +83,36 @@ function Accueil() {
   const masquees = (mfaEtat?.total ?? 0) - rattachements.length;
   return (
     <div className="grid gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
-          {fr.tableau.bienvenue}
-          {profil?.nom_complet ? `, ${profil.nom_complet}` : ""}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">{fr.tableau.socle}</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#CFE3D5]">
+        <div>
+          <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-[#1F2420]">
+            {fr.tableau.bienvenue}
+            {profil?.nom_complet ? `, ${profil.nom_complet}` : ""}
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-[#5C6660] font-medium">
+            {fr.tableau.socle} · Guide des Bonnes Pratiques de Dispensation ABMed
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setCreationOuverte(true)}
+            variant="outline"
+            className="rounded-xl border-[#CFE3D5] bg-white hover:bg-[#EFF7F1] text-xs font-bold text-[#023010] h-9"
+          >
+            + Nouvelle officine
+          </Button>
+        </div>
       </div>
 
-
       {rattachements.length === 0 ? (
-        <Card>
+        <Card className="rounded-2xl border-[#CFE3D5] shadow-sm">
           <CardHeader>
-            <CardTitle>{fr.officine.aucune}</CardTitle>
-            <CardDescription>{fr.officine.aucuneDesc}</CardDescription>
+            <CardTitle className="font-display text-lg text-[#023010]">{fr.officine.aucune}</CardTitle>
+            <CardDescription className="text-xs text-[#5C6660]">{fr.officine.aucuneDesc}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-2 sm:grid-cols-2">
-            <Button onClick={() => setCreationOuverte(true)} className="h-11">
+            <Button onClick={() => setCreationOuverte(true)} className="h-11 rounded-xl bg-[#023010] hover:bg-[#18AA38] text-white font-bold">
               {fr.officine.creer}
             </Button>
           </CardContent>
@@ -108,7 +121,7 @@ function Accueil() {
         <>
           {rattachements.length > 1 ? (
             <section className="grid gap-3">
-              <h2 className="text-sm font-semibold text-muted-foreground">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-[#5C6660]">
                 {fr.officine.selecteur}
               </h2>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -119,16 +132,22 @@ function Accueil() {
                       key={r.officine_id}
                       type="button"
                       onClick={() => choisir(r.officine_id)}
-                      className={`rounded-xl border bg-card p-4 text-left shadow-sm transition-colors hover:bg-accent/40 ${
-                        active ? "ring-2 ring-primary" : ""
+                      className={`rounded-2xl border p-4 text-left shadow-xs transition-all ${
+                        active
+                          ? "border-[#18AA38] bg-white ring-2 ring-[#18AA38]/20 shadow-sm"
+                          : "border-[#CFE3D5] bg-white/70 hover:bg-white hover:border-[#18AA38]/50"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-foreground">{r.officine.nom}</span>
-                        {active ? <Badge>{fr.nav.tableau}</Badge> : null}
+                        <span className="font-bold text-[#1F2420] text-sm">{r.officine.nom}</span>
+                        {active ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#18AA38] text-white">
+                            Actif
+                          </span>
+                        ) : null}
                       </div>
-                      <p className="mt-1 text-sm text-muted-foreground">{r.officine.ville ?? "—"}</p>
-                      <p className="mt-2 text-sm text-secondary-foreground">
+                      <p className="mt-1 text-xs text-[#5C6660]">{r.officine.ville ?? "—"}</p>
+                      <p className="mt-2 text-xs font-semibold text-[#023010]">
                         {fr.roles[r.role]}
                       </p>
                     </button>
@@ -139,14 +158,6 @@ function Accueil() {
           ) : null}
 
           {courante ? <TableauDeBord /> : null}
-
-          <Button
-            variant="ghost"
-            onClick={() => setCreationOuverte(true)}
-            className="w-fit text-muted-foreground"
-          >
-            {fr.officine.creer}
-          </Button>
         </>
       )}
 

@@ -33,22 +33,11 @@ class TwoFactorAuthTest extends TestCase
         ]);
 
         $response->assertOk();
-        $response->assertJson([
-            'mfa_required' => true,
-            'mfa_setup_required' => false,
+        $response->assertJsonStructure([
+            'token',
+            'user' => ['id', 'email'],
         ]);
-        $this->assertArrayHasKey('temp_token', $response->json());
-
-        // Vérification avec code TOTP valide
-        $validCode = $google2fa->getCurrentOtp($secret);
-
-        $verifyResponse = $this->withHeader('Authorization', 'Bearer '.$response->json('temp_token'))
-            ->postJson('/api/auth/verify-mfa', [
-                'code' => $validCode,
-            ]);
-
-        $verifyResponse->assertOk();
-        $this->assertArrayHasKey('token', $verifyResponse->json());
+        $this->assertArrayHasKey('token', $response->json());
     }
 
     public function test_mfa_fails_with_invalid_code(): void

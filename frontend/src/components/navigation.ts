@@ -16,7 +16,7 @@ import {
 export type ItemNav = { titre: string; url: string; icone: LucideIcon; sprint?: string };
 
 export const navPrincipale: ItemNav[] = [
-  { titre: "Tableau de bord", url: "/", icone: LayoutDashboard },
+  { titre: "Tableau de bord", url: "/app", icone: LayoutDashboard },
   { titre: "Personnel", url: "/personnel", icone: Users, sprint: "S2" },
   { titre: "Pointage", url: "/pointage", icone: Clock, sprint: "S3" },
   { titre: "Documents", url: "/documents", icone: FileText, sprint: "S4" },

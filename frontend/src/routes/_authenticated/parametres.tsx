@@ -103,7 +103,7 @@ function PageParametres() {
         </CardHeader>
         <CardContent>
           <Button asChild className="h-11">
-            <Link to="/">{fr.nav.tableau}</Link>
+            <Link to="/app">{fr.nav.tableau}</Link>
           </Button>
         </CardContent>
       </Card>

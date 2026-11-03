@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
     meta: [
       { title: "Accueil — BEGPHARMA" },
@@ -91,19 +91,6 @@ function Accueil() {
         <p className="mt-1 text-sm text-muted-foreground">{fr.tableau.socle}</p>
       </div>
 
-      {mfaEtat && masquees > 0 && !mfaEtat.eleve ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{fr.mfa.titre}</CardTitle>
-            <CardDescription>{fr.mfa.obligatoire}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="h-11">
-              <Link to="/securite">{fr.nav.securite}</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : null}
 
       {rattachements.length === 0 ? (
         <Card>

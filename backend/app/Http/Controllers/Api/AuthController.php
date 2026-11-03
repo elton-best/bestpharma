@@ -46,46 +46,7 @@ class AuthController extends Controller
 
         $deviceName = $request->input('device_name', $request->userAgent() ?? 'Inconnu');
 
-        // Vérification de l'obligation de la double authentification TOTP (AC-04, NF-05)
-        $mfaRequired = $user->isMfaRequired() || $user->mfa_enabled;
-
-        if ($mfaRequired) {
-            if (! $user->mfa_enabled || empty($user->mfa_secret)) {
-                // L'utilisateur doit obligatoirement initialiser son MFA avant tout accès
-                $newSecret = $this->google2fa->generateSecretKey();
-                $user->mfa_secret = $newSecret;
-                $user->save();
-
-                $otpAuthUrl = $this->google2fa->getQRCodeUrl(
-                    'BEGPHARMA',
-                    $user->email,
-                    $newSecret
-                );
-
-                $tempToken = $user->createToken('mfa-setup-token', ['mfa:setup'], now()->addMinutes(15))->plainTextToken;
-
-                return response()->json([
-                    'mfa_required' => true,
-                    'mfa_setup_required' => true,
-                    'temp_token' => $tempToken,
-                    'secret' => $newSecret,
-                    'qr_code_url' => $otpAuthUrl,
-                    'message' => 'Configuration obligatoire du MFA TOTP requise pour votre rôle.',
-                ]);
-            }
-
-            // MFA déjà configuré : demande du code TOTP
-            $tempToken = $user->createToken('mfa-verify-token', ['mfa:verify'], now()->addMinutes(10))->plainTextToken;
-
-            return response()->json([
-                'mfa_required' => true,
-                'mfa_setup_required' => false,
-                'temp_token' => $tempToken,
-                'message' => 'Veuillez saisir votre code d\'authentification à deux facteurs (TOTP).',
-            ]);
-        }
-
-        // Connexion directe sans MFA
+        // Connexion directe nominative sans double opt-in (MFA désactivé sur demande utilisateur)
         $token = $user->createToken($deviceName, ['*'])->plainTextToken;
         $user->update(['last_activity_at' => now()]);
 
@@ -164,6 +125,81 @@ class AuthController extends Controller
                 'officines.devise',
             ]),
         ]);
+    }
+
+    /**
+     * Inscription / Création de compte directe sans double opt-in
+     */
+    public function register(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8',
+            'telephone' => 'nullable|string|max:50',
+            'role_code' => 'nullable|string|max:50',
+            'officine_nom' => 'nullable|string|max:255',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'telephone' => $validated['telephone'] ?? null,
+            'mfa_enabled' => false,
+            'actif' => true,
+            'archived' => false,
+        ]);
+
+        // Rattachement automatique à l'officine par défaut ou création d'une officine
+        $officine = null;
+        if (! empty($validated['officine_nom'])) {
+            $officine = \App\Models\Officine::create([
+                'nom' => $validated['officine_nom'],
+                'raison_sociale' => $validated['officine_nom'] . ' SARL',
+                'numero_licence' => 'BEN-OFF-' . date('Y') . '-' . rand(100, 999),
+                'adresse' => 'Cotonou',
+                'ville' => 'Cotonou',
+                'telephone' => $validated['telephone'] ?? '+229 00 00 00 00',
+                'fuseau' => 'Africa/Porto-Novo',
+                'devise' => 'XOF',
+            ]);
+        } else {
+            $officine = \App\Models\Officine::first();
+        }
+
+        if ($officine) {
+            \App\Models\UtilisateurOfficine::create([
+                'officine_id' => $officine->id,
+                'user_id' => $user->id,
+                'role_code' => $validated['role_code'] ?? 'pharmacien_titulaire',
+                'actif' => true,
+                'archived' => false,
+            ]);
+        }
+
+        $deviceName = $request->input('device_name', $request->userAgent() ?? 'Navigateur');
+        $token = $user->createToken($deviceName, ['*'])->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'telephone' => $user->telephone,
+                'mfa_enabled' => false,
+            ],
+            'officines' => $user->officines()->wherePivot('actif', true)->get([
+                'officines.id',
+                'officines.nom',
+                'officines.raison_sociale',
+                'officines.numero_licence',
+                'officines.fuseau',
+                'officines.devise',
+            ]),
+            'message' => 'Compte créé avec succès.',
+        ], 201);
     }
 
     /**

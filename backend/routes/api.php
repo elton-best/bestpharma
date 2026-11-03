@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 // Routes publiques d'authentification
 Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/register', [AuthController::class, 'register']);
 
 // Routes protégées par token Sanctum
 Route::middleware('auth:sanctum')->group(function () {

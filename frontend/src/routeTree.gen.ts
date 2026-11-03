@@ -9,9 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as InscriptionRouteImport } from './routes/inscription'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAppareilsRouteImport } from './routes/_authenticated/appareils'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedEcheancesRouteImport } from './routes/_authenticated/echeances'
@@ -23,6 +25,11 @@ import { Route as AuthenticatedPersonnelRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPointageRouteImport } from './routes/_authenticated/pointage'
 import { Route as AuthenticatedSecuriteRouteImport } from './routes/_authenticated/securite'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -32,9 +39,14 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
-  id: '/',
-  path: '/',
+const InscriptionRoute = InscriptionRouteImport.update({
+  id: '/inscription',
+  path: '/inscription',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAppareilsRoute = AuthenticatedAppareilsRouteImport.update({
@@ -90,8 +102,10 @@ const AuthenticatedSecuriteRoute = AuthenticatedSecuriteRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/inscription': typeof InscriptionRoute
+  '/app': typeof AuthenticatedAppRoute
   '/appareils': typeof AuthenticatedAppareilsRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/echeances': typeof AuthenticatedEcheancesRoute
@@ -104,7 +118,10 @@ export interface FileRoutesByFullPath {
   '/securite': typeof AuthenticatedSecuriteRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/inscription': typeof InscriptionRoute
+  '/app': typeof AuthenticatedAppRoute
   '/appareils': typeof AuthenticatedAppareilsRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/echeances': typeof AuthenticatedEcheancesRoute
@@ -115,12 +132,14 @@ export interface FileRoutesByTo {
   '/personnel': typeof AuthenticatedPersonnelRoute
   '/pointage': typeof AuthenticatedPointageRoute
   '/securite': typeof AuthenticatedSecuriteRoute
-  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/inscription': typeof InscriptionRoute
+  '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/appareils': typeof AuthenticatedAppareilsRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/echeances': typeof AuthenticatedEcheancesRoute
@@ -131,13 +150,14 @@ export interface FileRoutesById {
   '/_authenticated/personnel': typeof AuthenticatedPersonnelRoute
   '/_authenticated/pointage': typeof AuthenticatedPointageRoute
   '/_authenticated/securite': typeof AuthenticatedSecuriteRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/inscription'
+    | '/app'
     | '/appareils'
     | '/documents'
     | '/echeances'
@@ -150,7 +170,10 @@ export interface FileRouteTypes {
     | '/securite'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/auth'
+    | '/inscription'
+    | '/app'
     | '/appareils'
     | '/documents'
     | '/echeances'
@@ -161,11 +184,13 @@ export interface FileRouteTypes {
     | '/personnel'
     | '/pointage'
     | '/securite'
-    | '/'
   id:
     | '__root__'
+    | '/'
     | '/_authenticated'
     | '/auth'
+    | '/inscription'
+    | '/_authenticated/app'
     | '/_authenticated/appareils'
     | '/_authenticated/documents'
     | '/_authenticated/echeances'
@@ -176,16 +201,24 @@ export interface FileRouteTypes {
     | '/_authenticated/personnel'
     | '/_authenticated/pointage'
     | '/_authenticated/securite'
-    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  InscriptionRoute: typeof InscriptionRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -200,11 +233,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/': {
-      id: '/_authenticated/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+    '/inscription': {
+      id: '/inscription'
+      path: '/inscription'
+      fullPath: '/inscription'
+      preLoaderRoute: typeof InscriptionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/app': {
+      id: '/_authenticated/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/appareils': {
@@ -281,6 +321,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedAppareilsRoute: typeof AuthenticatedAppareilsRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedEcheancesRoute: typeof AuthenticatedEcheancesRoute
@@ -291,10 +332,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPersonnelRoute: typeof AuthenticatedPersonnelRoute
   AuthenticatedPointageRoute: typeof AuthenticatedPointageRoute
   AuthenticatedSecuriteRoute: typeof AuthenticatedSecuriteRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedAppareilsRoute: AuthenticatedAppareilsRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedEcheancesRoute: AuthenticatedEcheancesRoute,
@@ -305,15 +346,16 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPersonnelRoute: AuthenticatedPersonnelRoute,
   AuthenticatedPointageRoute: AuthenticatedPointageRoute,
   AuthenticatedSecuriteRoute: AuthenticatedSecuriteRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  InscriptionRoute: InscriptionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

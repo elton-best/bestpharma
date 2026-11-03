@@ -108,7 +108,7 @@ function PageSecurite() {
     toast.success(fr.mfa.active);
     setEnrollement(null);
     setCode("");
-    navigate({ to: "/" });
+    navigate({ to: "/app" });
   }
 
   async function annuler() {
@@ -162,7 +162,7 @@ function PageSecurite() {
 
           {etat?.facteurVerifie && etat.aal2 ? (
             <Button asChild className="h-11 w-fit">
-              <Link to="/">{fr.nav.tableau}</Link>
+              <Link to="/app">{fr.nav.tableau}</Link>
             </Button>
           ) : enrollement ? (
             <>

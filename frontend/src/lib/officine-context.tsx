@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api-client";
 import type { Database } from "@/integrations/supabase/types";
 
 export type Role = Database["public"]["Enums"]["role_officine"];
@@ -25,16 +25,15 @@ export function OfficineProvider({ userId, children }: { userId: string; childre
   const { data, isLoading } = useQuery({
     queryKey: ["rattachements", userId],
     queryFn: async () => {
-      // Les officines non visibles (RLS : MFA manquante) sont filtrées par la jointure interne.
-      const { data, error } = await supabase
-        .from("utilisateurs_officines")
-        .select("officine_id, role, officine:officines!inner(id, nom, ville)")
-        .eq("user_id", userId)
-        .eq("archived", false);
-      if (error) throw error;
-      return (data ?? []) as unknown as Rattachement[];
+      const offs = await api.get<any[]>("/api/officines").catch(() => api.getOfficines());
+      return (offs || []).map((o: any) => ({
+        officine_id: o.id,
+        role: (o.pivot?.role_code || "dispensateur") as Role,
+        officine: { id: o.id, nom: o.nom, ville: o.ville ?? null },
+      })) as Rattachement[];
     },
   });
+
   const [choix, setChoix] = useState<string | null>(null);
   useEffect(() => setChoix(localStorage.getItem(CLE)), []);
 

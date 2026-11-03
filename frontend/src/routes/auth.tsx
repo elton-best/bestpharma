@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api-client";
 import { fr } from "@/lib/i18n/fr";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -29,84 +29,84 @@ export const Route = createFileRoute("/auth")({
         content:
           "Connectez-vous à BEGPHARMA, la gestion d'officine conforme au Guide BPD de l'ABMed.",
       },
-      { property: "og:title", content: "Connexion — BEGPHARMA" },
-      {
-        property: "og:description",
-        content: "Connectez-vous à BEGPHARMA, gestion d'officine conforme au Guide BPD.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: PageConnexion,
 });
 
-function messageErreur(code: string | undefined, message: string): string {
-  switch (code) {
-    case "invalid_credentials":
-    case "user_not_found":
-      return "E-mail ou mot de passe incorrect.";
-    case "email_not_confirmed":
-      return "Confirmez d'abord votre adresse e-mail (lien reçu par e-mail).";
-    default:
-      return message || fr.commun.erreur;
-  }
-}
-
-function motDePasseValide(mdp: string): boolean {
-  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$/.test(mdp);
-}
-
 function PageConnexion() {
   const navigate = useNavigate();
   const { verrouille } = Route.useSearch();
 
-  const [mode, setMode] = useState<"connexion" | "inscription">("connexion");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
-  const [nomComplet, setNomComplet] = useState("");
+  const [codeTotp, setCodeTotp] = useState("");
+  const [mfaRequis, setMfaRequis] = useState(false);
+  const [tempToken, setTempToken] = useState<string | null>(null);
   const [enCours, setEnCours] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [compteCree, setCompteCree] = useState(false);
 
-  // Déjà connecté ? On repart directement à l'accueil.
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/" });
-    });
+    if (api.getToken() && api.getUser()) {
+      navigate({ to: "/" });
+    }
   }, [navigate]);
 
   async function soumettre(e: React.FormEvent) {
     e.preventDefault();
     setMessage(null);
-    if (mode === "inscription") {
-      if (!motDePasseValide(motDePasse)) {
-        setMessage(`Mot de passe invalide : ${fr.auth.mdpRegle}`);
-        return;
-      }
-      setEnCours(true);
-      const { error } = await supabase.auth.signUp({
-        email,
-        password: motDePasse,
-        options: { data: { nom_complet: nomComplet } },
-      });
-      setEnCours(false);
-      if (error) {
-        setMessage(messageErreur(error.code, error.message));
-        return;
-      }
-      setCompteCree(true);
-      setMode("connexion");
-      return;
-    }
     setEnCours(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password: motDePasse });
-    setEnCours(false);
-    if (error) {
-      setMessage(messageErreur(error.code, error.message));
-      return;
+
+    try {
+      if (mfaRequis && tempToken) {
+        // Validation code TOTP
+        const res = await fetch("/api/auth/verify-mfa", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${tempToken}`,
+          },
+          body: JSON.stringify({ code: codeTotp.trim() }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || "Code TOTP invalide.");
+        }
+        api.setToken(data.token);
+        api.setUser(data.user);
+        if (data.officines) api.setOfficines(data.officines);
+        navigate({ to: "/" });
+        return;
+      }
+
+      // Connexion mot de passe
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password: motDePasse }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Identifiants incorrects.");
+      }
+
+      if (data.mfa_required) {
+        setMfaRequis(true);
+        setTempToken(data.temp_token);
+        setMessage(data.message || "Veuillez entrer votre code à 6 chiffres.");
+        setEnCours(false);
+        return;
+      }
+
+      api.setToken(data.token);
+      api.setUser(data.user);
+      if (data.officines) api.setOfficines(data.officines);
+      navigate({ to: "/" });
+    } catch (err: any) {
+      setMessage(err.message || fr.commun.erreur);
+    } finally {
+      setEnCours(false);
     }
-    navigate({ to: "/" });
   }
 
   return (
@@ -123,10 +123,12 @@ function PageConnexion() {
         <Card>
           <CardHeader>
             <CardTitle>
-              {mode === "connexion" ? fr.auth.titreConnexion : fr.auth.titreInscription}
+              {mfaRequis ? "Double authentification (MFA TOTP)" : fr.auth.titreConnexion}
             </CardTitle>
             <CardDescription>
-              {mode === "connexion" ? undefined : fr.auth.mdpRegle}
+              {mfaRequis
+                ? "Saisissez le code temporaire à 6 chiffres de votre application d'authentification."
+                : "Entrez vos identifiants nominatifs pour accéder à l'officine."}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -135,79 +137,119 @@ function PageConnexion() {
                 <AlertDescription>{fr.auth.verrouille}</AlertDescription>
               </Alert>
             ) : null}
-            {compteCree ? (
-              <Alert className="mb-4">
-                <AlertDescription>{fr.auth.verifierEmail}</AlertDescription>
-              </Alert>
-            ) : null}
+
             <form onSubmit={soumettre} className="grid gap-4">
-              {mode === "inscription" ? (
+              {!mfaRequis ? (
+                <>
+                  <div className="grid gap-2">
+                    <Label htmlFor="email">{fr.auth.email}</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      autoComplete="email"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="mdp">{fr.auth.motDePasse}</Label>
+                    <Input
+                      id="mdp"
+                      type="password"
+                      value={motDePasse}
+                      onChange={(e) => setMotDePasse(e.target.value)}
+                      required
+                      autoComplete="current-password"
+                    />
+                  </div>
+                </>
+              ) : (
                 <div className="grid gap-2">
-                  <Label htmlFor="nom">{fr.auth.nomComplet}</Label>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="size-4 text-primary" />
+                    <Label htmlFor="totp">Code de sécurité à 6 chiffres</Label>
+                  </div>
                   <Input
-                    id="nom"
-                    value={nomComplet}
-                    onChange={(e) => setNomComplet(e.target.value)}
+                    id="totp"
+                    type="text"
+                    maxLength={6}
+                    placeholder="000000"
+                    className="text-center font-mono text-xl tracking-widest"
+                    value={codeTotp}
+                    onChange={(e) => setCodeTotp(e.target.value)}
                     required
-                    autoComplete="name"
+                    autoFocus
                   />
                 </div>
+              )}
+
+              {message ? (
+                <p className={`text-sm ${mfaRequis && !codeTotp ? "text-muted-foreground" : "text-destructive"}`}>
+                  {message}
+                </p>
               ) : null}
-              <div className="grid gap-2">
-                <Label htmlFor="email">{fr.auth.email}</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="mdp">{fr.auth.motDePasse}</Label>
-                <Input
-                  id="mdp"
-                  type="password"
-                  value={motDePasse}
-                  onChange={(e) => setMotDePasse(e.target.value)}
-                  required
-                  autoComplete={mode === "connexion" ? "current-password" : "new-password"}
-                />
-              </div>
-              {message ? <p className="text-sm text-destructive">{message}</p> : null}
+
               <Button type="submit" className="h-11 w-full" disabled={enCours}>
                 {enCours ? <Loader2 className="size-4 animate-spin" /> : null}
-                {mode === "connexion" ? fr.auth.seConnecter : fr.auth.sInscrire}
+                {mfaRequis ? "Valider le code" : fr.auth.seConnecter}
               </Button>
-            </form>
-            <button
-              type="button"
-              onClick={() => {
-                setMode(mode === "connexion" ? "inscription" : "connexion");
-                setMessage(null);
-                setCompteCree(false);
-              }}
-              className="mt-4 w-full text-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            >
-              {mode === "connexion" ? fr.auth.basculerInscription : fr.auth.basculerConnexion}
-            </button>
-            {mode === "connexion" ? (
-              <div className="mt-4 rounded-lg border border-dashed bg-muted/50 p-3 text-sm">
-                <p className="font-medium text-foreground">Compte de démonstration</p>
-                <p className="text-muted-foreground">demo@begpharma.app</p>
-                <p className="text-muted-foreground">Demo-Begpharma-2026</p>
+
+              {mfaRequis ? (
                 <Button
                   type="button"
-                  variant="outline"
-                  className="mt-2 h-9 w-full"
+                  variant="ghost"
+                  className="w-full text-xs text-muted-foreground"
                   onClick={() => {
-                    setEmail("demo@begpharma.app");
-                    setMotDePasse("Demo-Begpharma-2026");
+                    setMfaRequis(false);
+                    setTempToken(null);
+                    setCodeTotp("");
+                    setMessage(null);
                   }}
                 >
-                  Remplir les identifiants démo
+                  Revenir à la saisie des identifiants
                 </Button>
+              ) : null}
+            </form>
+
+            {!mfaRequis ? (
+              <div className="mt-6 rounded-lg border border-dashed bg-muted/50 p-3 text-xs space-y-2">
+                <p className="font-semibold text-foreground">Comptes de démonstration pré-configurés :</p>
+                <div className="space-y-1">
+                  <button
+                    type="button"
+                    className="text-left w-full hover:underline font-mono text-primary"
+                    onClick={() => {
+                      setEmail("dispensateur@begpharma.bj");
+                      setMotDePasse("Begpharma2026!");
+                    }}
+                  >
+                    1. dispensateur@begpharma.bj (Direct)
+                  </button>
+                  <button
+                    type="button"
+                    className="text-left w-full hover:underline font-mono text-primary"
+                    onClick={() => {
+                      setEmail("pharmacien@begpharma.bj");
+                      setMotDePasse("Begpharma2026!");
+                    }}
+                  >
+                    2. pharmacien@begpharma.bj (MFA TOTP)
+                  </button>
+                  <button
+                    type="button"
+                    className="text-left w-full hover:underline font-mono text-primary"
+                    onClick={() => {
+                      setEmail("promoteur@begpharma.bj");
+                      setMotDePasse("Begpharma2026!");
+                    }}
+                  >
+                    3. promoteur@begpharma.bj (MFA TOTP)
+                  </button>
+                </div>
+                <p className="text-[11px] text-muted-foreground italic">
+                  Mot de passe commun : Begpharma2026!
+                </p>
               </div>
             ) : null}
           </CardContent>

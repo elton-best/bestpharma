@@ -20,6 +20,7 @@ import {
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api-client";
 import { enregistrerAppareil } from "@/lib/appareil";
 import { OfficineProvider, useOfficine } from "@/lib/officine-context";
 import { fr } from "@/lib/i18n/fr";
@@ -58,13 +59,8 @@ function Coquille({ userId, email }: { userId: string; email: string }) {
   const { data: profil } = useQuery({
     queryKey: ["profil", userId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profils")
-        .select("nom_complet")
-        .eq("id", userId)
-        .single();
-      if (error) throw error;
-      return data;
+      const u = api.getUser();
+      return { nom_complet: u?.name || email };
     },
   });
 

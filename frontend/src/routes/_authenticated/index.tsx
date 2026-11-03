@@ -66,13 +66,7 @@ function Accueil() {
   const { data: profil } = useQuery({
     queryKey: ["profil", user.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profils")
-        .select("nom_complet")
-        .eq("id", user.id)
-        .single();
-      if (error) throw error;
-      return data;
+      return { nom_complet: user.name || user.email };
     },
   });
 

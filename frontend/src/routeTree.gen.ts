@@ -18,6 +18,7 @@ import { Route as AuthenticatedAppareilsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAutoEvaluationRouteImport } from './routes/_authenticated/auto-evaluation'
 import { Route as AuthenticatedCaisseRouteImport } from './routes/_authenticated/caisse'
 import { Route as AuthenticatedComptabiliteRouteImport } from './routes/_authenticated/comptabilite'
+import { Route as AuthenticatedCompteRouteImport } from './routes/_authenticated/compte'
 import { Route as AuthenticatedDispensationRouteImport } from './routes/_authenticated/dispensation'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedEcheancesRouteImport } from './routes/_authenticated/echeances'
@@ -81,6 +82,11 @@ const AuthenticatedComptabiliteRoute =
     path: '/comptabilite',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCompteRoute = AuthenticatedCompteRouteImport.update({
+  id: '/compte',
+  path: '/compte',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDispensationRoute =
   AuthenticatedDispensationRouteImport.update({
     id: '/dispensation',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/auto-evaluation': typeof AuthenticatedAutoEvaluationRoute
   '/caisse': typeof AuthenticatedCaisseRoute
   '/comptabilite': typeof AuthenticatedComptabiliteRoute
+  '/compte': typeof AuthenticatedCompteRoute
   '/dispensation': typeof AuthenticatedDispensationRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/echeances': typeof AuthenticatedEcheancesRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/auto-evaluation': typeof AuthenticatedAutoEvaluationRoute
   '/caisse': typeof AuthenticatedCaisseRoute
   '/comptabilite': typeof AuthenticatedComptabiliteRoute
+  '/compte': typeof AuthenticatedCompteRoute
   '/dispensation': typeof AuthenticatedDispensationRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/echeances': typeof AuthenticatedEcheancesRoute
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/_authenticated/auto-evaluation': typeof AuthenticatedAutoEvaluationRoute
   '/_authenticated/caisse': typeof AuthenticatedCaisseRoute
   '/_authenticated/comptabilite': typeof AuthenticatedComptabiliteRoute
+  '/_authenticated/compte': typeof AuthenticatedCompteRoute
   '/_authenticated/dispensation': typeof AuthenticatedDispensationRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/echeances': typeof AuthenticatedEcheancesRoute
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/auto-evaluation'
     | '/caisse'
     | '/comptabilite'
+    | '/compte'
     | '/dispensation'
     | '/documents'
     | '/echeances'
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
     | '/auto-evaluation'
     | '/caisse'
     | '/comptabilite'
+    | '/compte'
     | '/dispensation'
     | '/documents'
     | '/echeances'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
     | '/_authenticated/auto-evaluation'
     | '/_authenticated/caisse'
     | '/_authenticated/comptabilite'
+    | '/_authenticated/compte'
     | '/_authenticated/dispensation'
     | '/_authenticated/documents'
     | '/_authenticated/echeances'
@@ -400,6 +412,13 @@ declare module '@tanstack/react-router' {
       path: '/comptabilite'
       fullPath: '/comptabilite'
       preLoaderRoute: typeof AuthenticatedComptabiliteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/compte': {
+      id: '/_authenticated/compte'
+      path: '/compte'
+      fullPath: '/compte'
+      preLoaderRoute: typeof AuthenticatedCompteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dispensation': {
@@ -523,6 +542,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAutoEvaluationRoute: typeof AuthenticatedAutoEvaluationRoute
   AuthenticatedCaisseRoute: typeof AuthenticatedCaisseRoute
   AuthenticatedComptabiliteRoute: typeof AuthenticatedComptabiliteRoute
+  AuthenticatedCompteRoute: typeof AuthenticatedCompteRoute
   AuthenticatedDispensationRoute: typeof AuthenticatedDispensationRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedEcheancesRoute: typeof AuthenticatedEcheancesRoute
@@ -547,6 +567,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAutoEvaluationRoute: AuthenticatedAutoEvaluationRoute,
   AuthenticatedCaisseRoute: AuthenticatedCaisseRoute,
   AuthenticatedComptabiliteRoute: AuthenticatedComptabiliteRoute,
+  AuthenticatedCompteRoute: AuthenticatedCompteRoute,
   AuthenticatedDispensationRoute: AuthenticatedDispensationRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedEcheancesRoute: AuthenticatedEcheancesRoute,

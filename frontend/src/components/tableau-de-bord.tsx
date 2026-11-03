@@ -22,6 +22,10 @@ import {
   PackageSearch,
   Receipt,
   Layers,
+  Thermometer,
+  Snowflake,
+  CheckSquare,
+  Wrench,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -115,6 +119,25 @@ export function TableauDeBord() {
     },
   });
 
+  // 7. TEMPÉRATURES CHAÎNE DU FROID (Lot 1.2)
+  const { data: tempStats } = useQuery({
+    queryKey: ["temp-stats-dash", id],
+    enabled: !!id,
+    queryFn: async () => {
+      return api.get<any>(`/api/officines/${id}/temperatures/stats`);
+    },
+    refetchInterval: 60000,
+  });
+
+  // 8. SCORE AUTO-ÉVALUATION BPD (Lot 1.5)
+  const { data: bpdCampagne } = useQuery({
+    queryKey: ["bpd-campagne-dash", id],
+    enabled: !!id,
+    queryFn: async () => {
+      return api.get<any>(`/api/officines/${id}/auto-evaluation/campagne-courante`);
+    },
+  });
+
   // ACTION POINTAGE EXPRESS PHARMACIEN
   const [pointageEnCours, setPointageEnCours] = useState(false);
   async function pointerPrise() {
@@ -191,6 +214,85 @@ export function TableauDeBord() {
           )}
         </CardContent>
       </Card>
+
+      {/* SECTION CONSERVATION, TEMPÉRATURES & AUTO-ÉVALUATION BPD (PARTIE 2) */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Link
+          to="/temperatures"
+          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium">Frigo Vaccins (2-8°C)</span>
+            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600">
+              <Snowflake className="size-4" />
+            </div>
+          </div>
+          <p className="font-display text-2xl font-extrabold text-foreground mt-2">
+            {tempStats?.zones?.refrigeree_2_8?.temp_actuelle !== undefined && tempStats?.zones?.refrigeree_2_8?.temp_actuelle !== null
+              ? `${tempStats.zones.refrigeree_2_8.temp_actuelle}°C`
+              : "—"}
+          </p>
+          <p className="text-[11px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
+            <CheckCircle2 className="size-3" /> Chaîne du froid BPD
+          </p>
+        </Link>
+
+        <Link
+          to="/temperatures"
+          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium">Magasin (&lt; 25°C)</span>
+            <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600">
+              <Thermometer className="size-4" />
+            </div>
+          </div>
+          <p className="font-display text-2xl font-extrabold text-foreground mt-2">
+            {tempStats?.zones?.magasin_reserve?.temp_actuelle !== undefined && tempStats?.zones?.magasin_reserve?.temp_actuelle !== null
+              ? `${tempStats.zones.magasin_reserve.temp_actuelle}°C`
+              : "—"}
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Ambiance stockage
+          </p>
+        </Link>
+
+        <Link
+          to="/auto-evaluation"
+          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium">Conformité 267 Arts</span>
+            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+              <CheckSquare className="size-4" />
+            </div>
+          </div>
+          <p className="font-display text-2xl font-extrabold text-emerald-600 mt-2">
+            {bpdCampagne?.statistiques?.score_global !== undefined ? `${bpdCampagne.statistiques.score_global}%` : "—"}
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Score officiel ABMed
+          </p>
+        </Link>
+
+        <Link
+          to="/locaux"
+          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium">Locaux & Matériel</span>
+            <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600">
+              <Wrench className="size-4" />
+            </div>
+          </div>
+          <p className="font-display text-2xl font-extrabold text-foreground mt-2">
+            Étalonné
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Carnet de vie & Hygiène
+          </p>
+        </Link>
+      </section>
 
       {/* SECTION RÔLE SPÉCIFIQUE */}
       {role === "pharmacien_titulaire" && (

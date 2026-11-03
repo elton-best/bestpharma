@@ -2,13 +2,17 @@
 
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AutoEvaluationController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\EmployeController;
+use App\Http\Controllers\Api\EquipementController;
 use App\Http\Controllers\Api\ModeleBpdController;
+use App\Http\Controllers\Api\NettoyageController;
 use App\Http\Controllers\Api\NonConformiteController;
 use App\Http\Controllers\Api\OfficineController;
 use App\Http\Controllers\Api\ParametreController;
 use App\Http\Controllers\Api\PointageController;
+use App\Http\Controllers\Api\ReleveTemperatureController;
 use App\Http\Controllers\Api\SyncController;
 use Illuminate\Support\Facades\Route;
 
@@ -68,4 +72,27 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/officines/{officineId}/non-conformites', [NonConformiteController::class, 'index']);
     Route::post('/officines/{officineId}/non-conformites', [NonConformiteController::class, 'store']);
     Route::put('/officines/{officineId}/non-conformites/{id}', [NonConformiteController::class, 'update']);
+
+    // ==========================================
+    // PARTIE 2 : CONSERVATION, LOCAUX & AUTO-ÉVALUATION (LOTS 1.2 & 1.5)
+    // ==========================================
+
+    // Températures & Chaîne du Froid (BPD4-F04 & BPD4-F05)
+    Route::get('/officines/{officineId}/temperatures', [ReleveTemperatureController::class, 'index']);
+    Route::post('/officines/{officineId}/temperatures', [ReleveTemperatureController::class, 'store']);
+    Route::get('/officines/{officineId}/temperatures/stats', [ReleveTemperatureController::class, 'stats']);
+
+    // Équipements & Étalonnages (BPD4-F01 à F03)
+    Route::get('/officines/{officineId}/equipements', [EquipementController::class, 'index']);
+    Route::post('/officines/{officineId}/equipements', [EquipementController::class, 'store']);
+
+    // Plan de Nettoyage & Bio-nettoyage (BPD4-F07)
+    Route::get('/officines/{officineId}/nettoyages', [NettoyageController::class, 'index']);
+    Route::post('/officines/{officineId}/nettoyages', [NettoyageController::class, 'store']);
+
+    // Auto-évaluation & Audit Interne 267 articles (BPD-10 & 4.0.1)
+    Route::get('/officines/{officineId}/auto-evaluation/campagne-courante', [AutoEvaluationController::class, 'campagneCourante']);
+    Route::put('/officines/{officineId}/auto-evaluation/evaluer/{evaluationId}', [AutoEvaluationController::class, 'evaluerArticle']);
+    Route::post('/officines/{officineId}/auto-evaluation/generer-capa/{evaluationId}', [AutoEvaluationController::class, 'genererCapa']);
+    Route::get('/officines/{officineId}/auto-evaluation/rapport', [AutoEvaluationController::class, 'rapport']);
 });

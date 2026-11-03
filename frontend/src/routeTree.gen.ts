@@ -15,15 +15,18 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as InscriptionRouteImport } from './routes/inscription'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAppareilsRouteImport } from './routes/_authenticated/appareils'
+import { Route as AuthenticatedAutoEvaluationRouteImport } from './routes/_authenticated/auto-evaluation'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedEcheancesRouteImport } from './routes/_authenticated/echeances'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated/journal'
+import { Route as AuthenticatedLocauxRouteImport } from './routes/_authenticated/locaux'
 import { Route as AuthenticatedModelesRouteImport } from './routes/_authenticated/modeles'
 import { Route as AuthenticatedNonConformitesRouteImport } from './routes/_authenticated/non-conformites'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
 import { Route as AuthenticatedPersonnelRouteImport } from './routes/_authenticated/personnel'
 import { Route as AuthenticatedPointageRouteImport } from './routes/_authenticated/pointage'
 import { Route as AuthenticatedSecuriteRouteImport } from './routes/_authenticated/securite'
+import { Route as AuthenticatedTemperaturesRouteImport } from './routes/_authenticated/temperatures'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -54,6 +57,12 @@ const AuthenticatedAppareilsRoute = AuthenticatedAppareilsRouteImport.update({
   path: '/appareils',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAutoEvaluationRoute =
+  AuthenticatedAutoEvaluationRouteImport.update({
+    id: '/auto-evaluation',
+    path: '/auto-evaluation',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
@@ -67,6 +76,11 @@ const AuthenticatedEcheancesRoute = AuthenticatedEcheancesRouteImport.update({
 const AuthenticatedJournalRoute = AuthenticatedJournalRouteImport.update({
   id: '/journal',
   path: '/journal',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLocauxRoute = AuthenticatedLocauxRouteImport.update({
+  id: '/locaux',
+  path: '/locaux',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedModelesRoute = AuthenticatedModelesRouteImport.update({
@@ -100,6 +114,12 @@ const AuthenticatedSecuriteRoute = AuthenticatedSecuriteRouteImport.update({
   path: '/securite',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTemperaturesRoute =
+  AuthenticatedTemperaturesRouteImport.update({
+    id: '/temperatures',
+    path: '/temperatures',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -107,15 +127,18 @@ export interface FileRoutesByFullPath {
   '/inscription': typeof InscriptionRoute
   '/app': typeof AuthenticatedAppRoute
   '/appareils': typeof AuthenticatedAppareilsRoute
+  '/auto-evaluation': typeof AuthenticatedAutoEvaluationRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/echeances': typeof AuthenticatedEcheancesRoute
   '/journal': typeof AuthenticatedJournalRoute
+  '/locaux': typeof AuthenticatedLocauxRoute
   '/modeles': typeof AuthenticatedModelesRoute
   '/non-conformites': typeof AuthenticatedNonConformitesRoute
   '/parametres': typeof AuthenticatedParametresRoute
   '/personnel': typeof AuthenticatedPersonnelRoute
   '/pointage': typeof AuthenticatedPointageRoute
   '/securite': typeof AuthenticatedSecuriteRoute
+  '/temperatures': typeof AuthenticatedTemperaturesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,15 +146,18 @@ export interface FileRoutesByTo {
   '/inscription': typeof InscriptionRoute
   '/app': typeof AuthenticatedAppRoute
   '/appareils': typeof AuthenticatedAppareilsRoute
+  '/auto-evaluation': typeof AuthenticatedAutoEvaluationRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/echeances': typeof AuthenticatedEcheancesRoute
   '/journal': typeof AuthenticatedJournalRoute
+  '/locaux': typeof AuthenticatedLocauxRoute
   '/modeles': typeof AuthenticatedModelesRoute
   '/non-conformites': typeof AuthenticatedNonConformitesRoute
   '/parametres': typeof AuthenticatedParametresRoute
   '/personnel': typeof AuthenticatedPersonnelRoute
   '/pointage': typeof AuthenticatedPointageRoute
   '/securite': typeof AuthenticatedSecuriteRoute
+  '/temperatures': typeof AuthenticatedTemperaturesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -141,15 +167,18 @@ export interface FileRoutesById {
   '/inscription': typeof InscriptionRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/appareils': typeof AuthenticatedAppareilsRoute
+  '/_authenticated/auto-evaluation': typeof AuthenticatedAutoEvaluationRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/echeances': typeof AuthenticatedEcheancesRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
+  '/_authenticated/locaux': typeof AuthenticatedLocauxRoute
   '/_authenticated/modeles': typeof AuthenticatedModelesRoute
   '/_authenticated/non-conformites': typeof AuthenticatedNonConformitesRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/personnel': typeof AuthenticatedPersonnelRoute
   '/_authenticated/pointage': typeof AuthenticatedPointageRoute
   '/_authenticated/securite': typeof AuthenticatedSecuriteRoute
+  '/_authenticated/temperatures': typeof AuthenticatedTemperaturesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,15 +188,18 @@ export interface FileRouteTypes {
     | '/inscription'
     | '/app'
     | '/appareils'
+    | '/auto-evaluation'
     | '/documents'
     | '/echeances'
     | '/journal'
+    | '/locaux'
     | '/modeles'
     | '/non-conformites'
     | '/parametres'
     | '/personnel'
     | '/pointage'
     | '/securite'
+    | '/temperatures'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -175,15 +207,18 @@ export interface FileRouteTypes {
     | '/inscription'
     | '/app'
     | '/appareils'
+    | '/auto-evaluation'
     | '/documents'
     | '/echeances'
     | '/journal'
+    | '/locaux'
     | '/modeles'
     | '/non-conformites'
     | '/parametres'
     | '/personnel'
     | '/pointage'
     | '/securite'
+    | '/temperatures'
   id:
     | '__root__'
     | '/'
@@ -192,15 +227,18 @@ export interface FileRouteTypes {
     | '/inscription'
     | '/_authenticated/app'
     | '/_authenticated/appareils'
+    | '/_authenticated/auto-evaluation'
     | '/_authenticated/documents'
     | '/_authenticated/echeances'
     | '/_authenticated/journal'
+    | '/_authenticated/locaux'
     | '/_authenticated/modeles'
     | '/_authenticated/non-conformites'
     | '/_authenticated/parametres'
     | '/_authenticated/personnel'
     | '/_authenticated/pointage'
     | '/_authenticated/securite'
+    | '/_authenticated/temperatures'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -254,6 +292,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppareilsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/auto-evaluation': {
+      id: '/_authenticated/auto-evaluation'
+      path: '/auto-evaluation'
+      fullPath: '/auto-evaluation'
+      preLoaderRoute: typeof AuthenticatedAutoEvaluationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/documents': {
       id: '/_authenticated/documents'
       path: '/documents'
@@ -273,6 +318,13 @@ declare module '@tanstack/react-router' {
       path: '/journal'
       fullPath: '/journal'
       preLoaderRoute: typeof AuthenticatedJournalRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/locaux': {
+      id: '/_authenticated/locaux'
+      path: '/locaux'
+      fullPath: '/locaux'
+      preLoaderRoute: typeof AuthenticatedLocauxRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/modeles': {
@@ -317,35 +369,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecuriteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/temperatures': {
+      id: '/_authenticated/temperatures'
+      path: '/temperatures'
+      fullPath: '/temperatures'
+      preLoaderRoute: typeof AuthenticatedTemperaturesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedAppareilsRoute: typeof AuthenticatedAppareilsRoute
+  AuthenticatedAutoEvaluationRoute: typeof AuthenticatedAutoEvaluationRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedEcheancesRoute: typeof AuthenticatedEcheancesRoute
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
+  AuthenticatedLocauxRoute: typeof AuthenticatedLocauxRoute
   AuthenticatedModelesRoute: typeof AuthenticatedModelesRoute
   AuthenticatedNonConformitesRoute: typeof AuthenticatedNonConformitesRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
   AuthenticatedPersonnelRoute: typeof AuthenticatedPersonnelRoute
   AuthenticatedPointageRoute: typeof AuthenticatedPointageRoute
   AuthenticatedSecuriteRoute: typeof AuthenticatedSecuriteRoute
+  AuthenticatedTemperaturesRoute: typeof AuthenticatedTemperaturesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedAppareilsRoute: AuthenticatedAppareilsRoute,
+  AuthenticatedAutoEvaluationRoute: AuthenticatedAutoEvaluationRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedEcheancesRoute: AuthenticatedEcheancesRoute,
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
+  AuthenticatedLocauxRoute: AuthenticatedLocauxRoute,
   AuthenticatedModelesRoute: AuthenticatedModelesRoute,
   AuthenticatedNonConformitesRoute: AuthenticatedNonConformitesRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
   AuthenticatedPersonnelRoute: AuthenticatedPersonnelRoute,
   AuthenticatedPointageRoute: AuthenticatedPointageRoute,
   AuthenticatedSecuriteRoute: AuthenticatedSecuriteRoute,
+  AuthenticatedTemperaturesRoute: AuthenticatedTemperaturesRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

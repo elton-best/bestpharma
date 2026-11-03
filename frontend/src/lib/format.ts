@@ -1,0 +1,32 @@
+export const FUSEAU = "Africa/Porto-Novo";
+
+/** JJ/MM/AAAA dans le fuseau de l'officine. */
+export function formatDate(d: string | Date, fuseau = FUSEAU): string {
+  return new Intl.DateTimeFormat("fr-FR", {
+    timeZone: fuseau,
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(d));
+}
+
+export function formatDateHeure(d: string | Date, fuseau = FUSEAU): string {
+  return new Intl.DateTimeFormat("fr-FR", {
+    timeZone: fuseau,
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(d));
+}
+
+/** Montant en FCFA, sans décimale. */
+export function formatFCFA(n: number): string {
+  return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(Math.round(n)).replace(/\u202f|\u00a0/g, " ")} FCFA`;
+}
+
+/** Mot de passe robuste : 12+ caractères, majuscule, minuscule, chiffre. */
+export function motDePasseRobuste(p: string): boolean {
+  return p.length >= 12 && /[A-Z]/.test(p) && /[a-z]/.test(p) && /\d/.test(p);
+}

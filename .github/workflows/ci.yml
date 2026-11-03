@@ -1,4 +1,4 @@
-name: CI BEGPHARMA Backend
+name: CI BEGPHARMA (Backend + Frontend)
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 
 jobs:
   backend-tests:
+    name: Backend Tests (PHPUnit + PostgreSQL 16 RLS)
     runs-on: ubuntu-latest
 
     services:
@@ -55,3 +56,28 @@ jobs:
         run: |
           cd backend
           php artisan test
+
+  frontend-tests:
+    name: Frontend Tests (Vitest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Configuration de Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Installation des dépendances NPM
+        run: |
+          cd frontend
+          npm install --legacy-peer-deps
+
+      - name: Exécution de la suite de tests Vitest (7 tests)
+        run: |
+          cd frontend
+          npm test

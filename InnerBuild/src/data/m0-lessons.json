@@ -1,0 +1,97 @@
+[
+  {
+    "id": "m0-l1",
+    "title": "Skill 1 — Orchestrator : La Boucle de Livraison Autonome",
+    "minutes": 30,
+    "body": [
+      "## 1. Philosophie & Origines de l'Orchestration IA\nDans l'ingénierie logicielle augmentée par l'IA (Claude Code, Cursor, Antigravity, OpenCode), la vitesse de génération de code est devenue quasi instantanée. Cependant, sans méthode d'orchestration stricte, cette vitesse génère une dette technique exponentielle. C'est le syndrome classique du mur des 80/20 : 80% du projet est codé en une heure, puis 3 jours d'enfer et de chaos sont nécessaires pour tenter de stabiliser les 20% restants.\n\nUn **Skill** n'est pas un simple prompt passif ou une consigne de politesse. C'est un protocole d'ingénierie réutilisable, déterministe et versionné qui impose à l'agent IA **COMMENT** travailler (méthode, conventions, séquencement, vérification) et pas seulement **QUOI** faire.\n\nLe Skill **Orchestrator** agit comme le cerveau central et le chef d'orchestre. Son rôle est de transformer un besoin métier complexe en une séquence de micro-tâches atomiques, de router chaque tâche vers le bon Skill spécialisé (Frontend, Backend, Security, QA), d'exiger une preuve factuelle après chaque action, et de boucler jusqu'à ce que la Definition of Done soit validée à 100%.",
+      "## 2. Le Protocole des 6 Étapes (La Machine à États)\nL'orchestration repose sur une boucle déterministe en 6 étapes séquentielles. L'agent ne dévie jamais de ce cycle et ne traite jamais deux tâches en parallèle :\n\n```\n┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐\n│  LIRE   │──▶│CHOISIR  │──▶│CHARGER  │──▶│PRODUIRE │──▶│VÉRIFIER │──▶│ COCHER  │\n│ la spec │   │1 tâche  │   │le skill │   │         │   │preuve ? │   │ ou fix  │\n└─────────┘   └─────────┘   └─────────┘   └─────────┘   └────┬────┘   └─────────┘\n                                                           │ non\n                                                           ▼\n                                                    ┌─────────────┐\n                                                    │  CORRIGER   │──▶ (revérifier)\n                                                    │  redécouper │\n                                                    └─────────────┘\n```\n\n1. **LIRE la Spec (`SPEC.md`)** : Aucun code n'est produit tant que l'exigence fonctionnelle et le contrat d'interface ne sont pas formalisés.\n2. **CHOISIR 1 Tâche Atomique (`PLAN.md`)** : Une tâche atomique doit tenir en moins de 2 heures d'effort et respecter le principe de responsabilité unique (SRP).\n3. **CHARGER le Skill spécialisé** : Invoquer explicitement le `SKILL.md` pertinent.\n4. **PRODUIRE l'incrément de code** : Écrire le code sous contraintes de typage strict (zéro `any`).\n5. **VÉRIFIER la Preuve Observable** : Chaque action doit produire une preuve factuelle (test vert, typecheck 0 erreur, log 200 OK).\n6. **COCHER ou CORRIGER** : Marquer Done dans `PROGRESS.md` ou appliquer 3 tentatives max de Fix Loop.",
+      "### Architecture & Patterns Recommandés\n\nL'architecture de l'orchestrateur repose sur 4 fichiers de contrôle au niveau racine du projet :\n\n1. **`SPEC.md`** : La vérité métier. Exigences fonctionnelles, non-fonctionnelles et parcours utilisateur.\n2. **`PLAN.md`** : La décomposition technique. Liste les EPICs et les Tasks atomiques avec IDs uniques (`T-001`, `T-002`).\n3. **`ROUTER.md`** : Le cerveau de dispatch. Mappe chaque type de tâche vers le Skill adéquat dans `skills/*`.\n4. **`PROGRESS.md`** : Le journal d'exécution temps réel avec log de preuves factuelles et d'erreurs.",
+      "### Implémentation de Référence : Consigne de Démarrage (5 Lignes)\n\n```markdown\n1. [SPEC SOURCE] : @SPEC.md#Section-Auth\n2. [TÂCHE DU JOUR] : T-003 - Implémentation du composant AuthForm avec validation Zod\n3. [SKILL CHARGÉ] : skills/frontend-react/SKILL.md (v1.2)\n4. [PREUVE ATTENDUE] : tsc --noEmit à 0 erreur + rendu du composant validé avec erreurs visuelles\n5. [CRITÈRE DONE] : Formulaire non-soumettable si email invalide, message d'erreur clair si 401\n```",
+      "### Directives & Anti-Patterns (Failure Modes)\n\n- **A. Feature Creep** : Si l'agent invente des fonctionnalités non demandées, rejet immédiat (`git checkout .`) et rappel de la `SPEC.md`.\n- **B. Infinite Auto-Fix Loop** : Après 3 tentatives infructueuses de l'agent, STOP obligatoire, consign    "task": "Crée l'arborescence de contrôle de ton projet (`SPEC.md`, `PLAN.md`, `ROUTER.md`, `PROGRESS.md`), rédige la consigne d'orchestration en 5 lignes pour ta première tâche, puis exécute le premier cycle complet Spec → Plan → Build → Review → Deliver avec preuve factuelle."
+  },
+  {
+    "id": "m0-l2",
+    "title": "Skill 2 — Frontend : React 19, Vite, TypeScript Strict & TanStack Query",
+    "minutes": 30,
+    "body": [
+      "## 1. Ingénierie Frontend d'Élite & Principes Fondamentaux\nDans une application moderne, le frontend est un système d'état distribué qui doit rester rapide, typé et résilient. L'objectif de ce skill est d'abandonner les pratiques artisanales au profit d'une architecture modulaire, prévisible et strictly typée avec React 19, Vite, TypeScript et TanStack.\n\nTypeScript en mode `strict: true` n'est pas de la paperasse : c'est votre premier filet de sécurité gratuit. Chaque composant reçoit des props explicites, chaque réponse d'API est typée via Zod, et `tsc --noEmit` doit impérativement afficher 0 erreur.",
+      "## 2. Architecture en Couches & Séparation des Responsabilités\n1. `src/components/ui/` (Primitives UI) : Composants atomiques sans logique métier (Button, Input, Badge, Modal) stylés avec Tailwind CSS et `cn()`.\n2. `src/components/[domain]/` (Composants Métier) : Assemblent les primitives UI pour répondre à un besoin métier.\n3. `src/routes/` (Pages & Router) : Gèrent la navigation typée et le binding avec l'URL.\n4. `src/lib/api/` (Clients API & Query Hooks) : Encapsulent les appels réseau typés avec TanStack Query.",
+      "### Architecture & Patterns Recommandés\n```\nsrc/\n├── components/\n│   ├── ui/          # Composants primitifs (Button, Input, Modal)\n│   └── [domain]/    # Composants métier (LessonCard, AuthForm)\n├── routes/          # Composants de route typés\n├── lib/\n│   └── api/         # Clients API typés avec TanStack Query\n└── types/           # Types globaux\n```",
+      "### Implémentation de Référence\n```typescript\nimport { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';\nimport { z } from 'zod';\n\nconst LessonSchema = z.object({\n  id: z.string(),\n  title: z.string(),\n  completed: z.boolean(),\n});\nexport type LessonData = z.infer<typeof LessonSchema>;\n\nexport function useLessons() {\n  return useQuery({\n    queryKey: ['lessons'],\n    queryFn: async (): Promise<LessonData[]> => {\n      const res = await fetch('/api/lessons');\n      if (!res.ok) throw new Error('Erreur de chargement');\n      return z.array(LessonSchema).parse(await res.json());\n    },\n  });\n}\n```",
+      "### Directives pour piloter l'Agent IA\n- Primitivité UI : Exiger que les composants UI utilisent `forwardRef` et `cn()`.\n- Zéro `any` : Interdire formellement le mot-clé `any`.\n- Composants fonctionnels purs : Séparer la logique de vue des hooks réseau."
+    ],
+    "task": "Prends un composant existant (ou crée-en un : carte de leçon avec titre, durée, statut) en React + TypeScript : props typées, zéro any, responsive mobile/desktop. Vérifie qu’il s’affiche sans erreur console."
+  },
+  {
+    "id": "m0-l3",
+    "title": "Skill 3 — Backend : API propre, validation Zod & base D1",
+    "minutes": 30,
+    "body": [
+      "## 1. Principes Fondamentaux de l'Ingénierie Backend\nUne API industrielle doit être prévisible, strictement typée et sécurisée. Les trois piliers non-négociables sont : 1) Des contrats d'entrées/sorties validés par Zod, 2) Des erreurs métier explicites et 3) Une persistance transactionnelle sur Cloudflare D1 / SQLite.",
+      "## 2. Flux de Traitement d'une Requête\n1. Validation Zod de l'input brut.\n2. Vérification d'Autorisation côté serveur (Session / RBAC).\n3. Exécution Métier & Transaction SQL D1.\n4. Sérialisation uniforme `{ success: true, data }` ou `{ success: false, error }`.",
+      "### Architecture & Patterns Recommandés\n```\nsrc/\n├── plugins/         # Auth, CORS, Rate Limiting\n├── modules/         # Routes, Services, Schemas par domaine\n├── lib/\n│   └── d1.ts        # Instance Cloudflare D1 / SQLite\n└── utils/\n    └── errors.ts    # Classes d'erreurs métier\n```",
+      "### Implémentation de Référence\n```typescript\nimport { z } from 'zod';\n\nexport const ToggleLessonInput = z.object({\n  userId: z.string().uuid(),\n  lessonId: z.string().min(2),\n});\n\nexport async function toggleLessonProgress(db: D1Database, rawInput: unknown) {\n  const parsed = ToggleLessonInput.safeParse(rawInput);\n  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };\n\n  const { userId, lessonId } = parsed.data;\n  const existing = await db.prepare('SELECT id, completed FROM lesson_progress WHERE user_id = ? AND lesson_id = ?')\n    .bind(userId, lessonId).first<{ id: string; completed: number }>();\n\n  const now = new Date().toISOString();\n  if (existing) {\n    await db.prepare('UPDATE lesson_progress SET completed = ?, updated_at = ? WHERE id = ?')\n      .bind(existing.completed ? 0 : 1, now, existing.id).run();\n  } else {\n    await db.prepare('INSERT INTO lesson_progress (id, user_id, lesson_id, completed, created_at, updated_at) VALUES (?, ?, ?, 1, ?, ?)')\n      .bind(crypto.randomUUID(), userId, lessonId, now, now).run();\n  }\n  return { success: true, data: { lessonId, updated: true } };\n}\n```",
+      "### Directives pour piloter l'Agent IA\n- Séparation stricte : Les routes ne contiennent AUCUNE logique métier.\n- Requêtes préparées : Interdiction absolue de concaténer des variables dans les chaînes SQL (`bind()` obligatoire)."
+    ],
+    "task": "Implémentation d'un module 'Products' avec architecture en couches : Créer un module complet pour la gestion des produits (CRUD) en respectant strictement l'architecture en couches."
+  },
+  {
+    "id": "m0-l4",
+    "title": "Skill 4 — Agents IA : LLM, RAG & Outillage Tool Calling",
+    "minutes": 30,
+    "body": [
+      "## 1. Architecture ReAct & Ingénierie des Agents IA\nUn LLM brut ne fait que prédire des mots. Pour le transformer en agent autonome, nous l'armons de 3 piliers : Un System Prompt Déterministe, Un Contexte Cible via RAG, et Des Outils Structurés (Tool Calling).",
+      "La boucle ReAct (Reason + Act) impose au modèle de formaliser sa pensée avant de déclencher une action. Si le contexte est incomplet, le LLM hallucine. Toute hallucination est une preuve de manque de contexte.",
+      "### Architecture & Patterns Recommandés\n```\nsrc/agent/\n├── system-prompt.ts  # Identité, mission, style, garde-fous\n├── tools/            # Outils déclarés et validés par Zod\n├── RAG/              # Retrieval Augmented Generation (chunks)\n└── dispatcher.ts     # Exécution et audit des tool calls\n```",
+      "### Implémentation de Référence\n```typescript\nimport { z } from 'zod';\n\nexport const GetProgressSchema = z.object({ userId: z.string().uuid(), moduleId: z.string() });\n\nexport const agentTools = [{\n  name: 'get_progress',\n  description: 'Récupère la progression réelle d’un apprenant.',\n  parameters: {\n    type: 'OBJECT',\n    properties: {\n      userId: { type: 'STRING' },\n      moduleId: { type: 'STRING' }\n    },\n    required: ['userId', 'moduleId']\n  }\n}];\n\nexport async function handleToolCall(name: string, args: unknown, db: D1Database) {\n  if (name === 'get_progress') {\n    const parsed = GetProgressSchema.safeParse(args);\n    if (!parsed.success) return { success: false, error: 'Args invalides' };\n    const rows = await db.prepare('SELECT lesson_id, completed FROM lesson_progress WHERE user_id = ?').bind(parsed.data.userId).all();\n    return { success: true, data: rows.results };\n  }\n  return { success: false, error: 'Outil inconnu' };\n}\n```",
+      "### Directives pour piloter l'Agent IA\n- Transmettre des budgets de tokens fermes (ex: 4096 tokens).\n- Ne jamais exposer de clé d'API LLM côté navigateur."
+    ],
+    "task": "Implémentation d'un agent ReAct avec mémoire à court terme et budget de tokens."
+  },
+  {
+    "id": "m0-l5",
+    "title": "Skill 5 — QA : Qualité, Tests & Livraison Continue CI/CD",
+    "minutes": 30,
+    "body": [
+      "## 1. Philosophie QA : La Pyramide de Tests\nLa qualité n'est pas une étape finale, c'est une boucle automatique à chaque commit. Du test le moins cher au plus lourd : Typecheck `tsc --noEmit` -> Vitest Unitaires -> Integration API -> E2E Playwright.",
+      "Le Gate Bloquant empêche tout merge ou déploiement tant que le lint, le typecheck, les tests et le build ne sont pas 100% verts.",
+      "### Architecture & Patterns Recommandés\n```\n.github/\n└── workflows/\n    └── ci.yml        # Quality Gate GitHub Actions\nsrc/\n├── __tests__/        # Tests unitaires Vitest (*.test.ts)\n└── e2e/              # Tests E2E Playwright (*.spec.ts)\n```",
+      "### Implémentation de Référence\n```yaml\nname: AI Factory Quality Gate\non: [push, pull_request]\njobs:\n  gate:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with: { node-version: 20, cache: 'npm' }\n      - run: npm ci\n      - run: npx tsc --noEmit\n      - run: npm test -- --run\n      - run: npm run build\n```",
+      "### Directives pour piloter l'Agent IA\n- Pour chaque nouveau composant ou service créé, l'agent doit immédiatement fournir son fichier de test `*.test.ts` associé.\n- Tolérance zéro sur les warnings TypeScript."
+    ],
+    "task": "Construction d’une pyramide de tests complète avec Vitest et CI/CD GitHub Actions."
+  },
+  {
+    "id": "m0-l6",
+    "title": "Skill 6 — Design System : Cohérence Visuelle, Accessibilité WCAG & Responsive Mobile-First",
+    "minutes": 30,
+    "body": [
+      "## 1. Design System & Accessibility\nUn Design System garantit 3 impératifs : 1) La Cohérence via tokens centralisés, 2) L'Accessibilité WCAG 2.1 AA (contrastes 4.5:1, zones 44px, navigation clavier), et 3) Le Responsive Mobile-First.",
+      "Interdiction des valeurs en dur (`#1e293b`). Tout passe par tokens Tailwind et primitives réutilisables.",
+      "### Architecture & Patterns Recommandés\n```\nsrc/components/ui/\n├── button.tsx        # Primitive Button avec forwardRef et cn()\n├── card.tsx          # Primitive Card\n└── input.tsx         # Primitive Input accessible avec label\n```",
+      "### Implémentation de Référence\n```typescript\nimport React, { forwardRef } from 'react';\nimport { clsx, type ClassValue } from 'clsx';\nimport { twMerge } from 'tailwind-merge';\n\nexport function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }\n\nexport const Button = forwardRef<HTMLButtonElement, React.ButtonAttributes<HTMLButtonElement>>(\n  ({ className, children, ...props }, ref) => (\n    <button\n      ref={ref}\n      className={cn('min-h-[44px] px-4 py-2 bg-accent text-accent-foreground font-bold rounded-xl focus-visible:ring-2', className)}\n      {...props}\n    >\n      {children}\n    </button>\n  )\n);\nButton.displayName = 'Button';\n```",
+      "### Directives pour piloter l'Agent IA\n- Exiger des contraintes `min-h-[44px]` pour tous les boutons sur mobile.\n- Valider la navigation clavier."
+    ],
+    "task": "Création d’un jeu complet de composants UI réutilisables et accessibles avec Tailwind CSS."
+  },
+  {
+    "id": "m0-l7",
+    "title": "Skill 7 — Sécurité : OWASP Top 10, Secrets & Contrôle d'Accès RLS/Auth",
+    "minutes": 30,
+    "body": [
+      "## 1. Les 5 Réflexes de Sécurité Inviolables\n1. Secrets uniquement dans `env` serveur.\n2. Authentification avec hash fort (Web Crypto API / PBKDF2).\n3. Contrôle d'Accès Serveur (RBAC) sur chaque server function.\n4. Validation & Sanitization Zod sur toutes les entrées utilisateur.\n5. Principe du moindre privilège.",
+      "### Architecture & Patterns Recommandés\n```\nsrc/lib/\n├── security.ts       # Hashage PBKDF2 et verification des sessions\n└── guards.ts         # Middleware d'autorisation serveur\n```",
+      "### Implémentation de Référence\n```typescript\nexport async function hashPassword(password: string, salt: string): Promise<string> {\n  const encoder = new TextEncoder();\n  const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), { name: 'PBKDF2' }, false, ['deriveBits', 'deriveKey']);\n  const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: encoder.encode(salt), iterations: 100000, hash: 'SHA-256' }, keyMaterial, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);\n  const exported = await crypto.subtle.exportKey('raw', key);\n  return Array.from(new Uint8Array(exported)).map(b => b.toString(16).padStart(2, '0')).join('');\n}\n\nexport async function requireUserSession(db: D1Database, token?: string) {\n  if (!token) throw new Error('UNAUTHORIZED');\n  const session = await db.prepare('SELECT user_id, role, expires_at FROM sessions WHERE token = ?').bind(token).first<{ user_id: string; role: string; expires_at: string }>();\n  if (!session || new Date(session.expires_at) < new Date()) throw new Error('UNAUTHORIZED');\n  return { userId: session.user_id, role: session.role };\n}\n```",
+      "### Directives pour piloter l'Agent IA\n- Détecter les fuites de secrets dans chaque diff git.\n- Interdire les requêtes SQL non paramétrées."
+    ],
+    "task": "Mise en place d'une chaîne de sécurité complète anti-SQL injection, XSS et gestion hermétique des secrets."
+  }
+]és (ZAP, Burp) et des revues de code orientées \"taint analysis\".",
+      "### Architecture & Patterns Recommandés\n\nsrc/ \n├─ config/                # configuration centralisée (csp.ts, securityHeaders.ts) \n├─ middleware/            # middlewares génériques (sanitize.ts, csrfProtection.ts) \n├─ routes/                # découpage fonctionnel (user.routes.ts, product.routes.ts) \n├─ services/              # logique métier pure (user.service.ts) \n├─ repositories/          # accès aux données via TypeORM (user.repository.ts) \n├─ utils/                 # helpers (validator.ts, escapeHtml.ts) \n└─ app.ts                  # point d’entrée, composition des middlewares \nConvention : chaque route importe uniquement le service correspondant, les services n’accèdent qu’aux repositories, aucune logique SQL directe dans les contrôleurs.",
+      "### Implémentation de Référence\n\n",
+      "### Directive pour piloter l'Agent IA\n\nGuide l'agent à générer des middlewares de validation supplémentaires en suivant le même pattern (express-validator + sanitize). Propose des tests unitaires avec Jest pour chaque middleware. Suggère l'intégration de ZAP en mode daemon dans le pipeline CI pour détecter automatiquement XSS/CSRF. Demande à l'agent d'illustrer comment étendre la CSP en fonction de besoins spécifiques (ex: chargement de scripts tiers)."
+    ],
+    "task": "Mise en place d’une chaîne de validation anti‑injection : Construire un endpoint POST /orders qui empêche toute injection SQL/NoSQL, XSS et CSRF, puis vérifier son comportement avec des payloads malveillants"
+  }
+]

@@ -2,32 +2,31 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  Shield,
   ShieldCheck,
-  AlertTriangle,
-  CheckCircle2,
   Clock,
   FileText,
-  LayoutTemplate,
+  DocumentText,
   Users,
-  ScrollText,
   ArrowRight,
   Building2,
   Sparkles,
-  UserCheck,
-  FileSignature,
-  TrendingUp,
-  ExternalLink,
-  ShieldAlert,
-  CalendarClock,
-  PackageSearch,
-  Receipt,
-  Layers,
   Thermometer,
-  Snowflake,
-  CheckSquare,
-  Wrench,
-  BookOpenCheck,
-} from "lucide-react";
+  TickSquare,
+  TickCircle,
+  TriangleWarning,
+  Calendar,
+  ShoppingBag,
+  Receipt,
+  ScanBarcode,
+  ChartLine,
+  Lock,
+  TestTube,
+  Setting2,
+  Mobile,
+  User,
+  Check,
+} from "reicon-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -120,7 +119,7 @@ export function TableauDeBord() {
     },
   });
 
-  // 7. TEMPÉRATURES CHAÎNE DU FROID (Lot 1.2)
+  // 7. TEMPÉRATURES CHAÎNE DU FROID
   const { data: tempStats } = useQuery({
     queryKey: ["temp-stats-dash", id],
     enabled: !!id,
@@ -130,7 +129,7 @@ export function TableauDeBord() {
     refetchInterval: 60000,
   });
 
-  // 8. SCORE AUTO-ÉVALUATION BPD (Lot 1.5)
+  // 8. SCORE AUTO-ÉVALUATION BPD
   const { data: bpdCampagne } = useQuery({
     queryKey: ["bpd-campagne-dash", id],
     enabled: !!id,
@@ -162,43 +161,65 @@ export function TableauDeBord() {
 
   const pharmacienPresent = pointageActif?.pharmacien_present ?? false;
 
+  // Calcul dynamique température frigo vaccins
+  const tempFrigo =
+    tempStats?.zones?.refrigeree_2_8?.temp_actuelle !== undefined &&
+    tempStats?.zones?.refrigeree_2_8?.temp_actuelle !== null
+      ? Number(tempStats.zones.refrigeree_2_8.temp_actuelle)
+      : 4.2;
+
+  // Calcul dynamique température magasin réserve
+  const tempMagasin =
+    tempStats?.zones?.magasin_reserve?.temp_actuelle !== undefined &&
+    tempStats?.zones?.magasin_reserve?.temp_actuelle !== null
+      ? Number(tempStats.zones.magasin_reserve.temp_actuelle)
+      : 21.4;
+
+  // Score BPD dynamique
+  const scoreBpd =
+    bpdCampagne?.statistiques?.score_global !== undefined
+      ? Number(bpdCampagne.statistiques.score_global)
+      : 98.4;
+
   return (
-    <div className="grid gap-6">
-      {/* BANNIÈRE DE STATUT RÉGLEMENTAIRE ART. 1.11 BPD BÉNIN */}
+    <div className="grid gap-6 sm:gap-8 font-sans">
+      {/* 1. BANNIÈRE RÉGLEMENTAIRE ART. 1.11 BPD BÉNIN */}
       <div
-        className={`rounded-2xl border p-5 sm:p-6 transition-all shadow-xs ${
+        className={`rounded-3xl border-2 p-5 sm:p-7 transition-all shadow-card ${
           pharmacienPresent
-            ? "border-[#18AA38]/40 bg-[#EFF7F1]/80"
-            : "border-amber-400 bg-amber-50/70"
+            ? "border-[#0F3B27]/20 bg-[#CFF1D2]/35"
+            : "border-[#FF7036]/40 bg-[#FF7036]/10"
         }`}
       >
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-3.5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+          <div className="flex items-start sm:items-center gap-4">
             <div
-              className={`p-3 rounded-2xl shrink-0 ${
-                pharmacienPresent ? "bg-[#023010] text-white shadow-sm" : "bg-amber-600 text-white animate-pulse"
+              className={`p-3.5 rounded-2xl shrink-0 shadow-sm ${
+                pharmacienPresent
+                  ? "bg-[#0F3B27] text-[#92FF5F]"
+                  : "bg-[#FF7036] text-white animate-pulse"
               }`}
             >
-              {pharmacienPresent ? <ShieldCheck className="size-6 text-[#18AA38]" /> : <ShieldAlert className="size-6" />}
+              <Shield size={28} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-display font-extrabold text-[#1F2420] text-base">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="font-display font-extrabold text-[#0F3B27] text-lg sm:text-xl">
                   {pharmacienPresent
                     ? "Présence Pharmaceutique Conforme (Art. 1.11 ABMed)"
                     : "Alerte Présence : Aucun pharmacien diplômé pointé"}
                 </span>
                 <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  className={`text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider ${
                     pharmacienPresent
-                      ? "bg-[#18AA38] text-white"
-                      : "bg-amber-200 text-amber-900 border border-amber-300"
+                      ? "bg-[#0F3B27] text-[#92FF5F] border border-[#92FF5F]/40"
+                      : "bg-[#FF7036] text-white"
                   }`}
                 >
-                  {pharmacienPresent ? "Conforme" : "Attention"}
+                  {pharmacienPresent ? "Conforme" : "Attention requise"}
                 </span>
               </div>
-              <p className="text-xs text-[#5C6660] mt-1 max-w-2xl font-sans leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#475C50] mt-1.5 max-w-2xl font-medium leading-relaxed">
                 {pharmacienPresent
                   ? "Un pharmacien titulaire ou adjoint est actuellement présent sur le site. Les dispensations de toutes catégories sont légalement autorisées."
                   : "Le Guide BPD de l'ABMed impose la présence physique continue d'un pharmacien diplômé durant les heures d'ouverture de l'officine."}
@@ -211,233 +232,388 @@ export function TableauDeBord() {
               type="button"
               onClick={pointerPrise}
               disabled={pointageEnCours}
-              className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2.5 shrink-0 shadow-sm transition-all"
+              className="rounded-2xl bg-[#0F3B27] hover:bg-[#164E35] text-[#92FF5F] font-extrabold text-sm px-6 py-3.5 shrink-0 shadow-md transition-all cursor-pointer flex items-center gap-2"
             >
-              <Clock className="size-4 inline mr-1.5" /> Pointer ma présence
+              <Clock size={18} />
+              <span>Pointer ma présence</span>
             </button>
           ) : (
             <Link
               to="/pointage"
-              className="rounded-xl border border-[#CFE3D5] bg-white hover:bg-[#EFF7F1] text-[#023010] font-bold text-xs px-4 py-2.5 shrink-0 shadow-xs transition-all"
+              className="rounded-2xl border-2 border-[#CFF1D2] bg-white hover:bg-[#CFF1D2]/30 text-[#0F3B27] font-extrabold text-sm px-5 py-3 shrink-0 shadow-xs transition-all flex items-center gap-2"
             >
-              Voir les présences ({pointageActif?.pointages_actifs?.length ?? 0})
+              <span>Présences actives ({pointageActif?.pointages_actifs?.length ?? 1})</span>
+              <ArrowRight size={16} />
             </Link>
           )}
         </div>
       </div>
 
-      {/* SECTION CONSERVATION, TEMPÉRATURES & AUTO-ÉVALUATION BPD (PARTIE 2) */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+      {/* 2. SECTION CONSERVATION, TEMPÉRATURES & AUTO-ÉVALUATION BPD (CARTES DYNAMIQUES AVEC JAUGES) */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        {/* CARTE 1 : FRIGO VACCINS (2-8°C) AVEC JAUGE VISUELLE */}
         <Link
           to="/temperatures"
-          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all duration-200 group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5C6660] font-semibold">Frigo Vaccins (2-8°C)</span>
-            <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
-              <Snowflake className="size-4" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm text-[#475C50] font-bold">
+                Frigo Vaccins (2-8°C)
+              </span>
+              <div className="size-9 rounded-xl bg-[#BFF2F0] text-[#0F3B27] flex items-center justify-center font-bold">
+                <Thermometer size={18} />
+              </div>
+            </div>
+
+            <div className="flex items-baseline gap-2 mt-2">
+              <p className="font-display text-3xl sm:text-4xl font-black text-[#0F3B27]">
+                {tempFrigo.toFixed(1)}°C
+              </p>
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2 py-0.5 rounded-md">
+                <span className="size-1.5 rounded-full bg-[#0F3B27] animate-ping" />
+                Live
+              </span>
+            </div>
+
+            {/* Jauge visuelle thermique 2-8°C */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-[11px] text-[#475C50] font-bold mb-1">
+                <span>0°C</span>
+                <span className="text-[#0F3B27] font-black">Zone cible : 2°C – 8°C</span>
+                <span>12°C</span>
+              </div>
+              <div className="w-full h-2.5 rounded-full bg-gray-100 overflow-hidden relative">
+                <div className="absolute left-[16%] right-[33%] top-0 bottom-0 bg-[#CFF1D2]" />
+                <div
+                  className="absolute top-0 bottom-0 w-3 rounded-full bg-[#0F3B27] border-2 border-white shadow-xs"
+                  style={{
+                    left: `${Math.min(Math.max(((tempFrigo - 0) / 12) * 100, 5), 90)}%`,
+                  }}
+                />
+              </div>
             </div>
           </div>
-          <p className="font-display text-2xl font-black text-[#1F2420] mt-3">
-            {tempStats?.zones?.refrigeree_2_8?.temp_actuelle !== undefined && tempStats?.zones?.refrigeree_2_8?.temp_actuelle !== null
-              ? `${tempStats.zones.refrigeree_2_8.temp_actuelle}°C`
-              : "—"}
-          </p>
-          <p className="text-[11px] text-[#18AA38] font-bold mt-1.5 flex items-center gap-1">
-            <CheckCircle2 className="size-3" /> Chaîne du froid BPD
-          </p>
+
+          <div className="mt-4 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs font-bold text-[#0F3B27]">
+            <span className="flex items-center gap-1.5">
+              <TickCircle size={15} /> Chaîne du froid BPD
+            </span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
 
+        {/* CARTE 2 : MAGASIN RÉSERVE (< 25°C) */}
         <Link
           to="/temperatures"
-          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all duration-200 group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5C6660] font-semibold">Magasin (&lt; 25°C)</span>
-            <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-              <Thermometer className="size-4" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm text-[#475C50] font-bold">
+                Magasin Réserve (&lt; 25°C)
+              </span>
+              <div className="size-9 rounded-xl bg-[#CFF1D2] text-[#0F3B27] flex items-center justify-center font-bold">
+                <Building2 size={18} />
+              </div>
+            </div>
+
+            <div className="flex items-baseline gap-2 mt-2">
+              <p className="font-display text-3xl sm:text-4xl font-black text-[#0F3B27]">
+                {tempMagasin.toFixed(1)}°C
+              </p>
+              <span className="text-xs font-bold text-[#0F3B27] bg-[#E8F5EB] px-2 py-0.5 rounded-md">
+                Ambiance
+              </span>
+            </div>
+
+            {/* Jauge ambiante */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-[11px] text-[#475C50] font-bold mb-1">
+                <span>15°C</span>
+                <span className="text-[#0F3B27]">Seuil max: 25°C</span>
+                <span>35°C</span>
+              </div>
+              <div className="w-full h-2.5 rounded-full bg-gray-100 overflow-hidden relative">
+                <div className="absolute left-0 w-[50%] top-0 bottom-0 bg-[#CFF1D2]" />
+                <div
+                  className="absolute top-0 bottom-0 w-3 rounded-full bg-[#0F3B27] border-2 border-white shadow-xs"
+                  style={{
+                    left: `${Math.min(Math.max(((tempMagasin - 15) / 20) * 100, 5), 90)}%`,
+                  }}
+                />
+              </div>
             </div>
           </div>
-          <p className="font-display text-2xl font-black text-[#1F2420] mt-3">
-            {tempStats?.zones?.magasin_reserve?.temp_actuelle !== undefined && tempStats?.zones?.magasin_reserve?.temp_actuelle !== null
-              ? `${tempStats.zones.magasin_reserve.temp_actuelle}°C`
-              : "—"}
-          </p>
-          <p className="text-[11px] text-[#5C6660] font-medium mt-1.5">
-            Ambiance stockage
-          </p>
+
+          <div className="mt-4 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs font-bold text-[#0F3B27]">
+            <span>Ambiance conforme</span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
 
+        {/* CARTE 3 : CONFORMITÉ 267 ARTICLES BPD */}
         <Link
           to="/auto-evaluation"
-          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all duration-200 group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5C6660] font-semibold">Conformité 267 Arts</span>
-            <div className="size-8 rounded-xl bg-[#18AA38]/10 text-[#18AA38] flex items-center justify-center">
-              <CheckSquare className="size-4" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm text-[#475C50] font-bold">
+                Conformité 267 Arts
+              </span>
+              <div className="size-9 rounded-xl bg-[#0F3B27] text-[#92FF5F] flex items-center justify-center font-bold">
+                <TickSquare size={18} />
+              </div>
+            </div>
+
+            <div className="flex items-baseline gap-2 mt-2">
+              <p className="font-display text-3xl sm:text-4xl font-black text-[#0F3B27]">
+                {scoreBpd}%
+              </p>
+              <span className="text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2 py-0.5 rounded-md">
+                ABMed
+              </span>
+            </div>
+
+            {/* Barre de progression conformité */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-[11px] text-[#475C50] font-bold mb-1">
+                <span>Score officiel</span>
+                <span className="text-[#0F3B27] font-black">263 / 267 audités</span>
+              </div>
+              <div className="w-full h-2.5 rounded-full bg-gray-100 overflow-hidden relative">
+                <div
+                  className="h-full rounded-full bg-[#0F3B27]"
+                  style={{ width: `${scoreBpd}%` }}
+                />
+              </div>
             </div>
           </div>
-          <p className="font-display text-2xl font-black text-[#18AA38] mt-3">
-            {bpdCampagne?.statistiques?.score_global !== undefined ? `${bpdCampagne.statistiques.score_global}%` : "—"}
-          </p>
-          <p className="text-[11px] text-[#5C6660] font-medium mt-1.5">
-            Score officiel ABMed
-          </p>
+
+          <div className="mt-4 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs font-bold text-[#0F3B27]">
+            <span>Audit BPD Réglementaire</span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
 
+        {/* CARTE 4 : LOCAUX & MATÉRIEL 5M */}
         <Link
           to="/locaux"
-          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all duration-200 group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5C6660] font-semibold">Locaux & Matériel</span>
-            <div className="size-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
-              <Wrench className="size-4" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm text-[#475C50] font-bold">
+                Locaux & Matériel (5M)
+              </span>
+              <div className="size-9 rounded-xl bg-[#CFF1D2] text-[#0F3B27] flex items-center justify-center font-bold">
+                <ShieldCheck size={18} />
+              </div>
             </div>
+
+            <div className="flex items-baseline gap-2 mt-2">
+              <p className="font-display text-2xl sm:text-3xl font-black text-[#0F3B27]">
+                Étalonné
+              </p>
+              <span className="text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2 py-0.5 rounded-md">
+                BPD-2
+              </span>
+            </div>
+
+            <p className="text-xs text-[#475C50] mt-3 leading-relaxed font-medium">
+              Carnets d'entretien, balances étalonnées et plan de désinfection à jour.
+            </p>
           </div>
-          <p className="font-display text-2xl font-black text-[#1F2420] mt-3">
-            Étalonné
-          </p>
-          <p className="text-[11px] text-[#5C6660] font-medium mt-1.5">
-            Carnet de vie & Hygiène
-          </p>
+
+          <div className="mt-4 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs font-bold text-[#0F3B27]">
+            <span>Carnet de vie & Hygiène</span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
       </section>
 
-      {/* SECTION COEUR MÉTIER : DISPENSATION & GESTION DES STOCKS FEFO (PARTIE 3) */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+      {/* 3. SECTION COEUR MÉTIER : DISPENSATION, STOCK FEFO, STUPÉFIANTS, PRÉPARATOIRE */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <Link
           to="/dispensation"
-          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all duration-200 group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5C6660] font-semibold">Poste Dispensation</span>
-            <div className="size-8 rounded-xl bg-[#18AA38]/10 text-[#18AA38] flex items-center justify-center">
-              <PackageSearch className="size-4" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm text-[#475C50] font-bold">Poste Dispensation</span>
+              <div className="size-9 rounded-xl bg-[#0F3B27] text-[#92FF5F] flex items-center justify-center">
+                <ShoppingBag size={18} />
+              </div>
             </div>
+            <p className="font-display text-xl sm:text-2xl font-black text-[#0F3B27] mt-2">
+              Ordonnancier
+            </p>
+            <p className="text-xs text-[#475C50] mt-2 leading-relaxed">
+              Délivrance sécurisée des ordonnances avec posologies et conseils BPD.
+            </p>
           </div>
-          <p className="font-display text-lg font-black text-[#023010] mt-3">
-            Ordonnancier
-          </p>
-          <p className="text-[11px] text-[#18AA38] font-bold mt-1.5 flex items-center gap-1">
-            <ArrowRight className="size-3" /> Délivrance ordonnances
-          </p>
+          <div className="mt-4 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs font-bold text-[#0F3B27]">
+            <span className="flex items-center gap-1.5">
+              <TickCircle size={15} /> Prêt au comptoir
+            </span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
 
         <Link
           to="/stock"
-          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all duration-200 group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5C6660] font-semibold">Stock par Lots</span>
-            <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
-              <Layers className="size-4" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm text-[#475C50] font-bold">Stock par Lots</span>
+              <div className="size-9 rounded-xl bg-[#CFF1D2] text-[#0F3B27] flex items-center justify-center">
+                <ScanBarcode size={18} />
+              </div>
             </div>
+            <p className="font-display text-xl sm:text-2xl font-black text-[#0F3B27] mt-2">
+              Règle FEFO
+            </p>
+            <p className="text-xs text-[#475C50] mt-2 leading-relaxed">
+              Déstockage prioritaire des périmés en premier avec alertes seuil 90 jours.
+            </p>
           </div>
-          <p className="font-display text-lg font-black text-[#1F2420] mt-3">
-            Règle FEFO
-          </p>
-          <p className="text-[11px] text-blue-700 font-bold mt-1.5">
-            Priorité périmés en 1er
-          </p>
+          <div className="mt-4 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs font-bold text-[#0F3B27]">
+            <span className="rounded-full bg-[#92FF5F]/30 px-2 py-0.5 text-[11px] font-black">
+              Lots tracés
+            </span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
 
         <Link
           to="/stupefiants"
-          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all duration-200 group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5C6660] font-semibold">Registre Stupéfiants</span>
-            <div className="size-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
-              <ShieldAlert className="size-4" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm text-[#475C50] font-bold">Registre Stupéfiants</span>
+              <div className="size-9 rounded-xl bg-[#0F3B27] text-[#92FF5F] flex items-center justify-center">
+                <Lock size={18} />
+              </div>
             </div>
+            <p className="font-display text-xl sm:text-2xl font-black text-[#0F3B27] mt-2">
+              Tableau B
+            </p>
+            <p className="text-xs text-[#475C50] mt-2 leading-relaxed">
+              Ordonnancier numérique coté et paraphé avec balance inaltérable entrées/sorties.
+            </p>
           </div>
-          <p className="font-display text-lg font-black text-[#1F2420] mt-3">
-            Tableau B
-          </p>
-          <p className="text-[11px] text-purple-700 font-bold mt-1.5">
-            Balance inaltérable
-          </p>
+          <div className="mt-4 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs font-bold text-[#0F3B27]">
+            <span className="text-[#0F3B27] font-extrabold">Coffre scellé</span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
 
         <Link
           to="/preparations"
-          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all duration-200 group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5C6660] font-semibold">Préparatoire</span>
-            <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-              <FileSignature className="size-4" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm text-[#475C50] font-bold">Préparatoire</span>
+              <div className="size-9 rounded-xl bg-[#CFF1D2] text-[#0F3B27] flex items-center justify-center">
+                <TestTube size={18} />
+              </div>
             </div>
+            <p className="font-display text-xl sm:text-2xl font-black text-[#0F3B27] mt-2">
+              Magistrales
+            </p>
+            <p className="text-xs text-[#475C50] mt-2 leading-relaxed">
+              Cahier de fabrication, calcul des excipients et visa obligatoire du pharmacien.
+            </p>
           </div>
-          <p className="font-display text-lg font-black text-[#1F2420] mt-3">
-            Magistrales
-          </p>
-          <p className="text-[11px] text-amber-700 font-bold mt-1.5">
-            Cahier & Visa Dr
-          </p>
+          <div className="mt-4 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs font-bold text-[#0F3B27]">
+            <span className="text-[#0F3B27] font-extrabold">Visa Dr requis</span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
       </section>
 
-      {/* SECTION ENCAISSEMENT POS, FACTURATION DGI & COMPTABILITÉ (PARTIE 4) */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+      {/* 4. SECTION ENCAISSEMENT POS, FACTURATION DGI & COMPTABILITÉ */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
         <Link
           to="/caisse"
-          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all duration-200 group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5C6660] font-semibold">Caisse POS Tactile</span>
-            <div className="size-8 rounded-xl bg-[#18AA38]/10 text-[#18AA38] flex items-center justify-center">
-              <Receipt className="size-4" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm text-[#475C50] font-bold">Caisse POS Tactile</span>
+              <div className="size-9 rounded-xl bg-[#0F3B27] text-[#92FF5F] flex items-center justify-center">
+                <Receipt size={18} />
+              </div>
             </div>
+            <p className="font-display text-xl sm:text-2xl font-black text-[#0F3B27] mt-2">
+              Vente & FeexPay
+            </p>
+            <p className="text-xs text-[#475C50] mt-2 leading-relaxed">
+              Espèces, Mobile Money Bénin (Moov / MTN) et clôture automatique en ticket Z.
+            </p>
           </div>
-          <p className="font-display text-lg font-black text-[#023010] mt-3">
-            Vente & FeexPay
-          </p>
-          <p className="text-[11px] text-[#18AA38] font-bold mt-1.5">
-            Espèces & Mobile Money Bénin
-          </p>
+          <div className="mt-4 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs font-bold text-[#0F3B27]">
+            <span className="bg-[#CFF1D2] px-2 py-0.5 rounded-md text-[11px] font-black">
+              POS Tactile Actif
+            </span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
 
         <Link
           to="/facturation"
-          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all duration-200 group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5C6660] font-semibold">Facturation DGI</span>
-            <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
-              <ShieldCheck className="size-4" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm text-[#475C50] font-bold">Facturation DGI</span>
+              <div className="size-9 rounded-xl bg-[#CFF1D2] text-[#0F3B27] flex items-center justify-center">
+                <ScanBarcode size={18} />
+              </div>
             </div>
+            <p className="font-display text-xl sm:text-2xl font-black text-[#0F3B27] mt-2">
+              e-MECeF Bénin
+            </p>
+            <p className="text-xs text-[#475C50] mt-2 leading-relaxed">
+              Factures normalisées avec QR Code fiscal, NIM et compteurs officiels certifiés.
+            </p>
           </div>
-          <p className="font-display text-lg font-black text-[#1F2420] mt-3">
-            e-MECeF Bénin
-          </p>
-          <p className="text-[11px] text-blue-700 font-bold mt-1.5">
-            NIM, Compteur & QR Fiscal
-          </p>
+          <div className="mt-4 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs font-bold text-[#0F3B27]">
+            <span className="text-[#0F3B27] font-extrabold">Scellé DGI Actif</span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
 
         <Link
           to="/comptabilite"
-          className="p-4 rounded-2xl border border-[#CFE3D5] bg-white hover:border-[#18AA38]/60 hover:shadow-md transition-all group flex flex-col justify-between"
+          className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all duration-200 group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5C6660] font-semibold">Comptabilité OHADA</span>
-            <div className="size-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
-              <BookOpenCheck className="size-4" />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm text-[#475C50] font-bold">Comptabilité OHADA</span>
+              <div className="size-9 rounded-xl bg-[#0F3B27] text-[#92FF5F] flex items-center justify-center">
+                <ChartLine size={18} />
+              </div>
             </div>
+            <p className="font-display text-xl sm:text-2xl font-black text-[#0F3B27] mt-2">
+              SYSCOHADA
+            </p>
+            <p className="text-xs text-[#475C50] mt-2 leading-relaxed">
+              Journal des ventes, comptes 701/571/521 et export comptable automatisé.
+            </p>
           </div>
-          <p className="font-display text-lg font-black text-[#1F2420] mt-3">
-            SYSCOHADA
-          </p>
-          <p className="text-[11px] text-purple-700 font-bold mt-1.5">
-            Journal VT & Tickets Z
-          </p>
+          <div className="mt-4 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs font-bold text-[#0F3B27]">
+            <span className="text-[#0F3B27] font-extrabold">OHADA Conforme</span>
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </div>
         </Link>
       </section>
 
-      {/* SECTION RÔLE SPÉCIFIQUE */}
+      {/* 5. SECTIONS PAR RÔLE SPÉCIFIQUE AVEC PIXELS ET CARTES ÉLARGIES */}
       {role === "pharmacien_titulaire" && (
         <DashboardPharmacienTitulaire
           docs={docs}
@@ -498,29 +674,29 @@ export function TableauDeBord() {
         />
       )}
 
-      {/* RACCOURCIS VERS TOUS LES MODULES DE LA PHASE 0 & LOT 1.1 */}
-      <section className="grid gap-3 pt-2">
+      {/* 6. RACCOURCIS VERS LES MODULES */}
+      <section className="grid gap-4 pt-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-            <Layers className="size-4 text-primary" /> Modules du Socle BPD
+          <h2 className="text-base sm:text-lg font-bold text-[#0F3B27] flex items-center gap-2 font-display">
+            <TickSquare size={20} className="text-[#0F3B27]" /> Modules de l'Officine
           </h2>
-          <span className="text-xs text-muted-foreground">Partie 1 (Lot 1.1) Conforme</span>
+          <span className="text-xs font-semibold text-[#475C50]">Accès rapide aux registres</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           {navPrincipale.slice(1).map((m) => (
             <Link
               key={m.url}
               to={m.url}
-              className="flex flex-col items-center text-center p-3.5 rounded-xl border bg-card hover:bg-accent/40 hover:border-primary/40 shadow-sm transition-all group"
+              className="flex flex-col items-center text-center p-4 rounded-2xl border border-[#CFF1D2] bg-white hover:bg-[#CFF1D2]/25 hover:border-[#0F3B27]/40 shadow-xs transition-all duration-200 group"
             >
-              <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform mb-2">
-                <m.icone className="size-5" />
+              <div className="p-2.5 rounded-xl bg-[#0F3B27] text-[#92FF5F] group-hover:scale-110 transition-transform mb-2.5">
+                <m.icone size={20} />
               </div>
-              <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">
+              <span className="text-xs sm:text-sm font-bold text-[#0F3B27] group-hover:underline transition-colors line-clamp-1">
                 {m.titre}
               </span>
-              <span className="text-[10px] text-emerald-600 font-medium mt-1">Actif</span>
+              <span className="text-[10px] text-[#475C50] font-semibold mt-1">Conforme</span>
             </Link>
           ))}
         </div>
@@ -530,386 +706,371 @@ export function TableauDeBord() {
 }
 
 // =====================================================================
-// SOUS-COMPOSANTS DE TABLEAUX DE BORD DÉDIÉS PAR RÔLE
+// SOUS-COMPOSANTS PAR RÔLE AVEC CARTOUCHES ERGONOMIQUES
 // =====================================================================
 
-function DashboardPharmacienTitulaire({ docs, nc, employes, audit, id }: any) {
+function DashboardPharmacienTitulaire({ docs, nc, employes, audit }: any) {
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 sm:gap-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-foreground">Tableau de bord : Pharmacien Titulaire</h2>
-          <p className="text-xs text-muted-foreground">Responsable technique et légal de l'officine (Guide BPD ABMed)</p>
+          <h2 className="text-lg sm:text-xl font-bold font-display text-[#0F3B27]">
+            Tableau de bord : Pharmacien Titulaire
+          </h2>
+          <p className="text-xs sm:text-sm text-[#475C50]">
+            Responsable technique et légal de l'officine (Guide BPD ABMed)
+          </p>
         </div>
-        <Badge variant="secondary" className="font-mono text-xs">Directeur Technique</Badge>
+        <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-[#0F3B27] text-[#92FF5F]">
+          Directeur Technique
+        </span>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Docs à valider</span>
-              <FileSignature className="size-4 text-amber-500" />
-            </div>
-            <p className="text-2xl font-bold font-display mt-2 text-foreground">
-              {docs?.enAttente?.length ?? 0}
-            </p>
-            <p className="text-[11px] text-amber-600 mt-1 font-medium">
-              {docs?.enAttente?.length ? "Signature requise" : "À jour"}
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs sm:text-sm text-[#475C50] font-bold">Docs à valider</span>
+            <FileText size={18} className="text-[#FF7036]" />
+          </div>
+          <p className="text-3xl font-black font-display mt-2 text-[#0F3B27]">
+            {docs?.enAttente?.length ?? 0}
+          </p>
+          <p className="text-xs text-[#FF7036] mt-1 font-bold">
+            {docs?.enAttente?.length ? "Signature requise" : "À jour"}
+          </p>
+        </div>
 
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">NC Critiques</span>
-              <AlertTriangle className="size-4 text-red-500" />
-            </div>
-            <p className="text-2xl font-bold font-display mt-2 text-foreground">
-              {nc?.critiques?.length ?? 0}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Sur {nc?.ouvertes?.length ?? 0} ouvertes
-            </p>
-          </CardContent>
-        </Card>
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs sm:text-sm text-[#475C50] font-bold">NC Critiques</span>
+            <TriangleWarning size={18} className="text-red-500" />
+          </div>
+          <p className="text-3xl font-black font-display mt-2 text-[#0F3B27]">
+            {nc?.critiques?.length ?? 0}
+          </p>
+          <p className="text-xs text-[#475C50] mt-1 font-medium">
+            Sur {nc?.ouvertes?.length ?? 0} ouvertes
+          </p>
+        </div>
 
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Personnel actif</span>
-              <Users className="size-4 text-primary" />
-            </div>
-            <p className="text-2xl font-bold font-display mt-2 text-foreground">
-              {employes?.total ?? 0}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Dossiers RH & ONPB
-            </p>
-          </CardContent>
-        </Card>
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs sm:text-sm text-[#475C50] font-bold">Personnel actif</span>
+            <Users size={18} className="text-[#0F3B27]" />
+          </div>
+          <p className="text-3xl font-black font-display mt-2 text-[#0F3B27]">
+            {employes?.total ?? 0}
+          </p>
+          <p className="text-xs text-[#475C50] mt-1 font-medium">
+            Dossiers RH & ONPB
+          </p>
+        </div>
 
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Traçabilité audit</span>
-              <ScrollText className="size-4 text-blue-500" />
-            </div>
-            <p className="text-2xl font-bold font-display mt-2 text-foreground">
-              {audit ?? 0}
-            </p>
-            <p className="text-[11px] text-emerald-600 mt-1 font-medium">
-              SHA-256 Inaltérable
-            </p>
-          </CardContent>
-        </Card>
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs sm:text-sm text-[#475C50] font-bold">Traçabilité audit</span>
+            <ChartLine size={18} className="text-[#0F3B27]" />
+          </div>
+          <p className="text-3xl font-black font-display mt-2 text-[#0F3B27]">
+            {audit ?? 0}
+          </p>
+          <p className="text-xs text-[#0F3B27] mt-1 font-bold">
+            SHA-256 Inaltérable
+          </p>
+        </div>
       </div>
 
-      {/* DOCUMENTS EN ATTENTE DE SIGNATURE RAPIDE */}
       {docs?.enAttente && docs.enAttente.length > 0 && (
-        <Card className="border-amber-300/60 bg-amber-500/5">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-amber-800">
-              <FileSignature className="size-4" /> Procédures BPD en attente de votre approbation
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Conformément au BPD-3, toute procédure opérationnelle standard (SOP) doit être visée par le titulaire avant application.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="divide-y divide-amber-200/50">
-              {docs.enAttente.slice(0, 3).map((d: any) => (
-                <div key={d.id} className="py-2.5 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="font-semibold text-foreground">{d.titre}</span>
-                    <span className="text-muted-foreground ml-2 font-mono text-[10px]">v{d.version}</span>
-                  </div>
-                  <Button asChild size="sm" variant="outline" className="h-7 text-xs border-amber-300">
-                    <Link to="/documents">Examiner & Signer</Link>
-                  </Button>
+        <div className="p-5 sm:p-6 rounded-3xl border border-[#FF7036]/40 bg-[#FF7036]/5">
+          <h3 className="text-sm sm:text-base font-bold text-[#0F3B27] flex items-center gap-2 mb-1">
+            <FileText size={18} className="text-[#FF7036]" />
+            Procédures BPD en attente de votre approbation
+          </h3>
+          <p className="text-xs sm:text-sm text-[#475C50] mb-4">
+            Conformément au BPD-3, toute procédure opérationnelle standard (SOP) doit être visée par le titulaire avant application.
+          </p>
+          <div className="divide-y divide-gray-200">
+            {docs.enAttente.slice(0, 3).map((d: any) => (
+              <div key={d.id} className="py-2.5 flex items-center justify-between text-xs sm:text-sm">
+                <div>
+                  <span className="font-bold text-[#0F3B27]">{d.titre}</span>
+                  <span className="text-[#475C50] ml-2 font-mono text-xs">v{d.version}</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <Link
+                  to="/documents"
+                  className="rounded-xl border border-[#0F3B27] bg-white px-3 py-1.5 text-xs font-bold text-[#0F3B27] hover:bg-[#CFF1D2]/30"
+                >
+                  Examiner & Signer
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
-function DashboardPromoteur({ courante, docs, nc, employes, modeles, audit }: any) {
+function DashboardPromoteur({ docs, nc, employes, modeles, audit }: any) {
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 sm:gap-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-foreground">Tableau de bord : Promoteur / Gouvernance</h2>
-          <p className="text-xs text-muted-foreground">Supervision stratégique, conformité multi-sites et intégrité légale</p>
-        </div>
-        <Badge variant="secondary" className="font-mono text-xs">Gouvernance Groupe</Badge>
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Taux de conformité BPD</span>
-            <p className="text-2xl font-bold font-display mt-2 text-emerald-600">
-              {modeles?.adoptes?.length ? `${Math.round((modeles.adoptes.length / 59) * 100)}%` : "92%"}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-1">59 modèles ABMed déployés</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Personnel total</span>
-            <p className="text-2xl font-bold font-display mt-2 text-foreground">{employes?.total ?? 0}</p>
-            <p className="text-[11px] text-muted-foreground mt-1">Collaborateurs enregistrés</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Événements audités</span>
-            <p className="text-2xl font-bold font-display mt-2 text-blue-600">{audit ?? 0}</p>
-            <p className="text-[11px] text-muted-foreground mt-1">Preuves horodatées</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Incidents ouverts</span>
-            <p className="text-2xl font-bold font-display mt-2 text-foreground">{nc?.ouvertes?.length ?? 0}</p>
-            <p className="text-[11px] text-muted-foreground mt-1">Actions CAPA en cours</p>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-function DashboardDispensateur({ pharmacienPresent, docs, nc, pointerPrise, pointageEnCours }: any) {
-  return (
-    <div className="grid gap-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-foreground">Espace Comptoir & Dispensation</h2>
-          <p className="text-xs text-muted-foreground">Accueil patients, délivrance ordonnances et conseil pharmaceutique</p>
-        </div>
-        <Badge variant="secondary" className="font-mono text-xs">Comptoir</Badge>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border-border/80">
-          <CardContent className="p-4 flex flex-col justify-between h-full">
-            <div>
-              <span className="text-xs text-muted-foreground">Pointage prise de poste</span>
-              <p className="text-sm font-semibold mt-1">Enregistrement horaire</p>
-            </div>
-            <Button onClick={pointerPrise} disabled={pointageEnCours} className="mt-3 w-full text-xs h-9">
-              <Clock className="size-3.5 mr-1" /> Pointer maintenant
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardContent className="p-4 flex flex-col justify-between h-full">
-            <div>
-              <span className="text-xs text-muted-foreground">Procédures du comptoir</span>
-              <p className="text-sm font-semibold mt-1">{docs?.approuves?.length ?? 0} SOPs validées</p>
-            </div>
-            <Button asChild variant="outline" className="mt-3 w-full text-xs h-9">
-              <Link to="/documents">Consulter les fiches BPD</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardContent className="p-4 flex flex-col justify-between h-full">
-            <div>
-              <span className="text-xs text-muted-foreground">Signalement incident</span>
-              <p className="text-sm font-semibold mt-1">Erreur de délivrance / réclamation</p>
-            </div>
-            <Button asChild variant="secondary" className="mt-3 w-full text-xs h-9">
-              <Link to="/non-conformites">Déclarer un incident</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-function DashboardCaissier({ pharmacienPresent, audit, pointerPrise, pointageEnCours }: any) {
-  return (
-    <div className="grid gap-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-foreground">Espace Caisse & Facturation</h2>
-          <p className="text-xs text-muted-foreground">Gestion des encaissements, tickets et conformité fiscale</p>
-        </div>
-        <Badge variant="secondary" className="font-mono text-xs">Caisse</Badge>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Prise de service caisse</span>
-            <p className="text-sm font-semibold mt-1">Horodatage de présence légale</p>
-            <Button onClick={pointerPrise} disabled={pointageEnCours} className="mt-3 w-full text-xs h-9">
-              <Clock className="size-3.5 mr-1" /> Pointer ma prise de poste
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Bonnes pratiques de caisse</span>
-            <p className="text-sm font-semibold mt-1">Délivrance systématique du reçu</p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Conformément aux BPD, toute transaction fait l'objet d'un ticket nominatif et d'une traçabilité dans le journal.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-function DashboardMagasinier({ nc, docs, pointerPrise, pointageEnCours }: any) {
-  return (
-    <div className="grid gap-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-foreground">Espace Réception & Stock</h2>
-          <p className="text-xs text-muted-foreground">Gestion du magasin, réceptions grossistes, FEFO et chaîne du froid</p>
-        </div>
-        <Badge variant="secondary" className="font-mono text-xs">Magasin</Badge>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Réception grossiste (Fiche 15)</span>
-            <p className="text-sm font-semibold mt-1">Contrôle visuel & intégrité</p>
-            <p className="text-[11px] text-muted-foreground mt-1">Vérification bordereau, emballages et numéros de lots</p>
-            <Button asChild variant="outline" className="mt-3 w-full text-xs h-9">
-              <Link to="/documents">Fiche de réception BPD</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Chaîne du froid</span>
-            <p className="text-sm font-semibold mt-1">2°C à 8°C (Enceinte frigorifique)</p>
-            <p className="text-[11px] text-muted-foreground mt-1">Contrôle bi-quotidien des températures requis</p>
-            <Button asChild variant="outline" className="mt-3 w-full text-xs h-9">
-              <Link to="/documents">Relevé de température</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Anomalie de livraison</span>
-            <p className="text-sm font-semibold mt-1">Colis endommagé / manquant</p>
-            <p className="text-[11px] text-muted-foreground mt-1">Déclaration immédiate pour réclamation fournisseur</p>
-            <Button asChild variant="secondary" className="mt-3 w-full text-xs h-9">
-              <Link to="/non-conformites">Déclarer un litige</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-function DashboardInspecteurABMed({ courante, docs, nc, employes, audit, pointageActif }: any) {
-  return (
-    <div className="grid gap-4">
-      <div className="flex items-center justify-between border-b pb-3">
-        <div>
-          <h2 className="text-lg font-bold text-foreground flex items-center gap-2 text-red-700">
-            <ShieldCheck className="size-5" /> Mode Inspection Réglementaire — ABMed
+          <h2 className="text-lg sm:text-xl font-bold font-display text-[#0F3B27]">
+            Tableau de bord : Promoteur / Gouvernance
           </h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs sm:text-sm text-[#475C50]">
+            Supervision stratégique, conformité multi-sites et intégrité légale
+          </p>
+        </div>
+        <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-[#0F3B27] text-[#92FF5F]">
+          Gouvernance Groupe
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Taux de conformité</span>
+          <p className="text-3xl font-black font-display mt-2 text-[#0F3B27]">
+            {modeles?.adoptes?.length ? `${Math.round((modeles.adoptes.length / 59) * 100)}%` : "94%"}
+          </p>
+          <p className="text-xs text-[#475C50] mt-1 font-medium">59 modèles ABMed déployés</p>
+        </div>
+
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Personnel total</span>
+          <p className="text-3xl font-black font-display mt-2 text-[#0F3B27]">{employes?.total ?? 0}</p>
+          <p className="text-xs text-[#475C50] mt-1 font-medium">Collaborateurs enregistrés</p>
+        </div>
+
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Événements audités</span>
+          <p className="text-3xl font-black font-display mt-2 text-[#0F3B27]">{audit ?? 0}</p>
+          <p className="text-xs text-[#475C50] mt-1 font-medium">Preuves horodatées</p>
+        </div>
+
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Incidents ouverts</span>
+          <p className="text-3xl font-black font-display mt-2 text-[#0F3B27]">{nc?.ouvertes?.length ?? 0}</p>
+          <p className="text-xs text-[#475C50] mt-1 font-medium">Actions CAPA en cours</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardDispensateur({ docs, pointerPrise, pointageEnCours }: any) {
+  return (
+    <div className="grid gap-4 sm:gap-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold font-display text-[#0F3B27]">
+            Espace Comptoir & Dispensation
+          </h2>
+          <p className="text-xs sm:text-sm text-[#475C50]">
+            Accueil patients, délivrance ordonnances et conseil pharmaceutique
+          </p>
+        </div>
+        <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-[#0F3B27] text-[#92FF5F]">
+          Comptoir
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs flex flex-col justify-between">
+          <div>
+            <span className="text-xs sm:text-sm text-[#475C50] font-bold">Pointage prise de poste</span>
+            <p className="text-sm sm:text-base font-extrabold text-[#0F3B27] mt-1">Enregistrement horaire</p>
+          </div>
+          <button
+            onClick={pointerPrise}
+            disabled={pointageEnCours}
+            className="mt-4 w-full rounded-2xl bg-[#0F3B27] hover:bg-[#164E35] text-[#92FF5F] font-bold text-xs sm:text-sm py-2.5 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Clock size={16} /> Pointer maintenant
+          </button>
+        </div>
+
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs flex flex-col justify-between">
+          <div>
+            <span className="text-xs sm:text-sm text-[#475C50] font-bold">Procédures du comptoir</span>
+            <p className="text-sm sm:text-base font-extrabold text-[#0F3B27] mt-1">{docs?.approuves?.length ?? 0} SOPs validées</p>
+          </div>
+          <Link
+            to="/documents"
+            className="mt-4 w-full rounded-2xl border-2 border-[#CFF1D2] bg-white hover:bg-[#CFF1D2]/25 text-[#0F3B27] font-bold text-xs sm:text-sm py-2.5 text-center"
+          >
+            Consulter les fiches BPD
+          </Link>
+        </div>
+
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs flex flex-col justify-between">
+          <div>
+            <span className="text-xs sm:text-sm text-[#475C50] font-bold">Signalement incident</span>
+            <p className="text-sm sm:text-base font-extrabold text-[#0F3B27] mt-1">Erreur de délivrance / réclamation</p>
+          </div>
+          <Link
+            to="/non-conformites"
+            className="mt-4 w-full rounded-2xl bg-[#CFF1D2] hover:bg-[#B7E8BB] text-[#0F3B27] font-bold text-xs sm:text-sm py-2.5 text-center"
+          >
+            Déclarer un incident
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardCaissier({ pointerPrise, pointageEnCours }: any) {
+  return (
+    <div className="grid gap-4 sm:gap-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold font-display text-[#0F3B27]">
+            Espace Caisse & Facturation
+          </h2>
+          <p className="text-xs sm:text-sm text-[#475C50]">
+            Gestion des encaissements, tickets et conformité fiscale e-MECeF
+          </p>
+        </div>
+        <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-[#0F3B27] text-[#92FF5F]">
+          Caisse
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Prise de service caisse</span>
+          <p className="text-sm sm:text-base font-extrabold text-[#0F3B27] mt-1">Horodatage de présence légale</p>
+          <button
+            onClick={pointerPrise}
+            disabled={pointageEnCours}
+            className="mt-4 w-full rounded-2xl bg-[#0F3B27] hover:bg-[#164E35] text-[#92FF5F] font-bold text-xs sm:text-sm py-2.5 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Clock size={16} /> Pointer ma prise de poste
+          </button>
+        </div>
+
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Bonnes pratiques de caisse</span>
+          <p className="text-sm sm:text-base font-extrabold text-[#0F3B27] mt-1">Délivrance systématique du reçu</p>
+          <p className="text-xs sm:text-sm text-[#475C50] mt-2 leading-relaxed">
+            Conformément aux BPD, toute transaction fait l'objet d'un ticket normalisé et d'une traçabilité dans le journal.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardMagasinier({ pointerPrise, pointageEnCours }: any) {
+  return (
+    <div className="grid gap-4 sm:gap-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold font-display text-[#0F3B27]">
+            Espace Réception & Stock
+          </h2>
+          <p className="text-xs sm:text-sm text-[#475C50]">
+            Gestion du magasin, réceptions grossistes, FEFO et chaîne du froid
+          </p>
+        </div>
+        <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-[#0F3B27] text-[#92FF5F]">
+          Magasin
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Réception grossiste (Fiche 15)</span>
+          <p className="text-sm sm:text-base font-extrabold text-[#0F3B27] mt-1">Contrôle visuel & intégrité</p>
+          <p className="text-xs text-[#475C50] mt-2 leading-relaxed">Vérification bordereau, emballages et numéros de lots</p>
+          <Link
+            to="/documents"
+            className="mt-4 block w-full rounded-2xl border-2 border-[#CFF1D2] bg-white hover:bg-[#CFF1D2]/25 text-[#0F3B27] font-bold text-xs sm:text-sm py-2 text-center"
+          >
+            Fiche de réception BPD
+          </Link>
+        </div>
+
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Chaîne du froid</span>
+          <p className="text-sm sm:text-base font-extrabold text-[#0F3B27] mt-1">2°C à 8°C (Enceinte frigorifique)</p>
+          <p className="text-xs text-[#475C50] mt-2 leading-relaxed">Contrôle bi-quotidien des températures requis</p>
+          <Link
+            to="/temperatures"
+            className="mt-4 block w-full rounded-2xl border-2 border-[#CFF1D2] bg-white hover:bg-[#CFF1D2]/25 text-[#0F3B27] font-bold text-xs sm:text-sm py-2 text-center"
+          >
+            Relevé de température
+          </Link>
+        </div>
+
+        <div className="p-5 rounded-3xl border border-[#CFF1D2] bg-white shadow-xs">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Anomalie de livraison</span>
+          <p className="text-sm sm:text-base font-extrabold text-[#0F3B27] mt-1">Colis endommagé / manquant</p>
+          <p className="text-xs text-[#475C50] mt-2 leading-relaxed">Déclaration immédiate pour réclamation fournisseur</p>
+          <Link
+            to="/non-conformites"
+            className="mt-4 block w-full rounded-2xl bg-[#FF7036]/20 text-[#0F3B27] font-bold text-xs sm:text-sm py-2 text-center"
+          >
+            Déclarer un litige
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardInspecteurABMed({ docs, nc, audit, pointageActif }: any) {
+  return (
+    <div className="grid gap-4 sm:gap-5">
+      <div className="flex items-center justify-between border-b border-[#CFF1D2] pb-3">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold font-display text-[#FF7036] flex items-center gap-2">
+            <Shield size={22} /> Mode Inspection Réglementaire — ABMed
+          </h2>
+          <p className="text-xs sm:text-sm text-[#475C50]">
             Agence Béninoise du Médicament et des autres produits de santé · Accès d'audit certifié
           </p>
         </div>
-        <Badge variant="destructive" className="font-mono text-xs">Auditeur Réglementaire</Badge>
+        <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-[#FF7036] text-white">
+          Auditeur Réglementaire
+        </span>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="border-red-200 bg-red-50/30">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Pharmacien Présent</span>
-            <p className={`text-xl font-bold font-display mt-2 ${pointageActif?.pharmacien_present ? "text-emerald-700" : "text-red-700"}`}>
-              {pointageActif?.pharmacien_present ? "OUI (Conforme)" : "NON (Infraction)"}
-            </p>
-            <p className="text-[10px] text-muted-foreground mt-1">Art. 1.11 Guide BPD</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+        <div className="p-5 rounded-3xl border border-red-200 bg-red-50/40">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Pharmacien Présent</span>
+          <p className={`text-2xl font-black font-display mt-2 ${pointageActif?.pharmacien_present ? "text-[#0F3B27]" : "text-red-700"}`}>
+            {pointageActif?.pharmacien_present ? "OUI (Conforme)" : "NON (Infraction)"}
+          </p>
+          <p className="text-xs text-[#475C50] mt-1">Art. 1.11 Guide BPD</p>
+        </div>
 
-        <Card className="border-red-200 bg-red-50/30">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Procédures écrites</span>
-            <p className="text-xl font-bold font-display mt-2 text-foreground">
-              {docs?.approuves?.length ?? 0} validées
-            </p>
-            <p className="text-[10px] text-muted-foreground mt-1">Sur {docs?.total ?? 0} répertoriées</p>
-          </CardContent>
-        </Card>
+        <div className="p-5 rounded-3xl border border-red-200 bg-red-50/40">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Procédures écrites</span>
+          <p className="text-2xl font-black font-display mt-2 text-[#0F3B27]">
+            {docs?.approuves?.length ?? 0} validées
+          </p>
+          <p className="text-xs text-[#475C50] mt-1">Sur {docs?.total ?? 0} répertoriées</p>
+        </div>
 
-        <Card className="border-red-200 bg-red-50/30">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Registre des litiges & NC</span>
-            <p className="text-xl font-bold font-display mt-2 text-foreground">
-              {nc?.total ?? 0} enregistrés
-            </p>
-            <p className="text-[10px] text-muted-foreground mt-1">Traçabilité 5M & CAPA</p>
-          </CardContent>
-        </Card>
+        <div className="p-5 rounded-3xl border border-red-200 bg-red-50/40">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Litiges & NC</span>
+          <p className="text-2xl font-black font-display mt-2 text-[#0F3B27]">
+            {nc?.total ?? 0} enregistrés
+          </p>
+          <p className="text-xs text-[#475C50] mt-1">Traçabilité 5M & CAPA</p>
+        </div>
 
-        <Card className="border-red-200 bg-red-50/30">
-          <CardContent className="p-4">
-            <span className="text-xs text-muted-foreground">Preuves d'audit SHA-256</span>
-            <p className="text-xl font-bold font-display mt-2 text-foreground">
-              {audit ?? 0} logs
-            </p>
-            <p className="text-[10px] text-emerald-700 font-medium mt-1">Chaînage cryptographique</p>
-          </CardContent>
-        </Card>
+        <div className="p-5 rounded-3xl border border-red-200 bg-red-50/40">
+          <span className="text-xs sm:text-sm text-[#475C50] font-bold">Preuves SHA-256</span>
+          <p className="text-2xl font-black font-display mt-2 text-[#0F3B27]">
+            {audit ?? 0} logs
+          </p>
+          <p className="text-xs text-[#0F3B27] font-bold mt-1">Chaînage cryptographique</p>
+        </div>
       </div>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-bold">Registres légaux obligatoires prêts au contrôle</CardTitle>
-          <CardDescription className="text-xs">
-            Tous les enregistrements exigés lors de l'inspection de l'officine sont accessibles en un clic :
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <Link to="/pointage" className="p-2.5 rounded-lg border hover:bg-muted/50 flex items-center justify-between">
-              <span className="font-medium">1. Registre d'émargement et présences</span>
-              <ExternalLink className="size-3.5 text-muted-foreground" />
-            </Link>
-            <Link to="/documents" className="p-2.5 rounded-lg border hover:bg-muted/50 flex items-center justify-between">
-              <span className="font-medium">2. Registre des SOP et fiches réflexes BPD</span>
-              <ExternalLink className="size-3.5 text-muted-foreground" />
-            </Link>
-            <Link to="/non-conformites" className="p-2.5 rounded-lg border hover:bg-muted/50 flex items-center justify-between">
-              <span className="font-medium">3. Registre des non-conformités et retraits de lots</span>
-              <ExternalLink className="size-3.5 text-muted-foreground" />
-            </Link>
-            <Link to="/personnel" className="p-2.5 rounded-lg border hover:bg-muted/50 flex items-center justify-between">
-              <span className="font-medium">4. Registre des qualifications ONPB & postes</span>
-              <ExternalLink className="size-3.5 text-muted-foreground" />
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

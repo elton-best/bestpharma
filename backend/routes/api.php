@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\ReleveTemperatureController;
 use App\Http\Controllers\Api\StockLotController;
 use App\Http\Controllers\Api\StupefiantController;
 use App\Http\Controllers\Api\SyncController;
+use App\Http\Controllers\Api\EcheanceController;
 use App\Http\Controllers\Api\VenteCaisseController;
 use Illuminate\Support\Facades\Route;
 
@@ -80,6 +81,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/officines/{officineId}/non-conformites', [NonConformiteController::class, 'index']);
     Route::post('/officines/{officineId}/non-conformites', [NonConformiteController::class, 'store']);
     Route::put('/officines/{officineId}/non-conformites/{id}', [NonConformiteController::class, 'update']);
+
+    // Échéances réglementaires
+    Route::get('/officines/{officineId}/echeances', [EcheanceController::class, 'index']);
+    Route::post('/officines/{officineId}/echeances', [EcheanceController::class, 'store']);
+    Route::get('/echeances', [EcheanceController::class, 'indexGlobal']);
+    Route::post('/echeances', [EcheanceController::class, 'store']);
+    Route::put('/echeances/{id}', [EcheanceController::class, 'update']);
+    Route::patch('/echeances/{id}', [EcheanceController::class, 'update']);
+    Route::delete('/echeances/{id}', [EcheanceController::class, 'destroy']);
 
     // ==========================================
     // PARTIE 2 : CONSERVATION, LOCAUX & AUTO-ÉVALUATION (LOTS 1.2 & 1.5)

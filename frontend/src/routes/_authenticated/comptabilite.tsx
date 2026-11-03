@@ -338,7 +338,7 @@ function PageComptabilite() {
                         </td>
                         <td className="py-3 px-3 text-center">
                           {Number(c.ecart_caisse) === 0 ? (
-                            <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">
+                            <Badge variant="success" className="text-[10px]">
                               0 F (Exact)
                             </Badge>
                           ) : Number(c.ecart_caisse) > 0 ? (

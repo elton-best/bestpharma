@@ -264,11 +264,11 @@ function PageStupefiants() {
                       </td>
                       <td className="py-3 px-3">
                         {m.type_mouvement === "entree_livraison" ? (
-                          <Badge className="bg-emerald-100 text-emerald-800 text-[11px]">
+                          <Badge variant="success" className="text-[11px]">
                             Entrée Réception
                           </Badge>
                         ) : m.type_mouvement === "sortie_dispensation" ? (
-                          <Badge className="bg-purple-100 text-purple-800 text-[11px]">
+                          <Badge className="bg-purple-100 text-purple-900 border border-purple-200 text-[11px] font-semibold">
                             Sortie Délivrance
                           </Badge>
                         ) : (
@@ -277,7 +277,7 @@ function PageStupefiants() {
                       </td>
                       <td className="py-3 px-3 text-center font-bold">
                         {m.type_mouvement === "entree_livraison" ? (
-                          <span className="text-emerald-700">+{m.quantite}</span>
+                          <span className="text-[#0F3B27] font-bold">+{m.quantite}</span>
                         ) : (
                           <span className="text-purple-700">-{m.quantite}</span>
                         )}
@@ -293,8 +293,8 @@ function PageStupefiants() {
                       </td>
                       <td className="py-3 px-3">
                         {m.pharmacien_visa ? (
-                          <Badge className="bg-emerald-100 text-emerald-800 text-[11px] gap-1">
-                            <ShieldCheck className="w-3 h-3" /> Dr {m.pharmacien_visa.name}
+                          <Badge variant="success" className="text-[11px] gap-1 font-bold">
+                            <ShieldCheck className="w-3.5 h-3.5 text-[#0F3B27]" /> Dr {m.pharmacien_visa.name}
                           </Badge>
                         ) : (
                           <Button

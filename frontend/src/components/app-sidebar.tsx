@@ -2,40 +2,38 @@ import { useEffect, useState, type ComponentType } from "react";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  LogOut,
   Home,
   Receipt,
   Stethoscope,
-  QrCode,
-  PackageCheck,
-  BookOpenCheck,
+  ScanBarcode,
+  ShoppingBag,
   Lock,
-  FlaskConical,
+  TestTube,
   Thermometer,
   Building2,
-  CheckSquare,
+  TickSquare,
   Clock,
   Users,
   FileText,
-  LayoutTemplate,
-  AlertTriangle,
-  CalendarClock,
-  Settings,
-  ScrollText,
-  Smartphone,
-  ShieldCheck,
+  DocumentText,
+  TriangleWarning,
+  Calendar,
+  ChartLine,
+  Mobile,
   User,
+  Setting2,
   Shield,
-} from "lucide-react";
+  Logout,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+} from "reicon-react";
 import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
 import { deconnecter } from "@/lib/session";
 import { fr } from "@/lib/i18n/fr";
 
-type Icon = ComponentType<{ className?: string; size?: number }>;
+type Icon = ComponentType<{ className?: string; size?: number; color?: string; weight?: string }>;
 
 interface Leaf {
   to: string;
@@ -60,48 +58,48 @@ const NAV_ENTRIES: NavEntry[] = [
     children: [
       { to: "/caisse", label: "Caisse POS Tactile", icon: Receipt, badge: "e-MECeF" },
       { to: "/dispensation", label: "Dispensation & Ordonnances", icon: Stethoscope },
-      { to: "/facturation", label: "Facturation DGI", icon: QrCode },
+      { to: "/facturation", label: "Facturation DGI", icon: ScanBarcode },
     ],
   },
   {
     label: "Magasin & Stocks",
-    icon: PackageCheck,
+    icon: ShoppingBag,
     children: [
-      { to: "/stock", label: "Stock par Lots (FEFO)", icon: PackageCheck },
+      { to: "/stock", label: "Stock par Lots (FEFO)", icon: ShoppingBag },
       { to: "/stupefiants", label: "Registre Stupéfiants", icon: Lock, badge: "Tab. B" },
-      { to: "/preparations", label: "Préparations Magistrales", icon: FlaskConical },
+      { to: "/preparations", label: "Préparations Magistrales", icon: TestTube },
     ],
   },
   {
     label: "Qualité & BPD ABMed",
-    icon: ShieldCheck,
+    icon: Shield,
     children: [
       { to: "/temperatures", label: "Chaîne du froid (2-8°C)", icon: Thermometer },
       { to: "/locaux", label: "Locaux & Matériel (5M)", icon: Building2 },
-      { to: "/auto-evaluation", label: "Auto-évaluation 267 Arts", icon: CheckSquare },
+      { to: "/auto-evaluation", label: "Auto-évaluation 267 Arts", icon: TickSquare },
       { to: "/pointage", label: "Pointage Présence (Art 1.11)", icon: Clock },
       { to: "/personnel", label: "Personnel & Ordre B", icon: Users },
       { to: "/documents", label: "GED & Procédures", icon: FileText },
-      { to: "/modeles", label: "Modèles Types BPD (59)", icon: LayoutTemplate },
-      { to: "/non-conformites", label: "Non-conformités & CAPA", icon: AlertTriangle },
-      { to: "/echeances", label: "Échéancier réglementaire", icon: CalendarClock },
+      { to: "/modeles", label: "Modèles Types BPD (59)", icon: DocumentText },
+      { to: "/non-conformites", label: "Non-conformités & CAPA", icon: TriangleWarning },
+      { to: "/echeances", label: "Échéancier réglementaire", icon: Calendar },
     ],
   },
   {
     label: "Gestion & Finance",
-    icon: BookOpenCheck,
+    icon: ChartLine,
     children: [
-      { to: "/comptabilite", label: "Comptabilité SYSCOHADA", icon: BookOpenCheck, badge: "OHADA" },
-      { to: "/journal", label: "Journal d'audit SHA-256", icon: ScrollText },
-      { to: "/appareils", label: "Appareils autorisés", icon: Smartphone },
+      { to: "/comptabilite", label: "Comptabilité SYSCOHADA", icon: ChartLine, badge: "OHADA" },
+      { to: "/journal", label: "Journal d'audit SHA-256", icon: FileText },
+      { to: "/appareils", label: "Appareils autorisés", icon: Mobile },
     ],
   },
   {
     label: "Compte & Officine",
-    icon: Settings,
+    icon: Setting2,
     children: [
       { to: "/compte", label: "Mon profil & Rôle", icon: User },
-      { to: "/parametres", label: "Paramètres Officine", icon: Settings },
+      { to: "/parametres", label: "Paramètres Officine", icon: Setting2 },
       { to: "/securite", label: "Sécurité & MFA", icon: Shield },
     ],
   },
@@ -164,7 +162,7 @@ export function AppSidebar({
     >
       {/* 1. Header supérieur avec Logo et Bouton Collapse */}
       <div
-        className={`flex h-16 items-center border-b border-[#CFE3D5] px-4 ${
+        className={`flex h-16 items-center border-b border-[#CFF1D2] px-4 ${
           collapsed ? "justify-center" : "justify-between"
         }`}
       >
@@ -173,15 +171,15 @@ export function AppSidebar({
           onClick={onNavigate}
           className="flex items-center gap-2.5 focus-visible:outline-none group"
         >
-          <div className="size-9 rounded-xl bg-[#023010] flex items-center justify-center text-white font-display font-black text-lg shadow-sm transition-transform group-hover:scale-105">
+          <div className="size-9 rounded-xl bg-[#0F3B27] flex items-center justify-center text-[#92FF5F] font-display font-black text-xl shadow-sm transition-transform group-hover:scale-105 border border-[#92FF5F]/30">
             +
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <span className="font-display font-black text-base text-[#023010] tracking-tight block">
-                BEGPHARMA
+              <span className="font-display font-black text-base text-[#0F3B27] tracking-tight block">
+                BESTPHARMA
               </span>
-              <span className="text-[10px] text-[#5C6660] font-semibold truncate block">
+              <span className="text-[11px] text-[#475C50] font-semibold truncate block">
                 {courante?.officine?.nom || "Officine BPD"}
               </span>
             </div>
@@ -193,7 +191,7 @@ export function AppSidebar({
             type="button"
             onClick={onToggle}
             aria-label="Replier le menu"
-            className="flex size-7 items-center justify-center rounded-lg border border-[#CFE3D5] text-[#5C6660] hover:bg-[#EFF7F1] hover:text-[#023010] transition-colors"
+            className="flex size-7 items-center justify-center rounded-lg border border-[#CFF1D2] text-[#475C50] hover:bg-[#CFF1D2]/40 hover:text-[#0F3B27] transition-colors"
           >
             <ChevronLeft size={16} />
           </button>
@@ -205,14 +203,14 @@ export function AppSidebar({
           type="button"
           onClick={onToggle}
           aria-label="Déplier le menu"
-          className="flex size-7 items-center justify-center rounded-lg border border-[#CFE3D5] text-[#5C6660] hover:bg-[#EFF7F1] hover:text-[#023010] transition-colors mx-auto mt-3"
+          className="flex size-7 items-center justify-center rounded-lg border border-[#CFF1D2] text-[#475C50] hover:bg-[#CFF1D2]/40 hover:text-[#0F3B27] transition-colors mx-auto mt-3"
         >
           <ChevronRight size={16} />
         </button>
       )}
 
       {/* 2. Navigation avec accordéons inspirés d'InnerBuild */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3.5 scrollbar-thin">
+      <nav className="flex-1 space-y-1.5 overflow-y-auto px-3 py-4 scrollbar-thin">
         {NAV_ENTRIES.map((entry) => {
           // Entrée feuille simple
           if (!("children" in entry)) {
@@ -227,11 +225,11 @@ export function AppSidebar({
                   collapsed ? "justify-center px-0" : "px-3"
                 } ${
                   active
-                    ? "bg-[#023010] text-white font-bold shadow-xs"
-                    : "font-semibold text-[#5C6660] hover:bg-[#EFF7F1] hover:text-[#023010]"
+                    ? "bg-[#0F3B27] text-[#92FF5F] font-bold shadow-sm"
+                    : "font-semibold text-[#475C50] hover:bg-[#CFF1D2]/30 hover:text-[#0F3B27]"
                 }`}
               >
-                <entry.icon size={17} className="shrink-0" />
+                <entry.icon size={18} className="shrink-0" />
                 {!collapsed && <span className="min-w-0 flex-1 truncate">{entry.label}</span>}
               </Link>
             );
@@ -240,11 +238,10 @@ export function AppSidebar({
           // Entrée groupe avec enfants
           const isOpen = !!openGroups[entry.label];
           const hasActive = isGroupActive(entry);
-          const activeIdx = entry.children.findIndex((c) => c.to === currentPath);
 
           if (collapsed) {
             return (
-              <div key={entry.label} className="space-y-1 border-t border-[#CFE3D5]/60 pt-1.5 mt-1.5">
+              <div key={entry.label} className="space-y-1 border-t border-[#CFF1D2]/60 pt-2 mt-2">
                 {entry.children.map((child) => {
                   const active = currentPath === child.to;
                   return (
@@ -255,11 +252,11 @@ export function AppSidebar({
                       title={child.label}
                       className={`flex size-9 items-center justify-center rounded-xl mx-auto text-xs transition-colors ${
                         active
-                          ? "bg-[#023010] text-white shadow-xs"
-                          : "text-[#5C6660] hover:bg-[#EFF7F1] hover:text-[#023010]"
+                          ? "bg-[#0F3B27] text-[#92FF5F] shadow-sm"
+                          : "text-[#475C50] hover:bg-[#CFF1D2]/40 hover:text-[#0F3B27]"
                       }`}
                     >
-                      <child.icon size={16} />
+                      <child.icon size={17} />
                     </Link>
                   );
                 })}
@@ -274,15 +271,15 @@ export function AppSidebar({
                 onClick={() => toggleGroup(entry.label)}
                 className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold transition-all cursor-pointer ${
                   isOpen
-                    ? "text-[#023010] bg-[#EFF7F1]/80"
-                    : "text-[#5C6660] hover:bg-[#EFF7F1]/50 hover:text-[#023010]"
-                } ${hasActive ? "text-[#023010]" : ""}`}
+                    ? "text-[#0F3B27] bg-[#CFF1D2]/40"
+                    : "text-[#475C50] hover:bg-[#CFF1D2]/25 hover:text-[#0F3B27]"
+                } ${hasActive ? "text-[#0F3B27] font-extrabold" : ""}`}
               >
-                <entry.icon size={16} className="shrink-0" />
+                <entry.icon size={17} className="shrink-0" />
                 <span className="flex-1 text-left truncate">{entry.label}</span>
                 <ChevronDown
                   size={14}
-                  className={`transition-transform duration-200 text-[#5C6660] ${
+                  className={`transition-transform duration-200 text-[#475C50] ${
                     isOpen ? "rotate-180" : ""
                   }`}
                 />
@@ -294,7 +291,7 @@ export function AppSidebar({
                 }`}
               >
                 <div className="overflow-hidden">
-                  <div className="relative ml-[19px] mt-1 space-y-0.5 pl-3 border-l border-[#CFE3D5]">
+                  <div className="relative ml-[19px] mt-1 space-y-0.5 pl-3 border-l-2 border-[#CFF1D2]">
                     {entry.children.map((child) => {
                       const active = currentPath === child.to;
                       return (
@@ -304,14 +301,14 @@ export function AppSidebar({
                           onClick={onNavigate}
                           className={`flex items-center gap-2.5 rounded-lg py-1.5 px-2.5 text-xs transition-colors ${
                             active
-                              ? "font-bold text-[#18AA38] bg-[#EFF7F1]"
-                              : "font-medium text-[#5C6660] hover:text-[#023010] hover:bg-[#EFF7F1]/40"
+                              ? "font-extrabold text-[#0F3B27] bg-[#CFF1D2] shadow-2xs"
+                              : "font-medium text-[#475C50] hover:text-[#0F3B27] hover:bg-[#CFF1D2]/25"
                           }`}
                         >
-                          <child.icon size={14} className="shrink-0" />
+                          <child.icon size={15} className="shrink-0" />
                           <span className="min-w-0 flex-1 truncate">{child.label}</span>
                           {child.badge && (
-                            <span className="rounded-full bg-[#18AA38]/15 border border-[#18AA38]/30 px-1.5 py-0.2 text-[9px] font-bold text-[#023010]">
+                            <span className="rounded-full bg-[#92FF5F]/25 border border-[#0F3B27]/15 px-1.5 py-0.2 text-[9px] font-extrabold text-[#0F3B27]">
                               {child.badge}
                             </span>
                           )}
@@ -327,23 +324,23 @@ export function AppSidebar({
       </nav>
 
       {/* 3. Footer utilisateur style InnerBuild (UserFooter) */}
-      <div className="border-t border-[#CFE3D5] p-3 bg-[#f8faf8]">
+      <div className="border-t border-[#CFF1D2] p-3 bg-[#F7F9F7]">
         <div className={`flex items-center gap-2.5 ${collapsed ? "flex-col" : ""}`}>
           <Link
             to="/compte"
             onClick={onNavigate}
-            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl p-1.5 hover:bg-white transition-colors"
+            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl p-1.5 hover:bg-white transition-colors border border-transparent hover:border-[#CFF1D2]"
             title="Mon profil & réglages"
           >
-            <div className="size-9 shrink-0 rounded-full bg-[#023010] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            <div className="size-9 shrink-0 rounded-full bg-[#0F3B27] text-[#92FF5F] flex items-center justify-center font-bold text-xs shadow-xs border border-[#92FF5F]/30">
               {initiales || "DR"}
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <span className="block truncate text-xs font-bold text-[#1F2420]">
+                <span className="block truncate text-xs font-bold text-[#0F3B27]">
                   {nomUtilisateur}
                 </span>
-                <span className="block truncate text-[10px] text-[#5C6660]">
+                <span className="block truncate text-[11px] text-[#475C50]">
                   {courante?.role ? fr.roles[courante.role] : "Officine"}
                 </span>
               </div>
@@ -354,9 +351,9 @@ export function AppSidebar({
             type="button"
             onClick={handleLogout}
             title="Déconnexion"
-            className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-[#CFE3D5] text-[#5C6660] hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive transition-colors cursor-pointer"
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-[#CFF1D2] text-[#475C50] hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive transition-colors cursor-pointer"
           >
-            <LogOut size={15} />
+            <Logout size={16} />
           </button>
         </div>
       </div>

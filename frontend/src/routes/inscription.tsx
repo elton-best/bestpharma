@@ -1,20 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-  Loader2,
-  ArrowLeft,
-  Building2,
-  UserPlus,
-  ShieldCheck,
-  CheckCircle2,
-  Lock,
-  Mail,
-  User,
-  Phone,
-  Sparkles,
-  Check,
-} from "lucide-react";
-
+import { Eye, EyeSlash } from "reicon-react";
 import { api } from "@/lib/api-client";
 import { fr } from "@/lib/i18n/fr";
 
@@ -22,35 +8,16 @@ export const Route = createFileRoute("/inscription")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Créer une officine — BEGPHARMA" },
+      { title: "Créer un compte — BESTPHARMA" },
       {
         name: "description",
         content:
-          "Inscrivez votre officine pharmaceutique sur BEGPHARMA. Mise en conformité immédiate avec le Guide BPD de l'ABMed.",
+          "Inscrivez votre officine pharmaceutique sur BESTPHARMA. Mise en conformité immédiate avec le Guide BPD de l'ABMed.",
       },
     ],
   }),
   component: PageInscription,
 });
-
-const ATOUTS_CREATION = [
-  {
-    titre: "Prise en main instantanée",
-    desc: "Votre officine est créée et configurée avec les 59 modèles BPD en quelques secondes.",
-  },
-  {
-    titre: "Aucune barrière ni double validation",
-    desc: "Pas de blocage par SMS ou validation administrative préalable : démarrez tout de suite.",
-  },
-  {
-    titre: "Audit trail et sécurité garantis",
-    desc: "Toutes vos futures écritures d'ordonnancier et de caisse seront horodatées et infalsifiables.",
-  },
-  {
-    titre: "Multi-postes & Rôles illimités",
-    desc: "Invitez vos préparateurs, caissières et magasiniers avec des droits cloisonnés RLS.",
-  },
-];
 
 function PageInscription() {
   const navigate = useNavigate();
@@ -61,6 +28,7 @@ function PageInscription() {
   const [motDePasse, setMotDePasse] = useState("");
   const [nomOfficine, setNomOfficine] = useState("");
   const [roleCode, setRoleCode] = useState("pharmacien_titulaire");
+  const [afficherMdp, setAfficherMdp] = useState(false);
 
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -79,7 +47,10 @@ function PageInscription() {
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
         body: JSON.stringify({
           name: nomComplet.trim(),
           email: email.trim(),
@@ -95,7 +66,7 @@ function PageInscription() {
         throw new Error(data.message || "Erreur lors de la création du compte.");
       }
 
-      // Connexion directe sans double validation
+      // Connexion directe sans barrière
       api.setToken(data.token);
       api.setUser(data.user);
       if (data.officines) api.setOfficines(data.officines);
@@ -109,247 +80,119 @@ function PageInscription() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#f8faf8] flex items-start sm:items-center justify-center p-0 sm:p-6 lg:p-10 font-sans selection:bg-[#18AA38]/20 selection:text-[#023010]">
-      {/* Container split-card style InnerBuild */}
-      <div className="w-full max-w-5xl bg-white min-h-screen sm:min-h-[680px] sm:rounded-[28px] sm:shadow-2xl sm:shadow-[#023010]/5 sm:border sm:border-[#CFE3D5] overflow-hidden grid grid-cols-1 lg:grid-cols-12 relative">
-        {/* ============================================================== */}
-        {/* COLONNE GAUCHE (7/12) : FORMULAIRE D'OUVERTURE D'OFFICINE      */}
-        {/* ============================================================== */}
-        <div className="lg:col-span-7 px-5 py-6 sm:p-10 lg:p-12 flex flex-col justify-center bg-white">
-          <div className="max-w-md w-full mx-auto">
-            {/* Header supérieur */}
-            <div className="flex items-center justify-between">
-              <Link to="/" className="inline-flex items-center gap-2 group focus-visible:outline-none">
-                <div className="size-9 rounded-xl bg-[#023010] flex items-center justify-center text-white font-display font-black text-lg shadow-sm transition-transform group-hover:scale-105">
-                  +
-                </div>
-                <span className="font-display font-extrabold text-base text-[#023010] tracking-tight">
-                  BEGPHARMA
-                </span>
-              </Link>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#18AA38]/30 bg-[#EFF7F1] px-3 py-1 text-[11px] font-bold text-[#023010]">
-                <ShieldCheck className="size-3 text-[#18AA38]" /> Activation immédiate
-              </span>
-            </div>
+    <div className="h-screen w-full bg-[#D4E8B8] flex items-center justify-center overflow-hidden font-sans selection:bg-[#92FF5F] selection:text-[#0F3B27]">
+      <div className="w-full max-w-md px-6">
 
-            {/* Titre et sous-titre */}
-            <div className="mt-6 sm:mt-8">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1F2420] tracking-tight font-display leading-tight">
-                Ouvrir une officine
-              </h1>
-              <p className="mt-1 text-xs text-[#5C6660] font-medium">
-                Démarrez sans délai avec les 59 modèles BPD et le registre officiel préconfigurés.
-              </p>
-            </div>
-
-            {/* Sélecteur d'onglets */}
-            <div className="my-5 flex rounded-xl border border-[#CFE3D5] bg-[#f8faf8] p-1">
-              <Link
-                to="/auth"
-                className="flex-1 rounded-lg py-2 text-xs font-bold transition-all text-center text-[#5C6660] hover:text-[#023010]"
-              >
-                Se connecter
-              </Link>
-              <button
-                type="button"
-                className="flex-1 rounded-lg py-2 text-xs font-bold transition-all bg-white text-[#023010] shadow-xs"
-              >
-                Créer une officine
-              </button>
-            </div>
-
-            {/* Formulaire */}
-            <form onSubmit={soumettre} className="space-y-3.5">
-              {/* Nom complet */}
-              <div>
-                <label className="block text-xs font-semibold text-[#1F2420] mb-1">
-                  Nom et prénom du titulaire
-                </label>
-                <div className="relative flex min-h-11 items-center rounded-xl border border-[#CFE3D5] bg-[#f8faf8] px-3.5 py-2.5 transition-all focus-within:border-[#18AA38] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#18AA38]/15">
-                  <User className="size-4 text-[#5C6660] shrink-0 mr-2.5" />
-                  <input
-                    required
-                    type="text"
-                    value={nomComplet}
-                    onChange={(e) => setNomComplet(e.target.value)}
-                    placeholder="Dr Félicien AGBO"
-                    className="w-full bg-transparent text-sm text-[#1F2420] placeholder:text-[#5C6660]/70 outline-none font-medium"
-                  />
-                </div>
-              </div>
-
-              {/* Nom de l'officine */}
-              <div>
-                <label className="block text-xs font-semibold text-[#1F2420] mb-1">
-                  Nom de l'officine
-                </label>
-                <div className="relative flex min-h-11 items-center rounded-xl border border-[#CFE3D5] bg-[#f8faf8] px-3.5 py-2.5 transition-all focus-within:border-[#18AA38] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#18AA38]/15">
-                  <Building2 className="size-4 text-[#5C6660] shrink-0 mr-2.5" />
-                  <input
-                    required
-                    type="text"
-                    value={nomOfficine}
-                    onChange={(e) => setNomOfficine(e.target.value)}
-                    placeholder="Pharmacie du Port - Cotonou"
-                    className="w-full bg-transparent text-sm text-[#1F2420] placeholder:text-[#5C6660]/70 outline-none font-medium"
-                  />
-                </div>
-              </div>
-
-              {/* Email & Téléphone en grille */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-[#1F2420] mb-1">
-                    Email professionnel
-                  </label>
-                  <div className="relative flex min-h-11 items-center rounded-xl border border-[#CFE3D5] bg-[#f8faf8] px-3.5 py-2.5 transition-all focus-within:border-[#18AA38] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#18AA38]/15">
-                    <Mail className="size-4 text-[#5C6660] shrink-0 mr-2" />
-                    <input
-                      required
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="titulaire@officine.bj"
-                      className="w-full bg-transparent text-xs sm:text-sm text-[#1F2420] placeholder:text-[#5C6660]/70 outline-none font-medium"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[#1F2420] mb-1">
-                    Téléphone (Bénin)
-                  </label>
-                  <div className="relative flex min-h-11 items-center rounded-xl border border-[#CFE3D5] bg-[#f8faf8] px-3.5 py-2.5 transition-all focus-within:border-[#18AA38] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#18AA38]/15">
-                    <Phone className="size-4 text-[#5C6660] shrink-0 mr-2" />
-                    <input
-                      type="tel"
-                      value={telephone}
-                      onChange={(e) => setTelephone(e.target.value)}
-                      placeholder="+229 97 00 00 00"
-                      className="w-full bg-transparent text-xs sm:text-sm text-[#1F2420] placeholder:text-[#5C6660]/70 outline-none font-medium"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Mot de passe */}
-              <div>
-                <label className="block text-xs font-semibold text-[#1F2420] mb-1">
-                  Mot de passe (minimum 8 caractères)
-                </label>
-                <div className="relative flex min-h-11 items-center rounded-xl border border-[#CFE3D5] bg-[#f8faf8] px-3.5 py-2.5 transition-all focus-within:border-[#18AA38] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#18AA38]/15">
-                  <Lock className="size-4 text-[#5C6660] shrink-0 mr-2.5" />
-                  <input
-                    required
-                    minLength={8}
-                    type="password"
-                    value={motDePasse}
-                    onChange={(e) => setMotDePasse(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full bg-transparent text-sm text-[#1F2420] placeholder:text-[#5C6660]/70 outline-none font-medium"
-                  />
-                </div>
-              </div>
-
-              {/* Rôle */}
-              <div>
-                <label className="block text-xs font-semibold text-[#1F2420] mb-1">
-                  Votre fonction dans l'officine
-                </label>
-                <select
-                  value={roleCode}
-                  onChange={(e) => setRoleCode(e.target.value)}
-                  className="w-full min-h-11 rounded-xl border border-[#CFE3D5] bg-[#f8faf8] px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-[#1F2420] outline-none focus:border-[#18AA38] focus:bg-white"
-                >
-                  <option value="pharmacien_titulaire">Pharmacien Titulaire (Responsable légal BPD)</option>
-                  <option value="promoteur">Promoteur / Propriétaire</option>
-                  <option value="pharmacien_assistant">Pharmacien Assistant</option>
-                  <option value="dispensateur">Dispensateur / Préparateur en pharmacie</option>
-                </select>
-              </div>
-
-              {erreur ? (
-                <div className="p-3 text-xs rounded-xl bg-destructive/10 text-destructive border border-destructive/20 font-semibold">
-                  {erreur}
-                </div>
-              ) : null}
-
-              <button
-                type="submit"
-                disabled={enCours}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#023010] hover:bg-[#18AA38] py-3 text-sm font-bold text-white shadow-md shadow-[#023010]/15 transition-all hover:-translate-y-0.5 disabled:opacity-50 mt-2"
-              >
-                {enCours ? <Loader2 className="size-4 animate-spin" /> : null}
-                <span>Ouvrir l'officine et se connecter</span>
-              </button>
-            </form>
-
-            {/* Lien retour accueil */}
-            <div className="mt-5 text-center">
-              <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#5C6660] hover:text-[#023010] transition-colors">
-                <ArrowLeft className="size-3" /> Retour à l'accueil
-              </Link>
-            </div>
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="size-8 rounded-lg bg-[#92FF5F] flex items-center justify-center text-[#0F3B27] font-black text-lg">
+            +
           </div>
+          <span className="font-display font-extrabold text-2xl text-[#0F3B27] tracking-tight">
+            bestpharma
+          </span>
         </div>
 
-        {/* ============================================================== */}
-        {/* COLONNE DROITE (5/12) : SHOWCASE VERT PROFOND INNERBUILD       */}
-        {/* ============================================================== */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-[#023010] via-[#03260e] to-[#011707] p-8 sm:p-10 lg:p-12 hidden lg:flex flex-col justify-between text-white relative overflow-hidden border-l border-[#CFE3D5]/20">
-          <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-[#18AA38]/20 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-[#18AA38]/15 blur-3xl pointer-events-none" />
+        {/* Titre */}
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0F3B27] tracking-tight font-display text-center mb-6 leading-tight">
+          Créer un compte
+        </h1>
 
-          <div className="relative z-10">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#18AA38]/40 bg-[#18AA38]/15 px-3 py-1 text-[11px] font-mono font-bold text-[#18AA38]">
-              <Sparkles className="size-3" /> BEGPHARMA · Déploiement Immédiat
-            </span>
+        {/* Formulaire */}
+        <form onSubmit={soumettre} className="space-y-3">
+          {/* Input Nom complet */}
+          <div>
+            <input
+              required
+              type="text"
+              value={nomComplet}
+              onChange={(e) => setNomComplet(e.target.value)}
+              placeholder="Nom complet (Dr. ou Pharmacien)"
+              className="w-full rounded-2xl border border-[#0F3B27]/20 bg-white/80 px-4 py-3 text-sm text-[#0F3B27] placeholder:text-[#0F3B27]/40 outline-none transition-all focus:border-[#0F3B27] focus:bg-white focus:ring-4 focus:ring-[#92FF5F]/30 font-medium"
+            />
           </div>
 
-          <div className="relative z-10 my-auto py-6 space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight font-display text-white leading-snug">
-                Votre officine prête pour l'audit ABMed
-              </h2>
-              <p className="mt-2 text-xs text-white/70 leading-relaxed font-sans">
-                Chaque officine créée sur BEGPHARMA bénéficie immédiatement des paramétrages réglementaires officiels.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {ATOUTS_CREATION.map((item, idx) => (
-                <div key={idx} className="flex items-start gap-3 p-3 rounded-2xl bg-white/5 border border-white/10">
-                  <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-[#18AA38]/25 text-[#18AA38] mt-0.5">
-                    <Check className="size-3.5 stroke-[2.5]" />
-                  </span>
-                  <div>
-                    <p className="text-xs font-bold text-white">{item.titre}</p>
-                    <p className="text-[11px] text-white/60 mt-0.5 leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-2 grid grid-cols-3 gap-2 border-t border-white/10">
-              <div className="text-center">
-                <p className="text-sm font-bold text-[#18AA38]">0 Frs</p>
-                <p className="text-[10px] text-white/60">Activation</p>
-              </div>
-              <div className="text-center border-x border-white/10">
-                <p className="text-sm font-bold text-white">59 Doc.</p>
-                <p className="text-[10px] text-white/60">Modèles BPD</p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-bold text-emerald-400">100%</p>
-                <p className="text-[10px] text-white/60">Sécurisé</p>
-              </div>
-            </div>
+          {/* Input Nom Officine */}
+          <div>
+            <input
+              required
+              type="text"
+              value={nomOfficine}
+              onChange={(e) => setNomOfficine(e.target.value)}
+              placeholder="Nom de l'officine (ex: Pharmacie de l'Étoile)"
+              className="w-full rounded-2xl border border-[#0F3B27]/20 bg-white/80 px-4 py-3 text-sm text-[#0F3B27] placeholder:text-[#0F3B27]/40 outline-none transition-all focus:border-[#0F3B27] focus:bg-white focus:ring-4 focus:ring-[#92FF5F]/30 font-medium"
+            />
           </div>
 
-          <div className="relative z-10 text-[11px] text-white/50 border-t border-white/10 pt-4">
-            Direction des Pharmacies, du Médicament et des Laboratoires · Cotonou
+          {/* Input Email */}
+          <div>
+            <input
+              required
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Adresse email"
+              className="w-full rounded-2xl border border-[#0F3B27]/20 bg-white/80 px-4 py-3 text-sm text-[#0F3B27] placeholder:text-[#0F3B27]/40 outline-none transition-all focus:border-[#0F3B27] focus:bg-white focus:ring-4 focus:ring-[#92FF5F]/30 font-medium"
+            />
           </div>
+
+          {/* Input Password */}
+          <div className="relative">
+            <input
+              required
+              type={afficherMdp ? "text" : "password"}
+              autoComplete="new-password"
+              value={motDePasse}
+              onChange={(e) => setMotDePasse(e.target.value)}
+              placeholder="Mot de passe (min. 8 caractères)"
+              className="w-full rounded-2xl border border-[#0F3B27]/20 bg-white/80 px-4 py-3 pr-12 text-sm text-[#0F3B27] placeholder:text-[#0F3B27]/40 outline-none transition-all focus:border-[#0F3B27] focus:bg-white focus:ring-4 focus:ring-[#92FF5F]/30 font-medium"
+            />
+            <button
+              type="button"
+              onClick={() => setAfficherMdp(!afficherMdp)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0F3B27]/40 hover:text-[#0F3B27] transition-colors"
+            >
+              {afficherMdp ? <EyeSlash size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+
+          {erreur ? (
+            <div className="p-3 text-xs rounded-2xl bg-red-100 text-red-700 border border-red-200 font-semibold">
+              {erreur}
+            </div>
+          ) : null}
+
+          {/* Bouton Créer */}
+          <button
+            type="submit"
+            disabled={enCours}
+            className="w-full rounded-2xl bg-[#0F3B27] hover:bg-[#1a5a3d] text-white font-extrabold py-3.5 text-base shadow-lg shadow-[#0F3B27]/20 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer mt-1"
+          >
+            {enCours ? "Création en cours..." : "Créer mon compte"}
+          </button>
+        </form>
+
+        {/* Lien connexion */}
+        <div className="mt-6 text-center text-xs text-[#0F3B27]/60 font-medium">
+          Déjà un compte ?{" "}
+          <Link to="/auth" className="text-[#0F3B27] font-extrabold hover:underline">
+            Se connecter
+          </Link>
         </div>
+
+        {/* Texte légal */}
+        <p className="mt-4 text-[10px] text-[#0F3B27]/40 text-center leading-relaxed">
+          En créant un compte, vous acceptez les{" "}
+          <Link to="/" className="font-bold hover:underline">
+            Conditions d'utilisation
+          </Link>{" "}
+          et la{" "}
+          <Link to="/" className="font-bold hover:underline">
+            Politique de confidentialité
+          </Link>
+          .
+        </p>
       </div>
     </div>
   );

@@ -457,7 +457,7 @@ function PageStockFefo() {
                       </td>
                       <td className="py-3 px-4">
                         {lot.statut === "en_stock" ? (
-                          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+                          <Badge variant="success">
                             Disponible
                           </Badge>
                         ) : lot.statut === "quarantaine" ? (

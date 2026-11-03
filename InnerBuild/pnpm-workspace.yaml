@@ -1,0 +1,9 @@
+allowBuilds:
+  core-js: false
+  esbuild: true
+  tesseract.js: true
+  workerd: true
+minimumReleaseAgeExclude:
+  - '@posthog/browser-common@0.9.4'
+  - '@posthog/core@1.57.4'
+  - posthog-js@1.438.7

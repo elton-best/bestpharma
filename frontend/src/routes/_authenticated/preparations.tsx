@@ -228,8 +228,8 @@ function PagePreparations() {
                       </td>
                       <td className="py-3 px-4">
                         {p.pharmacien_visa ? (
-                          <Badge className="bg-emerald-100 text-emerald-800 text-xs gap-1">
-                            <ShieldCheck className="w-3 h-3" /> Libéré par {p.pharmacien_visa.name}
+                          <Badge variant="success" className="text-xs gap-1.5 py-1 px-2.5 font-bold shadow-none">
+                            <ShieldCheck className="w-3.5 h-3.5 text-[#0F3B27]" /> Libéré par {p.pharmacien_visa.name}
                           </Badge>
                         ) : (
                           <Button

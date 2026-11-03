@@ -370,8 +370,8 @@ function PageDispensation() {
                       </td>
                       <td className="py-3 px-4">
                         {disp.pharmacien ? (
-                          <Badge className="bg-emerald-100 text-emerald-800 gap-1 hover:bg-emerald-100">
-                            <ShieldCheck className="w-3 h-3" /> Visé par {disp.pharmacien?.name}
+                          <Badge variant="success" className="gap-1 font-bold text-xs">
+                            <ShieldCheck className="w-3.5 h-3.5 text-[#0F3B27]" /> Visé par {disp.pharmacien?.name}
                           </Badge>
                         ) : (
                           <Button

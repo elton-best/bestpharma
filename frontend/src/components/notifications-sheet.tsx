@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
-  Bell,
-  CheckCheck,
+  NotificationBing,
+  TickCircle,
   Thermometer,
-  ShieldAlert,
-  PackageSearch,
-  Receipt,
-  FileText,
   Clock,
+  Receipt,
+  ShoppingBag,
+  FileText,
   ArrowRight,
-  Sparkles,
-} from "lucide-react";
+} from "reicon-react";
 import {
   Sheet,
   SheetContent,
@@ -140,15 +138,15 @@ export function NotificationsSheet() {
   function getIcon(type: NotificationItem["type"]) {
     switch (type) {
       case "presence":
-        return <Clock className="size-4 text-amber-600" />;
+        return <Clock size={16} className="text-[#FF7036]" />;
       case "temp":
-        return <Thermometer className="size-4 text-blue-600" />;
+        return <Thermometer size={16} className="text-[#0F3B27]" />;
       case "fefo":
-        return <PackageSearch className="size-4 text-[#18AA38]" />;
+        return <ShoppingBag size={16} className="text-[#0F3B27]" />;
       case "caisse":
-        return <Receipt className="size-4 text-emerald-600" />;
+        return <Receipt size={16} className="text-[#0F3B27]" />;
       case "bpd":
-        return <FileText className="size-4 text-purple-600" />;
+        return <FileText size={16} className="text-[#0F3B27]" />;
     }
   }
 
@@ -158,51 +156,51 @@ export function NotificationsSheet() {
         <button
           type="button"
           aria-label="Centre de notifications"
-          className="relative flex size-9 items-center justify-center rounded-xl border border-[#CFE3D5] bg-white text-[#1F2420] hover:bg-[#EFF7F1] hover:text-[#023010] transition-colors shadow-xs"
+          className="relative flex size-9 items-center justify-center rounded-xl border border-[#CFF1D2] bg-white text-[#0F3B27] hover:bg-[#CFF1D2]/30 transition-colors shadow-xs"
         >
-          <Bell className="size-4" />
+          <NotificationBing size={18} />
           {nonLues.length > 0 && (
-            <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#18AA38] text-[9px] font-black text-white shadow-xs">
+            <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#FF7036] text-[9px] font-black text-white shadow-xs">
               {nonLues.length}
             </span>
           )}
         </button>
       </SheetTrigger>
 
-      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col bg-white border-l border-[#CFE3D5] text-[#1F2420]">
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col bg-white border-l border-[#CFF1D2] text-[#0F3B27]">
         {/* Header */}
-        <SheetHeader className="p-5 border-b border-[#CFE3D5] flex flex-row items-center justify-between space-y-0">
+        <SheetHeader className="p-5 border-b border-[#CFF1D2] flex flex-row items-center justify-between space-y-0">
           <div className="flex items-center gap-3">
-            <div className="size-9 rounded-xl bg-[#EFF7F1] border border-[#CFE3D5] flex items-center justify-center text-[#023010]">
-              <Bell className="size-4 text-[#18AA38]" />
+            <div className="size-10 rounded-xl bg-[#0F3B27] flex items-center justify-center text-[#92FF5F] shadow-xs">
+              <NotificationBing size={20} />
             </div>
             <div>
-              <SheetTitle className="text-base font-extrabold font-display text-[#1F2420]">
+              <SheetTitle className="text-base font-extrabold font-display text-[#0F3B27]">
                 Centre de notifications
               </SheetTitle>
-              <p className="text-xs text-[#5C6660]">Alertes réglementaires BPD & flux officine</p>
+              <p className="text-xs text-[#475C50]">Alertes réglementaires BPD & flux officine</p>
             </div>
           </div>
           {nonLues.length > 0 && (
             <button
               type="button"
               onClick={marquerTousLus}
-              className="inline-flex items-center gap-1 text-xs font-bold text-[#18AA38] hover:underline cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs font-bold text-[#0F3B27] hover:underline cursor-pointer"
             >
-              <CheckCheck className="size-3.5" /> Tout lire
+              <TickCircle size={15} className="text-[#0F3B27]" /> Tout lire
             </button>
           )}
         </SheetHeader>
 
         {/* Filtres Onglets */}
-        <div className="flex items-center border-b border-[#CFE3D5] px-5 py-2.5 gap-2 bg-[#f8faf8]">
+        <div className="flex items-center border-b border-[#CFF1D2] px-5 py-2.5 gap-2 bg-[#F7F9F7]">
           <button
             type="button"
             onClick={() => setFiltre("all")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer ${
+            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
               filtre === "all"
-                ? "bg-[#023010] text-white shadow-xs"
-                : "text-[#5C6660] hover:bg-white hover:text-[#023010]"
+                ? "bg-[#0F3B27] text-[#92FF5F] shadow-xs"
+                : "text-[#475C50] hover:bg-white hover:text-[#0F3B27]"
             }`}
           >
             Toutes ({notifications.length})
@@ -210,10 +208,10 @@ export function NotificationsSheet() {
           <button
             type="button"
             onClick={() => setFiltre("unread")}
-            className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer ${
+            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
               filtre === "unread"
-                ? "bg-[#023010] text-white shadow-xs"
-                : "text-[#5C6660] hover:bg-white hover:text-[#023010]"
+                ? "bg-[#0F3B27] text-[#92FF5F] shadow-xs"
+                : "text-[#475C50] hover:bg-white hover:text-[#0F3B27]"
             }`}
           >
             Non lues ({nonLues.length})
@@ -221,13 +219,13 @@ export function NotificationsSheet() {
         </div>
 
         {/* Liste des Notifications */}
-        <div className="flex-1 overflow-y-auto divide-y divide-[#CFE3D5]/60">
+        <div className="flex-1 overflow-y-auto divide-y divide-[#CFF1D2]/60">
           {elementsAffiches.length === 0 ? (
-            <div className="p-12 text-center flex flex-col items-center justify-center text-[#5C6660]">
-              <div className="size-12 rounded-2xl bg-[#EFF7F1] flex items-center justify-center mb-3">
-                <Bell className="size-6 text-[#18AA38] opacity-60" />
+            <div className="p-12 text-center flex flex-col items-center justify-center text-[#475C50]">
+              <div className="size-14 rounded-2xl bg-[#CFF1D2]/40 flex items-center justify-center mb-3">
+                <NotificationBing size={28} className="text-[#0F3B27]" />
               </div>
-              <p className="text-sm font-bold text-[#1F2420]">Aucune notification</p>
+              <p className="text-sm font-bold text-[#0F3B27]">Aucune notification</p>
               <p className="text-xs mt-1">
                 {filtre === "unread" ? "Toutes vos alertes sont traitées !" : "Aucune alerte pour l'instant."}
               </p>
@@ -237,30 +235,30 @@ export function NotificationsSheet() {
               <div
                 key={notif.id}
                 onClick={() => marquerLu(notif.id, notif.lien)}
-                className={`p-4 transition-colors cursor-pointer flex items-start gap-3 hover:bg-[#EFF7F1]/60 ${
-                  !notif.lu ? "bg-[#EFF7F1]/20 font-medium" : ""
+                className={`p-4 transition-colors cursor-pointer flex items-start gap-3 hover:bg-[#CFF1D2]/20 ${
+                  !notif.lu ? "bg-[#CFF1D2]/10 font-medium" : ""
                 }`}
               >
-                <div className="size-8 rounded-xl bg-white border border-[#CFE3D5] flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                <div className="size-9 rounded-xl bg-white border border-[#CFF1D2] flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
                   {getIcon(notif.type)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className={`text-xs ${notif.lu ? "text-[#1F2420]" : "text-[#023010] font-bold"}`}>
+                    <p className={`text-xs ${notif.lu ? "text-[#0F3B27]" : "text-[#0F3B27] font-bold"}`}>
                       {notif.titre}
                     </p>
-                    <span className="text-[10px] text-[#5C6660] shrink-0">{notif.heure}</span>
+                    <span className="text-[10px] text-[#475C50] shrink-0 font-medium">{notif.heure}</span>
                   </div>
-                  <p className="text-[11px] text-[#5C6660] mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-[#475C50] mt-1 line-clamp-2 leading-relaxed">
                     {notif.description}
                   </p>
-                  <div className="mt-2 flex items-center gap-1 text-[11px] font-bold text-[#18AA38]">
+                  <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-[#0F3B27]">
                     <span>Consulter le module</span>
-                    <ArrowRight className="size-3" />
+                    <ArrowRight size={13} />
                   </div>
                 </div>
                 {!notif.lu && (
-                  <span className="size-2 rounded-full bg-[#18AA38] shrink-0 mt-1.5" />
+                  <span className="size-2 rounded-full bg-[#FF7036] shrink-0 mt-1.5" />
                 )}
               </div>
             ))
@@ -268,8 +266,8 @@ export function NotificationsSheet() {
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-[#CFE3D5] bg-[#f8faf8] text-center text-[11px] text-[#5C6660]">
-          BEGPHARMA · Système d'alerte et de conformité temps réel
+        <div className="p-3 border-t border-[#CFF1D2] bg-[#F7F9F7] text-center text-xs text-[#475C50]">
+          BESTPHARMA · Système d'alerte et de conformité temps réel
         </div>
       </SheetContent>
     </Sheet>

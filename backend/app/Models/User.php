@@ -79,4 +79,16 @@ class User extends Authenticatable
             ->where('archived', false)
             ->exists();
     }
+
+    public function getOfficineIdAttribute(): ?string
+    {
+        $affectation = $this->affectations()->where('actif', true)->first();
+        return $affectation ? $affectation->officine_id : null;
+    }
+
+    public function getRoleAttribute(): ?string
+    {
+        $affectation = $this->affectations()->where('actif', true)->first();
+        return $affectation ? $affectation->role_code : null;
+    }
 }

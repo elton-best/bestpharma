@@ -12,7 +12,12 @@ use App\Http\Controllers\Api\NonConformiteController;
 use App\Http\Controllers\Api\OfficineController;
 use App\Http\Controllers\Api\ParametreController;
 use App\Http\Controllers\Api\PointageController;
+use App\Http\Controllers\Api\DispensationController;
+use App\Http\Controllers\Api\PreparationController;
+use App\Http\Controllers\Api\ProduitController;
 use App\Http\Controllers\Api\ReleveTemperatureController;
+use App\Http\Controllers\Api\StockLotController;
+use App\Http\Controllers\Api\StupefiantController;
 use App\Http\Controllers\Api\SyncController;
 use Illuminate\Support\Facades\Route;
 
@@ -95,4 +100,32 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/officines/{officineId}/auto-evaluation/evaluer/{evaluationId}', [AutoEvaluationController::class, 'evaluerArticle']);
     Route::post('/officines/{officineId}/auto-evaluation/generer-capa/{evaluationId}', [AutoEvaluationController::class, 'genererCapa']);
     Route::get('/officines/{officineId}/auto-evaluation/rapport', [AutoEvaluationController::class, 'rapport']);
+
+    // ==========================================
+    // PARTIE 3 : DISPENSATION, GESTION DES STOCKS (FEFO) & REGISTRES OFFICIELS (LOTS 1.3 & 1.4)
+    // ==========================================
+
+    // Catalogue Produits
+    Route::get('/produits', [ProduitController::class, 'index']);
+    Route::post('/produits', [ProduitController::class, 'store']);
+
+    // Gestion des Stocks & Règle FEFO (BPD5-F08 & STK-02)
+    Route::get('/stocks', [StockLotController::class, 'index']);
+    Route::post('/stocks', [StockLotController::class, 'store']);
+    Route::post('/stocks/{id}/quarantaine', [StockLotController::class, 'miseEnQuarantaine']);
+    Route::post('/stocks/{id}/lever-quarantaine', [StockLotController::class, 'leverQuarantaine']);
+
+    // Dispensations / Délivrances Ordonnances & Conseil (BPD Chapitre 5 & LOT-1.3)
+    Route::get('/dispensations', [DispensationController::class, 'index']);
+    Route::post('/dispensations', [DispensationController::class, 'store']);
+    Route::post('/dispensations/{id}/viser', [DispensationController::class, 'viser']);
+
+    // Registre Officiel des Stupéfiants & Substances Vénéneuses (BPD-3 & Art 7.15 à 7.20)
+    Route::get('/stupefiants', [StupefiantController::class, 'index']);
+    Route::post('/stupefiants/{id}/viser', [StupefiantController::class, 'viser']);
+
+    // Registre Officiel des Préparations Magistrales et Officinales (BPD Chapitre 6 & POI-03)
+    Route::get('/preparations', [PreparationController::class, 'index']);
+    Route::post('/preparations', [PreparationController::class, 'store']);
+    Route::post('/preparations/{id}/viser', [PreparationController::class, 'viser']);
 });

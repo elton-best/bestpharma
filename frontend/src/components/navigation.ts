@@ -13,6 +13,10 @@ import {
   Thermometer,
   Building2,
   CheckSquare,
+  PackageCheck,
+  Stethoscope,
+  Lock,
+  FlaskConical,
   type LucideIcon,
 } from "lucide-react";
 
@@ -20,6 +24,10 @@ export type ItemNav = { titre: string; url: string; icone: LucideIcon; sprint?: 
 
 export const navPrincipale: ItemNav[] = [
   { titre: "Tableau de bord", url: "/app", icone: LayoutDashboard },
+  { titre: "Dispensation BPD", url: "/dispensation", icone: Stethoscope, sprint: "Lot 1.3" },
+  { titre: "Stock & FEFO", url: "/stock", icone: PackageCheck, sprint: "Lot 1.4" },
+  { titre: "Stupéfiants", url: "/stupefiants", icone: Lock, sprint: "Lot 1.4" },
+  { titre: "Préparations", url: "/preparations", icone: FlaskConical, sprint: "Lot 1.4" },
   { titre: "Températures", url: "/temperatures", icone: Thermometer, sprint: "Lot 1.2" },
   { titre: "Locaux & Hygiène", url: "/locaux", icone: Building2, sprint: "Lot 1.2" },
   { titre: "Auto-évaluation", url: "/auto-evaluation", icone: CheckSquare, sprint: "Lot 1.5" },

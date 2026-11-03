@@ -294,6 +294,81 @@ export function TableauDeBord() {
         </Link>
       </section>
 
+      {/* SECTION COEUR MÉTIER : DISPENSATION & GESTION DES STOCKS FEFO (PARTIE 3) */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Link
+          to="/dispensation"
+          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium">Poste Dispensation</span>
+            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+              <PackageSearch className="size-4" />
+            </div>
+          </div>
+          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+            Ordonnancier
+          </p>
+          <p className="text-[11px] text-emerald-700 font-medium mt-1 flex items-center gap-1">
+            <ArrowRight className="size-3" /> Délivrance ordonnances
+          </p>
+        </Link>
+
+        <Link
+          to="/stock"
+          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium">Stock par Lots</span>
+            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600">
+              <Layers className="size-4" />
+            </div>
+          </div>
+          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+            Règle FEFO
+          </p>
+          <p className="text-[11px] text-blue-700 font-medium mt-1">
+            Priorité périmés en 1er
+          </p>
+        </Link>
+
+        <Link
+          to="/stupefiants"
+          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium">Registre Stupéfiants</span>
+            <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600">
+              <ShieldAlert className="size-4" />
+            </div>
+          </div>
+          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+            Tableau B
+          </p>
+          <p className="text-[11px] text-purple-700 font-medium mt-1">
+            Balance inaltérable
+          </p>
+        </Link>
+
+        <Link
+          to="/preparations"
+          className="p-3.5 rounded-xl border bg-card hover:bg-accent/40 shadow-sm transition-all group flex flex-col justify-between"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium">Préparatoire</span>
+            <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600">
+              <FileSignature className="size-4" />
+            </div>
+          </div>
+          <p className="font-display text-lg font-bold text-slate-900 mt-2">
+            Magistrales
+          </p>
+          <p className="text-[11px] text-amber-700 font-medium mt-1">
+            Cahier & Visa Dr
+          </p>
+        </Link>
+      </section>
+
       {/* SECTION RÔLE SPÉCIFIQUE */}
       {role === "pharmacien_titulaire" && (
         <DashboardPharmacienTitulaire

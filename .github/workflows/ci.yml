@@ -1,0 +1,57 @@
+name: CI BEGPHARMA Backend
+
+on:
+  push:
+    branches: [ "main", "master", "sprint-*" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: bestpharma_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      - name: Configuration de PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo, pdo_pgsql, pgsql, bcmath, json
+          coverage: none
+
+      - name: Installation des dépendances Composer
+        run: |
+          cd backend
+          composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Préparation de l'environnement de test
+        run: |
+          cd backend
+          cp .env.example .env.testing
+          sed -i 's/DB_PORT=.*/DB_PORT=5432/' .env.testing
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=bestpharma_test/' .env.testing
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=password/' .env.testing
+          php artisan key:generate --env=testing
+
+      - name: Exécution des migrations PostgreSQL avec RLS et Triggers
+        run: |
+          cd backend
+          php artisan migrate --env=testing --force
+
+      - name: Exécution de la suite de tests automatisés (PHPUnit)
+        run: |
+          cd backend
+          php artisan test

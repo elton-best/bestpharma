@@ -1,0 +1,33 @@
+# Environnements & secrets
+.env
+.env.backup
+.env.production
+backend/.env
+backend/.env.backup
+backend/.env.production
+
+# Dépendances PHP
+backend/vendor/
+
+# Caches Laravel & logs
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitignore
+backend/storage/*.key
+backend/storage/app/*
+!backend/storage/app/.gitignore
+backend/storage/framework/cache/*
+!backend/storage/framework/cache/.gitignore
+backend/storage/framework/sessions/*
+!backend/storage/framework/sessions/.gitignore
+backend/storage/framework/views/*
+!backend/storage/framework/views/.gitignore
+backend/storage/logs/*
+!backend/storage/logs/.gitignore
+
+# Fichiers temporaires & IDE
+.phpunit.result.cache
+cahier_des_charges_extracted.txt
+.vscode/
+.idea/
+*.log
+.DS_Store

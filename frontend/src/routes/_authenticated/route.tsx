@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Menu, X } from "reicon-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { NotificationsSheet } from "@/components/notifications-sheet";
+import { TourProvider, BoutonGuide } from "@/components/guide-tour";
 import { supabase } from "@/integrations/supabase/client";
 import { api } from "@/lib/api-client";
 import { enregistrerAppareil } from "@/lib/appareil";
@@ -37,7 +38,9 @@ function LayoutAuthentifie() {
   const { user } = Route.useRouteContext();
   return (
     <OfficineProvider userId={user.id}>
-      <Coquille userId={user.id} email={user.email ?? ""} />
+      <TourProvider>
+        <Coquille userId={user.id} email={user.email ?? ""} />
+      </TourProvider>
     </OfficineProvider>
   );
 }
@@ -190,12 +193,16 @@ function Coquille({ userId, email }: { userId: string; email: string }) {
               </div>
             )}
 
+            {/* Bouton Guide interactif */}
+            <BoutonGuide />
+
             {/* Cloche / Centre de notifications */}
             <NotificationsSheet />
 
             {/* Accès rapide réglages / profil */}
             <Link
               to="/compte"
+              data-tour="user-profile"
               className="flex items-center gap-2 rounded-xl border border-[#CFF1D2] p-1.5 pr-3 bg-white hover:bg-[#CFF1D2]/25 transition-colors"
               title="Mon compte & profil professionnel"
             >

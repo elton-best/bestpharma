@@ -2,6 +2,14 @@
 @source "../src";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: "Pharmacy";
+  src: url("/fonts/PHARMACY.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /* BESTPHARMA · Charte Image 2 & InnerBuild
@@ -9,8 +17,9 @@
    Orange (#FF7036), Ice (#BFF2F0), Mint (#CFF1D2) */
 
 @theme inline {
-  --font-sans: "Satoshi", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Plus Jakarta Sans", "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Pharmacy", "Satoshi", sans-serif;
+  --font-pharmacy: "Pharmacy", cursive, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "Geist Mono", "JetBrains Mono", monospace;
 
   --radius-sm: calc(var(--radius) - 6px);
@@ -122,20 +131,23 @@
     border-color: var(--color-border);
   }
   html {
-    font-size: 16px;
-    letter-spacing: -0.01em;
+    font-size: 17px;
+    letter-spacing: 0.012em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-size: 0.965rem;
-    line-height: 1.6;
+    font-size: 1.025rem;
+    letter-spacing: 0.015em;
+    line-height: 1.65;
     -webkit-tap-highlight-color: transparent;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.025em;
+    letter-spacing: 0.025em;
     color: var(--color-foreground);
   }
 }

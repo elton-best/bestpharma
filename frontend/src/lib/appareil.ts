@@ -13,27 +13,32 @@ export function appareilCourant(): string | null {
   return localStorage.getItem(CLE);
 }
 
-/** Enregistre/actualise l'appareil. Retourne false si l'appareil a été révoqué à distance. */
+/** Enregistre/actualise l'appareil. Retourne false UNIQUEMENT si l'appareil a été expressément révoqué à distance. */
 export async function enregistrerAppareil(userId: string): Promise<boolean> {
-  const id = appareilCourant();
-  if (id) {
-    const { data } = await supabase.from("sessions_appareils").select("revoquee").eq("id", id).maybeSingle();
-    if (data?.revoquee) {
-      localStorage.removeItem(CLE);
-      return false;
+  try {
+    const id = appareilCourant();
+    if (id) {
+      const { data, error } = await supabase.from("sessions_appareils").select("revoquee").eq("id", id).maybeSingle();
+      if (!error && data?.revoquee) {
+        localStorage.removeItem(CLE);
+        return false;
+      }
+      if (data) {
+        await supabase.from("sessions_appareils").update({ derniere_activite: new Date().toISOString() }).eq("id", id).catch(() => {});
+        return true;
+      }
     }
-    if (data) {
-      await supabase.from("sessions_appareils").update({ derniere_activite: new Date().toISOString() }).eq("id", id);
-      return true;
-    }
+    const { data } = await supabase
+      .from("sessions_appareils")
+      .insert({ user_id: userId, libelle: libelleAppareil() })
+      .select("id")
+      .single()
+      .catch(() => ({ data: null }));
+    if (data?.id) localStorage.setItem(CLE, data.id);
+    return true;
+  } catch {
+    return true; // En cas de doute ou d'indisponibilité réseau, ne pas déconnecter l'utilisateur
   }
-  const { data } = await supabase
-    .from("sessions_appareils")
-    .insert({ user_id: userId, libelle: libelleAppareil() })
-    .select("id")
-    .single();
-  if (data) localStorage.setItem(CLE, data.id);
-  return true;
 }
 
 export function oublierAppareil() {

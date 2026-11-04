@@ -47,49 +47,43 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
-  console.error("Session or Route Error caught gracefully:", error);
-  const router = useRouter();
+  console.error("Route error:", error);
 
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+  const messageErreur =
+    (error as any)?.message ||
+    (typeof error === "string" ? error : "Une erreur inattendue est survenue.");
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f8faf8] px-4 font-sans">
-      <div className="max-w-md w-full text-center bg-white border border-[#CFE3D5] rounded-3xl p-8 sm:p-10 shadow-xl shadow-[#023010]/5">
-        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-[#023010] text-2xl font-black text-white shadow-lg shadow-[#023010]/20 font-display">
+    <div className="min-h-screen bg-[#F7F9F7] flex items-center justify-center p-4 font-sans">
+      <div className="max-w-md w-full text-center bg-white border border-[#CFF1D2] rounded-3xl p-7 shadow-lg">
+        <div className="size-10 mx-auto rounded-2xl bg-[#0F3B27] text-[#92FF5F] flex items-center justify-center font-display font-black text-xl mb-4 shadow-sm">
           +
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-[#18AA38]/30 bg-[#EFF7F1] px-3.5 py-1 text-xs font-bold text-[#023010] mb-3">
-          <span className="size-1.5 rounded-full bg-[#18AA38] animate-pulse" /> BEGPHARMA · Sécurité active
-        </span>
-        <h1 className="text-xl font-extrabold font-display tracking-tight text-[#1F2420]">
-          Rétablissement de session
-        </h1>
-        <p className="mt-2 text-xs text-[#5C6660] leading-relaxed">
-          Une ressource a nécessité une actualisation de session. Cliquez ci-dessous pour reprendre directement vos activités d'officine.
+        <h2 className="text-xl font-bold font-display text-[#0F3B27]">Accès à l'Officine</h2>
+        <p className="mt-2 text-xs text-[#475C50] leading-relaxed">
+          {messageErreur}
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             type="button"
             onClick={() => {
-              try {
-                router.invalidate();
-                reset();
-              } catch {
-                window.location.reload();
+              if (typeof window !== "undefined") {
+                localStorage.removeItem("begpharma.token");
+                localStorage.removeItem("begpharma.user");
+                window.location.replace("/auth");
               }
             }}
-            className="inline-flex items-center justify-center rounded-xl bg-[#023010] hover:bg-[#18AA38] px-5 py-2.5 text-xs font-bold text-white transition-all shadow-md shadow-[#023010]/15"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0F3B27] hover:bg-[#164E35] text-[#92FF5F] font-bold text-xs transition-all shadow-sm"
           >
-            Actualiser l'écran
+            Se reconnecter
           </button>
-          <a
-            href="/app"
-            className="inline-flex items-center justify-center rounded-xl border border-[#CFE3D5] bg-white hover:bg-[#EFF7F1] px-5 py-2.5 text-xs font-bold text-[#1F2420] transition-colors"
+          <button
+            type="button"
+            onClick={() => reset()}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#CFF1D2] text-[#0F3B27] font-bold text-xs hover:bg-[#CFF1D2]/30 transition-all"
           >
-            Espace Officine
-          </a>
+            Réessayer
+          </button>
         </div>
       </div>
     </div>

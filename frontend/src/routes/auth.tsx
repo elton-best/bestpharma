@@ -104,7 +104,7 @@ function PageConnexion() {
       api.setToken(data.token);
       api.setUser(data.user);
       if (data.officines) api.setOfficines(data.officines);
-      navigate({ to: "/app" });
+      window.location.href = "/app";
     } catch (err: any) {
       setMessage(err.message || fr.commun.erreur);
     } finally {

@@ -22,8 +22,21 @@ const OfficineCtx = createContext<Ctx | null>(null);
 const CLE = "begpharma.officine";
 
 export function OfficineProvider({ userId, children }: { userId: string; children: ReactNode }) {
-  const { data, isLoading } = useQuery({
+  const [choix, setChoix] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(CLE);
+  });
+
+  const { data = [] } = useQuery({
     queryKey: ["rattachements", userId],
+    initialData: () => {
+      const offs = api.getOfficines();
+      return (offs || []).map((o: any) => ({
+        officine_id: o.id,
+        role: (o.pivot?.role_code || "dispensateur") as Role,
+        officine: { id: o.id, nom: o.nom, ville: o.ville ?? null },
+      })) as Rattachement[];
+    },
     queryFn: async () => {
       const offs = await api.get<any[]>("/api/officines").catch(() => api.getOfficines());
       return (offs || []).map((o: any) => ({
@@ -34,23 +47,20 @@ export function OfficineProvider({ userId, children }: { userId: string; childre
     },
   });
 
-  const [choix, setChoix] = useState<string | null>(null);
-  useEffect(() => setChoix(localStorage.getItem(CLE)), []);
-
   const value = useMemo<Ctx>(() => {
     const list = data ?? [];
     const courante = list.find((r) => r.officine_id === choix) ?? list[0] ?? null;
     return {
       rattachements: list,
       courante,
-      chargement: isLoading,
+      chargement: false,
       choisir: (id) => {
         localStorage.setItem(CLE, id);
         setChoix(id);
       },
       aRole: (...roles) => !!courante && roles.includes(courante.role),
     };
-  }, [data, choix, isLoading]);
+  }, [data, choix]);
 
   return <OfficineCtx.Provider value={value}>{children}</OfficineCtx.Provider>;
 }

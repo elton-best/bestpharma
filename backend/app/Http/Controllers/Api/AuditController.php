@@ -12,9 +12,12 @@ class AuditController extends Controller
     /**
      * Consultation filtrable du journal d'audit inaltérable (E0-S4, NF-06, NF-07)
      */
-    public function index(Request $request, string $officineId): JsonResponse
+    public function index(Request $request, ?string $officineId = null): JsonResponse
     {
-        $query = AuditLog::where('officine_id', $officineId)
+        $finalOfficineId = $officineId ?: $request->user()?->officines()->first()?->id;
+
+        $query = AuditLog::query()
+            ->when($finalOfficineId, fn($q) => $q->where('officine_id', $finalOfficineId))
             ->orderByDesc('id');
 
         if ($request->filled('table_name')) {

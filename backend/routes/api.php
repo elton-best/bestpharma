@@ -75,6 +75,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Pointage par badge & Présence obligatoire du pharmacien (BPD-C09 & art. 1.11)
     Route::get('/officines/{officineId}/pointages', [PointageController::class, 'index']);
+    Route::get('/officines/{officineId}/pointages/actif', [PointageController::class, 'actif']);
+    Route::post('/officines/{officineId}/pointages/prise', [PointageController::class, 'prise']);
     Route::post('/officines/{officineId}/pointages', [PointageController::class, 'store']);
 
     // Non-conformités et CAPA 5M (BPD1-F09)
@@ -90,6 +92,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/echeances/{id}', [EcheanceController::class, 'update']);
     Route::patch('/echeances/{id}', [EcheanceController::class, 'update']);
     Route::delete('/echeances/{id}', [EcheanceController::class, 'destroy']);
+    // Journal d'audit inaltérable (E0-S4)
+    Route::get('/officines/{officineId}/audit-logs', [AuditController::class, 'index']);
+    Route::get('/audit-logs', [AuditController::class, 'index']);
 
     // ==========================================
     // PARTIE 2 : CONSERVATION, LOCAUX & AUTO-ÉVALUATION (LOTS 1.2 & 1.5)

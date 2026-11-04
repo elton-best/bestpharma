@@ -79,6 +79,12 @@ export function LandingPage() {
               Les 4 Piliers
             </a>
             <a
+              href="#modules"
+              className="flex h-8 items-center justify-center rounded-full px-3.5 text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] border border-[#0F3B27]/20 transition-colors hover:bg-[#92FF5F]"
+            >
+              Les 16 Modules BPD
+            </a>
+            <a
               href="#reglementation"
               className="flex h-8 items-center justify-center rounded-full px-3.5 text-xs font-bold text-[#1F2420] transition-colors hover:text-[#023010] hover:bg-[#E2F7E7]"
             >
@@ -371,7 +377,173 @@ export function LandingPage() {
       </section>
 
       {/* ============================================================== */}
-      {/* 4. SECTION BANNER CALL-TO-ACTION                               */}
+      {/* 4. LES 16 MODULES OFFICIELS DE L'OFFICINE BPD                  */}
+      {/* ============================================================== */}
+      <section id="modules" className="py-16 md:py-20 px-4 sm:px-6 max-w-6xl mx-auto w-full border-t border-[#CFE3D5]/60">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0F3B27]/20 bg-[#CFF1D2] px-3.5 py-1 text-xs font-bold text-[#0F3B27] mb-3">
+            <Sparkles className="size-3 text-[#0F3B27]" /> Suite Métier Complète
+          </span>
+          <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-[#0F3B27] tracking-tight">
+            Les 16 Modules Opérationnels de l'Officine
+          </h2>
+          <p className="text-xs sm:text-sm text-[#475C50] mt-2 leading-relaxed">
+            Une suite logicielle intégrée de pointe couvrant l'intégralité du cycle pharmaceutique, conforme aux 267 articles du Guide BPD de l'ABMed.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[
+            {
+              titre: "Caisse POS Tactile",
+              desc: "Vente au comptoir, e-MECeF, Mobile Money FeexPay & clôtures Z.",
+              code: "POS-01",
+              icone: "Receipt",
+              url: "/auth",
+            },
+            {
+              titre: "Dispensation BPD",
+              desc: "Analyse pharmaceutique, ordonnancier coté & respect de la règle FEFO.",
+              code: "DISP-02",
+              icone: "FileText",
+              url: "/auth",
+            },
+            {
+              titre: "Facturation DGI",
+              desc: "Factures normalisées avec NIM, QR Code fiscal & compteurs officiels certifiés.",
+              code: "MECeF-03",
+              icone: "Award",
+              url: "/auth",
+            },
+            {
+              titre: "Stock & Règle FEFO",
+              desc: "Gestion par lots, alertes péremptions à 90 jours & zone de quarantaine.",
+              code: "STK-04",
+              icone: "Layers",
+              url: "/auth",
+            },
+            {
+              titre: "Comptabilité OHADA",
+              desc: "Journal des ventes, comptes 701/571/521 & export automatisé SYSCOHADA.",
+              code: "CPT-05",
+              icone: "Activity",
+              url: "/auth",
+            },
+            {
+              titre: "Registre Stupéfiants",
+              desc: "Tableau B inaltérable, balance stricte sans suppression & archivage 10 ans.",
+              code: "STUP-06",
+              icone: "Lock",
+              url: "/auth",
+            },
+            {
+              titre: "Préparatoire & Magistrales",
+              desc: "Cahier de fabrication officiel, calcul des excipients & visa du titulaire.",
+              code: "PREP-07",
+              icone: "PlusCircle",
+              url: "/auth",
+            },
+            {
+              titre: "Températures & Froid",
+              desc: "Sondes frigo 2-8°C, réserve < 25°C et alertes d'excursion en temps réel.",
+              code: "TEMP-08",
+              icone: "Thermometer",
+              url: "/auth",
+            },
+            {
+              titre: "Locaux & Matériel (5M)",
+              desc: "Plan de bio-nettoyage BPD4-F07, étalonnage des balances & maintenance.",
+              code: "LOC-09",
+              icone: "Building2",
+              url: "/auth",
+            },
+            {
+              titre: "Auto-évaluation 267 Arts",
+              desc: "Grille officielle ABMed, calcul du score de conformité & génération CAPA.",
+              code: "EVAL-10",
+              icone: "BookOpenCheck",
+              url: "/auth",
+            },
+            {
+              titre: "Pointage Pharmacien",
+              desc: "Présence obligatoire effective sur site (Art. 1.11) & badge numérique.",
+              code: "PRES-11",
+              icone: "Clock",
+              url: "/auth",
+            },
+            {
+              titre: "Personnel & Fiches RH",
+              desc: "Qualifications, habilitations et compétences du personnel d'officine.",
+              code: "RH-12",
+              icone: "Users",
+              url: "/auth",
+            },
+            {
+              titre: "GED & Procédures Qualité",
+              desc: "BPD-1 & BPD-3, rédaction, cycle de révision et visas du Titulaire.",
+              code: "GED-13",
+              icone: "FileText",
+              url: "/auth",
+            },
+            {
+              titre: "Bibliothèque 59 Modèles",
+              desc: "Procédures types préchargées de l'ABMed prêtes à être instanciées.",
+              code: "MOD-14",
+              icone: "BookOpenCheck",
+              url: "/auth",
+            },
+            {
+              titre: "Non-conformités (5M)",
+              desc: "Signalement d'incidents, analyse des causes racines & plan d'action CAPA.",
+              code: "CAPA-15",
+              icone: "ShieldAlert",
+              url: "/auth",
+            },
+            {
+              titre: "Échéances Réglementaires",
+              desc: "Calendrier des obligations sanitaires, renouvellements et rappels officiels.",
+              code: "ECH-16",
+              icone: "Clock",
+              url: "/auth",
+            },
+          ].map((m) => (
+            <div
+              key={m.code}
+              className="p-5 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-lg transition-all duration-200 flex flex-col justify-between group"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-mono text-[10px] font-bold text-[#0F3B27] bg-[#CFF1D2] px-2 py-0.5 rounded-md border border-[#0F3B27]/15">
+                    {m.code}
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    Conforme ABMed
+                  </span>
+                </div>
+                <h3 className="font-display font-bold text-base text-[#0F3B27] group-hover:text-[#0F3B27]/80 transition-colors mb-1.5">
+                  {m.titre}
+                </h3>
+                <p className="text-xs text-[#475C50] leading-relaxed line-clamp-2">
+                  {m.desc}
+                </p>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-[#0F3B27]">
+                <Link
+                  to={m.url}
+                  className="inline-flex items-center gap-1 group-hover:text-[#0F3B27] font-bold group-hover:underline"
+                >
+                  Accéder &gt;
+                </Link>
+                <span className="size-2 rounded-full bg-[#92FF5F]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* 5. SECTION BANNER CALL-TO-ACTION                               */}
       {/* ============================================================== */}
       <section className="px-4 sm:px-6 py-12">
         <div className="max-w-6xl mx-auto rounded-3xl bg-gradient-to-br from-[#023010] via-[#03260e] to-[#011707] p-8 sm:p-12 text-white text-center relative overflow-hidden border border-[#CFE3D5]/30">

@@ -210,7 +210,7 @@ export function AppSidebar({
       )}
 
       {/* 2. Navigation avec accordéons inspirés d'InnerBuild */}
-      <nav className="flex-1 space-y-1.5 overflow-y-auto px-3 py-4 scrollbar-thin">
+      <nav data-tour="sidebar-nav" className="flex-1 space-y-1.5 overflow-y-auto px-3 py-4 scrollbar-thin">
         {NAV_ENTRIES.map((entry) => {
           // Entrée feuille simple
           if (!("children" in entry)) {

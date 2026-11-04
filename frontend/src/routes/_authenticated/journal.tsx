@@ -29,17 +29,18 @@ export const Route = createFileRoute("/_authenticated/journal")({
   component: PageJournal,
 });
 
-interface LigneJournal {
-  id: number;
-  table_nom: string;
-  ligne_id: string | null;
-  action: string;
-  user_id: string | null;
-  appareil: string | null;
-  created_at: string;
-}
-
 const fmtDate = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" });
+
+function formatDateSecurisee(dateStr: string | null | undefined): string {
+  if (!dateStr) return "—";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "—";
+    return fmtDate.format(d);
+  } catch {
+    return "—";
+  }
+}
 
 function PageJournal() {
   const { courante, aRole, chargement } = useOfficine();
@@ -113,7 +114,7 @@ function PageJournal() {
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{fr.actions[l.action as keyof typeof fr.actions] ?? l.action}</Badge>
               <span className="font-medium text-foreground">{l.table_nom}</span>
-              <span className="text-muted-foreground">{fmtDate.format(new Date(l.created_at))}</span>
+              <span className="text-muted-foreground">{formatDateSecurisee(l.created_at)}</span>
             </div>
             <p className="text-muted-foreground">
               {fr.journal.utilisateur} : {l.user_id ? (profils?.get(l.user_id) ?? "—") : "—"}

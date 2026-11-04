@@ -525,6 +525,18 @@ const scenarios = [
     },
   },
   {
+    nom: "Pointages actifs du jour",
+    methode: "GET",
+    chemin: "/api/officines/:officine/pointages/actif",
+    verifier: (j) => {
+      if (typeof j.pharmacien_present !== "boolean") throw new Error("pharmacien_present manquant");
+      if (!j.presence || typeof j.presence.pharmacien_present !== "boolean") {
+        throw new Error("presence.pharmacien_present manquant");
+      }
+      if (!Array.isArray(j.pointages_actifs)) throw new Error("pointages_actifs manquant");
+    },
+  },
+  {
     nom: "Équipements",
     methode: "GET",
     chemin: "/api/officines/:officine/equipements",
@@ -601,6 +613,20 @@ const scenarios = [
     methode: "GET",
     chemin: "/api/officines/:officine/parametres",
     verifier: (j) => attendreTableau(j, null),
+  },
+  {
+    // en dernier : chaque exécution ajoute une officine de démonstration
+    nom: "Créer une officine",
+    methode: "POST",
+    chemin: "/api/officines",
+    // l'écran de création ne demande que le nom et la ville ; l'API complète
+    // les mentions administratives et attribue une licence provisoire
+    corps: { nom: "Pharmacie de contrôle", ville: "Porto-Novo" },
+    verifier: (j) => {
+      if (!j.id) throw new Error("id d'officine manquant");
+      if (!j.numero_licence) throw new Error("licence provisoire non attribuée");
+      if (j.pivot?.role_code !== "promoteur") throw new Error("créateur non rattaché comme promoteur");
+    },
   },
   {
     nom: "Appareils connectés",

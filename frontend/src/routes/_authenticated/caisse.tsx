@@ -37,6 +37,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 
 export const Route = createFileRoute("/_authenticated/caisse")({
   head: () => ({
@@ -599,208 +600,242 @@ function PageCaissePos() {
         </div>
       </div>
 
-      {/* Modal Ticket de Caisse Certifié DGI e-MECeF */}
+      {/* Ticket de caisse certifié DGI e-MECeF */}
       <Dialog open={dialogTicketSucces} onOpenChange={setDialogTicketSucces}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-center font-bold text-base flex items-center justify-center gap-1.5 text-emerald-700">
-              <CheckCircle2 className="w-5 h-5" /> Facture Normalisée DGI
-            </DialogTitle>
-            <DialogDescription className="text-center text-xs">
-              Certifiée par la Direction Générale des Impôts du Bénin (e-MECeF).
-            </DialogDescription>
-          </DialogHeader>
-
-          {derniereVente && (
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono space-y-2">
-              <div className="text-center pb-2 border-b border-dashed border-slate-300">
-                <div className="font-bold text-slate-900 text-sm">BEGPHARMA OFFICINE</div>
-                <div className="text-[11px] text-slate-500">RÉPUBLIQUE DU BÉNIN</div>
-                <div className="text-[11px] text-slate-600">
-                  IFU : {derniereVente.facture_emecef?.ifu_officine}
-                </div>
-                <div className="text-[11px] text-slate-600">
-                  NIM : {derniereVente.facture_emecef?.nim_machine}
-                </div>
+        <ModaleFiche
+          titre="Vente encaissée et facture normalisée"
+          sousTitre="Le ticket remis au client et sa certification fiscale électronique, côte à côte."
+          badge={<Badge className="border-[#CFF1D2] bg-[#DCFCE7] text-[#14532D]">Certifié DGI</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] text-[#475C50]">
+                Le ticket et la facture sont conservés dix ans, avec la trace de l'agent qui a encaissé.
+              </p>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                <Button type="button" variant="outline" onClick={() => window.print()} className="h-12 gap-2 rounded-xl sm:h-11">
+                  <Printer className="h-4 w-4" /> Imprimer
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setDialogTicketSucces(false)}
+                  className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
+                >
+                  Fermer
+                </Button>
               </div>
-
-              <div className="space-y-1 py-1 border-b border-dashed border-slate-300">
-                <div>Ticket : {derniereVente.numero_ticket}</div>
-                <div>Facture DGI : {derniereVente.facture_emecef?.numero_facture_dgi}</div>
-                <div>Date : {new Date(derniereVente.created_at).toLocaleString("fr-FR")}</div>
-                <div>Client : {derniereVente.client_nom}</div>
-              </div>
-
-              {/* Lignes d'articles */}
-              <div className="space-y-1 py-1 border-b border-dashed border-slate-300">
-                {derniereVente.lignes?.map((l: any) => (
-                  <div key={l.id} className="flex justify-between">
-                    <span>
-                      {l.quantite}x {l.produit?.nom_commercial} [A]
-                    </span>
-                    <span>{Number(l.total_ligne).toLocaleString("fr-FR")} F</span>
+            </div>
+          }
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <ColonneFiche titre="Ticket remis au client" aide="Reproduction fidèle du ticket imprimé en caisse.">
+              {derniereVente ? (
+                <div className="space-y-2 rounded-xl border-2 border-dashed border-[#CFF1D2] bg-[#F7F9F7] p-4 font-mono text-xs">
+                  <div className="border-b border-dashed border-[#CFF1D2] pb-2 text-center">
+                    <div className="text-sm font-bold text-[#0F3B27]">BEGPHARMA OFFICINE</div>
+                    <div className="text-[11px] text-[#475C50]">RÉPUBLIQUE DU BÉNIN</div>
+                    <div className="text-[11px] text-[#475C50]">IFU : {derniereVente.facture_emecef?.ifu_officine}</div>
+                    <div className="text-[11px] text-[#475C50]">NIM : {derniereVente.facture_emecef?.nim_machine}</div>
                   </div>
-                ))}
+
+                  <div className="space-y-1 border-b border-dashed border-[#CFF1D2] py-1">
+                    <div>Ticket : {derniereVente.numero_ticket}</div>
+                    <div>Facture DGI : {derniereVente.facture_emecef?.numero_facture_dgi}</div>
+                    <div>Date : {new Date(derniereVente.created_at).toLocaleString("fr-FR")}</div>
+                    <div>Client : {derniereVente.client_nom}</div>
+                  </div>
+
+                  <div className="space-y-1 border-b border-dashed border-[#CFF1D2] py-1">
+                    {derniereVente.lignes?.map((l: any) => (
+                      <div key={l.id} className="flex justify-between gap-2">
+                        <span>
+                          {l.quantite} × {l.produit?.nom_commercial}
+                        </span>
+                        <span>{Number(l.total_ligne).toLocaleString("fr-FR")} F</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-between pt-1 text-sm font-bold text-[#0F3B27]">
+                    <span>TOTAL TTC</span>
+                    <span>{Number(derniereVente.montant_net_ttc).toLocaleString("fr-FR")} FCFA</span>
+                  </div>
+                </div>
+              ) : null}
+            </ColonneFiche>
+
+            <ColonneFiche titre="Règlement et certification" aide="Contrôles à passer avant de rendre le ticket au client.">
+              <div className="space-y-2 rounded-xl border-2 border-[#CFF1D2] p-4 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-[#475C50]">Mode de règlement</span>
+                  <span className="font-bold text-[#0F3B27]">{derniereVente?.mode_reglement}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#475C50]">Montant reçu</span>
+                  <span className="font-bold text-[#0F3B27]">
+                    {Number(derniereVente?.montant_recu ?? 0).toLocaleString("fr-FR")} FCFA
+                  </span>
+                </div>
+                <div className="flex justify-between border-t border-[#CFF1D2] pt-2">
+                  <span className="text-[#475C50]">Monnaie rendue</span>
+                  <span className="font-bold text-[#0F3B27]">
+                    {Number(derniereVente?.monnaie_rendue ?? 0).toLocaleString("fr-FR")} FCFA
+                  </span>
+                </div>
               </div>
 
-              <div className="space-y-1 pt-1 font-bold">
-                <div className="flex justify-between text-slate-900 text-sm">
-                  <span>TOTAL TTC :</span>
-                  <span>{Number(derniereVente.montant_net_ttc).toLocaleString("fr-FR")} FCFA</span>
+              <Champ label="Code de sécurité e-MECeF" aide="Chiffres à faire figurer sur le ticket, vérifiables par l'administration fiscale.">
+                <div className="rounded-xl border-2 border-[#0F3B27] bg-[#F7F9F7] px-3 py-2 text-center font-mono text-sm font-black tracking-wider text-[#0F3B27]">
+                  {derniereVente?.facture_emecef?.code_mecef}
                 </div>
-                <div className="flex justify-between text-[11px] text-slate-600 font-normal">
-                  <span>Règlement ({derniereVente.mode_reglement}) :</span>
-                  <span>{Number(derniereVente.montant_recu).toLocaleString("fr-FR")} F</span>
-                </div>
-                <div className="flex justify-between text-[11px] text-slate-600 font-normal">
-                  <span>Monnaie rendue :</span>
-                  <span>{Number(derniereVente.monnaie_rendue).toLocaleString("fr-FR")} F</span>
-                </div>
-              </div>
+              </Champ>
 
-              {/* Bloc e-MECeF officiel */}
-              <div className="pt-2 text-center border-t border-dashed border-slate-300 space-y-1">
-                <div className="text-[10px] text-slate-500 font-bold">CODE SÉCURITÉ e-MECeF :</div>
-                <div className="text-xs font-black text-slate-900 bg-white p-1 rounded border">
-                  {derniereVente.facture_emecef?.code_mecef}
+              <Champ label="QR fiscal" aide="Le client peut le scanner pour retrouver sa facture chez la Direction Générale des Impôts.">
+                <div className="break-all rounded-xl border border-[#CFF1D2] bg-white px-3 py-2 font-mono text-[10px] text-[#475C50]">
+                  {derniereVente?.facture_emecef?.qr_code_data}
                 </div>
-                <div className="text-[9px] text-slate-400 break-all pt-1">
-                  QR Fiscal : {derniereVente.facture_emecef?.qr_code_data?.substring(0, 40)}...
-                </div>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => window.print()}
-              className="gap-1 text-xs"
-            >
-              <Printer className="w-3.5 h-3.5" /> Imprimer Ticket
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => setDialogTicketSucces(false)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
-            >
-              Fermer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+              </Champ>
+            </ColonneFiche>
+          </div>
+        </ModaleFiche>
       </Dialog>
 
-      {/* Modal Ouverture de Caisse */}
+      {/* Ouverture de caisse */}
       <Dialog open={dialogOuvrirOuvert} onOpenChange={setDialogOuvrirOuvert}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Ouverture de Session de Caisse</DialogTitle>
-            <DialogDescription>
-              Déclarez le fond de caisse initial en espèces selon les normes BPD.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Fond de caisse d'ouverture (FCFA) *</Label>
-              <Input
-                type="number"
-                min="0"
-                value={fondOuvertureSaisi}
-                onChange={(e) => setFondOuvertureSaisi(e.target.value)}
-                placeholder="Ex: 20000"
-              />
+        <ModaleFiche
+          titre="Ouvrir la caisse du jour"
+          sousTitre="Le fond de caisse déclaré ici sert de point de départ au billetage de fermeture."
+          badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Session de caisse</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] text-[#475C50]">
+                Une seule session peut être ouverte à la fois pour l'officine.
+              </p>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                <Button type="button" variant="outline" onClick={() => setDialogOuvrirOuvert(false)} className="h-12 rounded-xl sm:h-11">
+                  Annuler
+                </Button>
+                <Button
+                  type="button"
+                  disabled={mutationOuvrir.isPending}
+                  onClick={() => mutationOuvrir.mutate(parseFloat(fondOuvertureSaisi) || 0)}
+                  className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
+                >
+                  {mutationOuvrir.isPending ? "Ouverture…" : "Confirmer l'ouverture"}
+                </Button>
+              </div>
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setDialogOuvrirOuvert(false)}>
-                Annuler
-              </Button>
-              <Button
-                type="button"
-                disabled={mutationOuvrir.isPending}
-                onClick={() => mutationOuvrir.mutate(parseFloat(fondOuvertureSaisi) || 0)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-              >
-                {mutationOuvrir.isPending ? "Ouverture..." : "Confirmer l'ouverture"}
-              </Button>
-            </DialogFooter>
+          }
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <ColonneFiche titre="Fond de caisse" aide="Espèces physiquement présentes dans le tiroir au début du service.">
+              <Champ label="Montant d'ouverture en espèces" obligatoire aide="En francs CFA, sans décimale.">
+                <Input
+                  type="number"
+                  min="0"
+                  value={fondOuvertureSaisi}
+                  onChange={(e) => setFondOuvertureSaisi(e.target.value)}
+                  placeholder="20000"
+                  className="h-12 text-lg font-bold"
+                />
+              </Champ>
+            </ColonneFiche>
+
+            <ColonneFiche titre="Avant de confirmer" aide="Trois vérifications qui évitent les écarts en fin de journée.">
+              <ul className="space-y-2 text-xs text-[#475C50]">
+                <li className="rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] px-3 py-2">
+                  Compter les coupures une à une, en présence d'un second agent si possible.
+                </li>
+                <li className="rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] px-3 py-2">
+                  Le montant saisi reste modifiable tant que la première vente n'est pas encaissée.
+                </li>
+                <li className="rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] px-3 py-2">
+                  Toute ouverture est journalisée avec l'agent et l'heure exacte.
+                </li>
+              </ul>
+            </ColonneFiche>
           </div>
-        </DialogContent>
+        </ModaleFiche>
       </Dialog>
 
-      {/* Modal Clôture de Caisse (Ticket Z) */}
+      {/* Clôture de caisse (ticket Z) */}
       <Dialog open={dialogCloturerOuvert} onOpenChange={setDialogCloturerOuvert}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-red-700 flex items-center gap-2">
-              <Lock className="w-5 h-5" /> Clôture Journalière Définitive (Ticket Z)
-            </DialogTitle>
-            <DialogDescription>
-              Effectuez le billetage physique. Le système calculera automatiquement l'écart de caisse.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 text-xs">
-            <div className="p-3 bg-slate-50 rounded border space-y-1">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Fond d'ouverture :</span>
-                <span className="font-semibold">{session?.fond_caisse_ouverture} FCFA</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Total encaissé espèces :</span>
-                <span className="font-semibold">{session?.total_encaisse_especes} FCFA</span>
-              </div>
-              <div className="flex justify-between border-t pt-1 font-bold text-slate-900">
-                <span>Espèces théoriques en caisse :</span>
-                <span className="text-emerald-700">
-                  {session?.fond_caisse_fermeture_theorique} FCFA
-                </span>
+        <ModaleFiche
+          titre="Clôturer la caisse du jour"
+          sousTitre="Le billetage physique est comparé à la caisse théorique, puis l'écart est expliqué avant la clôture définitive."
+          badge={<Badge className="border-[#FECACA] bg-[#FEE2E2] text-[#991B1B]">Ticket Z</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] text-[#475C50]">
+                La clôture est définitive : elle conserve son numéro, même si un écart est constaté.
+              </p>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                <Button type="button" variant="outline" onClick={() => setDialogCloturerOuvert(false)} className="h-12 rounded-xl sm:h-11">
+                  Annuler
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={!fondClotureReelSaisi || mutationCloturer.isPending}
+                  onClick={() =>
+                    mutationCloturer.mutate({
+                      fond_caisse_fermeture_reel: parseFloat(fondClotureReelSaisi),
+                      notes_cloture: notesCloture,
+                    })
+                  }
+                  className="h-12 rounded-xl font-bold sm:h-11"
+                >
+                  {mutationCloturer.isPending ? "Clôture…" : "Émettre le ticket Z"}
+                </Button>
               </div>
             </div>
+          }
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <ColonneFiche titre="Ce que dit la caisse" aide="Calculé à partir du fond d'ouverture et des ventes encaissées.">
+              <div className="space-y-2 rounded-xl border-2 border-[#CFF1D2] bg-[#F7F9F7] p-4 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-[#475C50]">Fond d'ouverture</span>
+                  <span className="font-bold text-[#0F3B27]">
+                    {Number(session?.fond_caisse_ouverture ?? 0).toLocaleString("fr-FR")} FCFA
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#475C50]">Encaissé en espèces</span>
+                  <span className="font-bold text-[#0F3B27]">
+                    {Number(session?.total_encaisse_especes ?? 0).toLocaleString("fr-FR")} FCFA
+                  </span>
+                </div>
+                <div className="flex justify-between border-t border-[#CFF1D2] pt-2">
+                  <span className="font-bold text-[#0F3B27]">Espèces théoriques</span>
+                  <span className="font-black text-[#0F3B27]">
+                    {Number(session?.fond_caisse_fermeture_theorique ?? 0).toLocaleString("fr-FR")} FCFA
+                  </span>
+                </div>
+              </div>
+            </ColonneFiche>
 
-            <div>
-              <Label className="text-xs">Espèces réelles comptées (Billetage physique) *</Label>
-              <Input
-                type="number"
-                min="0"
-                placeholder="Montant compté..."
-                value={fondClotureReelSaisi}
-                onChange={(e) => setFondClotureReelSaisi(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs">Notes ou observations de clôture</Label>
-              <Input
-                placeholder="Ex: RAS ou motif écart..."
-                value={notesCloture}
-                onChange={(e) => setNotesCloture(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setDialogCloturerOuvert(false)}>
-                Annuler
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                disabled={!fondClotureReelSaisi || mutationCloturer.isPending}
-                onClick={() =>
-                  mutationCloturer.mutate({
-                    fond_caisse_fermeture_reel: parseFloat(fondClotureReelSaisi),
-                    notes_cloture: notesCloture,
-                  })
-                }
-              >
-                {mutationCloturer.isPending ? "Clôture..." : "Émettre le Ticket Z"}
-              </Button>
-            </DialogFooter>
+            <ColonneFiche titre="Ce que vous avez compté" aide="Le billetage réel, puis l'explication de l'écart s'il y en a un.">
+              <Champ label="Espèces réellement comptées" obligatoire aide="Somme des billets et pièces présents dans le tiroir.">
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="Montant compté"
+                  value={fondClotureReelSaisi}
+                  onChange={(e) => setFondClotureReelSaisi(e.target.value)}
+                  className="h-12 text-lg font-bold"
+                />
+              </Champ>
+              <Champ label="Observation de clôture" aide="« Rien à signaler », ou la cause de l'écart constaté.">
+                <Input
+                  placeholder="Rien à signaler"
+                  value={notesCloture}
+                  onChange={(e) => setNotesCloture(e.target.value)}
+                  className="h-11"
+                />
+              </Champ>
+            </ColonneFiche>
           </div>
-        </DialogContent>
+        </ModaleFiche>
       </Dialog>
     </div>
   );

@@ -132,7 +132,7 @@ const SECTIONS = [
   },
 ];
 
-// ─── §0.2 — les huit statuts, expliqués en français courant
+// ─── Les statuts d’un lot, expliqués en français courant
 const STATUTS = [
   {
     valeur: "commercialisable",
@@ -424,7 +424,7 @@ function PageStockMagasin() {
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-black tracking-tight text-[#0F3B27]">Magasin & Stocks</h1>
             <Badge className="bg-[#0F3B27] text-[#92FF5F] border-[#0F3B27]">BPD-5 · FEFO · STO</Badge>
-            <Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">8 statuts, expliqués en clair</Badge>
+            <Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Chaque statut, expliqué en clair</Badge>
           </div>
           <p className="mt-1 text-sm text-[#475C50] max-w-2xl">
             Tout ce qui entre, sort ou dort en réserve, raconté simplement : chaque boîte garde son lot, son
@@ -500,12 +500,12 @@ function PageStockMagasin() {
             <Card className="border-[#CFF1D2] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-sm font-bold text-[#92FF5F] flex items-center gap-2"><PackageCheck className="w-4 h-4" /> Règle FEFO</CardTitle></CardHeader><CardContent className="text-xs leading-relaxed">La vente propose toujours le lot à péremption la plus proche. Choisir un autre lot demande une justification journalisée (STO-08).</CardContent></Card>
           </div>
 
-          {/* §0.2 — les huit statuts, avec des mots simples */}
+          {/* Les statuts d’un lot, avec des mots simples */}
           <Card className="border-[#CFF1D2]">
             <CardHeader>
-              <CardTitle className="text-sm font-black text-[#0F3B27]">Les huit statuts d’un lot, dits simplement</CardTitle>
+              <CardTitle className="text-sm font-black text-[#0F3B27]">Les statuts d’un lot, dits simplement</CardTitle>
               <CardDescription className="text-xs">
-                Les sept statuts du cahier §0.2, auxquels s’ajoute « Épuisé » quand il ne reste plus aucune boîte.
+                Chaque étape de la vie d’un lot porte un nom clair : de l’arrivée en réserve jusqu’à l’épuisement complet du stock.
                 Un lot ne change jamais de statut par hasard : chaque passage se documente et laisse une trace.
                 Seul « Commercialisable » peut être vendu ou délivré.
               </CardDescription>
@@ -821,12 +821,12 @@ function PageStockMagasin() {
         </ModaleFiche>
       </Dialog>
 
-      {/* Dialog Changement de statut — 8 statuts §0.2 */}
+      {/* Dialog Changement de statut */}
       <Dialog open={dialogChangementStatutOuvert} onOpenChange={setDialogChangementStatutOuvert}>
         <ModaleFiche
           titre="Changer le statut d’un lot"
           sousTitre={lotPourAction ? `Lot ${lotPourAction.numero_lot} · ${lotPourAction.produit?.nom_commercial ?? ""} — le changement prend effet immédiatement et reste au journal.` : "Le changement prend effet immédiatement."}
-          badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">§0.2 · 8 statuts</Badge>}
+          badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Statut du lot</Badge>}
           pied={
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-[11px] text-[#475C50]">Le motif est obligatoire : il explique la décision à l’inspection.</p>

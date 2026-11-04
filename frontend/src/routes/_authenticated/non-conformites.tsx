@@ -32,8 +32,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
 import { EnTete, Vide, dateFr, QUALITE } from "@/components/modules/commun";
+import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 
 export const Route = createFileRoute("/_authenticated/non-conformites")({
   head: () => ({
@@ -127,22 +128,21 @@ function PageNonConformites() {
 
       {/* Onglets Filtres & Compteurs visuels */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <Tabs value={filtreStatut} onValueChange={setFiltreStatut} className="w-full sm:w-auto">
-          <TabsList className="grid grid-cols-4 h-10 p-1 bg-white border border-[#0F3B27]/15 rounded-xl">
-            <TabsTrigger value="tous" className="text-xs px-3 font-semibold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]">
-              Toutes ({ncs.length})
-            </TabsTrigger>
-            <TabsTrigger value="ouverte" className="text-xs px-3 font-semibold data-[state=active]:bg-[#FF7036] data-[state=active]:text-white">
-              Ouvertes ({compteOuvertes})
-            </TabsTrigger>
-            <TabsTrigger value="en_cours" className="text-xs px-3 font-semibold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]">
-              En cours ({compteEnCours})
-            </TabsTrigger>
-            <TabsTrigger value="cloturee" className="text-xs px-3 font-semibold data-[state=active]:bg-[#CFF1D2] data-[state=active]:text-[#0F3B27]">
-              Clôturées ({compteCloturees})
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="w-full sm:max-w-md">
+          <SelecteurFiltrable
+            options={[
+              { valeur: "tous", libelle: `Toutes les fiches (${ncs.length})`, motsCles: ["tout", "ensemble"] },
+              { valeur: "ouverte", libelle: `Ouvertes (${compteOuvertes})`, motsCles: ["nouvelle", "à traiter"] },
+              { valeur: "en_cours", libelle: `En cours (${compteEnCours})`, motsCles: ["traitement", "capa"] },
+              { valeur: "cloturee", libelle: `Clôturées (${compteCloturees})`, motsCles: ["terminée", "archivée"] },
+            ]}
+            valeur={filtreStatut}
+            onChange={setFiltreStatut}
+            etiquette="État de la fiche"
+            placeholder="Toutes les fiches"
+            placeholderRecherche="Filtrer : ouverte, en cours, clôturée…"
+          />
+        </div>
       </div>
 
       {ncsFiltrees.length === 0 ? (
@@ -397,96 +397,96 @@ function DeclarerNonConformite({ officineId }: { officineId: string }) {
           + Signaler une Non-Conformité
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-xl rounded-3xl p-6">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-display font-bold text-[#0F3B27]">
-            Déclaration d'incident ou de non-conformité
-          </DialogTitle>
-        </DialogHeader>
+      <ModaleFiche
+        titre="Déclarer un incident ou une non-conformité"
+        sousTitre="Le constat est enregistré tel quel, avec l'action immédiate de mise en sécurité et la première piste de cause."
+        badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Qualité</Badge>}
+        pied={
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[11px] text-[#475C50]">
+              Le responsable qualité est notifié dès l'enregistrement ; la fiche ne se supprime jamais.
+            </p>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row">
+              <Button type="button" variant="outline" onClick={() => setOuvert(false)} className="h-12 rounded-xl sm:h-11">
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                form="formulaire-non-conformite"
+                disabled={creation.isPending || !titre.trim()}
+                className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
+              >
+                Enregistrer et notifier
+              </Button>
+            </div>
+          </div>
+        }
+      >
         <form
-          className="grid gap-4 py-2"
+          id="formulaire-non-conformite"
+          className="grid gap-4 md:grid-cols-2"
           onSubmit={(e) => {
             e.preventDefault();
             if (titre.trim()) creation.mutate();
           }}
         >
-          <div className="grid gap-1.5">
-            <Label htmlFor="nc-titre" className="text-xs font-semibold text-[#0F3B27]">
-              Intitulé du dysfonctionnement *
-            </Label>
-            <Input
-              id="nc-titre"
-              required
-              placeholder="Ex: Rupture de chaîne du froid, Colis endommagé..."
-              value={titre}
-              onChange={(e) => setTitre(e.target.value)}
-              className="rounded-xl border-[#0F3B27]/20"
-            />
-          </div>
+          <ColonneFiche titre="Constat" aide="Les faits, sans interprétation : ce qui a été vu, où et quand.">
+            <Champ label="Intitulé du dysfonctionnement" obligatoire>
+              <Input
+                id="nc-titre"
+                required
+                placeholder="Rupture de chaîne du froid, colis endommagé…"
+                value={titre}
+                onChange={(e) => setTitre(e.target.value)}
+                className="h-11 rounded-xl border-[#CFF1D2]"
+              />
+            </Champ>
+            <Champ label="Description détaillée" aide="Circonstances, produits concernés, personnes présentes.">
+              <Textarea
+                id="nc-desc"
+                rows={5}
+                placeholder="Décrivez les circonstances précises…"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="rounded-xl border-[#CFF1D2]"
+              />
+            </Champ>
+          </ColonneFiche>
 
-          <div className="grid gap-1.5">
-            <Label className="text-xs font-semibold text-[#0F3B27]">Niveau de gravité réglementaire *</Label>
-            <Select value={gravite} onValueChange={(v: any) => setGravite(v)}>
-              <SelectTrigger className="rounded-xl border-[#0F3B27]/20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mineure">Mineure (Aucun risque patient ni produit)</SelectItem>
-                <SelectItem value="majeure">Majeure (Risque de détérioration ou retard)</SelectItem>
-                <SelectItem value="critique">Critique (Risque direct santé publique ou chaîne du froid)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="nc-desc" className="text-xs font-semibold text-[#0F3B27]">
-              Constat / Description détaillée des faits
-            </Label>
-            <Textarea
-              id="nc-desc"
-              rows={3}
-              placeholder="Décrivez les circonstances précises..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="rounded-xl border-[#0F3B27]/20"
-            />
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="nc-act" className="text-xs font-semibold text-[#0F3B27]">
-              Action immédiate de mise en sécurité
-            </Label>
-            <Input
-              id="nc-act"
-              placeholder="Ex: Mise en quarantaine immédiate, Re-scellage..."
-              value={actionImmediate}
-              onChange={(e) => setActionImmediate(e.target.value)}
-              className="rounded-xl border-[#0F3B27]/20"
-            />
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="nc-5m" className="text-xs font-semibold text-[#0F3B27]">
-              Première hypothèse sur les causes (Méthode 5M)
-            </Label>
-            <Input
-              id="nc-5m"
-              placeholder="Matière, Matériel, Méthode, Main d'œuvre, Milieu..."
-              value={causes5m}
-              onChange={(e) => setCauses5m(e.target.value)}
-              className="rounded-xl border-[#0F3B27]/20"
-            />
-          </div>
-
-          <Button
-            type="submit"
-            disabled={creation.isPending}
-            className="mt-2 h-11 bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 font-bold rounded-xl"
-          >
-            Enregistrer et notifier le responsable qualité
-          </Button>
+          <ColonneFiche titre="Traitement immédiat" aide="La gravité oriente les délais : le critique se traite le jour même.">
+            <Champ label="Niveau de gravité" obligatoire>
+              <Select value={gravite} onValueChange={(v: any) => setGravite(v)}>
+                <SelectTrigger className="h-11 rounded-xl border-[#CFF1D2]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mineure">Mineure — aucun risque pour le patient ni le produit</SelectItem>
+                  <SelectItem value="majeure">Majeure — risque de détérioration ou de retard</SelectItem>
+                  <SelectItem value="critique">Critique — risque direct pour la santé ou la chaîne du froid</SelectItem>
+                </SelectContent>
+              </Select>
+            </Champ>
+            <Champ label="Action immédiate de mise en sécurité" aide="Ce qui a été fait tout de suite : quarantaine, retrait, rescellement.">
+              <Input
+                id="nc-act"
+                placeholder="Mise en quarantaine immédiate, rescellement…"
+                value={actionImmediate}
+                onChange={(e) => setActionImmediate(e.target.value)}
+                className="h-11 rounded-xl border-[#CFF1D2]"
+              />
+            </Champ>
+            <Champ label="Première hypothèse de cause" aide="Matière, matériel, méthode, main-d'œuvre ou milieu.">
+              <Input
+                id="nc-5m"
+                placeholder="Procédure absente, formation à refaire…"
+                value={causes5m}
+                onChange={(e) => setCauses5m(e.target.value)}
+                className="h-11 rounded-xl border-[#CFF1D2]"
+              />
+            </Champ>
+          </ColonneFiche>
         </form>
-      </DialogContent>
+      </ModaleFiche>
     </Dialog>
   );
 }

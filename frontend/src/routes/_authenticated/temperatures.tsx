@@ -32,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 
 export const Route = createFileRoute("/_authenticated/temperatures")({
   head: () => ({
@@ -321,116 +322,121 @@ function PageTemperatures() {
         </CardContent>
       </Card>
 
-      {/* DIALOG DE SAISIE RELEVÉ */}
+      {/* Relevé de température */}
       <Dialog open={dialogOuvert} onOpenChange={setDialogOuvert}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Enregistrer un relevé de température</DialogTitle>
-            <DialogDescription>
-              Conforme au Guide BPD de l'ABMed. Toute valeur hors tolérance déclenche automatiquement une fiche d'incident.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={enregistrerReleve} className="grid gap-4 py-2">
-            <div className="grid gap-2">
-              <Label htmlFor="zone">Zone de mesure réglementaire</Label>
-              <select
-                id="zone"
-                value={zoneChoisie}
-                onChange={(e) => setZoneChoisie(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                <option value="refrigeree_2_8">Enceinte réfrigérée (Frigo vaccins 2°C à 8°C)</option>
-                <option value="magasin_reserve">Magasin / Réserve centrale (15°C à 25°C)</option>
-                <option value="hall_dispensation">Hall public de dispensation (Climatisé &lt; 26°C)</option>
-              </select>
+        <ModaleFiche
+          titre="Enregistrer un relevé de température"
+          sousTitre="Un relevé par enceinte et par moment de la journée. Toute valeur hors tolérance ouvre aussitôt une fiche d'incident."
+          badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Chaîne du froid</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] text-[#475C50]">
+                L'agent connecté et l'heure de saisie sont conservés avec le relevé.
+              </p>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                <Button type="button" variant="outline" onClick={() => setDialogOuvert(false)} className="h-12 rounded-xl sm:h-11">
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  form="formulaire-temperature"
+                  disabled={enCours || !temperatureSaisie}
+                  className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
+                >
+                  {enCours ? "Enregistrement…" : "Valider et émarger"}
+                </Button>
+              </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2">
-                <Label htmlFor="temperature">Température relevée (°C)</Label>
+          }
+        >
+          <form id="formulaire-temperature" onSubmit={enregistrerReleve} className="grid gap-4 md:grid-cols-2">
+            <ColonneFiche titre="Mesure" aide="Le thermomètre doit être étalonné et l'enceinte en fonctionnement normal.">
+              <Champ label="Zone de mesure" obligatoire>
+                <select
+                  id="zone"
+                  value={zoneChoisie}
+                  onChange={(e) => setZoneChoisie(e.target.value)}
+                  className="h-11 w-full rounded-xl border border-[#CFF1D2] bg-white px-3 text-sm"
+                >
+                  <option value="refrigeree_2_8">Enceinte réfrigérée (2 °C à 8 °C)</option>
+                  <option value="magasin_reserve">Magasin ou réserve centrale (15 °C à 25 °C)</option>
+                  <option value="hall_dispensation">Hall public de dispensation (moins de 26 °C)</option>
+                </select>
+              </Champ>
+              <Champ label="Température relevée" obligatoire aide="En degrés Celsius, avec une décimale.">
                 <Input
                   id="temperature"
                   type="number"
                   step="0.1"
-                  placeholder="ex: 4.5"
+                  placeholder="4,5"
                   value={temperatureSaisie}
                   onChange={(e) => setTemperatureSaisie(e.target.value)}
                   required
                   autoFocus
+                  className="h-12 text-lg font-bold"
                 />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="moment">Moment du relevé</Label>
+              </Champ>
+              <Champ label="Moment du relevé">
                 <select
                   id="moment"
                   value={moment}
                   onChange={(e) => setMoment(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="h-11 w-full rounded-xl border border-[#CFF1D2] bg-white px-3 text-sm"
                 >
-                  <option value="matin">Matin (Ouverture)</option>
-                  <option value="soir">Soir (Clôture)</option>
+                  <option value="matin">Matin, à l'ouverture</option>
+                  <option value="soir">Soir, à la clôture</option>
                 </select>
-              </div>
-            </div>
+              </Champ>
+            </ColonneFiche>
 
-            <div className="grid grid-cols-3 gap-2">
-              <div className="grid gap-1.5">
-                <Label htmlFor="tmin" className="text-xs">T° Min (°C)</Label>
-                <Input
-                  id="tmin"
-                  type="number"
-                  step="0.1"
-                  placeholder="2.1"
-                  value={tempMin}
-                  onChange={(e) => setTempMin(e.target.value)}
-                />
+            <ColonneFiche titre="Amplitude et contexte" aide="Les bornes vues sur l'enregistreur, puis ce qui explique une excursion.">
+              <div className="grid grid-cols-3 gap-2">
+                <Champ label="Minimum">
+                  <Input
+                    id="tmin"
+                    type="number"
+                    step="0.1"
+                    placeholder="2,1"
+                    value={tempMin}
+                    onChange={(e) => setTempMin(e.target.value)}
+                    className="h-11"
+                  />
+                </Champ>
+                <Champ label="Maximum">
+                  <Input
+                    id="tmax"
+                    type="number"
+                    step="0.1"
+                    placeholder="6,8"
+                    value={tempMax}
+                    onChange={(e) => setTempMax(e.target.value)}
+                    className="h-11"
+                  />
+                </Champ>
+                <Champ label="Humidité">
+                  <Input
+                    id="hum"
+                    type="number"
+                    step="1"
+                    placeholder="55"
+                    value={humidite}
+                    onChange={(e) => setHumidite(e.target.value)}
+                    className="h-11"
+                  />
+                </Champ>
               </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="tmax" className="text-xs">T° Max (°C)</Label>
+              <Champ label="Observations" aide="« Rien à signaler », ou le motif d'une excursion : coupure, porte ouverte, dégivrage.">
                 <Input
-                  id="tmax"
-                  type="number"
-                  step="0.1"
-                  placeholder="6.8"
-                  value={tempMax}
-                  onChange={(e) => setTempMax(e.target.value)}
+                  id="notes"
+                  placeholder="Rien à signaler"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="h-11"
                 />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="hum" className="text-xs">Humidité %</Label>
-                <Input
-                  id="hum"
-                  type="number"
-                  step="1"
-                  placeholder="55"
-                  value={humidite}
-                  onChange={(e) => setHumidite(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="notes">Observations / Motif si excursion</Label>
-              <Input
-                id="notes"
-                placeholder="R.A.S. ou anomalie constatée..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" onClick={() => setDialogOuvert(false)}>
-                Annuler
-              </Button>
-              <Button type="submit" disabled={enCours || !temperatureSaisie}>
-                {enCours ? "Enregistrement..." : "Valider & Émarger"}
-              </Button>
-            </DialogFooter>
+              </Champ>
+            </ColonneFiche>
           </form>
-        </DialogContent>
+        </ModaleFiche>
       </Dialog>
     </div>
   );

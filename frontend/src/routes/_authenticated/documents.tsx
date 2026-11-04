@@ -35,8 +35,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
 import { EnTete, Vide, dateFr, QUALITE } from "@/components/modules/commun";
+import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 
 export const Route = createFileRoute("/_authenticated/documents")({
   head: () => ({
@@ -138,34 +139,21 @@ function PageDocuments() {
         action={peutRediger && id ? <NouveauDocument officineId={id} /> : null}
       />
 
-      <Tabs value={filtre} onValueChange={setFiltre}>
-        <TabsList className="grid grid-cols-4 h-10 p-1 bg-white border border-[#0F3B27]/15 rounded-xl w-full sm:w-auto">
-          <TabsTrigger
-            value="tous"
-            className="text-xs px-3 font-semibold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"
-          >
-            Tous ({documents.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="brouillon"
-            className="text-xs px-3 font-semibold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"
-          >
-            Brouillons ({compteBrouillon})
-          </TabsTrigger>
-          <TabsTrigger
-            value="a_valider"
-            className="text-xs px-3 font-semibold data-[state=active]:bg-[#FF7036] data-[state=active]:text-white"
-          >
-            À valider ({compteAValider})
-          </TabsTrigger>
-          <TabsTrigger
-            value="valide"
-            className="text-xs px-3 font-semibold data-[state=active]:bg-[#CFF1D2] data-[state=active]:text-[#0F3B27]"
-          >
-            En vigueur ({compteValide})
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="max-w-md">
+        <SelecteurFiltrable
+          options={[
+            { valeur: "tous", libelle: `Tous les documents (${documents.length})`, motsCles: ["tout", "ensemble"] },
+            { valeur: "brouillon", libelle: `Brouillons (${compteBrouillon})`, motsCles: ["rédaction", "en cours d'écriture"] },
+            { valeur: "a_valider", libelle: `À valider (${compteAValider})`, motsCles: ["visa", "approbation", "pharmacien"] },
+            { valeur: "valide", libelle: `En vigueur (${compteValide})`, motsCles: ["appliqué", "approuvé"] },
+          ]}
+          valeur={filtre}
+          onChange={setFiltre}
+          etiquette="État du document"
+          placeholder="Tous les documents"
+          placeholderRecherche="Filtrer : brouillon, à valider, en vigueur…"
+        />
+      </div>
 
       {documents.length === 0 ? (
         <Vide texte="Aucun document trouvé pour ce filtre de statut." />
@@ -415,88 +403,88 @@ export function NouveauDocument({ officineId }: { officineId: string }) {
           + Nouveau Document
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-xl rounded-3xl p-6">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-display font-bold text-[#0F3B27]">
-            Rédiger un document BPD
-          </DialogTitle>
-        </DialogHeader>
-        <form
-          className="grid gap-4 py-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (titre.trim()) creation.mutate();
-          }}
-        >
-          <div className="grid gap-1.5">
-            <Label htmlFor="doc-titre" className="text-xs font-semibold text-[#0F3B27]">
-              Titre du document *
-            </Label>
-            <Input
-              id="doc-titre"
-              required
-              value={titre}
-              onChange={(e) => setTitre(e.target.value)}
-              className="rounded-xl border-[#0F3B27]/20"
-            />
+      <ModaleFiche
+        titre="Rédiger un document qualité"
+        sousTitre="Toute procédure, mode opératoire ou enregistrement de l'officine, classé par processus et par type."
+        badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Document BPD</Badge>}
+        pied={
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[11px] text-[#475C50]">
+              Le brouillon reste modifiable ; il ne devient applicable qu'après validation du pharmacien.
+            </p>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row">
+              <Button type="button" variant="outline" onClick={() => setOuvert(false)} className="h-12 rounded-xl sm:h-11">
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                form="formulaire-document"
+                disabled={creation.isPending}
+                className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
+              >
+                Enregistrer en brouillon
+              </Button>
+            </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label className="text-xs font-semibold text-[#0F3B27]">Processus BPD</Label>
+        }
+      >
+        <form id="formulaire-document" className="grid gap-4 md:grid-cols-2" onSubmit={(e) => {
+          e.preventDefault();
+          if (titre.trim()) creation.mutate();
+        }}>
+          <ColonneFiche titre="Identification" aide="Un titre explicite se retrouve d'un coup d'œil dans le classeur.">
+            <Champ label="Titre du document" obligatoire>
+              <Input
+                id="doc-titre"
+                required
+                value={titre}
+                onChange={(e) => setTitre(e.target.value)}
+                className="h-11 rounded-xl border-[#CFF1D2]"
+              />
+            </Champ>
+            <Champ label="Processus concerné" aide="Le processus oriente la diffusion et la relecture annuelle.">
               <Select value={processus} onValueChange={setProcessus}>
-                <SelectTrigger className="rounded-xl border-[#0F3B27]/20">
+                <SelectTrigger className="h-11 rounded-xl border-[#CFF1D2]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="TAM">TAM (Top Management)</SelectItem>
-                  <SelectItem value="QAM">QAM (Qualité & Amélioration)</SelectItem>
-                  <SelectItem value="GAD">GAD (Accueil & Dispensation)</SelectItem>
-                  <SelectItem value="GAC">GAC (Stock & Froid)</SelectItem>
-                  <SelectItem value="GAR">GAR (RH & Administration)</SelectItem>
+                  <SelectItem value="TAM">TAM — direction et engagement</SelectItem>
+                  <SelectItem value="QAM">QAM — qualité et amélioration</SelectItem>
+                  <SelectItem value="GAD">GAD — accueil et dispensation</SelectItem>
+                  <SelectItem value="GAC">GAC — stock et chaîne du froid</SelectItem>
+                  <SelectItem value="GAR">GAR — ressources humaines et administration</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="grid gap-1.5">
-              <Label className="text-xs font-semibold text-[#0F3B27]">Type documentaire</Label>
+            </Champ>
+            <Champ label="Type documentaire">
               <Select value={typeDoc} onValueChange={setTypeDoc}>
-                <SelectTrigger className="rounded-xl border-[#0F3B27]/20">
+                <SelectTrigger className="h-11 rounded-xl border-[#CFF1D2]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PR">PR - Procédure</SelectItem>
-                  <SelectItem value="MO">MO - Mode opératoire</SelectItem>
-                  <SelectItem value="EN">EN - Registre / Enregistrement</SelectItem>
-                  <SelectItem value="FI">FI - Fiche technique</SelectItem>
+                  <SelectItem value="PR">Procédure</SelectItem>
+                  <SelectItem value="MO">Mode opératoire</SelectItem>
+                  <SelectItem value="EN">Registre ou enregistrement</SelectItem>
+                  <SelectItem value="FI">Fiche technique</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
+            </Champ>
+          </ColonneFiche>
 
-          <div className="grid gap-1.5">
-            <Label htmlFor="doc-contenu" className="text-xs font-semibold text-[#0F3B27]">
-              Corps du document
-            </Label>
-            <Textarea
-              id="doc-contenu"
-              rows={8}
-              placeholder="1. Objet&#10;2. Domaine d'application&#10;3. Responsabilités&#10;4. Description des étapes..."
-              value={contenu}
-              onChange={(e) => setContenu(e.target.value)}
-              className="rounded-xl border-[#0F3B27]/20"
-            />
-          </div>
-
-          <Button
-            type="submit"
-            disabled={creation.isPending}
-            className="mt-2 h-11 bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 font-bold rounded-xl"
-          >
-            Enregistrer en brouillon
-          </Button>
+          <ColonneFiche titre="Corps du document" aide="Objet, domaine d'application, responsabilités, puis les étapes numérotées.">
+            <Champ label="Contenu">
+              <Textarea
+                id="doc-contenu"
+                rows={12}
+                placeholder="Objet&#10;Domaine d'application&#10;Responsabilités&#10;Étapes…"
+                value={contenu}
+                onChange={(e) => setContenu(e.target.value)}
+                className="rounded-xl border-[#CFF1D2]"
+              />
+            </Champ>
+          </ColonneFiche>
         </form>
-      </DialogContent>
+      </ModaleFiche>
     </Dialog>
   );
 }

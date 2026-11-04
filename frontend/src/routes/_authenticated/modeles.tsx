@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
 import { EnTete, Vide, QUALITE } from "@/components/modules/commun";
 
 export const Route = createFileRoute("/_authenticated/modeles")({
@@ -111,19 +111,20 @@ function PageModeles() {
         description="Collection officielle des 59 modèles types préchargés (procédures, registres, fiches), prêts à être adaptés et validés par le pharmacien titulaire."
       />
 
-      <Tabs value={filtreProcessus} onValueChange={setFiltreProcessus}>
-        <TabsList className="grid grid-cols-3 sm:grid-cols-6 h-auto p-1 bg-white border border-[#0F3B27]/15 rounded-xl">
-          {Object.entries(libellesProcessus).map(([cle, libelle]) => (
-            <TabsTrigger
-              key={cle}
-              value={cle}
-              className="text-xs py-2 font-semibold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"
-            >
-              {libelle}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div className="max-w-md">
+        <SelecteurFiltrable
+          options={Object.entries(libellesProcessus).map(([valeur, libelle]) => ({
+            valeur,
+            libelle,
+            motsCles: valeur === "tous" ? ["tout", "ensemble"] : [valeur],
+          }))}
+          valeur={filtreProcessus}
+          onChange={setFiltreProcessus}
+          etiquette="Processus qualité"
+          placeholder="Tous les processus"
+          placeholderRecherche="Filtrer : direction, qualité, dispensation, stock, RH…"
+        />
+      </div>
 
       {modelesFiltres.length === 0 ? (
         <Vide texte="Aucun modèle disponible pour ce filtre de processus." />

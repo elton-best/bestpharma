@@ -9,11 +9,11 @@ import { fr } from "@/lib/i18n/fr";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EnTete, Vide, dateFr, DIRECTION } from "@/components/modules/commun";
+import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 
 export const Route = createFileRoute("/_authenticated/personnel")({
   head: () => ({
@@ -196,57 +196,89 @@ function AjoutEmploye({ officineId }: { officineId: string }) {
           <UserPlus className="size-4 mr-2" /> Nouvel Employé
         </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Ajouter un membre à l'équipe officinale</DialogTitle>
-        </DialogHeader>
+      <ModaleFiche
+        titre="Ajouter un membre à l'équipe"
+        sousTitre="La fiche employé alimente le registre du personnel, les pointages et les habilitations aux tâches réglementées."
+        badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Fiche employé</Badge>}
+        pied={
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[11px] text-[#475C50]">
+              Matricule et badge sont générés automatiquement à l'enregistrement.
+            </p>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row">
+              <Button type="button" variant="outline" onClick={() => setOuvert(false)} className="h-12 rounded-xl sm:h-11">
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                form="formulaire-employe"
+                disabled={creation.isPending || !nom.trim()}
+                className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
+              >
+                Enregistrer la fiche
+              </Button>
+            </div>
+          </div>
+        }
+      >
         <form
-          className="grid gap-3 py-2"
+          id="formulaire-employe"
+          className="grid gap-4 md:grid-cols-2"
           onSubmit={(e) => {
             e.preventDefault();
             if (nom.trim()) creation.mutate();
           }}
         >
-          <div className="grid gap-1">
-            <Label htmlFor="emp-nom">Nom et prénom(s) *</Label>
-            <Input id="emp-nom" required value={nom} onChange={(e) => setNom(e.target.value)} />
-          </div>
+          <ColonneFiche titre="Identité" aide="Nom tel qu'il figurera sur le registre du personnel et les émargements.">
+            <Champ label="Nom et prénom(s)" obligatoire>
+              <Input id="emp-nom" required value={nom} onChange={(e) => setNom(e.target.value)} className="h-11" />
+            </Champ>
+            <Champ label="Téléphone" aide="Numéro joignable, au format béninois.">
+              <Input
+                id="emp-tel"
+                placeholder="+229 01 97 00 00 00"
+                value={telephone}
+                onChange={(e) => setTelephone(e.target.value)}
+                className="h-11"
+              />
+            </Champ>
+            <Champ label="Code PIN du badge" aide="Quatre chiffres, utilisés pour pointer et pour signer une opération.">
+              <Input
+                id="emp-pin"
+                maxLength={4}
+                inputMode="numeric"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                className="h-11"
+              />
+            </Champ>
+          </ColonneFiche>
 
-          <div className="grid gap-1">
-            <Label>Fonction / Poste réglementaire *</Label>
-            <Select value={poste} onValueChange={setPoste}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pharmacien_adjoint">Pharmacien Adjoint</SelectItem>
-                <SelectItem value="pharmacien_remplacant">Pharmacien Remplaçant</SelectItem>
-                <SelectItem value="rmq">Responsable Management Qualité (RMQ)</SelectItem>
-                <SelectItem value="dispensateur">Dispensateur (Auxiliaire de comptoir)</SelectItem>
-                <SelectItem value="caissier">Caissier / Encaissement</SelectItem>
-                <SelectItem value="magasinier">Magasinier / Gestionnaire de stock</SelectItem>
-                <SelectItem value="comptable">Comptable</SelectItem>
-                <SelectItem value="agent_entretien">Agent d'Entretien & Hygiène</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-1">
-              <Label htmlFor="emp-tel">Téléphone</Label>
-              <Input id="emp-tel" placeholder="+229..." value={telephone} onChange={(e) => setTelephone(e.target.value)} />
+          <ColonneFiche titre="Fonction" aide="La fonction détermine les tâches autorisées et les compétences à tenir à jour.">
+            <Champ label="Poste réglementaire" obligatoire>
+              <Select value={poste} onValueChange={setPoste}>
+                <SelectTrigger className="h-11 rounded-xl border-[#CFF1D2]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pharmacien_adjoint">Pharmacien adjoint</SelectItem>
+                  <SelectItem value="pharmacien_remplacant">Pharmacien remplaçant</SelectItem>
+                  <SelectItem value="rmq">Responsable management de la qualité</SelectItem>
+                  <SelectItem value="dispensateur">Dispensateur au comptoir</SelectItem>
+                  <SelectItem value="caissier">Caissier</SelectItem>
+                  <SelectItem value="magasinier">Magasinier</SelectItem>
+                  <SelectItem value="comptable">Comptable</SelectItem>
+                  <SelectItem value="agent_entretien">Agent d'entretien et d'hygiène</SelectItem>
+                </SelectContent>
+              </Select>
+            </Champ>
+            <div className="rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] p-3 text-[11px] leading-relaxed text-[#475C50]">
+              Les pharmaciens doivent être inscrits à l'Ordre national avant d'exercer : l'inscription se contrôle
+              dans l'onglet des inscriptions, puis se reporte sur la fiche.
             </div>
-            <div className="grid gap-1">
-              <Label htmlFor="emp-pin">Code PIN Badge (4 chiffres)</Label>
-              <Input id="emp-pin" maxLength={4} value={pin} onChange={(e) => setPin(e.target.value)} />
-            </div>
-          </div>
-
-          <Button type="submit" disabled={creation.isPending} className="mt-3">
-            Enregistrer la fiche employé
-          </Button>
+          </ColonneFiche>
         </form>
-      </DialogContent>
+      </ModaleFiche>
     </Dialog>
   );
 }

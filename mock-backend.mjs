@@ -620,6 +620,49 @@ const server = http.createServer(async (req, res) => {
     }
   }
   {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/pointages\/actif$/);
+    if (m && method === "GET") {
+      const actifs = POINTAGES.filter(p => p.type === "arrivee");
+      return sendJson(res, 200, {
+        pharmacien_present: actifs.some(p => String(p.employe_poste || "").includes("pharmacien")),
+        pharmaciens_sur_place: actifs
+          .filter(p => String(p.employe_poste || "").includes("pharmacien"))
+          .map(p => p.employe_nom),
+        presence: {
+          pharmacien_present: actifs.some(p => String(p.employe_poste || "").includes("pharmacien")),
+          pharmaciens: actifs
+            .filter(p => String(p.employe_poste || "").includes("pharmacien"))
+            .map(p => p.employe_nom),
+        },
+        pointages_actifs: actifs,
+      });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/pointages\/prise$/);
+    if (m && method === "POST") {
+      const b = await parseBody(req);
+      const pharmacien = EMPLOYES.find(e => String(e.poste || "").startsWith("pharmacien"));
+      const employe = pharmacien || EMPLOYES[0];
+      const pointage = {
+        id: "pt" + (POINTAGES.length + 1),
+        employe_id: employe?.id || "emp1",
+        employe_nom: employe?.nom_complet || "Pharmacien titulaire",
+        employe_poste: employe?.poste || "pharmacien_titulaire",
+        type: "arrivee",
+        horodatage: new Date().toISOString(),
+      };
+      POINTAGES.unshift(pointage);
+      console.log("Pointage de prise de service:", pointage.employe_nom, b.poste || "");
+      return sendJson(res, 201, {
+        message: "Pointage de prise de service enregistré.",
+        pointage_id: pointage.id,
+        pharmacien_present: true,
+        pointage,
+      });
+    }
+  }
+  {
     const m = path.match(/^\/api\/officines\/([^/]+)\/equipements$/);
     if (m && method === "GET") return sendJson(res, 200, EQUIPEMENTS);
     if (m && method === "POST") {
@@ -1423,10 +1466,14 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, filtrerJournal(url));
   }
 
-  // DIVERS
+  // DIVERS — une route it non implémentée doit se voir tout de suite, pas
+  // renvoyer un tableau vide qui laisse croire que l'écran fonctionne.
   if (path.startsWith("/api/")) {
-    console.log("Mock fallback for", path);
-    return sendJson(res, 200, { status: "success", data: [], message: "Mock fallback — démo" });
+    console.error(`[MOCK] route non implémentée : ${method} ${path}`);
+    return sendJson(res, 501, {
+      status: "error",
+      message: `Route de démonstration absente du mock : ${method} ${path}`,
+    });
   }
 
   res.writeHead(404, { "Content-Type": "application/json" });

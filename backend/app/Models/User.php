@@ -46,6 +46,19 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Propriétés runtime de session / requête (non persistées dans la table users)
+     */
+    public ?string $officine_id = null;
+    public ?string $role_code = null;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $user) {
+            unset($user->attributes['officine_id'], $user->attributes['role_code']);
+        });
+    }
+
     public function officines(): BelongsToMany
     {
         return $this->belongsToMany(Officine::class, 'utilisateurs_officines')
@@ -55,7 +68,7 @@ class User extends Authenticatable
 
     public function affectations(): HasMany
     {
-        return $this->hasMany(UtilisateurOfficine::class);
+        return $this->hasMany(UtilisateurOfficine::class, 'user_id');
     }
 
     public function isMfaRequired(): bool
@@ -82,13 +95,38 @@ class User extends Authenticatable
 
     public function getOfficineIdAttribute(): ?string
     {
+        if (! empty($this->officine_id)) {
+            return $this->officine_id;
+        }
+
         $affectation = $this->affectations()->where('actif', true)->first();
         return $affectation ? $affectation->officine_id : null;
     }
 
+    public function setOfficineIdAttribute($value): void
+    {
+        $this->officine_id = $value;
+        unset($this->attributes['officine_id']);
+    }
+
     public function getRoleAttribute(): ?string
     {
+        return $this->getRoleCodeAttribute();
+    }
+
+    public function getRoleCodeAttribute(): ?string
+    {
+        if (! empty($this->role_code)) {
+            return $this->role_code;
+        }
+
         $affectation = $this->affectations()->where('actif', true)->first();
         return $affectation ? $affectation->role_code : null;
+    }
+
+    public function setRoleCodeAttribute($value): void
+    {
+        $this->role_code = $value;
+        unset($this->attributes['role_code']);
     }
 }

@@ -173,9 +173,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/dispensations', [DispensationController::class, 'store']);
     Route::post('/dispensations/{id}/viser', [DispensationController::class, 'viser']);
 
-    // Registre Officiel des Stupéfiants & Substances Vénéneuses (BPD-3 & Art 7.15 à 7.20)
+    // Registre Officiel des Stupéfiants & Substances Vénéneuses (BPD-3 & Art 7.15 à 7.20) — STU complet 9 onglets
     Route::get('/stupefiants', [StupefiantController::class, 'index']);
+    Route::post('/stupefiants', [StupefiantController::class, 'store']);
     Route::post('/stupefiants/{id}/viser', [StupefiantController::class, 'viser']);
+    Route::post('/stupefiants/{id}/rectificative', [StupefiantController::class, 'rectificative']);
+    Route::get('/stupefiants/balance', [StupefiantController::class, 'balance']);
+    Route::get('/stupefiants/ordonnancier', [StupefiantController::class, 'ordonnancier']);
+    Route::get('/stupefiants/armoire', [StupefiantController::class, 'armoire']);
+    Route::post('/stupefiants/inventaire', [StupefiantController::class, 'inventaire']);
+    Route::post('/stupefiants/declaration-vol', [StupefiantController::class, 'declarationVol']);
+    Route::post('/stupefiants/demande-destruction', [StupefiantController::class, 'demandeDestruction']);
+    Route::get('/stupefiants/rapport', [StupefiantController::class, 'rapport']);
 
     // Registre Officiel des Préparations Magistrales et Officinales (BPD Chapitre 6 & POI-03)
     Route::get('/preparations', [PreparationController::class, 'index']);

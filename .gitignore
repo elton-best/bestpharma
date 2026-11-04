@@ -40,3 +40,6 @@ cahier_des_charges_extracted.txt
 # Archives de polices brutes (fichiers web intégrés dans frontend/public/fonts)
 Satoshi_Complete/
 Stardom_Complete/
+
+# Outils locaux
+frontend/.tanstack/

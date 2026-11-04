@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   Clock,
   Layers,
-  Archive,
   ArrowRight,
   Filter,
   Package,
@@ -36,20 +35,177 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
+import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 
 export const Route = createFileRoute("/_authenticated/stock")({
   head: () => ({
     meta: [
       { title: "Magasin & Stocks — BEGPHARMA" },
-      { name: "description", content: "Vérité physique et réglementaire : FEFO, traçabilité, quarantaine, inventaires, valorisation — conforme BPD-5 / BPD-8 / BPD-9." },
+      { name: "description", content: "Le magasin raconté simplement : chaque boîte garde son lot, son emplacement et son statut. FEFO, quarantaine, inventaires et valorisation — BPD-5 / BPD-8 / BPD-9." },
     ],
   }),
   component: PageStockMagasin,
 });
+
+// ─── Sections du magasin (liste déroulante filtrable)
+const SECTIONS = [
+  {
+    valeur: "vue-ensemble",
+    libelle: "Vue d’ensemble",
+    description: "Les alertes du jour et l’état général du magasin, en un coup d’œil.",
+    icone: <Layers className="size-4" />,
+    motsCles: ["accueil", "tableau de bord", "synthese", "alertes"],
+  },
+  {
+    valeur: "produits",
+    libelle: "Produits",
+    description: "Le catalogue des médicaments : DCI, forme, prix, seuils de réassort.",
+    icone: <Package className="size-4" />,
+    motsCles: ["catalogue", "fiche produit", "cip", "dci"],
+  },
+  {
+    valeur: "lots",
+    libelle: "Lots",
+    description: "Les lots rangés du plus urgent au plus récent : le premier périmé sort le premier.",
+    icone: <Boxes className="size-4" />,
+    motsCles: ["fefo", "peremption", "stock", "boites"],
+  },
+  {
+    valeur: "emplacements",
+    libelle: "Emplacements",
+    description: "Où dort chaque boîte : comptoir, réserve, frigo, armoire sécurisée.",
+    icone: <MapPin className="size-4" />,
+    motsCles: ["zones", "reserve", "frigo", "armoire"],
+  },
+  {
+    valeur: "mouvements",
+    libelle: "Mouvements",
+    description: "Le journal de tout ce qui entre et sort : jamais effacé, toujours signé.",
+    icone: <History className="size-4" />,
+    motsCles: ["journal", "entrees", "sorties", "tracabilite"],
+  },
+  {
+    valeur: "reception",
+    libelle: "Réception",
+    description: "Recevoir une livraison, contrôler les boîtes, puis les mettre en stock.",
+    icone: <ScanLine className="size-4" />,
+    motsCles: ["livraison", "bon de livraison", "scan", "controle"],
+  },
+  {
+    valeur: "inventaires",
+    libelle: "Inventaires",
+    description: "Compter ce qu’il y a vraiment et expliquer chaque écart.",
+    icone: <ClipboardList className="size-4" />,
+    motsCles: ["comptage", "ecart", "campagne"],
+  },
+  {
+    valeur: "peremptions",
+    libelle: "Péremptions",
+    description: "Les lots qui approchent de leur date limite et ce qu’il faut en faire.",
+    icone: <Calendar className="size-4" />,
+    motsCles: ["dates", "expiration", "retrait"],
+  },
+  {
+    valeur: "quarantaine",
+    libelle: "Quarantaine & Rappels",
+    description: "Isoler un lot douteux ou rappelé, et bloquer la vente tout de suite.",
+    icone: <ShieldAlert className="size-4" />,
+    motsCles: ["rappel", "blocage", "isolement"],
+  },
+  {
+    valeur: "dechets",
+    libelle: "Déchets",
+    description: "Détruire dans les règles, avec prestataire qualifié et procès-verbal.",
+    icone: <Trash2 className="size-4" />,
+    motsCles: ["destruction", "pv", "rebut", "peremption"],
+  },
+  {
+    valeur: "valorisation",
+    libelle: "Valorisation",
+    description: "Ce que vaut le stock, ce qui tourne vite et ce qui dort.",
+    icone: <TrendingUp className="size-4" />,
+    motsCles: ["cmp", "valeur", "abc", "rotation", "etiquettes"],
+  },
+];
+
+// ─── §0.2 — les huit statuts, expliqués en français courant
+const STATUTS = [
+  {
+    valeur: "commercialisable",
+    libelle: "Commercialisable",
+    vendable: true,
+    description: "La boîte est vendable : le contrôle de réception est passé et sa traçabilité est complète.",
+    consequence: "Vente et dispensation autorisées, dans l’ordre FEFO.",
+    classe: "border-[#0F3B27]/30 bg-[#CFF1D2]/40",
+    pastille: "bg-[#0F3B27]",
+  },
+  {
+    valeur: "en_attente_controle",
+    libelle: "En attente de contrôle",
+    vendable: false,
+    description: "Le lot vient d’arriver ou attend son contrôle : il est rangé à part, le temps de la vérification.",
+    consequence: "Aucune sortie possible jusqu’à la décision du contrôleur.",
+    classe: "border-amber-300 bg-amber-50",
+    pastille: "bg-amber-500",
+  },
+  {
+    valeur: "a_evaluer",
+    libelle: "À évaluer",
+    vendable: false,
+    description: "Un doute est apparu (excursion de température, emballage abîmé, lot suspect) : le pharmacien doit trancher.",
+    consequence: "La boîte attend sa décision, elle ne part pas au comptoir.",
+    classe: "border-orange-300 bg-orange-50",
+    pastille: "bg-orange-500",
+  },
+  {
+    valeur: "quarantaine",
+    libelle: "Quarantaine",
+    vendable: false,
+    description: "Le lot est isolé physiquement, souvent à cause d’un rappel ou d’une non-conformité.",
+    consequence: "Caisse et dispensation le refusent ; la levée se documente.",
+    classe: "border-amber-400 bg-amber-100",
+    pastille: "bg-amber-700",
+  },
+  {
+    valeur: "attente_retour",
+    libelle: "En attente de retour fournisseur",
+    vendable: false,
+    description: "Le lot est prêt à repartir chez le grossiste : il attend le bon de retour et l’avoir.",
+    consequence: "Sortie uniquement par bon de retour signé.",
+    classe: "border-blue-300 bg-blue-50",
+    pastille: "bg-blue-600",
+  },
+  {
+    valeur: "rejete",
+    libelle: "Rejeté",
+    vendable: false,
+    description: "Le lot est refusé après contrôle : il ne retournera jamais dans le circuit de vente.",
+    consequence: "Orienté vers le fournisseur ou vers la filière déchet.",
+    classe: "border-red-300 bg-red-50",
+    pastille: "bg-red-600",
+  },
+  {
+    valeur: "dechet",
+    libelle: "Déchet à détruire",
+    vendable: false,
+    description: "Le lot est condamné : il rejoint l’aire sécurisée en attendant la destruction.",
+    consequence: "Destruction tracée, avec procès-verbal et écriture de perte.",
+    classe: "border-slate-400 bg-slate-100",
+    pastille: "bg-slate-800",
+  },
+  {
+    valeur: "epuise",
+    libelle: "Épuisé",
+    vendable: false,
+    description: "Il ne reste plus une boîte de ce lot : il sort du stock actif.",
+    consequence: "Reste consultable pour l’historique et les rappels patients.",
+    classe: "border-slate-200 bg-slate-50",
+    pastille: "bg-slate-400",
+  },
+];
 
 // ─── Types
 interface Produit {
@@ -153,12 +309,12 @@ function ZoneDepot({ label, onFiles }: { label: string; onFiles?: (files: FileLi
       onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
       onDragLeave={() => setDragOver(false)}
       onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files && onFiles) onFiles(e.dataTransfer.files); toast.success(`${e.dataTransfer.files.length} fichier(s) déposé(s) — chiffrage SHA-256 en cours`); }}
-      className={`rounded-2xl border-2 border-dashed p-6 text-center transition-all ${dragOver ? "border-[#0F3B27] bg-[#CFF1D2]/30" : "border-[#CFF1D2] bg-[#F7F9F7]"}`}
+      className={`rounded-2xl border-2 border-dashed p-4 text-center transition-all ${dragOver ? "border-[#0F3B27] bg-[#CFF1D2]/30" : "border-[#CFF1D2] bg-[#F7F9F7]"}`}
     >
-      <Upload className={`mx-auto w-6 h-6 ${dragOver ? "text-[#0F3B27]" : "text-[#475C50]"}`} />
-      <p className="mt-2 text-xs font-bold text-[#0F3B27]">{label}</p>
-      <p className="text-[11px] text-[#475C50]">Glisser-déposer, caméra ou sélecteur — JPG/PNG/PDF/CSV 10 Mo max</p>
-      <label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-[#CFF1D2] bg-white px-3 py-1.5 text-xs font-bold text-[#0F3B27] hover:bg-[#CFF1D2]/30">
+      <Upload className={`mx-auto w-5 h-5 ${dragOver ? "text-[#0F3B27]" : "text-[#475C50]"}`} />
+      <p className="mt-1.5 text-xs font-bold text-[#0F3B27]">{label}</p>
+      <p className="text-[11px] text-[#475C50]">Glisser-déposer, photographier ou choisir un fichier — JPG, PNG, PDF ou CSV, 10 Mo maximum.</p>
+      <label className="mt-2 inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border border-[#CFF1D2] bg-white px-3 py-1.5 text-xs font-bold text-[#0F3B27] hover:bg-[#CFF1D2]/30">
         <ScanLine className="w-3.5 h-3.5" /> Choisir des fichiers
         <input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.csv,.xlsx" className="hidden" onChange={(e) => e.target.files && onFiles?.(e.target.files)} />
       </label>
@@ -195,15 +351,17 @@ function PageStockMagasin() {
   const { data: emplacementsData } = useQuery<{ data: EmplacementItem[] }>({ queryKey: ["emplacements"], queryFn: () => api.get("/emplacements") });
   const { data: mouvementsData } = useQuery<{ data: { data: MouvementItem[] } }>({ queryKey: ["mouvements"], queryFn: () => api.get("/mouvements") });
   const { data: alertesData } = useQuery<{ data: any }>({ queryKey: ["stocks-alertes"], queryFn: () => api.get("/stocks/alertes") });
-  const { data: peremptionsData } = useQuery<{ data: any }>({ queryKey: ["peremptions"], queryFn: () => api.get("/stocks/peremptions").catch(() => ({ data: { a_1_mois: [], a_3_mois: [], a_6_mois: [], perimes: [] } })) });
-  const { data: valorisationData } = useQuery<{ data: any }>({ queryKey: ["valorisation"], queryFn: () => api.get("/stocks/valorisation").catch(() => ({ data: { total: 0, par_produit: [] } })) });
+  const { data: peremptionsData } = useQuery<{ data: any }>({ queryKey: ["peremptions"], queryFn: () => api.get<any>("/stocks/peremptions").catch(() => ({ data: { a_1_mois: [], a_3_mois: [], a_6_mois: [], perimes: [] } })) });
+  const { data: valorisationData } = useQuery<{ data: any }>({ queryKey: ["valorisation"], queryFn: () => api.get<any>("/stocks/valorisation").catch(() => ({ data: { total: 0, par_produit: [] } })) });
+
+  const reinitialiserControles = () => setControles({ alerte_sanitaire_verifiee: false, emballage_intact: false, conformite_livraison: false, dates_conformes: false, chaine_froid_respectee: false });
 
   const mutationReception = useMutation({
     mutationFn: (payload: any) => api.post("/stocks", payload),
     onSuccess: (res: any) => {
       toast.success(res.message || "Lot réceptionné — règle FEFO appliquée");
       queryClient.invalidateQueries({ queryKey: ["stocks"] }); queryClient.invalidateQueries({ queryKey: ["produits"] }); queryClient.invalidateQueries({ queryKey: ["mouvements"] });
-      setDialogReceptionOuvert(false); setNumeroLot(""); setDatePeremption(""); setQuantite(""); setBonLivraisonRef(""); setControles({ alerte_sanitaire_verifiee: false, emballage_intact: false, conformite_livraison: false, dates_conformes: false, chaine_froid_respectee: false });
+      setDialogReceptionOuvert(false); setNumeroLot(""); setDatePeremption(""); setQuantite(""); setBonLivraisonRef(""); reinitialiserControles();
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -233,17 +391,23 @@ function PageStockMagasin() {
   const peremptions = (peremptionsData as any)?.data || { a_1_mois: [], a_3_mois: [], a_6_mois: [], perimes: [] };
   const valorisation = (valorisationData as any)?.data || { total: 0, par_produit: [] };
 
+  const produitChoisi = produits.find((p) => p.id === produitId);
+  const tousControles = controles.alerte_sanitaire_verifiee && controles.emballage_intact && controles.conformite_livraison && controles.dates_conformes;
+  const froidManquant = !!produitChoisi?.est_thermolabile && !controles.chaine_froid_respectee;
+
   const handleReceptionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!produitId || !numeroLot || !datePeremption || !quantite || !bonLivraisonRef) { toast.error("Champs obligatoires manquants"); return; }
-    const tousChecks = controles.alerte_sanitaire_verifiee && controles.emballage_intact && controles.conformite_livraison && controles.dates_conformes;
-    if (!tousChecks) { toast.error("Contrôles obligatoires incomplets — le lot passera en 'En attente de contrôle' (STO-05)"); }
+    if (!produitId || !numeroLot || !datePeremption || !quantite || !bonLivraisonRef) { toast.error("Il manque une information obligatoire : produit, lot, péremption, quantité ou bon de livraison."); return; }
+    if (!tousControles) { toast.error("Les contrôles obligatoires ne sont pas tous cochés — le lot restera en « En attente de contrôle » (STO-05)."); }
+    if (froidManquant) { toast.warning("Produit thermolabile : confirmez la chaîne du froid avant de valider."); }
     mutationReception.mutate({
       produit_id: produitId, numero_lot: numeroLot, date_peremption: datePeremption, quantite: parseInt(quantite, 10),
       fournisseur_nom: fournisseurNom, bon_livraison_ref: bonLivraisonRef, emplacement,
       controles_reception: controles,
     });
   };
+
+  const statutChoisi = STATUTS.find((s) => s.valeur === statutCible);
 
   return (
     <div className="space-y-6">
@@ -253,10 +417,12 @@ function PageStockMagasin() {
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-black tracking-tight text-[#0F3B27]">Magasin & Stocks</h1>
             <Badge className="bg-[#0F3B27] text-[#92FF5F] border-[#0F3B27]">BPD-5 · FEFO · STO</Badge>
-            <Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">§0.2 — 8 statuts</Badge>
+            <Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">8 statuts, expliqués en clair</Badge>
           </div>
           <p className="mt-1 text-sm text-[#475C50] max-w-2xl">
-            Vérité physique et réglementaire : chaque boîte tracée par lot, emplacement et statut. Alimente caisse (FEFO vendable), dispensation et comptabilité (CMP, pertes).
+            Tout ce qui entre, sort ou dort en réserve, raconté simplement : chaque boîte garde son lot, son
+            emplacement et son statut. La caisse ne vend que ce qui est vendable, dans l’ordre de péremption ;
+            la dispensation pioche au bon endroit ; la comptabilité suit le coût moyen et les pertes.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-[#CFF1D2] px-3 py-1 text-[#0F3B27]"><Thermometer className="w-3.5 h-3.5" /> Chaîne du froid 2–8 °C</span>
@@ -287,32 +453,35 @@ function PageStockMagasin() {
         <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-[#F7F9F7] border border-[#CFF1D2] px-2.5 py-1">Valeur stock : {(stats.valorisation_totale || valorisation.total || 0).toLocaleString("fr-FR")} FCFA</span>
       </div>
 
-      {/* Onglets — 12 onglets du cahier §1.2 */}
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <div className="overflow-x-auto pb-2">
-          <TabsList className="inline-flex h-auto flex-wrap gap-1 bg-[#F7F9F7] p-1 border border-[#CFF1D2] rounded-2xl">
-            <TabsTrigger value="vue-ensemble" className="gap-1.5 text-xs font-bold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"><Layers className="w-3.5 h-3.5" /> Vue d’ensemble</TabsTrigger>
-            <TabsTrigger value="produits" className="gap-1.5 text-xs font-bold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"><Package className="w-3.5 h-3.5" /> Produits</TabsTrigger>
-            <TabsTrigger value="lots" className="gap-1.5 text-xs font-bold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"><Boxes className="w-3.5 h-3.5" /> Lots</TabsTrigger>
-            <TabsTrigger value="emplacements" className="gap-1.5 text-xs font-bold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"><MapPin className="w-3.5 h-3.5" /> Emplacements</TabsTrigger>
-            <TabsTrigger value="mouvements" className="gap-1.5 text-xs font-bold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"><History className="w-3.5 h-3.5" /> Mouvements</TabsTrigger>
-            <TabsTrigger value="reception" className="gap-1.5 text-xs font-bold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"><ScanLine className="w-3.5 h-3.5" /> Réception</TabsTrigger>
-            <TabsTrigger value="inventaires" className="gap-1.5 text-xs font-bold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"><ClipboardList className="w-3.5 h-3.5" /> Inventaires</TabsTrigger>
-            <TabsTrigger value="peremptions" className="gap-1.5 text-xs font-bold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"><Calendar className="w-3.5 h-3.5" /> Péremptions</TabsTrigger>
-            <TabsTrigger value="quarantaine" className="gap-1.5 text-xs font-bold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"><ShieldAlert className="w-3.5 h-3.5" /> Quarantaine & Rappels</TabsTrigger>
-            <TabsTrigger value="dechets" className="gap-1.5 text-xs font-bold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"><Trash2 className="w-3.5 h-3.5" /> Déchets</TabsTrigger>
-            <TabsTrigger value="valorisation" className="gap-1.5 text-xs font-bold data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F]"><TrendingUp className="w-3.5 h-3.5" /> Valorisation</TabsTrigger>
-          </TabsList>
+      {/* Navigation : une seule liste déroulante, filtrable, au lieu des onglets */}
+      <div className="rounded-2xl border border-[#CFF1D2] bg-white p-3 shadow-sm sm:p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end">
+          <SelecteurFiltrable
+            id="section-magasin"
+            etiquette="Section du magasin"
+            options={SECTIONS}
+            valeur={tab}
+            onChange={setTab}
+            placeholder="Choisir une section du magasin…"
+            placeholderRecherche="Filtrer : produits, lots, rappels, déchets…"
+            className="md:max-w-xl"
+          />
+          <p className="text-[11px] font-medium leading-snug text-[#475C50] md:pb-2">
+            Tapez quelques lettres pour aller droit au but. La section choisie s’affiche juste en dessous.
+          </p>
         </div>
+      </div>
 
-        {/* VUe d'ensemble STO-01 */}
-        <TabsContent value="vue-ensemble" className="space-y-4 mt-4">
+      {/* VUE D'ENSEMBLE STO-01 */}
+      {tab === "vue-ensemble" && (
+        <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-[#CFF1D2] bg-white shadow-sm"><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Valeur du stock (CMP)</CardTitle><TrendingUp className="w-4 h-4 text-[#0F3B27]" /></CardHeader><CardContent><div className="text-2xl font-black font-display text-[#0F3B27]">{(valorisation.total || stats.valorisation_totale || 0).toLocaleString("fr-FR")} <span className="text-sm font-sans">FCFA</span></div><p className="text-xs text-[#475C50]">Coût moyen pondéré — rapproché compte stock</p></CardContent></Card>
-            <Card className={`border-[#CFF1D2] ${alertes.ruptures > 0 ? "border-amber-400 bg-amber-50/30" : "bg-white"}`}><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Ruptures & sous minimum</CardTitle><AlertOctagon className="w-4 h-4 text-amber-600" /></CardHeader><CardContent><div className="text-2xl font-black text-amber-700">{alertes.ruptures ?? 0}</div><p className="text-xs text-[#475C50]">Seuils paramétrables</p></CardContent></Card>
-            <Card className="border-[#CFF1D2] bg-white"><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Lots actifs FEFO</CardTitle><Layers className="w-4 h-4 text-[#0F3B27]" /></CardHeader><CardContent><div className="text-2xl font-black text-[#0F3B27]">{stats.total_lots_actifs}</div><p className="text-xs text-[#475C50]">Ordre péremption — prochain à sortir prioritaire</p></CardContent></Card>
-            <Card className={`border-[#CFF1D2] ${stats.perimes > 0 ? "border-red-500 bg-red-50" : "bg-white"}`}><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Périmés interdits</CardTitle><ShieldAlert className="w-4 h-4 text-red-600" /></CardHeader><CardContent><div className="text-2xl font-black text-red-700">{stats.perimes}</div><p className="text-xs text-red-700">Mise en quarantaine obligatoire — vente refusée</p></CardContent></Card>
+            <Card className="border-[#CFF1D2] bg-white shadow-sm"><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Valeur du stock (coût moyen)</CardTitle><TrendingUp className="w-4 h-4 text-[#0F3B27]" /></CardHeader><CardContent><div className="text-2xl font-black font-display text-[#0F3B27]">{(valorisation.total || stats.valorisation_totale || 0).toLocaleString("fr-FR")} <span className="text-sm font-sans">FCFA</span></div><p className="text-xs text-[#475C50]">Coût moyen pondéré, rapproché du compte de stock.</p></CardContent></Card>
+            <Card className={`border-[#CFF1D2] ${alertes.ruptures > 0 ? "border-amber-400 bg-amber-50/30" : "bg-white"}`}><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Ruptures & sous minimum</CardTitle><AlertOctagon className="w-4 h-4 text-amber-600" /></CardHeader><CardContent><div className="text-2xl font-black text-amber-700">{alertes.ruptures ?? 0}</div><p className="text-xs text-[#475C50]">Produits sous leur seuil de réassort.</p></CardContent></Card>
+            <Card className="border-[#CFF1D2] bg-white"><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Lots actifs FEFO</CardTitle><Layers className="w-4 h-4 text-[#0F3B27]" /></CardHeader><CardContent><div className="text-2xl font-black text-[#0F3B27]">{stats.total_lots_actifs}</div><p className="text-xs text-[#475C50]">Le lot qui périme le plus tôt sort le premier.</p></CardContent></Card>
+            <Card className={`border-[#CFF1D2] ${stats.perimes > 0 ? "border-red-500 bg-red-50" : "bg-white"}`}><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Périmés interdits</CardTitle><ShieldAlert className="w-4 h-4 text-red-600" /></CardHeader><CardContent><div className="text-2xl font-black text-red-700">{stats.perimes}</div><p className="text-xs text-red-700">Mise en quarantaine obligatoire, vente refusée.</p></CardContent></Card>
           </div>
+
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Péremptions à surveiller</CardTitle></CardHeader><CardContent className="space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-[#475C50]">À 6 mois</span><strong className="text-[#0F3B27]">{peremptions.a_6_mois?.length ?? 0}</strong></div>
@@ -320,18 +489,47 @@ function PageStockMagasin() {
               <div className="flex justify-between"><span className="text-[#475C50]">À 1 mois (critique)</span><strong className="text-red-700">{peremptions.a_1_mois?.length ?? 0}</strong></div>
               <div className="flex justify-between border-t border-[#CFF1D2] pt-2"><span className="text-[#475C50]">Lots bloqués</span><strong className="text-[#0F3B27]">{alertes.lots_bloques}</strong></div>
             </CardContent></Card>
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Produits dormants & surstock</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Classement ABC, rotation et couverture en jours disponibles dans l’onglet Valorisation (STO-19).</CardContent></Card>
-            <Card className="border-[#CFF1D2] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-sm font-bold text-[#92FF5F] flex items-center gap-2"><PackageCheck className="w-4 h-4" /> Règle FEFO</CardTitle></CardHeader><CardContent className="text-xs leading-relaxed">La vente propose toujours le lot à péremption la plus proche. Un autre lot exige une justification journalisée (STO-08). Chaque chiffre ouvre sa liste détaillée.</CardContent></Card>
+            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Produits dormants & surstock</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Classement ABC, rotation et couverture en jours dans la section Valorisation (STO-19).</CardContent></Card>
+            <Card className="border-[#CFF1D2] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-sm font-bold text-[#92FF5F] flex items-center gap-2"><PackageCheck className="w-4 h-4" /> Règle FEFO</CardTitle></CardHeader><CardContent className="text-xs leading-relaxed">La vente propose toujours le lot à péremption la plus proche. Choisir un autre lot demande une justification journalisée (STO-08).</CardContent></Card>
           </div>
-        </TabsContent>
 
-        {/* PRODUITS STO-02 */}
-        <TabsContent value="produits" className="space-y-4 mt-4">
+          {/* §0.2 — les huit statuts, avec des mots simples */}
+          <Card className="border-[#CFF1D2]">
+            <CardHeader>
+              <CardTitle className="text-sm font-black text-[#0F3B27]">Les huit statuts d’un lot, dits simplement</CardTitle>
+              <CardDescription className="text-xs">
+                Les sept statuts du cahier §0.2, auxquels s’ajoute « Épuisé » quand il ne reste plus aucune boîte.
+                Un lot ne change jamais de statut par hasard : chaque passage se documente et laisse une trace.
+                Seul « Commercialisable » peut être vendu ou délivré.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {STATUTS.map((s) => (
+                <div key={s.valeur} className={`rounded-2xl border-2 p-3 ${s.classe}`}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`size-2.5 rounded-full ${s.pastille}`} />
+                    <h3 className="font-display text-sm font-black text-[#0F3B27]">{s.libelle}</h3>
+                    <Badge variant="outline" className={`ml-auto text-[10px] font-bold ${s.vendable ? "border-[#0F3B27]/30 bg-white text-[#0F3B27]" : "border-slate-300 bg-white text-slate-600"}`}>
+                      {s.vendable ? "Vente autorisée" : "Vente bloquée"}
+                    </Badge>
+                  </div>
+                  <p className="mt-1.5 text-xs leading-relaxed text-[#0F3B27]/90">{s.description}</p>
+                  <p className="mt-1.5 text-[11px] leading-snug text-[#475C50]">{s.consequence}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* PRODUITS STO-02 */}
+      {tab === "produits" && (
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-display font-black text-[#0F3B27]">Catalogue produits — fiche complète (STO-02)</h3>
             <Badge variant="outline" className="border-[#0F3B27] text-[#0F3B27]">{produits.length} produits</Badge>
           </div>
-          <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-[#475C50]" /><Input placeholder="Rechercher DCI, CIP, laboratoire, classe..." value={recherche} onChange={e => setRecherche(e.target.value)} className="pl-9 border-[#CFF1D2]" /></div>
+          <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-[#475C50]" /><Input placeholder="Rechercher par nom, DCI, code CIP ou laboratoire…" value={recherche} onChange={e => setRecherche(e.target.value)} className="pl-9 border-[#CFF1D2]" /></div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             {produits.map(p => (
               <Card key={p.id} className="border-[#CFF1D2] hover:shadow-md transition-shadow">
@@ -345,33 +543,35 @@ function PageStockMagasin() {
                 </CardContent>
               </Card>
             ))}
-            {produits.length === 0 && <div className="col-span-full p-8 text-center text-sm text-[#475C50]">Aucun produit — importer le catalogue (CSV/Excel 10 Mo max) ou ajouter via l’assistant (STO-02).</div>}
+            {produits.length === 0 && <div className="col-span-full p-8 text-center text-sm text-[#475C50]">Aucun produit — importez le catalogue (CSV ou Excel, 10 Mo maximum) ou ajoutez-le avec l’assistant (STO-02).</div>}
           </div>
-          <ZoneDepot label="Importer catalogue produits (CSV/Excel)" />
-        </TabsContent>
+          <ZoneDepot label="Importer le catalogue produits (CSV ou Excel)" />
+        </div>
+      )}
 
-        {/* LOTS FEFO STO-03 */}
-        <TabsContent value="lots" className="space-y-4 mt-4">
+      {/* LOTS FEFO STO-03 */}
+      {tab === "lots" && (
+        <div className="space-y-4">
           <Card className="border-[#CFF1D2]"><CardContent className="pt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="relative flex-1"><Search className="absolute left-3 top-3 h-4 w-4 text-[#475C50]" /><Input placeholder="Médicament, DCI, CIP, lot..." value={recherche} onChange={e => setRecherche(e.target.value)} className="pl-9" /></div>
-            <div className="flex items-center gap-1 text-xs font-bold">
+            <div className="relative flex-1"><Search className="absolute left-3 top-3 h-4 w-4 text-[#475C50]" /><Input placeholder="Médicament, DCI, code CIP ou numéro de lot…" value={recherche} onChange={e => setRecherche(e.target.value)} className="pl-9" /></div>
+            <div className="flex flex-wrap items-center gap-1 text-xs font-bold">
               <Filter className="w-4 h-4 text-[#475C50]" />
               {[
-                { id: "tous", label: "Tous" }, { id: "critique_1m", label: "<30j" }, { id: "alerte_3m", label: "<3m" }, { id: "attention_6m", label: "<6m" }, { id: "perime", label: "Périmés" },
-              ].map(f => <Button key={f.id} variant={filtreAlerte===f.id ? "default":"outline"} size="sm" onClick={()=>setFiltreAlerte(f.id)} className={filtreAlerte===f.id ? "bg-[#0F3B27] text-[#92FF5F] text-xs h-8":"text-[#475C50] text-xs h-8 border-[#CFF1D2]"}>{f.label}</Button>)}
+                { id: "tous", label: "Tous" }, { id: "critique_1m", label: "Moins d’un mois" }, { id: "alerte_3m", label: "Moins de 3 mois" }, { id: "attention_6m", label: "Moins de 6 mois" }, { id: "perime", label: "Périmés" },
+              ].map(f => <Button key={f.id} variant={filtreAlerte===f.id ? "default":"outline"} size="sm" onClick={()=>setFiltreAlerte(f.id)} className={filtreAlerte===f.id ? "bg-[#0F3B27] text-[#92FF5F] text-xs h-9": "text-[#475C50] text-xs h-9 border-[#CFF1D2]"}>{f.label}</Button>)}
             </div>
           </CardContent></Card>
           <Card className="border-[#CFF1D2]">
-            <CardHeader><CardTitle className="text-sm font-black text-[#0F3B27]">Lots — ordre FEFO strict (STO-08)</CardTitle><CardDescription>Un autre lot que le premier exige une justification journalisée. Statuts vendables : uniquement “Commercialisable” (RG-D02).</CardDescription></CardHeader>
+            <CardHeader><CardTitle className="text-sm font-black text-[#0F3B27]">Lots — ordre FEFO strict (STO-08)</CardTitle><CardDescription>Le premier lot de la liste est celui à sortir. Choisir un autre lot exige une justification journalisée. Seul un lot « Commercialisable » peut être vendu.</CardDescription></CardHeader>
             <CardContent>
-              {isLoading ? <div className="p-8 text-center text-[#475C50]">Chargement FEFO...</div> : lots.length===0 ? <div className="p-8 text-center text-[#475C50]">Aucun lot — réceptionner via l’onglet Réception.</div> : (
+              {isLoading ? <div className="p-8 text-center text-[#475C50]">Chargement FEFO...</div> : lots.length===0 ? <div className="p-8 text-center text-[#475C50]">Aucun lot — réceptionnez une livraison dans la section Réception.</div> : (
                 <div className="overflow-x-auto"><table className="w-full text-sm text-left">
                   <thead className="bg-[#F7F9F7] text-[#475C50] border-b border-[#CFF1D2] text-xs font-bold"><tr><th className="py-2 px-3">Priorité</th><th className="py-2 px-3">Médicament</th><th className="py-2 px-3">Lot & BL</th><th className="py-2 px-3">Péremption</th><th className="py-2 px-3">Qté</th><th className="py-2 px-3">Emplacement</th><th className="py-2 px-3">Statut</th><th className="py-2 px-3 text-right">Action</th></tr></thead>
                   <tbody className="divide-y divide-[#CFF1D2]/50">
                     {lots.map((lot, idx) => (
                       <tr key={lot.id} className={`hover:bg-[#F7F9F7] ${lot.statut_effectif==="quarantaine" ? "bg-amber-50/50":""} ${idx===0 && lot.est_vendable ? "bg-[#CFF1D2]/20":""}`}>
                         <td className="py-2 px-3">{idx===0 && lot.est_vendable ? <span className="inline-flex items-center gap-1 text-xs font-black text-[#0F3B27] bg-[#92FF5F] px-2 py-0.5 rounded-full"><ArrowRight className="w-3 h-3" /> Prochain</span> : <span className="text-xs font-mono text-[#475C50]">#{idx+1}</span>}</td>
-                        <td className="py-2 px-3"><div className="font-bold text-[#0F3B27] text-xs">{lot.produit?.nom_commercial}</div><div className="text-[11px] text-[#475C50]">CIP {lot.produit?.code_cip} · DCI {lot.produit?.dci || "—"}</div>{lot.produit?.est_thermolabile && <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1 rounded">❄️ 2–8°C</span>}</td>
+                        <td className="py-2 px-3"><div className="font-bold text-[#0F3B27] text-xs">{lot.produit?.nom_commercial}</div><div className="text-[11px] text-[#475C50]">CIP {lot.produit?.code_cip} · DCI {lot.produit?.dci || "—"}</div>{lot.produit?.est_thermolabile && <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1 rounded">❄️ 2–8 °C</span>}</td>
                         <td className="py-2 px-3"><div className="font-mono text-xs font-bold">{lot.numero_lot}</div><div className="text-[11px] text-[#475C50]">{lot.fournisseur_nom} · BL {lot.bon_livraison_ref}</div></td>
                         <td className="py-2 px-3"><div className="font-bold text-xs">{lot.date_peremption}</div><div className="mt-1">{badgeAlerte(lot.statut_peremption, lot.jours_avant_peremption)}</div></td>
                         <td className="py-2 px-3 font-black text-[#0F3B27]">{lot.quantite_disponible} <span className="font-normal text-[#475C50] text-xs">/ {lot.quantite_initiale}</span></td>
@@ -380,11 +580,11 @@ function PageStockMagasin() {
                         <td className="py-2 px-3 text-right">
                           <div className="flex justify-end gap-1">
                             {lot.statut_effectif==="commercialisable" ? (
-                              <Button variant="outline" size="sm" onClick={()=>{setLotPourAction(lot); setStatutCible("quarantaine"); setDialogChangementStatutOuvert(true);}} className="text-xs h-7 border-amber-300 text-amber-800"><ShieldAlert className="w-3 h-3 mr-1" /> Bloquer</Button>
+                              <Button variant="outline" size="sm" onClick={()=>{setLotPourAction(lot); setStatutCible("quarantaine"); setDialogChangementStatutOuvert(true);}} className="text-xs h-8 border-amber-300 text-amber-800"><ShieldAlert className="w-3 h-3 mr-1" /> Bloquer</Button>
                             ) : lot.statut_effectif==="quarantaine" ? (
-                              <Button variant="outline" size="sm" onClick={()=> mutationLever.mutate(lot.id)} className="text-xs h-7 border-[#CFF1D2] text-[#0F3B27]"><CheckCircle2 className="w-3 h-3 mr-1" /> Lever</Button>
+                              <Button variant="outline" size="sm" onClick={()=> mutationLever.mutate(lot.id)} className="text-xs h-8 border-[#CFF1D2] text-[#0F3B27]"><CheckCircle2 className="w-3 h-3 mr-1" /> Lever</Button>
                             ) : null}
-                            <Button variant="ghost" size="sm" onClick={()=>{setLotPourAction(lot); setDialogChangementStatutOuvert(true);}} className="text-xs h-7">⋯</Button>
+                            <Button variant="ghost" size="sm" onClick={()=>{setLotPourAction(lot); setDialogChangementStatutOuvert(true);}} className="text-xs h-8">Changer</Button>
                           </div>
                         </td>
                       </tr>
@@ -394,16 +594,18 @@ function PageStockMagasin() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* EMPLACEMENTS STO-04 */}
-        <TabsContent value="emplacements" className="space-y-4 mt-4">
-          <div className="flex items-center justify-between"><h3 className="font-display font-black text-[#0F3B27]">Plan des zones — 7 emplacements (STO-04)</h3><Badge variant="outline" className="border-[#CFF1D2]">{emplacements.length || 7} zones</Badge></div>
+      {/* EMPLACEMENTS STO-04 */}
+      {tab === "emplacements" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between"><h3 className="font-display font-black text-[#0F3B27]">Plan des zones — chaque boîte a sa place (STO-04)</h3><Badge variant="outline" className="border-[#CFF1D2]">{emplacements.length || 7} zones</Badge></div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {(emplacements.length ? emplacements : [
               { code:"COMPTOIR", libelle:"Comptoir — Délivrance", type_zone:"comptoir", lots_count: 0 },
               { code:"RESERVE", libelle:"Réserve — Stock principal", type_zone:"reserve", lots_count: 0 },
-              { code:"FRIGO", libelle:"Réfrigérateur 2°C–8°C", type_zone:"frigo", lots_count: 0 },
+              { code:"FRIGO", libelle:"Réfrigérateur 2 °C – 8 °C", type_zone:"frigo", lots_count: 0 },
               { code:"ARMOIRE", libelle:"Armoire sécurisée — Stupéfiants", type_zone:"armoire_securisee", lots_count: 0 },
               { code:"ATTENTE", libelle:"Zone d’attente de contrôle", type_zone:"attente_controle", lots_count: 0 },
               { code:"RETOURS", libelle:"Zone des retours fournisseur", type_zone:"retours", lots_count: 0 },
@@ -411,17 +613,19 @@ function PageStockMagasin() {
             ] as any).map((e: any)=>(
               <Card key={e.code} className={`border-2 ${e.type_zone==="frigo" ? "border-blue-200 bg-blue-50/30" : e.type_zone==="armoire_securisee" ? "border-purple-200 bg-purple-50/30" : e.type_zone==="dechets" ? "border-red-200 bg-red-50/20" : "border-[#CFF1D2] bg-white"}`}>
                 <CardHeader className="pb-2"><CardTitle className="text-sm font-black text-[#0F3B27] flex items-center gap-2"><MapPin className="w-4 h-4" /> {e.libelle}</CardTitle><CardDescription className="text-xs">{e.code} · {e.type_zone}</CardDescription></CardHeader>
-                <CardContent className="text-xs"><div className="flex justify-between"><span className="text-[#475C50]">Lots</span><strong>{e.lots_count ?? 0}</strong></div><div className="mt-2 text-[11px] text-[#475C50]">{e.type_zone==="frigo" ? "❄️ Réservé thermolabiles" : e.type_zone==="armoire_securisee" ? "🔒 Stupéfiants & Listes uniquement" : "Étiquettes imprimables"}</div></CardContent>
+                <CardContent className="text-xs"><div className="flex justify-between"><span className="text-[#475C50]">Lots</span><strong>{e.lots_count ?? 0}</strong></div><div className="mt-2 text-[11px] text-[#475C50]">{e.type_zone==="frigo" ? "❄️ Réservé aux produits thermolabiles" : e.type_zone==="armoire_securisee" ? "🔒 Stupéfiants et listes uniquement" : "Étiquettes imprimables"}</div></CardContent>
               </Card>
             ))}
           </div>
-          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Contraintes d’affectation (STO-04)</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Le frigo n’accepte que des thermolabiles, l’armoire n’accepte que des stupéfiants/listes. Glisser-déposer un lot d’un emplacement à un autre crée un transfert tracé avec scan et confirmation.</CardContent></Card>
-        </TabsContent>
+          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Contraintes d’affectation (STO-04)</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Le frigo n’accepte que les produits thermolabiles, l’armoire que les stupéfiants et les listes. Déplacer un lot d’une zone à l’autre crée un transfert tracé, avec scan et confirmation.</CardContent></Card>
+        </div>
+      )}
 
-        {/* MOUVEMENTS STO-09 */}
-        <TabsContent value="mouvements" className="space-y-4 mt-4">
-          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-black text-[#0F3B27]">Journal des mouvements (STO-09) — INT-01 : jamais supprimé, contre-passé</CardTitle><CardDescription>Entrée, vente, transfert, casse, destruction, ajustement — chaque mouvement porte pièce et auteur</CardDescription></CardHeader><CardContent>
-            {mouvements.length===0 ? <div className="p-6 text-center text-sm text-[#475C50]">Aucun mouvement — les réceptions et transferts apparaîtront ici.</div> : (
+      {/* MOUVEMENTS STO-09 */}
+      {tab === "mouvements" && (
+        <div className="space-y-4">
+          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-black text-[#0F3B27]">Journal des mouvements (STO-09) — rien ne s’efface, tout se contre-passe</CardTitle><CardDescription>Entrée, vente, transfert, casse ou destruction : chaque ligne porte sa pièce justificative et son auteur.</CardDescription></CardHeader><CardContent>
+            {mouvements.length===0 ? <div className="p-6 text-center text-sm text-[#475C50]">Aucun mouvement — les réceptions et les transferts apparaîtront ici.</div> : (
               <div className="overflow-x-auto"><table className="w-full text-xs text-left">
                 <thead className="bg-[#F7F9F7] text-[#475C50] border-b border-[#CFF1D2] font-bold"><tr><th className="py-2 px-3">Date</th><th className="py-2 px-3">Type</th><th className="py-2 px-3">Produit / Lot</th><th className="py-2 px-3">Qté</th><th className="py-2 px-3">Stock av/ap</th><th className="py-2 px-3">Pièce</th><th className="py-2 px-3">Auteur</th></tr></thead>
                 <tbody className="divide-y divide-[#CFF1D2]/50">
@@ -432,124 +636,290 @@ function PageStockMagasin() {
               </table></div>
             )}
           </CardContent></Card>
-        </TabsContent>
+        </div>
+      )}
 
-        {/* RÉCEPTION STO-05/06/07 */}
-        <TabsContent value="reception" className="space-y-4 mt-4">
-          <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white font-display font-black flex items-center gap-2"><ScanLine className="w-5 h-5 text-[#92FF5F]" /> Réception contrôlée (STO-05)</CardTitle><CardDescription className="text-[#CFF1D2]">Scan BL puis boîtes · DataMatrix lot/péremption · rapprochement commande · chaînes du froid</CardDescription></CardHeader><CardContent className="text-xs leading-relaxed text-[#CFF1D2]">Passage en “Commercialisable” seulement après validation de tous les contrôles obligatoires. Hors heures : “En attente de contrôle” avec dispositif d’isolement (STO-06). Anomalies (casse/manquant/excédent) → fiche + photos + isolement (STO-07).</CardContent></Card>
-          <ZoneDepot label="Déposer bon de livraison & facture fournisseur (JPG/PDF)" />
+      {/* RÉCEPTION STO-05/06/07 */}
+      {tab === "reception" && (
+        <div className="space-y-4">
+          <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white font-display font-black flex items-center gap-2"><ScanLine className="w-5 h-5 text-[#92FF5F]" /> Réception contrôlée (STO-05)</CardTitle><CardDescription className="text-[#CFF1D2]">On scanne le bon de livraison, puis les boîtes. On rapproche de la commande et on vérifie la chaîne du froid.</CardDescription></CardHeader><CardContent className="text-xs leading-relaxed text-[#CFF1D2]">Le lot ne devient « Commercialisable » qu’une fois tous les contrôles obligatoires validés. Hors des heures d’ouverture, il attend en zone d’isolement (STO-06). Casse, manquant ou excédent : une fiche, des photos et un isolement (STO-07).</CardContent></Card>
+          <ZoneDepot label="Déposer le bon de livraison et la facture du fournisseur (photo ou PDF)" />
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-black text-[#0F3B27]">Contrôles obligatoires</CardTitle></CardHeader><CardContent className="space-y-2 text-xs">
               {[
-                ["alerte_sanitaire_verifiee","Alerte sanitaire sur le lot (recherche auto)","BPD5-F05"],
+                ["alerte_sanitaire_verifiee","Alerte sanitaire sur le lot (recherche automatique)","BPD5-F05"],
                 ["emballage_intact","État des emballages conforme","APP-03"],
                 ["conformite_livraison","Conformité livraison / commande","STO-05"],
-                ["dates_conformes","Dates & péremptions conformes","—"],
+                ["dates_conformes","Dates et péremptions conformes","—"],
                 ["chaine_froid_respectee","Chaîne du froid respectée","BPD5-F11"],
               ].map(([k,l,ref])=>(
-                <label key={k} className="flex items-center gap-2 rounded-xl border border-[#CFF1D2] px-3 py-2"><input type="checkbox" checked={(controles as any)[k]} onChange={e=> setControles({...controles, [k]: e.target.checked})} className="accent-[#0F3B27]" /><span className="font-bold text-[#0F3B27]">{l}</span><span className="ml-auto text-[10px] text-[#475C50]">{ref}</span></label>
+                <label key={k} className="flex items-center gap-2 rounded-xl border border-[#CFF1D2] px-3 py-2"><input type="checkbox" checked={(controles as any)[k]} onChange={e=> setControles({...controles, [k]: e.target.checked})} className="accent-[#0F3B27] size-4" /><span className="font-bold text-[#0F3B27]">{l}</span><span className="ml-auto text-[10px] text-[#475C50]">{ref}</span></label>
               ))}
             </CardContent></Card>
-            <Card className="border-amber-300 bg-amber-50"><CardHeader><CardTitle className="text-xs font-black text-amber-900 flex items-center gap-2"><FileWarning className="w-4 h-4" /> Anomalies de réception (STO-07)</CardTitle></CardHeader><CardContent className="text-xs text-amber-900">Casse, manquant, excédent, produit non commandé → fiche, photos annotées, isolement, litige fournisseur, avoir attendu.</CardContent></Card>
+            <Card className="border-amber-300 bg-amber-50"><CardHeader><CardTitle className="text-xs font-black text-amber-900 flex items-center gap-2"><FileWarning className="w-4 h-4" /> Anomalies de réception (STO-07)</CardTitle></CardHeader><CardContent className="text-xs text-amber-900">Casse, manquant, excédent ou produit non commandé : on ouvre une fiche, on joint des photos annotées, on isole le lot et on suit le litige fournisseur jusqu’à l’avoir.</CardContent></Card>
           </div>
-          <Button onClick={()=> setDialogReceptionOuvert(true)} className="w-full bg-[#0F3B27] text-white font-bold">Ouvrir la réception — scan & contrôles</Button>
-        </TabsContent>
+          <Button onClick={()=> setDialogReceptionOuvert(true)} className="w-full bg-[#0F3B27] text-white font-bold">Ouvrir la réception — scan et contrôles</Button>
+        </div>
+      )}
 
-        {/* INVENTAIRES STO-12 */}
-        <TabsContent value="inventaires" className="space-y-4 mt-4">
-          <div className="flex items-center justify-between"><h3 className="font-display font-black text-[#0F3B27]">Inventaires — tournant & général annuel (STO-12)</h3><Button size="sm" className="bg-[#0F3B27] text-white" onClick={()=> toast.info("Création d’inventaire — choisissez zone, comptage aveugle/double comptage")}> <Plus className="w-4 h-4 mr-1" /> Nouvelle campagne</Button></div>
-          <Card className="border-[#CFF1D2]"><CardContent className="pt-6 text-sm text-[#475C50]">Feuille de comptage sur mobile avec scan, fonctionne hors-ligne, comptage aveugle & double comptage en option, écarts valorisés, validation pharmacien avant ajustement (STO-12). Export PDF/Excel 5 ans — GAC-EN-010.</CardContent></Card>
-          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Campagnes</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Aucune campagne — lancez un inventaire tournant par zone (réserve, comptoir, frigo, armoire).</CardContent></Card>
-        </TabsContent>
+      {/* INVENTAIRES STO-12 */}
+      {tab === "inventaires" && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-display font-black text-[#0F3B27]">Inventaires — tournant et général annuel (STO-12)</h3><Button size="sm" className="bg-[#0F3B27] text-white" onClick={()=> toast.info("Création d’un inventaire — choisissez la zone, le comptage aveugle ou le double comptage.")}> <Plus className="w-4 h-4 mr-1" /> Nouvelle campagne</Button></div>
+          <Card className="border-[#CFF1D2]"><CardContent className="pt-6 text-sm text-[#475C50]">La feuille de comptage s’utilise sur téléphone avec scan et fonctionne hors connexion. Comptage aveugle et double comptage en option, écarts valorisés, validation du pharmacien avant tout ajustement (STO-12). Export PDF et Excel conservé cinq ans — GAC-EN-010.</CardContent></Card>
+          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Campagnes</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Aucune campagne en cours — lancez un inventaire tournant par zone : réserve, comptoir, frigo ou armoire.</CardContent></Card>
+        </div>
+      )}
 
-        {/* PÉREmptions STO-11 */}
-        <TabsContent value="peremptions" className="space-y-4 mt-4">
+      {/* PÉREMPTIONS STO-11 */}
+      {tab === "peremptions" && (
+        <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-black text-blue-700 flex items-center gap-2"><Calendar className="w-4 h-4" /> À 6 mois</CardTitle></CardHeader><CardContent><div className="text-2xl font-black text-blue-700">{peremptions.a_6_mois?.length ?? 0}</div><p className="text-xs text-[#475C50]">Surveillance</p></CardContent></Card>
-            <Card className="border-amber-300 bg-amber-50/30"><CardHeader><CardTitle className="text-sm font-black text-amber-700 flex items-center gap-2"><Clock className="w-4 h-4" /> À 3 mois</CardTitle></CardHeader><CardContent><div className="text-2xl font-black text-amber-700">{peremptions.a_3_mois?.length ?? 0}</div></CardContent></Card>
-            <Card className="border-red-300 bg-red-50"><CardHeader><CardTitle className="text-sm font-black text-red-700 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> À 1 mois · Critique</CardTitle></CardHeader><CardContent><div className="text-2xl font-black text-red-700">{peremptions.a_1_mois?.length ?? 0}</div><p className="text-xs text-red-700">Retrait par scan — vente interdite après péremption (STO-11)</p></CardContent></Card>
+            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-black text-blue-700 flex items-center gap-2"><Calendar className="w-4 h-4" /> À 6 mois</CardTitle></CardHeader><CardContent><div className="text-2xl font-black text-blue-700">{peremptions.a_6_mois?.length ?? 0}</div><p className="text-xs text-[#475C50]">À surveiller tranquillement.</p></CardContent></Card>
+            <Card className="border-amber-300 bg-amber-50/30"><CardHeader><CardTitle className="text-sm font-black text-amber-700 flex items-center gap-2"><Clock className="w-4 h-4" /> À 3 mois</CardTitle></CardHeader><CardContent><div className="text-2xl font-black text-amber-700">{peremptions.a_3_mois?.length ?? 0}</div><p className="text-xs text-[#475C50]">À écouler en priorité au comptoir.</p></CardContent></Card>
+            <Card className="border-red-300 bg-red-50"><CardHeader><CardTitle className="text-sm font-black text-red-700 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> À 1 mois · critique</CardTitle></CardHeader><CardContent><div className="text-2xl font-black text-red-700">{peremptions.a_1_mois?.length ?? 0}</div><p className="text-xs text-red-700">Retrait par scan — la vente est interdite après la date (STO-11).</p></CardContent></Card>
           </div>
-          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Aucun lot périmé en stock ? Bravo.</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Actions proposées : retour fournisseur ou rebut vers déchet pharmaceutique (BPD5-F14, STK-06). Bordereau de retrait PDF/Excel 5 ans.</CardContent></Card>
-        </TabsContent>
+          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Aucun lot périmé en stock ? C’est bon signe.</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Deux issues possibles : retour au fournisseur ou rebut vers la filière déchet pharmaceutique (BPD5-F14, STK-06). Le bordereau de retrait s’exporte en PDF ou en Excel et se conserve cinq ans.</CardContent></Card>
+        </div>
+      )}
 
-        {/* QUARANTAINE & RAPPELS STO-14 */}
-        <TabsContent value="quarantaine" className="space-y-4 mt-4">
-          <Card className="border-amber-400 bg-amber-50"><CardHeader><CardTitle className="text-sm font-black text-amber-900 flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> Rappels de lots — blocage immédiat (STO-14)</CardTitle><CardDescription className="text-amber-800">Saisie/import avis (source, produits, lots, date, action, pièce jointe) → blocage caisse/dispensation en &lt;1 min → liste de prélèvement par emplacement → scan boîtes isolées → bordereau retour → recherche patients (pharmacien) → clôture avec preuve</CardDescription></CardHeader><CardContent className="text-xs text-amber-900">Conservation GAC-EN-008 : 10 ans. Cahier de rappel de lot et de mise en quarantaine PDF.</CardContent></Card>
-          <ZoneDepot label="Déposer avis de rappel (PDF/photo/courrier) — obligatoire" />
-          <Card className="border-[#CFF1D2]"><CardContent className="pt-6 text-center text-sm text-[#475C50]">Aucun rappel actif — la saisie d’un avis bloquera instantanément les lots concernés.</CardContent></Card>
-        </TabsContent>
+      {/* QUARANTAINE & RAPPELS STO-14 */}
+      {tab === "quarantaine" && (
+        <div className="space-y-4">
+          <Card className="border-amber-400 bg-amber-50"><CardHeader><CardTitle className="text-sm font-black text-amber-900 flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> Rappels de lots — blocage immédiat (STO-14)</CardTitle><CardDescription className="text-amber-800">On saisit ou on importe l’avis reçu (source, produits, lots, date, action, pièce jointe). La caisse et la dispensation bloquent en moins d’une minute, une liste de prélèvement est éditée par emplacement, les boîtes sont scannées puis isolées, un bordereau de retour est signé et les patients concernés sont recherchés avant la clôture avec preuve.</CardDescription></CardHeader><CardContent className="text-xs text-amber-900">Conservation GAC-EN-008 : dix ans. Le cahier de rappel de lot et de mise en quarantaine s’imprime en PDF.</CardContent></Card>
+          <ZoneDepot label="Déposer l’avis de rappel (PDF, photo ou courrier) — obligatoire" />
+          <Card className="border-[#CFF1D2]"><CardContent className="pt-6 text-center text-sm text-[#475C50]">Aucun rappel actif — dès qu’un avis est saisi, les lots concernés sont bloqués sur-le-champ.</CardContent></Card>
+        </div>
+      )}
 
-        {/* DÉCHETS STO-17 */}
-        <TabsContent value="dechets" className="space-y-4 mt-4">
-          <Card className="border-red-300 bg-red-50/30"><CardHeader><CardTitle className="text-sm font-black text-red-800 flex items-center gap-2"><Trash2 className="w-4 h-4" /> Déchets & destruction — BPD9 (STO-17)</CardTitle><CardDescription className="text-red-700">Motif : périmé, avarié, non conforme, rappelé, retourné → aire sécurisée → lot à détruire → prestataire qualifié → PV contradictoire signé électroniquement → coffre-fort numérique → écriture de perte</CardDescription></CardHeader><CardContent className="text-xs text-red-800">Conservation PV destruction GAC-EN : 10 ans. Tout déchet génère une perte comptable (STO-18).</CardContent></Card>
-          <Card className="border-[#CFF1D2]"><CardContent className="pt-6 text-center text-sm text-[#475C50]">Aucun lot en déchet — constituez un lot à détruire en sélectionnant des lots périmés/rejetés.</CardContent></Card>
-        </TabsContent>
+      {/* DÉCHETS STO-17 */}
+      {tab === "dechets" && (
+        <div className="space-y-4">
+          <Card className="border-red-300 bg-red-50/30"><CardHeader><CardTitle className="text-sm font-black text-red-800 flex items-center gap-2"><Trash2 className="w-4 h-4" /> Déchets et destruction — BPD9 (STO-17)</CardTitle><CardDescription className="text-red-700">Motif possible : périmé, avarié, non conforme, rappelé ou retourné. Le lot rejoint l’aire sécurisée, devient « à détruire », puis part chez un prestataire qualifié. Le procès-verbal contradictoire est signé électroniquement et rangé dans le coffre-fort numérique, avec l’écriture de perte.</CardDescription></CardHeader><CardContent className="text-xs text-red-800">Les procès-verbaux de destruction se conservent dix ans (GAC-EN). Chaque déchet génère une perte comptable (STO-18).</CardContent></Card>
+          <Card className="border-[#CFF1D2]"><CardContent className="pt-6 text-center text-sm text-[#475C50]">Aucun lot en déchet — pour en constituer un, sélectionnez des lots périmés ou rejetés.</CardContent></Card>
+        </div>
+      )}
 
-        {/* VALORISATION STO-18/19 */}
-        <TabsContent value="valorisation" className="space-y-4 mt-4">
+      {/* VALORISATION STO-18/19 */}
+      {tab === "valorisation" && (
+        <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#92FF5F]" /> Valorisation CMP</CardTitle></CardHeader><CardContent><div className="text-2xl font-black font-display">{valorisation.total.toLocaleString("fr-FR")} FCFA</div><p className="text-xs text-[#CFF1D2]">Coût moyen pondéré — état à date rapproché du compte de stock (STO-18)</p></CardContent></Card>
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">ABC & rotation</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Classement ABC, couverture en jours, marge par famille — cahier des ruptures et demandes non satisfaites (STO-19, STK-08, BPD5-F15).</CardContent></Card>
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Étiquettes</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Impression étiquettes emplacement, quarantaine et rebut (STO-20) — imprimante d’étiquettes.</CardContent></Card>
+            <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#92FF5F]" /> Valorisation au coût moyen</CardTitle></CardHeader><CardContent><div className="text-2xl font-black font-display">{valorisation.total.toLocaleString("fr-FR")} FCFA</div><p className="text-xs text-[#CFF1D2]">Coût moyen pondéré à la date du jour, rapproché du compte de stock (STO-18).</p></CardContent></Card>
+            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">ABC et rotation</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Classement ABC, couverture en jours et marge par famille, avec le cahier des ruptures et des demandes non satisfaites (STO-19, STK-08, BPD5-F15).</CardContent></Card>
+            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Étiquettes</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Impression des étiquettes d’emplacement, de quarantaine et de rebut (STO-20) sur l’imprimante d’étiquettes.</CardContent></Card>
           </div>
-          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Détail par produit (CMP)</CardTitle></CardHeader><CardContent>
+          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Détail par produit (coût moyen pondéré)</CardTitle></CardHeader><CardContent>
             {valorisation.par_produit?.length ? (
-              <div className="overflow-x-auto"><table className="w-full text-xs text-left"><thead className="bg-[#F7F9F7] text-[#475C50] font-bold border-b border-[#CFF1D2]"><tr><th className="py-2 px-3">Produit</th><th className="py-2 px-3">Qté</th><th className="py-2 px-3">CMP</th><th className="py-2 px-3">Valeur</th></tr></thead><tbody className="divide-y divide-[#CFF1D2]/50">{valorisation.par_produit.slice(0,20).map((v:any)=>(
+              <div className="overflow-x-auto"><table className="w-full text-xs text-left"><thead className="bg-[#F7F9F7] text-[#475C50] font-bold border-b border-[#CFF1D2]"><tr><th className="py-2 px-3">Produit</th><th className="py-2 px-3">Qté</th><th className="py-2 px-3">Coût moyen</th><th className="py-2 px-3">Valeur</th></tr></thead><tbody className="divide-y divide-[#CFF1D2]/50">{valorisation.par_produit.slice(0,20).map((v:any)=>(
                 <tr key={v.produit.id}><td className="py-2 px-3 font-bold text-[#0F3B27]">{v.produit.nom_commercial}</td><td className="py-2 px-3 font-mono">{v.quantite}</td><td className="py-2 px-3 font-mono">{Number(v.cmp || 0).toLocaleString("fr-FR")} FCFA</td><td className="py-2 px-3 font-mono font-bold">{Number(v.valeur).toLocaleString("fr-FR")} FCFA</td></tr>
               ))}</tbody></table></div>
-            ) : <div className="text-sm text-[#475C50]">Valorisation calculée dès qu’un lot est réceptionné.</div>}
+            ) : <div className="text-sm text-[#475C50]">La valorisation se calcule dès qu’un lot est réceptionné.</div>}
           </CardContent></Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
 
-      {/* Dialog Réception — contrôles STO-05 */}
+      {/* Dialog Réception — modale horizontale, contrôles STO-05 */}
       <Dialog open={dialogReceptionOuvert} onOpenChange={setDialogReceptionOuvert}>
-        <DialogContent className="max-w-lg bg-white">
-          <DialogHeader><DialogTitle className="font-display font-black text-[#0F3B27]">Réception contrôlée (STO-05)</DialogTitle><DialogDescription>Scan BL, DataMatrix lot/péremption, rapprochement commande. Tous les contrôles doivent être cochés pour passer “Commercialisable”.</DialogDescription></DialogHeader>
-          <form onSubmit={handleReceptionSubmit} className="space-y-3">
-            <div><Label className="text-xs font-bold text-[#0F3B27]">Médicament *</Label><select className="w-full mt-1 border border-[#CFF1D2] rounded-xl p-2 text-sm bg-white" value={produitId} onChange={e=>{ setProduitId(e.target.value); const p=produits.find(x=>x.id===e.target.value); if(p?.est_thermolabile) setEmplacement("Réfrigérateur 2°C–8°C"); }} required><option value="">Sélectionner...</option>{produits.map(p=> <option key={p.id} value={p.id}>{p.nom_commercial} ({p.code_cip}) {p.est_thermolabile ? "❄️":""} • {p.laboratoire || ""}</option>)}</select></div>
-            <div className="grid grid-cols-2 gap-3"><div><Label className="text-xs font-bold">N° lot *</Label><Input placeholder="LOT-2026-..." value={numeroLot} onChange={e=> setNumeroLot(e.target.value)} required /></div><div><Label className="text-xs font-bold">Péremption *</Label><Input type="date" value={datePeremption} onChange={e=> setDatePeremption(e.target.value)} required /></div></div>
-            <div className="grid grid-cols-2 gap-3"><div><Label className="text-xs font-bold">Qté *</Label><Input type="number" min="1" value={quantite} onChange={e=> setQuantite(e.target.value)} required /></div><div><Label className="text-xs font-bold">BL *</Label><Input placeholder="BL-..." value={bonLivraisonRef} onChange={e=> setBonLivraisonRef(e.target.value)} required /></div></div>
-            <div className="grid grid-cols-2 gap-3"><div><Label className="text-xs font-bold">Fournisseur</Label><select className="w-full mt-1 border border-[#CFF1D2] rounded-xl p-2 text-sm bg-white" value={fournisseurNom} onChange={e=> setFournisseurNom(e.target.value)}><option>CAMEG BÉNIN</option><option>UBIPHARM BÉNIN</option><option>LABOREX BÉNIN</option><option>Autre</option></select></div><div><Label className="text-xs font-bold">Emplacement</Label><Input value={emplacement} onChange={e=> setEmplacement(e.target.value)} /></div></div>
-            <div className="rounded-2xl border border-amber-300 bg-amber-50 p-3 space-y-2">
-              <p className="text-xs font-black text-amber-900">Contrôles obligatoires (STO-05)</p>
-              { (["alerte_sanitaire_verifiee","emballage_intact","conformite_livraison","dates_conformes"] as const).map(k=>(
-                <label key={k} className="flex items-center gap-2 text-xs"><input type="checkbox" checked={(controles as any)[k]} onChange={e=> setControles({...controles, [k]: e.target.checked})} className="accent-[#0F3B27]" /><span className="font-bold text-[#0F3B27]">{k.replaceAll("_"," ")}</span></label>
-              ))}
-              {!controles.alerte_sanitaire_verifiee || !controles.emballage_intact || !controles.conformite_livraison || !controles.dates_conformes ? <p className="text-[11px] text-amber-800">⚠️ Contrôles incomplets → lot en “En attente de contrôle”</p> : <p className="text-[11px] text-emerald-800 font-bold">✅ Tous contrôles OK → “Commercialisable”</p>}
+        <ModaleFiche
+          titre="Réception contrôlée (STO-05)"
+          sousTitre="On scanne le bon de livraison, puis les boîtes. Le lot ne devient vendable qu’une fois les contrôles obligatoires cochés."
+          badge={<Badge className="bg-[#0F3B27] text-[#92FF5F]">STO-05</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" onClick={() => setDialogReceptionOuvert(false)} className="h-12 rounded-xl sm:h-11">Annuler</Button>
+              <Button type="submit" form="form-reception" disabled={mutationReception.isPending} className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11">
+                {mutationReception.isPending ? "Réception en cours…" : "Confirmer la réception et appliquer le FEFO"}
+              </Button>
             </div>
-            <ZoneDepot label="Joindre BL / facture (photo/PDF) — SHA-256 + chiffrage" />
-            <DialogFooter><Button type="button" variant="outline" onClick={()=> setDialogReceptionOuvert(false)}>Annuler</Button><Button type="submit" disabled={mutationReception.isPending} className="bg-[#0F3B27] text-white font-bold">{mutationReception.isPending ? "Réception..." : "Confirmer réception + FEFO"}</Button></DialogFooter>
+          }
+        >
+          <form id="form-reception" onSubmit={handleReceptionSubmit} className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            {/* Colonne gauche : quoi et combien */}
+            <ColonneFiche titre="Ce qui arrive" aide="Le produit et le lot tels qu’ils sont imprimés sur la boîte.">
+              <Champ label="Médicament reçu" obligatoire aide="Le produit est d’abord choisi dans le catalogue, puis on saisit le lot livré.">
+                <select
+                  className="mt-1 h-12 w-full rounded-xl border border-[#CFF1D2] bg-white px-3 text-sm font-medium text-[#0F3B27]"
+                  value={produitId}
+                  onChange={e => { setProduitId(e.target.value); const p = produits.find(x => x.id === e.target.value); if (p?.est_thermolabile) setEmplacement("Réfrigérateur 2 °C – 8 °C"); }}
+                  required
+                >
+                  <option value="">Choisir le médicament reçu…</option>
+                  {produits.map(p => <option key={p.id} value={p.id}>{p.nom_commercial} ({p.code_cip}) {p.est_thermolabile ? "— à conserver au froid" : ""}</option>)}
+                </select>
+              </Champ>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Champ label="Numéro de lot" obligatoire aide="Celui qui figure sur la boîte, avec les mêmes caractères.">
+                  <Input value={numeroLot} onChange={e => setNumeroLot(e.target.value)} placeholder="Ex. LOT-2026-014" className="h-12 rounded-xl" required />
+                </Champ>
+                <Champ label="Date de péremption" obligatoire aide="Jour, mois, année — comme sur la boîte.">
+                  <Input type="date" value={datePeremption} onChange={e => setDatePeremption(e.target.value)} className="h-12 rounded-xl" required />
+                </Champ>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Champ label="Quantité reçue" obligatoire aide="En boîtes, pas en plaquettes.">
+                  <Input type="number" min="1" inputMode="numeric" value={quantite} onChange={e => setQuantite(e.target.value)} placeholder="Ex. 24" className="h-12 rounded-xl" required />
+                </Champ>
+                <Champ label="Bon de livraison" obligatoire aide="Le numéro inscrit en haut du bon.">
+                  <Input value={bonLivraisonRef} onChange={e => setBonLivraisonRef(e.target.value)} placeholder="Ex. BL-2026-0087" className="h-12 rounded-xl" required />
+                </Champ>
+              </div>
+
+              {produitChoisi ? (
+                <div className="rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] px-3 py-2 text-[11px] text-[#475C50]">
+                  <strong className="text-[#0F3B27]">{produitChoisi.nom_commercial}</strong> · {produitChoisi.dci || "DCI non renseignée"} · {produitChoisi.forme || ""} {produitChoisi.dosage || ""}
+                  {produitChoisi.est_thermolabile ? " — produit thermolabile : le frigo est proposé automatiquement." : ""}
+                </div>
+              ) : null}
+            </ColonneFiche>
+
+            {/* Colonne droite : d'où ça vient, où ça va, contrôles */}
+            <ColonneFiche titre="D’où ça vient et où ça va" aide="Le fournisseur, la place en réserve, puis les vérifications.">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Champ label="Fournisseur">
+                  <select className="mt-1 h-12 w-full rounded-xl border border-[#CFF1D2] bg-white px-3 text-sm font-medium text-[#0F3B27]" value={fournisseurNom} onChange={e => setFournisseurNom(e.target.value)}>
+                    <option>CAMEG BÉNIN</option>
+                    <option>UBIPHARM BÉNIN</option>
+                    <option>LABOREX BÉNIN</option>
+                    <option>Autre</option>
+                  </select>
+                </Champ>
+                <Champ label="Emplacement" aide="Le frigo est réservé aux thermolabiles.">
+                  <Input value={emplacement} onChange={e => setEmplacement(e.target.value)} placeholder="Ex. Réserve — Stock principal" className="h-12 rounded-xl" />
+                </Champ>
+              </div>
+
+              <div className="rounded-2xl border border-amber-300 bg-amber-50 p-3">
+                <p className="text-xs font-black text-amber-900">Contrôles obligatoires avant de valider</p>
+                <p className="mb-2 text-[11px] text-amber-900/80">Cochez chaque point réellement vérifié. Un point manquant laisse le lot en attente de contrôle.</p>
+                <div className="space-y-2">
+                  {([
+                    ["alerte_sanitaire_verifiee", "Aucune alerte sanitaire ne vise ce lot"],
+                    ["emballage_intact", "Les emballages sont intacts, sans choc ni trace d’humidité"],
+                    ["conformite_livraison", "La livraison correspond à la commande (produit, quantité, prix)"],
+                    ["dates_conformes", "Les dates de péremption sont lisibles et suffisamment lointaines"],
+                  ] as const).map(([k, l]) => (
+                    <label key={k} className="flex min-h-10 items-start gap-2 rounded-xl bg-white/60 px-2.5 py-2 text-xs text-[#0F3B27]">
+                      <input type="checkbox" checked={(controles as any)[k]} onChange={e => setControles({ ...controles, [k]: e.target.checked })} className="mt-0.5 size-4 accent-[#0F3B27]" />
+                      <span className="font-semibold leading-snug">{l}</span>
+                    </label>
+                  ))}
+                  {produitChoisi?.est_thermolabile ? (
+                    <label className="flex min-h-10 items-start gap-2 rounded-xl border border-blue-300 bg-blue-50 px-2.5 py-2 text-xs text-blue-900">
+                      <input type="checkbox" checked={controles.chaine_froid_respectee} onChange={e => setControles({ ...controles, chaine_froid_respectee: e.target.checked })} className="mt-0.5 size-4 accent-[#0F3B27]" />
+                      <span className="font-semibold leading-snug">Le produit est resté entre 2 °C et 8 °C pendant le transport</span>
+                    </label>
+                  ) : null}
+                </div>
+                {tousControles && !froidManquant ? (
+                  <p className="mt-2 rounded-xl bg-emerald-100 px-2.5 py-1.5 text-[11px] font-bold text-emerald-900">Tous les contrôles sont bons : le lot passera « Commercialisable ».</p>
+                ) : (
+                  <p className="mt-2 rounded-xl bg-amber-100 px-2.5 py-1.5 text-[11px] font-bold text-amber-900">
+                    {froidManquant ? "Chaîne du froid non confirmée : le lot thermolabile restera en attente de contrôle." : "Contrôles incomplets : le lot restera « En attente de contrôle »."}
+                  </p>
+                )}
+              </div>
+
+              <ZoneDepot label="Joindre le bon de livraison ou la facture (photo ou PDF)" />
+            </ColonneFiche>
           </form>
-        </DialogContent>
+        </ModaleFiche>
       </Dialog>
 
-      {/* Dialog Changement de statut (8 statuts §0.2) */}
+      {/* Dialog Changement de statut — 8 statuts §0.2 */}
       <Dialog open={dialogChangementStatutOuvert} onOpenChange={setDialogChangementStatutOuvert}>
-        <DialogContent className="max-w-md bg-white">
-          <DialogHeader><DialogTitle className="font-display font-black text-[#0F3B27]">Changement de statut — effet immédiat (RG-D02)</DialogTitle><DialogDescription>Lot {lotPourAction?.numero_lot} · {lotPourAction?.produit?.nom_commercial}</DialogDescription></DialogHeader>
-          <div className="space-y-3">
-            <div><Label className="text-xs font-bold">Nouveau statut *</Label><select value={statutCible} onChange={e=> setStatutCible(e.target.value)} className="w-full mt-1 border border-[#CFF1D2] rounded-xl p-2 text-sm bg-white">
-              <option value="commercialisable">Commercialisable (vendable)</option>
-              <option value="en_attente_controle">En attente de contrôle</option>
-              <option value="a_evaluer">À évaluer (pharmacien)</option>
-              <option value="quarantaine">Quarantaine</option>
-              <option value="attente_retour">En attente de retour fournisseur</option>
-              <option value="rejete">Rejeté</option>
-              <option value="dechet">Déchet à détruire</option>
-            </select></div>
-            <div><Label className="text-xs font-bold">Motif *</Label><Textarea rows={3} placeholder="Motif documenté + code personnel..." value={motif} onChange={e=> setMotif(e.target.value)} /></div>
-            <DialogFooter><Button variant="outline" onClick={()=> setDialogChangementStatutOuvert(false)}>Annuler</Button><Button className="bg-[#0F3B27] text-white font-bold" disabled={!motif} onClick={()=> lotPourAction && mutationChangerStatut.mutate({ id: lotPourAction.id, statut: statutCible, motif })}>{mutationChangerStatut.isPending ? "...":"Valider — effet immédiat"}</Button></DialogFooter>
+        <ModaleFiche
+          titre="Changer le statut d’un lot"
+          sousTitre={lotPourAction ? `Lot ${lotPourAction.numero_lot} · ${lotPourAction.produit?.nom_commercial ?? ""} — le changement prend effet immédiatement et reste au journal.` : "Le changement prend effet immédiatement."}
+          badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">§0.2 · 8 statuts</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] text-[#475C50]">Le motif est obligatoire : il explique la décision à l’inspection.</p>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                <Button variant="outline" onClick={() => setDialogChangementStatutOuvert(false)} className="h-12 rounded-xl sm:h-11">Annuler</Button>
+                <Button className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11" disabled={!motif || mutationChangerStatut.isPending} onClick={() => lotPourAction && mutationChangerStatut.mutate({ id: lotPourAction.id, statut: statutCible, motif })}>
+                  {mutationChangerStatut.isPending ? "…" : "Valider, effet immédiat"}
+                </Button>
+              </div>
+            </div>
+          }
+        >
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <ColonneFiche titre="Là où en est le lot" aide="Ce que le système sait aujourd’hui.">
+              <div className="rounded-2xl border border-[#CFF1D2] bg-[#F7F9F7] p-3 text-xs">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-display text-sm font-black text-[#0F3B27]">{lotPourAction?.produit?.nom_commercial ?? "—"}</p>
+                    <p className="font-mono text-[11px] text-[#475C50]">Lot {lotPourAction?.numero_lot ?? "—"} · péremption {lotPourAction?.date_peremption ?? "—"}</p>
+                  </div>
+                  {lotPourAction ? badgeStatut(lotPourAction) : null}
+                </div>
+                <dl className="mt-3 grid grid-cols-2 gap-2">
+                  <div><dt className="text-[11px] text-[#475C50]">Quantité disponible</dt><dd className="font-mono font-bold text-[#0F3B27]">{lotPourAction?.quantite_disponible ?? "—"} boîtes</dd></div>
+                  <div><dt className="text-[11px] text-[#475C50]">Emplacement</dt><dd className="font-bold text-[#0F3B27]">{lotPourAction?.emplacement ?? "—"}</dd></div>
+                  <div><dt className="text-[11px] text-[#475C50]">Fournisseur</dt><dd className="font-bold text-[#0F3B27]">{lotPourAction?.fournisseur_nom ?? "—"}</dd></div>
+                  <div><dt className="text-[11px] text-[#475C50]">Bon de livraison</dt><dd className="font-mono text-[#0F3B27]">{lotPourAction?.bon_livraison_ref ?? "—"}</dd></div>
+                </dl>
+                {lotPourAction?.motif_statut ? <p className="mt-2 rounded-lg bg-white px-2 py-1 text-[11px] text-[#475C50]">Motif actuel : {lotPourAction.motif_statut}</p> : null}
+              </div>
+              <div className="rounded-2xl border border-[#CFF1D2] p-3 text-[11px] leading-relaxed text-[#475C50]">
+                <strong className="text-[#0F3B27]">À retenir :</strong> seul un lot « Commercialisable » peut être vendu ou délivré. Les autres statuts bloquent la caisse et la dispensation, mais le lot reste consultable pour l’historique, les rappels patients et la comptabilité.
+              </div>
+            </ColonneFiche>
+
+            <ColonneFiche titre="Le nouveau statut" aide="Choisissez, puis expliquez votre décision.">
+              <Champ label="Nouveau statut" obligatoire>
+                <select value={statutCible} onChange={e => setStatutCible(e.target.value)} className="mt-1 h-12 w-full rounded-xl border border-[#CFF1D2] bg-white px-3 text-sm font-medium text-[#0F3B27]">
+                  {STATUTS.map(s => <option key={s.valeur} value={s.valeur}>{s.libelle}{s.vendable ? " — vente autorisée" : " — vente bloquée"}</option>)}
+                </select>
+              </Champ>
+              {statutChoisi ? (
+                <div className={`rounded-2xl border-2 p-3 ${statutChoisi.classe}`}>
+                  <p className="text-xs leading-relaxed text-[#0F3B27]">{statutChoisi.description}</p>
+                  <p className="mt-1 text-[11px] text-[#475C50]">{statutChoisi.consequence}</p>
+                </div>
+              ) : null}
+              <Champ label="Motif de la décision" obligatoire aide="Un fait, pas une opinion : « rappel du fabricant du 03/11 », « emballage écrasé à la livraison », etc.">
+                <Textarea rows={4} placeholder="Expliquez en une phrase, avec la référence de la pièce justificative…" value={motif} onChange={e => setMotif(e.target.value)} className="rounded-xl text-sm" />
+              </Champ>
+              <p className="text-[11px] text-[#475C50]">L’opération est horodatée et signée à votre nom. Elle ne peut pas être supprimée : elle se rectifie par une écriture contraire.</p>
+            </ColonneFiche>
           </div>
-        </DialogContent>
+        </ModaleFiche>
       </Dialog>
 
-      {/* Quarantaine legacy */}
+      {/* Quarantaine */}
       <Dialog open={dialogQuarantaineOuvert} onOpenChange={setDialogQuarantaineOuvert}>
-        <DialogContent className="max-w-md bg-white"><DialogHeader><DialogTitle className="text-red-700 flex items-center gap-2"><ShieldAlert className="w-5 h-5" /> Quarantaine (Art. 5.14)</DialogTitle><DialogDescription>Lot {lotPourAction?.numero_lot} bloqué immédiatement de toute délivrance.</DialogDescription></DialogHeader>
-          <div className="space-y-3"><Label className="text-xs font-bold">Motif *</Label><Textarea rows={3} value={motif} onChange={e=> setMotif(e.target.value)} placeholder="Rappel fabricant, emballage endommagé..." />
-            <DialogFooter><Button variant="outline" onClick={()=> setDialogQuarantaineOuvert(false)}>Annuler</Button><Button variant="destructive" disabled={!motif} onClick={()=> lotPourAction && mutationQuarantaine.mutate({ id: lotPourAction.id, motif })}>Confirmer le blocage</Button></DialogFooter></div>
-        </DialogContent>
+        <ModaleFiche
+          titre="Mettre un lot en quarantaine"
+          sousTitre={lotPourAction ? `Lot ${lotPourAction.numero_lot} · ${lotPourAction.produit?.nom_commercial ?? ""} — isolé immédiatement de toute délivrance.` : "Le lot est isolé immédiatement de toute délivrance."}
+          badge={<Badge className="bg-red-600 text-white">Art. 5.14</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button variant="outline" onClick={() => setDialogQuarantaineOuvert(false)} className="h-12 rounded-xl sm:h-11">Annuler</Button>
+              <Button variant="destructive" className="h-12 rounded-xl sm:h-11" disabled={!motif} onClick={() => lotPourAction && mutationQuarantaine.mutate({ id: lotPourAction.id, motif })}>Confirmer le blocage</Button>
+            </div>
+          }
+        >
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <ColonneFiche titre="Le lot concerné">
+              <div className="rounded-2xl border border-[#CFF1D2] bg-[#F7F9F7] p-3 text-xs">
+                <p className="font-display text-sm font-black text-[#0F3B27]">{lotPourAction?.produit?.nom_commercial ?? "—"}</p>
+                <p className="font-mono text-[11px] text-[#475C50]">Lot {lotPourAction?.numero_lot ?? "—"} · péremption {lotPourAction?.date_peremption ?? "—"}</p>
+                <p className="mt-2 text-[#475C50]">Quantité bloquée : <strong className="text-[#0F3B27]">{lotPourAction?.quantite_disponible ?? "—"} boîtes</strong> · emplacement <strong className="text-[#0F3B27]">{lotPourAction?.emplacement ?? "—"}</strong></p>
+              </div>
+              <div className="rounded-2xl border border-amber-300 bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-900">
+                La vente et la dispensation refusent ce lot dès la validation. La levée de quarantaine passera par une décision documentée du pharmacien, jamais par une suppression.
+              </div>
+            </ColonneFiche>
+            <ColonneFiche titre="Pourquoi on l’isole">
+              <Champ label="Motif" obligatoire aide="Rappel du fabricant, emballage endommagé, excursion de température, doute sur le lot…">
+                <Textarea rows={6} value={motif} onChange={e => setMotif(e.target.value)} placeholder="Décrivez ce qui justifie l’isolement, avec la référence de l’avis ou du constat…" className="rounded-xl text-sm" />
+              </Champ>
+            </ColonneFiche>
+          </div>
+        </ModaleFiche>
       </Dialog>
     </div>
   );

@@ -3,29 +3,17 @@
 @import "tw-animate-css";
 
 /* =========================================================================
-   POLICES OFFICIELLES : SATOSHI (Corps/UI) & STARDOM (Titres/Display)
+   POLICES OFFICIELLES BEGPHARMA — Duo pharmaceutique premium
+   SATOSHI (Corps/UI) — géométrique neutre, ultra-lisible mobile
+   CABINET GROTESK (Titres/Display) — même fonderie Pangram Pangram,
+   confiance médicale + modernité béninoise. Choisi pour : lisibilité
+   à 48px tactile, accents français parfaits (é è ê à ç ô), hiérarchie
+   claire entre UI et titres, ADN commun Satoshi/Cabinet.
+   Alternative 100% Google Fonts si besoin offline : Plus Jakarta Sans + Sora.
    ========================================================================= */
 
-/* STARDOM — Titres & Typographie Display */
-@font-face {
-  font-family: "Stardom";
-  src: url("/fonts/Stardom-Regular.woff2") format("woff2"),
-       url("/fonts/Stardom-Regular.woff") format("woff"),
-       url("/fonts/Stardom-Regular.ttf") format("truetype");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Stardom-Regular";
-  src: url("/fonts/Stardom-Regular.woff2") format("woff2"),
-       url("/fonts/Stardom-Regular.woff") format("woff"),
-       url("/fonts/Stardom-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+/* CABINET GROTESK — Titres & Display (Pangram Pangram, via Fontshare CDN) */
+@import url("https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap");
 
 /* SATOSHI — Variable Font (300 à 900) */
 @font-face {
@@ -109,14 +97,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* BESTPHARMA · Charte Image 2 & InnerBuild
-   Move Green (#0F3B27), Signal Lime (#92FF5F), Soft White (#F7F9F7),
-   Orange (#FF7036), Ice (#BFF2F0), Mint (#CFF1D2) */
+/* BEGPHARMA · Charte Officine Bénin — v2 Typo Cabinet Grotesk + Satoshi
+   Move Green (#0F3B27) = confiance médicale, Signal Lime (#92FF5F) = vitalité,
+   Soft White (#F7F9F7) = propreté pharmaceutique, Orange (#FF7036) = alerte,
+   Ice (#BFF2F0) = chaîne du froid, Mint (#CFF1D2) = validation */
 
 @theme inline {
   --font-sans: "Satoshi", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Stardom", "Satoshi", sans-serif;
-  --font-stardom: "Stardom", "Satoshi", sans-serif;
+  --font-display: "Cabinet Grotesk", "Satoshi", sans-serif;
+  --font-cabinet: "Cabinet Grotesk", "Satoshi", sans-serif;
   --font-satoshi: "Satoshi", sans-serif;
   --font-pharmacy: "Pharmacy", cursive, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "Geist Mono", "JetBrains Mono", monospace;
@@ -162,7 +151,7 @@
   --color-ice: #BFF2F0;
   --color-mint: #CFF1D2;
 
-  /* Rétrocompatibilité tokens InnerBuild */
+  /* Alias historiques (compatibilité) */
   --color-ib-deep: #0F3B27;
   --color-ib-vibrant: #92FF5F;
   --color-ib-pale: #F7F9F7;
@@ -247,7 +236,9 @@
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    letter-spacing: 0.028em;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
     color: var(--color-foreground);
   }
 }

@@ -17,6 +17,11 @@ use App\Http\Controllers\Api\ComptabiliteController;
 use App\Http\Controllers\Api\DispensationController;
 use App\Http\Controllers\Api\PreparationController;
 use App\Http\Controllers\Api\ProduitController;
+use App\Http\Controllers\Api\AvisRappelController;
+use App\Http\Controllers\Api\DechetController;
+use App\Http\Controllers\Api\EmplacementController;
+use App\Http\Controllers\Api\InventaireController;
+use App\Http\Controllers\Api\MouvementStockController;
 use App\Http\Controllers\Api\ReleveTemperatureController;
 use App\Http\Controllers\Api\StockLotController;
 use App\Http\Controllers\Api\StupefiantController;
@@ -127,11 +132,41 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/produits', [ProduitController::class, 'index']);
     Route::post('/produits', [ProduitController::class, 'store']);
 
-    // Gestion des Stocks & Règle FEFO (BPD5-F08 & STK-02)
+    // Gestion des Stocks & Règle FEFO (BPD5-F08 & STK-02) — Section Magasin & Stocks v1.0
     Route::get('/stocks', [StockLotController::class, 'index']);
     Route::post('/stocks', [StockLotController::class, 'store']);
     Route::post('/stocks/{id}/quarantaine', [StockLotController::class, 'miseEnQuarantaine']);
     Route::post('/stocks/{id}/lever-quarantaine', [StockLotController::class, 'leverQuarantaine']);
+    Route::put('/stocks/{id}/statut', [StockLotController::class, 'changerStatut']);
+    Route::get('/stocks/peremptions', [StockLotController::class, 'peremptions']);
+    Route::get('/stocks/valorisation', [StockLotController::class, 'valorisation']);
+    Route::get('/stocks/alertes', [StockLotController::class, 'alertes']);
+
+    // Emplacements & Zones (STO-04)
+    Route::get('/emplacements', [EmplacementController::class, 'index']);
+    Route::post('/emplacements', [EmplacementController::class, 'store']);
+    Route::get('/emplacements/{id}', [EmplacementController::class, 'show']);
+
+    // Mouvements de stock — Journal (STO-09)
+    Route::get('/mouvements', [MouvementStockController::class, 'index']);
+    Route::post('/mouvements', [MouvementStockController::class, 'store']);
+
+    // Inventaires tournant & général (STO-12)
+    Route::get('/inventaires', [InventaireController::class, 'index']);
+    Route::post('/inventaires', [InventaireController::class, 'store']);
+    Route::get('/inventaires/{id}', [InventaireController::class, 'show']);
+    Route::post('/inventaires/{inventaireId}/lignes/{ligneId}/compter', [InventaireController::class, 'compter']);
+    Route::post('/inventaires/{id}/valider', [InventaireController::class, 'valider']);
+
+    // Rappels de lots (STO-14)
+    Route::get('/rappels', [AvisRappelController::class, 'index']);
+    Route::post('/rappels', [AvisRappelController::class, 'store']);
+    Route::post('/rappels/{id}/cloturer', [AvisRappelController::class, 'cloturer']);
+
+    // Déchets & Destruction (STO-17)
+    Route::get('/dechets', [DechetController::class, 'index']);
+    Route::post('/dechets', [DechetController::class, 'store']);
+    Route::post('/dechets/{id}/detruire', [DechetController::class, 'detruire']);
 
     // Dispensations / Délivrances Ordonnances & Conseil (BPD Chapitre 5 & LOT-1.3)
     Route::get('/dispensations', [DispensationController::class, 'index']);

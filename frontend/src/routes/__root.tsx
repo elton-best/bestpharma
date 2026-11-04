@@ -119,10 +119,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         crossOrigin: "anonymous",
       },
       {
-        rel: "preload",
-        href: "/fonts/Stardom-Regular.woff2",
-        as: "font",
-        type: "font/woff2",
+        rel: "preconnect",
+        href: "https://api.fontshare.com",
+      },
+      {
+        rel: "preconnect",
+        href: "https://cdn.fontshare.com",
         crossOrigin: "anonymous",
       },
       {

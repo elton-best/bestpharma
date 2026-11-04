@@ -27,9 +27,25 @@ const MINUTES_INACTIVITE = 15;
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth", search: {} });
-    return { user: data.user };
+    // 1) Supabase (prod) — si une session Supabase existe, on l'utilise
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (!error && data.user) return { user: data.user };
+    } catch {}
+    // 2) Fallback BEGPHARMA démo — token Laravel/Sanctum dans localStorage (mock-backend)
+    try {
+      const token = api.getToken();
+      const localUser = api.getUser();
+      if (token && localUser && localUser.id) {
+        return { user: { id: localUser.id, email: localUser.email ?? "" } } as any;
+      }
+      // compat : token seul suffit pour la démo
+      if (token) {
+        const u = localUser || { id: "demo-u1", email: "promoteur@begpharma.bj" };
+        return { user: { id: (u as any).id, email: (u as any).email } } as any;
+      }
+    } catch {}
+    throw redirect({ to: "/auth", search: {} });
   },
   component: LayoutAuthentifie,
 });

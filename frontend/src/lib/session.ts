@@ -17,7 +17,8 @@ export async function deconnecter(
 ) {
   await queryClient.cancelQueries();
   queryClient.clear();
-  await supabase.auth.signOut();
+  try { await supabase.auth.signOut(); } catch {}
+  try { localStorage.removeItem("begpharma.token"); localStorage.removeItem("begpharma.user"); localStorage.removeItem("begpharma.officines"); } catch {}
   oublierAppareil();
   router.navigate({
     to: "/auth",

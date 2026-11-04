@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { formatDate, nombre } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -355,7 +356,7 @@ function PageStupefiantsTabB() {
           <Card className="border-[#CFF1D2]"><CardContent className="pt-6">
             {ordonnancier.length===0 ? <div className="text-center text-sm text-[#475C50] py-6">Aucune entrée d’ordonnancier — les sorties dispensation y sont versées automatiquement</div> : (
               <div className="overflow-x-auto"><table className="w-full text-xs text-left"><thead className="bg-[#F7F9F7] text-[#475C50] font-bold border-b border-[#CFF1D2]"><tr><th className="py-2 px-3">N°</th><th className="py-2 px-3">Date</th><th className="py-2 px-3">Patient / Prescripteur</th><th className="py-2 px-3">Produit</th><th className="py-2 px-3">Visa</th></tr></thead><tbody className="divide-y divide-[#CFF1D2]/50">{ordonnancier.map(o=>(
-                <tr key={o.id}><td className="py-2 px-3 font-mono font-black">#{String(o.numero_ordre).padStart(4,"0")}</td><td className="py-2 px-3 font-mono text-[11px]">{new Date(o.date_mouvement).toLocaleDateString("fr-FR")}</td><td className="py-2 px-3 font-bold">{o.patient_nom || "—"} <span className="font-normal text-[#475C50]">{o.prescripteur_nom || ""}</span></td><td className="py-2 px-3">{o.produit?.nom_commercial}</td><td className="py-2 px-3">{o.pharmacien_visa ? <Badge className="bg-[#0F3B27] text-white text-[11px]">Visé</Badge> : <Badge variant="outline" className="text-[11px]">À viser</Badge>}</td></tr>
+                <tr key={o.id}><td className="py-2 px-3 font-mono font-black">#{String(o.numero_ordre).padStart(4,"0")}</td><td className="py-2 px-3 font-mono text-[11px]">{formatDate(o.date_mouvement)}</td><td className="py-2 px-3 font-bold">{o.patient_nom || "—"} <span className="font-normal text-[#475C50]">{o.prescripteur_nom || ""}</span></td><td className="py-2 px-3">{o.produit?.nom_commercial}</td><td className="py-2 px-3">{o.pharmacien_visa ? <Badge className="bg-[#0F3B27] text-white text-[11px]">Visé</Badge> : <Badge variant="outline" className="text-[11px]">À viser</Badge>}</td></tr>
               ))}</tbody></table></div>
             )}
           </CardContent></Card>
@@ -505,7 +506,7 @@ function PageStupefiantsTabB() {
                   N° {mouvementPourRectif ? String(mouvementPourRectif.numero_ordre).padStart(4, "0") : "—"} · {mouvementPourRectif?.produit?.nom_commercial ?? "—"}
                 </p>
                 <p className="mt-1 text-[#475C50]">
-                  {mouvementPourRectif ? new Date(mouvementPourRectif.date_mouvement).toLocaleDateString("fr-FR") : "—"} · quantité {mouvementPourRectif?.quantite ?? "—"} · solde {mouvementPourRectif?.stock_nouveau ?? "—"}
+                  {mouvementPourRectif ? formatDate(mouvementPourRectif.date_mouvement) : "—"} · quantité {mouvementPourRectif?.quantite ?? "—"} · solde {mouvementPourRectif?.stock_nouveau ?? "—"}
                 </p>
                 <p className="mt-1 text-[#475C50]">Pièce : {mouvementPourRectif?.reference_piece ?? "—"}</p>
                 {mouvementPourRectif?.pharmacien_visa ? <p className="mt-1 text-[#0F3B27] font-bold">Visé par {mouvementPourRectif.pharmacien_visa.name}</p> : null}

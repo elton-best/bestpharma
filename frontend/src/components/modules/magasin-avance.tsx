@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { formatDate, formatFCFA } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -107,10 +108,10 @@ const statutInventaire: Record<Inventaire["statut"], { label: string; classe: st
 const dateFr = (valeur?: string | null) => {
   if (!valeur) return "—";
   const d = new Date(valeur.length === 10 ? `${valeur}T12:00:00` : valeur);
-  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("fr-FR");
+  return Number.isNaN(d.getTime()) ? "—" : formatDate(d);
 };
 
-const fcfa = (n: number) => `${Math.round(Number(n) || 0).toLocaleString("fr-FR")} FCFA`;
+const fcfa = (n: number) => formatFCFA(n);
 
 /**
  * Les trois écrans du magasin qui manquaient : inventaires, rappels et déchets.

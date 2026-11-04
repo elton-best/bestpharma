@@ -1,5 +1,15 @@
 export const FUSEAU = "Africa/Porto-Novo";
 
+/** Nombre entier groupé, sans unité : « 72 000 ». */
+export function nombre(n: number | string): string {
+  const valeur = Number(n);
+  if (!Number.isFinite(valeur)) return "0";
+  return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 })
+    .format(Math.round(valeur))
+    .replace(/\u202f|\u00a0/g, " ");
+}
+
+
 /** JJ/MM/AAAA dans le fuseau de l'officine. */
 export function formatDate(d: string | Date, fuseau = FUSEAU): string {
   return new Intl.DateTimeFormat("fr-FR", {
@@ -23,7 +33,7 @@ export function formatDateHeure(d: string | Date, fuseau = FUSEAU): string {
 
 /** Montant en FCFA, sans décimale. */
 export function formatFCFA(n: number): string {
-  return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(Math.round(n)).replace(/\u202f|\u00a0/g, " ")} FCFA`;
+  return `${nombre(n)} FCFA`;
 }
 
 /** Mot de passe robuste : 12+ caractères, majuscule, minuscule, chiffre. */

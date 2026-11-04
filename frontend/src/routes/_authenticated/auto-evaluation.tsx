@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { formatDate } from "@/lib/format";
 import { useOfficine } from "@/lib/officine-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -470,7 +471,7 @@ function PageAutoEvaluation() {
                   Licence : {courante?.officine?.numero_licence ?? "En cours"} · Ville : {courante?.officine?.ville ?? "Cotonou"}
                 </p>
                 <p className="text-[#475C50]">
-                  Audité le {new Date().toLocaleDateString("fr-FR")} par le pharmacien titulaire et le responsable qualité.
+                  Audité le {formatDate(new Date())} par le pharmacien titulaire et le responsable qualité.
                 </p>
               </div>
 

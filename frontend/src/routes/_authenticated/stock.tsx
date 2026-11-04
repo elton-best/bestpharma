@@ -31,6 +31,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { formatDate, nombre } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -457,7 +458,7 @@ function PageStockMagasin() {
         <span className={alertes.lots_bloques > 0 ? "text-amber-700" : ""}><AlertTriangle className="w-3.5 h-3.5 inline mr-1" /> {alertes.lots_bloques} bloqués</span>
         <span className="text-[#475C50]">•</span>
         <span className={stats.perimes > 0 ? "text-red-700" : ""}><ShieldAlert className="w-3.5 h-3.5 inline mr-1" /> {stats.perimes} périmés</span>
-        <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-[#F7F9F7] border border-[#CFF1D2] px-2.5 py-1">Valeur stock : {(stats.valorisation_totale || valorisation.total || 0).toLocaleString("fr-FR")} FCFA</span>
+        <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-[#F7F9F7] border border-[#CFF1D2] px-2.5 py-1">Valeur stock : {nombre(stats.valorisation_totale || valorisation.total || 0)} FCFA</span>
       </div>
 
       {/* Navigation : une seule liste déroulante, filtrable, au lieu des onglets */}
@@ -483,7 +484,7 @@ function PageStockMagasin() {
       {tab === "vue-ensemble" && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-[#CFF1D2] bg-white shadow-sm"><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Valeur du stock (coût moyen)</CardTitle><TrendingUp className="w-4 h-4 text-[#0F3B27]" /></CardHeader><CardContent><div className="text-2xl font-black font-display text-[#0F3B27]">{(valorisation.total || stats.valorisation_totale || 0).toLocaleString("fr-FR")} <span className="text-sm font-sans">FCFA</span></div><p className="text-xs text-[#475C50]">Coût moyen pondéré, rapproché du compte de stock.</p></CardContent></Card>
+            <Card className="border-[#CFF1D2] bg-white shadow-sm"><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Valeur du stock (coût moyen)</CardTitle><TrendingUp className="w-4 h-4 text-[#0F3B27]" /></CardHeader><CardContent><div className="text-2xl font-black font-display text-[#0F3B27]">{nombre(valorisation.total || stats.valorisation_totale || 0)} <span className="text-sm font-sans">FCFA</span></div><p className="text-xs text-[#475C50]">Coût moyen pondéré, rapproché du compte de stock.</p></CardContent></Card>
             <Card className={`border-[#CFF1D2] ${alertes.ruptures > 0 ? "border-amber-400 bg-amber-50/30" : "bg-white"}`}><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Ruptures & sous minimum</CardTitle><AlertOctagon className="w-4 h-4 text-amber-600" /></CardHeader><CardContent><div className="text-2xl font-black text-amber-700">{alertes.ruptures ?? 0}</div><p className="text-xs text-[#475C50]">Produits sous leur seuil de réassort.</p></CardContent></Card>
             <Card className="border-[#CFF1D2] bg-white"><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Lots actifs FEFO</CardTitle><Layers className="w-4 h-4 text-[#0F3B27]" /></CardHeader><CardContent><div className="text-2xl font-black text-[#0F3B27]">{stats.total_lots_actifs}</div><p className="text-xs text-[#475C50]">Le lot qui périme le plus tôt sort le premier.</p></CardContent></Card>
             <Card className={`border-[#CFF1D2] ${stats.perimes > 0 ? "border-red-500 bg-red-50" : "bg-white"}`}><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Périmés interdits</CardTitle><ShieldAlert className="w-4 h-4 text-red-600" /></CardHeader><CardContent><div className="text-2xl font-black text-red-700">{stats.perimes}</div><p className="text-xs text-red-700">Mise en quarantaine obligatoire, vente refusée.</p></CardContent></Card>
@@ -544,7 +545,7 @@ function PageStockMagasin() {
                 <CardContent className="space-y-2 text-xs">
                   <div className="flex flex-wrap gap-1">{p.est_thermolabile && <Badge className="bg-blue-50 text-blue-800 border-blue-200 text-[11px]">❄️ Thermolabile</Badge>}{p.tableau_substance === "stupefiant" && <Badge className="bg-purple-50 text-purple-800 text-[11px]">🔒 Stupéfiant</Badge>}{p.groupe_taxation === "B_TAXABLE" && <Badge className="bg-amber-50 text-amber-800 text-[11px]">B Taxable</Badge>}</div>
                   <div className="flex justify-between"><span className="text-[#475C50]">CIP {p.code_cip}</span><span className="font-mono font-bold text-[#0F3B27]">{p.stock_total} boîtes</span></div>
-                  <div className="flex justify-between"><span className="text-[#475C50]">Prix TTC</span><span className="font-bold">{p.prix_public_ttc.toLocaleString("fr-FR")} FCFA</span></div>
+                  <div className="flex justify-between"><span className="text-[#475C50]">Prix TTC</span><span className="font-bold">{nombre(p.prix_public_ttc)} FCFA</span></div>
                   {p.alerte_rupture && <div className="rounded-xl bg-amber-50 border border-amber-300 px-2 py-1 text-amber-800 font-bold text-[11px]">⚠️ Sous stock minimum — rupture imminente</div>}
                   {p.prochain_lot_fefo && <div className="rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] px-2 py-1">FEFO → Lot {p.prochain_lot_fefo.numero_lot} · {p.prochain_lot_fefo.jours_avant_peremption}j</div>}
                 </CardContent>
@@ -637,7 +638,7 @@ function PageStockMagasin() {
                 <thead className="bg-[#F7F9F7] text-[#475C50] border-b border-[#CFF1D2] font-bold"><tr><th className="py-2 px-3">Date</th><th className="py-2 px-3">Type</th><th className="py-2 px-3">Produit / Lot</th><th className="py-2 px-3">Qté</th><th className="py-2 px-3">Stock av/ap</th><th className="py-2 px-3">Pièce</th><th className="py-2 px-3">Auteur</th></tr></thead>
                 <tbody className="divide-y divide-[#CFF1D2]/50">
                   {mouvements.slice(0,20).map((m:any)=>(
-                    <tr key={m.id} className="hover:bg-[#F7F9F7]"><td className="py-2 px-3 font-mono text-[11px]">{new Date(m.created_at).toLocaleDateString("fr-FR")}</td><td className="py-2 px-3"><Badge variant="outline" className="text-[11px]">{m.type_mouvement}</Badge></td><td className="py-2 px-3 font-bold text-[#0F3B27]">{m.produit?.nom_commercial || ""} <span className="font-normal text-[#475C50]">· {m.lot?.numero_lot || ""}</span></td><td className="py-2 px-3 font-mono font-bold">{m.quantite>0 ? `+${m.quantite}`: m.quantite}</td><td className="py-2 px-3 font-mono">{m.stock_avant} → {m.stock_apres}</td><td className="py-2 px-3">{m.reference_piece || "—"}</td><td className="py-2 px-3">{m.auteur?.name || "Système"}</td></tr>
+                    <tr key={m.id} className="hover:bg-[#F7F9F7]"><td className="py-2 px-3 font-mono text-[11px]">{formatDate(m.created_at)}</td><td className="py-2 px-3"><Badge variant="outline" className="text-[11px]">{m.type_mouvement}</Badge></td><td className="py-2 px-3 font-bold text-[#0F3B27]">{m.produit?.nom_commercial || ""} <span className="font-normal text-[#475C50]">· {m.lot?.numero_lot || ""}</span></td><td className="py-2 px-3 font-mono font-bold">{m.quantite>0 ? `+${m.quantite}`: m.quantite}</td><td className="py-2 px-3 font-mono">{m.stock_avant} → {m.stock_apres}</td><td className="py-2 px-3">{m.reference_piece || "—"}</td><td className="py-2 px-3">{m.auteur?.name || "Système"}</td></tr>
                   ))}
                 </tbody>
               </table></div>
@@ -698,14 +699,14 @@ function PageStockMagasin() {
       {tab === "valorisation" && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#92FF5F]" /> Valorisation au coût moyen</CardTitle></CardHeader><CardContent><div className="text-2xl font-black font-display">{valorisation.total.toLocaleString("fr-FR")} FCFA</div><p className="text-xs text-[#CFF1D2]">Coût moyen pondéré à la date du jour, rapproché du compte de stock (STO-18).</p></CardContent></Card>
+            <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#92FF5F]" /> Valorisation au coût moyen</CardTitle></CardHeader><CardContent><div className="text-2xl font-black font-display">{nombre(valorisation.total)} FCFA</div><p className="text-xs text-[#CFF1D2]">Coût moyen pondéré à la date du jour, rapproché du compte de stock (STO-18).</p></CardContent></Card>
             <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">ABC et rotation</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Classement ABC, couverture en jours et marge par famille, avec le cahier des ruptures et des demandes non satisfaites (STO-19, STK-08, BPD5-F15).</CardContent></Card>
             <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Étiquettes</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Impression des étiquettes d’emplacement, de quarantaine et de rebut (STO-20) sur l’imprimante d’étiquettes.</CardContent></Card>
           </div>
           <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Détail par produit (coût moyen pondéré)</CardTitle></CardHeader><CardContent>
             {valorisation.par_produit?.length ? (
               <div className="overflow-x-auto"><table className="w-full text-xs text-left"><thead className="bg-[#F7F9F7] text-[#475C50] font-bold border-b border-[#CFF1D2]"><tr><th className="py-2 px-3">Produit</th><th className="py-2 px-3">Qté</th><th className="py-2 px-3">Coût moyen</th><th className="py-2 px-3">Valeur</th></tr></thead><tbody className="divide-y divide-[#CFF1D2]/50">{valorisation.par_produit.slice(0,20).map((v:any)=>(
-                <tr key={v.produit.id}><td className="py-2 px-3 font-bold text-[#0F3B27]">{v.produit.nom_commercial}</td><td className="py-2 px-3 font-mono">{v.quantite}</td><td className="py-2 px-3 font-mono">{Number(v.cmp || 0).toLocaleString("fr-FR")} FCFA</td><td className="py-2 px-3 font-mono font-bold">{Number(v.valeur).toLocaleString("fr-FR")} FCFA</td></tr>
+                <tr key={v.produit.id}><td className="py-2 px-3 font-bold text-[#0F3B27]">{v.produit.nom_commercial}</td><td className="py-2 px-3 font-mono">{v.quantite}</td><td className="py-2 px-3 font-mono">{nombre(v.cmp || 0)} FCFA</td><td className="py-2 px-3 font-mono font-bold">{nombre(v.valeur)} FCFA</td></tr>
               ))}</tbody></table></div>
             ) : <div className="text-sm text-[#475C50]">La valorisation se calcule dès qu’un lot est réceptionné.</div>}
           </CardContent></Card>

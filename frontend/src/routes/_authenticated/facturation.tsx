@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { api } from "@/lib/api-client";
+import { formatDateHeure, nombre } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -207,7 +208,7 @@ function PageFacturation() {
                         </div>
                       </td>
                       <td className="py-3 px-3 text-slate-600">
-                        {new Date(f.date_certification).toLocaleString("fr-FR")}
+                        {formatDateHeure(f.date_certification)}
                       </td>
                       <td className="py-3 px-3">
                         <div className="font-semibold text-slate-900">{f.vente?.client_nom}</div>
@@ -216,7 +217,7 @@ function PageFacturation() {
                         </div>
                       </td>
                       <td className="py-3 px-3 font-bold text-slate-900">
-                        {Number(f.vente?.montant_net_ttc).toLocaleString("fr-FR")} FCFA
+                        {nombre(f.vente?.montant_net_ttc ?? 0)} FCFA
                       </td>
                       <td className="py-3 px-3 font-mono text-[11px] text-slate-600">
                         {f.nim_machine}
@@ -283,7 +284,7 @@ function PageFacturation() {
                   <div className="space-y-1 border-b border-dashed border-[#CFF1D2] py-1">
                     <div>Facture DGI : {factureSelectionnee.numero_facture_dgi}</div>
                     <div>Compteur : {factureSelectionnee.compteur_type}</div>
-                    <div>Date : {new Date(factureSelectionnee.date_certification).toLocaleString("fr-FR")}</div>
+                    <div>Date : {formatDateHeure(factureSelectionnee.date_certification)}</div>
                     <div>Client : {factureSelectionnee.vente?.client_nom}</div>
                     <div>Règlement : {factureSelectionnee.vente?.mode_reglement}</div>
                   </div>
@@ -294,14 +295,14 @@ function PageFacturation() {
                         <span>
                           {l.quantite} × {l.produit?.nom_commercial}
                         </span>
-                        <span>{Number(l.total_ligne).toLocaleString("fr-FR")} F</span>
+                        <span>{nombre(l.total_ligne)} F</span>
                       </div>
                     ))}
                   </div>
 
                   <div className="flex justify-between pt-1 text-sm font-bold text-[#0F3B27]">
                     <span>TOTAL NET TTC</span>
-                    <span>{Number(factureSelectionnee.vente?.montant_net_ttc ?? 0).toLocaleString("fr-FR")} FCFA</span>
+                    <span>{nombre(factureSelectionnee.vente?.montant_net_ttc ?? 0)} FCFA</span>
                   </div>
                 </div>
               </ColonneFiche>

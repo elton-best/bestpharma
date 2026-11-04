@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api-client";
+import { nombre } from "@/lib/format";
 import { useOfficine } from "@/lib/officine-context";
 
 export function TableauDeBord() {
@@ -389,7 +390,7 @@ export function TableauDeBord() {
                       fontWeight: 600,
                       boxShadow: "0 10px 25px -5px rgba(0,0,0,0.2)",
                     }}
-                    formatter={(value: any) => [`${Number(value).toLocaleString("fr-FR")} FCFA`, "CA"]}
+                    formatter={(value: any) => [`${nombre(value)} FCFA`, "CA"]}
                     labelStyle={{ color: "#92FF5F", fontWeight: 800 }}
                   />
                   <Area

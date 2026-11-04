@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { formatDateHeure } from "@/lib/format";
 import { useOfficine } from "@/lib/officine-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -286,7 +287,7 @@ function PageLocaux() {
                   {nettoyages?.data && nettoyages.data.length > 0 ? (
                     nettoyages.data.map((n: any) => (
                       <tr key={n.id} className="hover:bg-muted/20">
-                        <td className="p-2.5 font-mono">{new Date(n.date_heure).toLocaleString("fr-FR")}</td>
+                        <td className="p-2.5 font-mono">{formatDateHeure(n.date_heure)}</td>
                         <td className="p-2.5 font-semibold capitalize">{n.zone?.replace("_", " ")}</td>
                         <td className="p-2.5 text-muted-foreground">{n.produit_utilise}</td>
                         <td className="p-2.5 capitalize">{n.frequence}</td>

@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { nombre } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -363,7 +364,7 @@ function PageDispensation() {
                         </div>
                       </td>
                       <td className="py-3 px-4 font-bold text-slate-900">
-                        {Number(disp.montant_total).toLocaleString("fr-FR")} FCFA
+                        {nombre(disp.montant_total)} FCFA
                       </td>
                       <td className="py-3 px-4 text-xs text-slate-600">
                         {disp.dispensateur?.name || "Dispensateur"}
@@ -584,7 +585,7 @@ function PageDispensation() {
                             {l.posologie} ({l.duree_traitement})
                           </td>
                           <td className="py-2 px-3 text-right font-medium text-slate-900">
-                            {(l.quantite * l.produit.prix_public_ttc).toLocaleString("fr-FR")} FCFA
+                            {nombre(l.quantite * l.produit.prix_public_ttc)} FCFA
                           </td>
                           <td className="py-2 px-3 text-right">
                             <Button
@@ -606,7 +607,7 @@ function PageDispensation() {
                           Total Ordonnance TTC :
                         </td>
                         <td className="py-3 px-3 text-right text-emerald-700 text-base">
-                          {totalPanier.toLocaleString("fr-FR")} FCFA
+                          {nombre(totalPanier)} FCFA
                         </td>
                         <td></td>
                       </tr>

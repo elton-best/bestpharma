@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { formatDateHeure, nombre } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -362,7 +363,7 @@ function PageCaissePos() {
                       </div>
                       <div className="mt-3 flex items-center justify-between">
                         <span className="font-bold text-xs text-emerald-700">
-                          {Number(p.prix_public_ttc).toLocaleString("fr-FR")} F
+                          {nombre(p.prix_public_ttc)} F
                         </span>
                         <span
                           className={`text-[10px] px-1.5 py-0.5 rounded ${
@@ -443,7 +444,7 @@ function PageCaissePos() {
                           +
                         </button>
                         <span className="font-bold text-emerald-800 ml-2 w-16 text-right">
-                          {(l.quantite * l.produit.prix_public_ttc).toLocaleString("fr-FR")} F
+                          {nombre(l.quantite * l.produit.prix_public_ttc)} F
                         </span>
                         <button
                           type="button"
@@ -462,7 +463,7 @@ function PageCaissePos() {
               <div className="p-3 bg-slate-900 text-white rounded-lg space-y-1">
                 <div className="flex justify-between text-xs text-slate-300">
                   <span>Articles exonérés TVA (Groupe A) :</span>
-                  <span>{totalPanier.toLocaleString("fr-FR")} FCFA</span>
+                  <span>{nombre(totalPanier)} FCFA</span>
                 </div>
                 <div className="flex justify-between text-xs text-slate-300">
                   <span>TVA collectée (0%) :</span>
@@ -471,7 +472,7 @@ function PageCaissePos() {
                 <div className="flex justify-between items-baseline pt-2 border-t border-slate-700">
                   <span className="text-sm font-bold text-emerald-400">NET À PAYER :</span>
                   <span className="text-2xl font-black text-emerald-400">
-                    {totalPanier.toLocaleString("fr-FR")} FCFA
+                    {nombre(totalPanier)} FCFA
                   </span>
                 </div>
               </div>
@@ -542,7 +543,7 @@ function PageCaissePos() {
                     <div>
                       <Label className="text-[11px]">Monnaie à rendre</Label>
                       <div className="h-8 flex items-center font-bold text-emerald-700 text-sm mt-0.5 px-2 bg-white rounded border border-slate-200">
-                        {monnaieRendue.toLocaleString("fr-FR")} FCFA
+                        {nombre(monnaieRendue)} FCFA
                       </div>
                     </div>
                   </div>
@@ -592,7 +593,7 @@ function PageCaissePos() {
                   <CheckCircle2 className="w-5 h-5" />
                   {mutationVente.isPending
                     ? "Certification DGI e-MECeF en cours..."
-                    : `Encaisser & Émettre Facture DGI (${totalPanier.toLocaleString("fr-FR")} F)`}
+                    : `Encaisser & Émettre Facture DGI (${nombre(totalPanier)} F)`}
                 </Button>
               </form>
             </CardContent>
@@ -640,7 +641,7 @@ function PageCaissePos() {
                   <div className="space-y-1 border-b border-dashed border-[#CFF1D2] py-1">
                     <div>Ticket : {derniereVente.numero_ticket}</div>
                     <div>Facture DGI : {derniereVente.facture_emecef?.numero_facture_dgi}</div>
-                    <div>Date : {new Date(derniereVente.created_at).toLocaleString("fr-FR")}</div>
+                    <div>Date : {formatDateHeure(derniereVente.created_at)}</div>
                     <div>Client : {derniereVente.client_nom}</div>
                   </div>
 
@@ -650,14 +651,14 @@ function PageCaissePos() {
                         <span>
                           {l.quantite} × {l.produit?.nom_commercial}
                         </span>
-                        <span>{Number(l.total_ligne).toLocaleString("fr-FR")} F</span>
+                        <span>{nombre(l.total_ligne)} F</span>
                       </div>
                     ))}
                   </div>
 
                   <div className="flex justify-between pt-1 text-sm font-bold text-[#0F3B27]">
                     <span>TOTAL TTC</span>
-                    <span>{Number(derniereVente.montant_net_ttc).toLocaleString("fr-FR")} FCFA</span>
+                    <span>{nombre(derniereVente.montant_net_ttc)} FCFA</span>
                   </div>
                 </div>
               ) : null}
@@ -672,13 +673,13 @@ function PageCaissePos() {
                 <div className="flex justify-between">
                   <span className="text-[#475C50]">Montant reçu</span>
                   <span className="font-bold text-[#0F3B27]">
-                    {Number(derniereVente?.montant_recu ?? 0).toLocaleString("fr-FR")} FCFA
+                    {nombre(derniereVente?.montant_recu ?? 0)} FCFA
                   </span>
                 </div>
                 <div className="flex justify-between border-t border-[#CFF1D2] pt-2">
                   <span className="text-[#475C50]">Monnaie rendue</span>
                   <span className="font-bold text-[#0F3B27]">
-                    {Number(derniereVente?.monnaie_rendue ?? 0).toLocaleString("fr-FR")} FCFA
+                    {nombre(derniereVente?.monnaie_rendue ?? 0)} FCFA
                   </span>
                 </div>
               </div>
@@ -796,19 +797,19 @@ function PageCaissePos() {
                 <div className="flex justify-between">
                   <span className="text-[#475C50]">Fond d'ouverture</span>
                   <span className="font-bold text-[#0F3B27]">
-                    {Number(session?.fond_caisse_ouverture ?? 0).toLocaleString("fr-FR")} FCFA
+                    {nombre(session?.fond_caisse_ouverture ?? 0)} FCFA
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#475C50]">Encaissé en espèces</span>
                   <span className="font-bold text-[#0F3B27]">
-                    {Number(session?.total_encaisse_especes ?? 0).toLocaleString("fr-FR")} FCFA
+                    {nombre(session?.total_encaisse_especes ?? 0)} FCFA
                   </span>
                 </div>
                 <div className="flex justify-between border-t border-[#CFF1D2] pt-2">
                   <span className="font-bold text-[#0F3B27]">Espèces théoriques</span>
                   <span className="font-black text-[#0F3B27]">
-                    {Number(session?.fond_caisse_fermeture_theorique ?? 0).toLocaleString("fr-FR")} FCFA
+                    {nombre(session?.fond_caisse_fermeture_theorique ?? 0)} FCFA
                   </span>
                 </div>
               </div>

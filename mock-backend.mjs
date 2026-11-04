@@ -70,6 +70,80 @@ const PREPARATIONS = {
   }
 };
 
+// ─── INVENTAIRES (STO-12)
+const INVENTAIRES = {
+  data: [
+    {
+      id: "inv1",
+      reference: "INV-2026-0001",
+      type: "tournant",
+      zone: "Réserve — Stock principal",
+      statut: "en_cours",
+      date_inventaire: "2026-11-04",
+      initiateur: { name: "Dr. Marcelle HOUNNOU" },
+      lignes_count: 3,
+      lignes: [
+        { id: "li1", produit_id: "p1", stock_lot_id: "l1", quantite_theorique: 45, quantite_comptee: 44, ecart: -1, valorisation_ecart: -900, commentaire: "Une boîte ouverte constatée", produit: { nom_commercial: "Paracétamol 500mg", code_cip: "6170123456789" }, lot: { numero_lot: "LOT-2026-001", date_peremption: "2027-06-15" } },
+        { id: "li2", produit_id: "p2", stock_lot_id: "l3", quantite_theorique: 8, quantite_comptee: null, ecart: null, valorisation_ecart: null, commentaire: null, produit: { nom_commercial: "Amoxicilline 1g", code_cip: "6170123456790" }, lot: { numero_lot: "LOT-2026-003", date_peremption: "2026-11-30" } },
+        { id: "li3", produit_id: "p3", stock_lot_id: "l4", quantite_theorique: 15, quantite_comptee: 15, ecart: 0, valorisation_ecart: 0, commentaire: null, produit: { nom_commercial: "Insuline Rapide", code_cip: "6170123456791" }, lot: { numero_lot: "LOT-2026-004", date_peremption: "2027-01-20" } },
+      ],
+    },
+    {
+      id: "inv0",
+      reference: "INV-2026-0000",
+      type: "general_annuel",
+      zone: null,
+      statut: "valide",
+      date_inventaire: "2026-09-30",
+      initiateur: { name: "Dr. Anicet ANIAMBOSSOU" },
+      lignes_count: 4,
+      lignes: [],
+    },
+  ],
+  total: 2,
+};
+
+// ─── AVIS DE RAPPEL (STO-14)
+const RAPPELS = {
+  data: [
+    {
+      id: "rap1",
+      reference: "RAPPEL-2026-0001",
+      source: "ABMed — Agence béninoise de régulation pharmaceutique",
+      produits_concernes: "Amoxicilline 1g — GSK",
+      lots_concernes: [{ produit_id: "p2", numero_lot: "LOT-2026-003" }],
+      date_avis: "2026-11-02",
+      action_requise: "Retrait immédiat de la vente, isolement en quarantaine et retour au grossiste.",
+      statut: "actif",
+      auteur: { name: "Dr. Anicet ANIAMBOSSOU" },
+      date_cloture: null,
+      preuve_cloture: null,
+    },
+  ],
+  total: 1,
+};
+
+// ─── DÉCHETS (STO-17)
+const DECHETS = {
+  data: [
+    {
+      id: "dec1",
+      reference: "DECHET-2026-0001",
+      motif: "perime",
+      lots_originels: [{ id: "l9", numero_lot: "LOT-2025-118", quantite: 6 }],
+      quantite_totale: 6,
+      valeur_perte: 5400,
+      zone_stockage: "Aire des déchets sécurisée",
+      statut: "en_attente_prestataire",
+      prestataire_nom: "SANOFI-DÉCHETS Cotonou",
+      date_destruction_prevue: "2026-11-12",
+      date_destruction_reelle: null,
+      constitue_par: { name: "Gervais KPADONOU" },
+    },
+  ],
+  total: 1,
+};
+
 function sendJson(res, status, data) {
   const body = JSON.stringify(data);
   res.writeHead(status, {
@@ -288,13 +362,209 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 404, { message: "Non trouvé" });
   }
 
-  // INVENTAIRES etc — mock empty
-  if (path === "/api/inventaires" && method === "GET") return sendJson(res, 200, { status: "success", data: { data: [], total: 0 } });
-  if (path === "/api/inventaires" && method === "POST") return sendJson(res, 201, { status: "success", message: "Inventaire créé", data: { id: "inv1", reference: "INV-2026-0001" } });
-  if (path === "/api/rappels" && method === "GET") return sendJson(res, 200, { status: "success", data: { data: [] } });
-  if (path === "/api/rappels" && method === "POST") return sendJson(res, 201, { status: "success", message: "Rappel bloqué", data: {} });
-  if (path === "/api/dechets" && method === "GET") return sendJson(res, 200, { status: "success", data: { data: [] } });
-  if (path === "/api/dechets" && method === "POST") return sendJson(res, 201, { status: "success", message: "Lot déchet constitué", data: {} });
+  // INVENTAIRES (STO-12)
+  if (path === "/api/inventaires" && method === "GET") {
+    return sendJson(res, 200, { status: "success", data: { data: INVENTAIRES.data, total: INVENTAIRES.total } });
+  }
+  if (path === "/api/inventaires" && method === "POST") {
+    const b = await parseBody(req);
+    const numero = INVENTAIRES.data.length + 1;
+    const inventaire = {
+      id: "inv" + Date.now(),
+      reference: `INV-2026-${String(numero).padStart(4, "0")}`,
+      type: b.type || "tournant",
+      zone: b.zone || null,
+      statut: "brouillon",
+      date_inventaire: b.date_inventaire || new Date().toISOString().slice(0, 10),
+      initiateur: { name: "Dr. Marcelle HOUNNOU" },
+      lignes_count: 0,
+      lignes: [],
+    };
+    INVENTAIRES.data.unshift(inventaire);
+    INVENTAIRES.total += 1;
+    return sendJson(res, 201, { status: "success", message: `Inventaire ${inventaire.reference} créé`, data: inventaire });
+  }
+  {
+    const m = path.match(/^\/api\/inventaires\/([^\/]+)$/);
+    if (m && method === "GET") {
+      const inv = INVENTAIRES.data.find((i) => i.id === m[1]);
+      if (!inv) return sendJson(res, 404, { message: "Inventaire non trouvé" });
+      return sendJson(res, 200, { status: "success", data: inv });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/inventaires\/([^\/]+)\/lignes\/([^\/]+)\/compter$/);
+    if (m && method === "POST") {
+      const inv = INVENTAIRES.data.find((i) => i.id === m[1]);
+      if (!inv) return sendJson(res, 404, { message: "Inventaire non trouvé" });
+      if (!["en_cours", "brouillon"].includes(inv.statut)) return sendJson(res, 422, { message: "Inventaire non modifiable à ce stade" });
+      const b = await parseBody(req);
+      const ligne = inv.lignes.find((l) => l.id === m[2]);
+      if (!ligne) return sendJson(res, 404, { message: "Ligne non trouvée" });
+      const comptee = Number(b.quantite_comptee);
+      ligne.quantite_comptee = comptee;
+      ligne.ecart = comptee - ligne.quantite_theorique;
+      ligne.valorisation_ecart = ligne.ecart * 900;
+      if (b.commentaire) ligne.commentaire = b.commentaire;
+      return sendJson(res, 200, { status: "success", message: "Comptage enregistré", data: ligne });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/inventaires\/([^\/]+)\/valider$/);
+    if (m && method === "POST") {
+      const inv = INVENTAIRES.data.find((i) => i.id === m[1]);
+      if (!inv) return sendJson(res, 404, { message: "Inventaire non trouvé" });
+      if (inv.lignes.some((l) => l.quantite_comptee === null || l.quantite_comptee === undefined)) {
+        return sendJson(res, 422, { message: "Toutes les lignes doivent être comptées avant validation" });
+      }
+      inv.statut = "valide";
+      const ecarts = inv.lignes.filter((l) => l.ecart);
+      return sendJson(res, 200, {
+        status: "success",
+        message: `Inventaire ${inv.reference} validé — ${ecarts.length} ajustement(s) appliqué(s)`,
+        data: inv,
+      });
+    }
+  }
+
+  // AVIS DE RAPPEL (STO-14)
+  if (path === "/api/rappels" && method === "GET") {
+    return sendJson(res, 200, { status: "success", data: { data: RAPPELS.data, total: RAPPELS.total } });
+  }
+  if (path === "/api/rappels" && method === "POST") {
+    const b = await parseBody(req);
+    const numero = RAPPELS.data.length + 1;
+    const rappel = {
+      id: "rap" + Date.now(),
+      reference: `RAPPEL-2026-${String(numero).padStart(4, "0")}`,
+      source: b.source,
+      produits_concernes: b.produits_concernes,
+      lots_concernes: b.lots_concernes || [],
+      date_avis: b.date_avis,
+      action_requise: b.action_requise,
+      statut: "actif",
+      auteur: { name: "Dr. Marcelle HOUNNOU" },
+      date_cloture: null,
+      preuve_cloture: null,
+    };
+    RAPPELS.data.unshift(rappel);
+    RAPPELS.total += 1;
+    // Blocage immédiat des lots concernés
+    let bloques = 0;
+    for (const lc of rappel.lots_concernes) {
+      if (!lc?.numero_lot) continue;
+      for (const lot of LOTS) {
+        if (lot.numero_lot !== lc.numero_lot) continue;
+        lot.statut = "quarantaine";
+        lot.statut_detail = "quarantaine";
+        lot.statut_effectif = "quarantaine";
+        lot.est_vendable = false;
+        lot.motif_statut = `Rappel ${rappel.reference} — ${rappel.source}`;
+        MOUVEMENTS.unshift({
+          id: "m" + Date.now() + bloques,
+          type_mouvement: "changement_statut",
+          quantite: 0,
+          stock_avant: lot.quantite_disponible,
+          stock_apres: lot.quantite_disponible,
+          motif: `Blocage automatique — rappel ${rappel.reference}`,
+          reference_piece: rappel.reference,
+          created_at: new Date().toISOString(),
+          produit: lot.produit,
+          lot,
+          auteur: { name: "Dr. Marcelle HOUNNOU" },
+        });
+        bloques += 1;
+      }
+    }
+    return sendJson(res, 201, {
+      status: "success",
+      message: bloques > 0
+        ? `Avis enregistré — ${bloques} lot(s) bloqué(s) immédiatement`
+        : "Avis enregistré — aucun lot de cette officine ne correspond aux numéros saisis",
+      data: rappel,
+      lots_bloques: bloques,
+    });
+  }
+  {
+    const m = path.match(/^\/api\/rappels\/([^\/]+)\/cloturer$/);
+    if (m && method === "POST") {
+      const rappel = RAPPELS.data.find((r) => r.id === m[1]);
+      if (!rappel) return sendJson(res, 404, { message: "Avis non trouvé" });
+      const b = await parseBody(req);
+      if (!b.preuve_cloture) return sendJson(res, 422, { message: "La preuve de clôture est obligatoire" });
+      rappel.statut = "cloture";
+      rappel.date_cloture = new Date().toISOString();
+      rappel.preuve_cloture = b.preuve_cloture;
+      return sendJson(res, 200, { status: "success", message: `Rappel ${rappel.reference} clôturé`, data: rappel });
+    }
+  }
+
+  // DÉCHETS (STO-17)
+  if (path === "/api/dechets" && method === "GET") {
+    return sendJson(res, 200, { status: "success", data: { data: DECHETS.data, total: DECHETS.total } });
+  }
+  if (path === "/api/dechets" && method === "POST") {
+    const b = await parseBody(req);
+    if (!b.lots_ids || b.lots_ids.length === 0) {
+      return sendJson(res, 422, { message: "Sélectionnez au moins un lot à détruire" });
+    }
+    const concernes = LOTS.filter((l) => b.lots_ids.includes(l.id));
+    if (concernes.length === 0) return sendJson(res, 404, { message: "Aucun lot trouvé" });
+    const quantite = concernes.reduce((s, l) => s + l.quantite_disponible, 0);
+    const valeur = concernes.reduce((s, l) => s + l.quantite_disponible * 900, 0);
+    const numero = DECHETS.data.length + 1;
+    const dechet = {
+      id: "dec" + Date.now(),
+      reference: `DECHET-2026-${String(numero).padStart(4, "0")}`,
+      motif: b.motif,
+      lots_originels: concernes.map((l) => ({ id: l.id, numero_lot: l.numero_lot, quantite: l.quantite_disponible })),
+      quantite_totale: quantite,
+      valeur_perte: valeur,
+      zone_stockage: "Aire des déchets sécurisée",
+      statut: b.prestataire_nom ? "en_attente_prestataire" : "constitue",
+      prestataire_nom: b.prestataire_nom || null,
+      date_destruction_prevue: b.date_destruction_prevue || null,
+      date_destruction_reelle: null,
+      constitue_par: { name: "Gervais KPADONOU" },
+    };
+    DECHETS.data.unshift(dechet);
+    DECHETS.total += 1;
+    for (const lot of concernes) {
+      MOUVEMENTS.unshift({
+        id: "m" + Date.now() + lot.id,
+        type_mouvement: "destruction",
+        quantite: -lot.quantite_disponible,
+        stock_avant: lot.quantite_disponible,
+        stock_apres: 0,
+        motif: `Sortie vers déchet — ${b.motif}`,
+        reference_piece: dechet.reference,
+        created_at: new Date().toISOString(),
+        produit: lot.produit,
+        lot,
+        auteur: { name: "Gervais KPADONOU" },
+      });
+      lot.statut = "retire";
+      lot.statut_detail = "dechet";
+      lot.statut_effectif = "dechet";
+      lot.est_vendable = false;
+      lot.quantite_disponible = 0;
+    }
+    return sendJson(res, 201, {
+      status: "success",
+      message: `Lot de déchets ${dechet.reference} constitué — perte de ${valeur.toLocaleString("fr-FR")} FCFA enregistrée`,
+      data: dechet,
+    });
+  }
+  {
+    const m = path.match(/^\/api\/dechets\/([^\/]+)\/detruire$/);
+    if (m && method === "POST") {
+      const dechet = DECHETS.data.find((d) => d.id === m[1]);
+      if (!dechet) return sendJson(res, 404, { message: "Lot de déchets non trouvé" });
+      dechet.statut = "detruit";
+      dechet.date_destruction_reelle = new Date().toISOString().slice(0, 10);
+      return sendJson(res, 200, { status: "success", message: `Destruction ${dechet.reference} validée — procès-verbal à archiver dix ans`, data: dechet });
+    }
+  }
 
   // DIVERS
   if (path.startsWith("/api/")) {

@@ -39,6 +39,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
 import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
+import { DechetsStock, InventairesStock, RappelsStock } from "@/components/modules/magasin-avance";
 
 export const Route = createFileRoute("/_authenticated/stock")({
   head: () => ({
@@ -346,7 +347,13 @@ function PageStockMagasin() {
   const { data: produitsData } = useQuery<{ data: Produit[] }>({ queryKey: ["produits"], queryFn: () => api.get("/produits") });
   const { data: lotsData, isLoading } = useQuery<{ data: StockLotItem[]; stats: any }>({
     queryKey: ["stocks", filtreAlerte, recherche],
-    queryFn: () => { const p = new URLSearchParams(); if (filtreAlerte !== "tous") p.append("alerte", filtreAlerte); if (recherche) p.append("q", recherche); return api.get(`/stocks?${p.toString()}`); },
+    queryFn: () => {
+      const p = new URLSearchParams();
+      if (filtreAlerte !== "tous") p.append("alerte", filtreAlerte);
+      if (recherche) p.append("q", recherche);
+      // Les lots bloqués (quarantaine, rejetés, déchets) doivent rester visibles : on ne filtre pas sur « vendable ».
+      return api.get(`/stocks?${p.toString()}`);
+    },
   });
   const { data: emplacementsData } = useQuery<{ data: EmplacementItem[] }>({ queryKey: ["emplacements"], queryFn: () => api.get("/emplacements") });
   const { data: mouvementsData } = useQuery<{ data: { data: MouvementItem[] } }>({ queryKey: ["mouvements"], queryFn: () => api.get("/mouvements") });
@@ -663,13 +670,7 @@ function PageStockMagasin() {
       )}
 
       {/* INVENTAIRES STO-12 */}
-      {tab === "inventaires" && (
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-display font-black text-[#0F3B27]">Inventaires — tournant et général annuel (STO-12)</h3><Button size="sm" className="bg-[#0F3B27] text-white" onClick={()=> toast.info("Création d’un inventaire — choisissez la zone, le comptage aveugle ou le double comptage.")}> <Plus className="w-4 h-4 mr-1" /> Nouvelle campagne</Button></div>
-          <Card className="border-[#CFF1D2]"><CardContent className="pt-6 text-sm text-[#475C50]">La feuille de comptage s’utilise sur téléphone avec scan et fonctionne hors connexion. Comptage aveugle et double comptage en option, écarts valorisés, validation du pharmacien avant tout ajustement (STO-12). Export PDF et Excel conservé cinq ans — GAC-EN-010.</CardContent></Card>
-          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Campagnes</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Aucune campagne en cours — lancez un inventaire tournant par zone : réserve, comptoir, frigo ou armoire.</CardContent></Card>
-        </div>
-      )}
+      {tab === "inventaires" && <InventairesStock />}
 
       {/* PÉREMPTIONS STO-11 */}
       {tab === "peremptions" && (
@@ -686,19 +687,12 @@ function PageStockMagasin() {
       {/* QUARANTAINE & RAPPELS STO-14 */}
       {tab === "quarantaine" && (
         <div className="space-y-4">
-          <Card className="border-amber-400 bg-amber-50"><CardHeader><CardTitle className="text-sm font-black text-amber-900 flex items-center gap-2"><ShieldAlert className="w-4 h-4" /> Rappels de lots — blocage immédiat (STO-14)</CardTitle><CardDescription className="text-amber-800">On saisit ou on importe l’avis reçu (source, produits, lots, date, action, pièce jointe). La caisse et la dispensation bloquent en moins d’une minute, une liste de prélèvement est éditée par emplacement, les boîtes sont scannées puis isolées, un bordereau de retour est signé et les patients concernés sont recherchés avant la clôture avec preuve.</CardDescription></CardHeader><CardContent className="text-xs text-amber-900">Conservation GAC-EN-008 : dix ans. Le cahier de rappel de lot et de mise en quarantaine s’imprime en PDF.</CardContent></Card>
-          <ZoneDepot label="Déposer l’avis de rappel (PDF, photo ou courrier) — obligatoire" />
-          <Card className="border-[#CFF1D2]"><CardContent className="pt-6 text-center text-sm text-[#475C50]">Aucun rappel actif — dès qu’un avis est saisi, les lots concernés sont bloqués sur-le-champ.</CardContent></Card>
+          <RappelsStock />
         </div>
       )}
 
       {/* DÉCHETS STO-17 */}
-      {tab === "dechets" && (
-        <div className="space-y-4">
-          <Card className="border-red-300 bg-red-50/30"><CardHeader><CardTitle className="text-sm font-black text-red-800 flex items-center gap-2"><Trash2 className="w-4 h-4" /> Déchets et destruction — BPD9 (STO-17)</CardTitle><CardDescription className="text-red-700">Motif possible : périmé, avarié, non conforme, rappelé ou retourné. Le lot rejoint l’aire sécurisée, devient « à détruire », puis part chez un prestataire qualifié. Le procès-verbal contradictoire est signé électroniquement et rangé dans le coffre-fort numérique, avec l’écriture de perte.</CardDescription></CardHeader><CardContent className="text-xs text-red-800">Les procès-verbaux de destruction se conservent dix ans (GAC-EN). Chaque déchet génère une perte comptable (STO-18).</CardContent></Card>
-          <Card className="border-[#CFF1D2]"><CardContent className="pt-6 text-center text-sm text-[#475C50]">Aucun lot en déchet — pour en constituer un, sélectionnez des lots périmés ou rejetés.</CardContent></Card>
-        </div>
-      )}
+      {tab === "dechets" && <DechetsStock />}
 
       {/* VALORISATION STO-18/19 */}
       {tab === "valorisation" && (

@@ -140,7 +140,7 @@ return new class extends Migration
             $table->uuid('initiateur_id')->index();
             $table->uuid('validateur_id')->nullable()->index();
             $table->timestamp('date_validation')->nullable();
-            $table->json(' Parametres')->nullable(); // aveugle, double comptage
+            $table->json('Parametres')->nullable(); // aveugle, double comptage
             $table->timestamps();
 
             $table->foreign('officine_id')->references('id')->on('officines')->cascadeOnDelete();

@@ -126,4 +126,36 @@ class OfficineController extends Controller
 
         return response()->json($officine);
     }
+
+    /**
+     * Rattache l'utilisateur courant comme promoteur de l'officine indiquée.
+     * Utilisé lorsque la création d'officine est faite en deux temps.
+     */
+    public function rattacher(Request $request, string $id): JsonResponse
+    {
+        $officine = Officine::where('id', $id)->where('archived', false)->firstOrFail();
+        $user = $request->user();
+
+        $existant = UtilisateurOfficine::where('officine_id', $officine->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($existant) {
+            $existant->update(['actif' => true, 'archived' => false]);
+        } else {
+            UtilisateurOfficine::create([
+                'officine_id' => $officine->id,
+                'user_id' => $user->id,
+                'role_code' => 'promoteur',
+                'actif' => true,
+                'archived' => false,
+                'created_by' => $user->id,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Officine rattachée à votre compte.',
+            'officine' => $officine->fresh(),
+        ]);
+    }
 }

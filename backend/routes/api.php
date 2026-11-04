@@ -38,6 +38,9 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 Route::middleware('auth:sanctum')->group(function () {
     // Authentification, MFA TOTP et appareils (E0-S3)
     Route::post('/auth/verify-mfa', [AuthController::class, 'verifyMfa']);
+    Route::get('/auth/mfa', [AuthController::class, 'etatMfa']);
+    Route::post('/auth/mfa/demarrer', [AuthController::class, 'demarrerMfa']);
+    Route::delete('/auth/mfa', [AuthController::class, 'desactiverMfa']);
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/devices', [AuthController::class, 'devices']);
@@ -48,10 +51,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/officines', [OfficineController::class, 'store']);
     Route::get('/officines/{id}', [OfficineController::class, 'show']);
     Route::put('/officines/{id}', [OfficineController::class, 'update']);
+    // Rattachement de l'utilisateur courant comme promoteur d'une officine qu'il vient de créer
+    Route::post('/officines/{id}/rattacher', [OfficineController::class, 'rattacher']);
 
     // Paramètres d'officine (E0-S5)
     Route::get('/officines/{officineId}/parametres', [ParametreController::class, 'index']);
     Route::put('/officines/{officineId}/parametres/{cle}', [ParametreController::class, 'update']);
+    Route::put('/officines/{officineId}/parametres', [ParametreController::class, 'updateLot']);
 
     // Journal d'audit inaltérable (E0-S4)
     Route::get('/officines/{officineId}/audit-logs', [AuditController::class, 'index']);

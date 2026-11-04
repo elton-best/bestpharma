@@ -58,7 +58,13 @@ export function PageCompte() {
     setEnCours(true);
     try {
       // Mise à jour locale et notification
-      const misAJour = { ...user, name: nom.trim(), telephone: telephone.trim() };
+      const misAJour = {
+        id: user?.id ?? "",
+        email: user?.email ?? "",
+        name: nom.trim(),
+        telephone: telephone.trim(),
+        mfa_enabled: user?.mfa_enabled,
+      };
       api.setUser(misAJour);
       queryClient.invalidateQueries({ queryKey: ["profil"] });
       toast.success("Profil professionnel mis à jour avec succès !");
@@ -93,7 +99,9 @@ export function PageCompte() {
     }
   }
 
-  const roleLibelle = courante?.role ? fr.roles[courante.role] : "Pharmacien";
+  const roleLibelle = courante?.role
+    ? (fr.roles[courante.role as keyof typeof fr.roles] ?? "Rôle non précisé")
+    : "Pharmacien";
   const initiales = (nom || user?.email || "DR")
     .split(/\s+/)
     .slice(0, 2)

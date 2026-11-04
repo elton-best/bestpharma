@@ -93,7 +93,7 @@ function PagePersonnel() {
                         </Badge>
                       </div>
                       <p className="text-sm font-medium text-primary mt-0.5">
-                        {fr.roles[e.poste] || e.poste}
+                        {fr.roles[e.poste as keyof typeof fr.roles] ?? "Poste non précisé"}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         Matricule : <span className="font-mono">{e.matricule || "—"}</span> · Tél : {e.telephone ?? "—"}

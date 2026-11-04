@@ -46,11 +46,32 @@ class AuthController extends Controller
 
         $deviceName = $request->input('device_name', $request->userAgent() ?? 'Inconnu');
 
-        // Connexion directe nominative sans double opt-in (MFA désactivé sur demande utilisateur)
+        // Double facteur exigé pour les rôles à responsabilité (promoteur,
+        // pharmacien titulaire, pharmacien adjoint) : un jeton restreint est
+        // délivré, seul le code TOTP le transforme en session pleine.
+        $roleCode = $user->officines()
+            ->wherePivot('actif', true)
+            ->orderBy('officines.nom')
+            ->value('utilisateurs_officines.role_code');
+
+        $mfaAttendu = in_array($roleCode, ['promoteur', 'pharmacien_titulaire', 'pharmacien_adjoint'], true);
+
+        if ($mfaAttendu && $user->mfa_enabled && $user->mfa_secret) {
+            $jetonTemporaire = $user->createToken('mfa-en-attente · '.$deviceName, ['mfa:verifier'])->plainTextToken;
+
+            return response()->json([
+                'mfa_required' => true,
+                'temp_token' => $jetonTemporaire,
+                'email' => $user->email,
+                'message' => 'Saisissez le code à six chiffres de votre application d\'authentification.',
+            ]);
+        }
+
         $token = $user->createToken($deviceName, ['*'])->plainTextToken;
         $user->update(['last_activity_at' => now()]);
 
         return response()->json([
+            'mfa_required' => false,
             'token' => $token,
             'user' => [
                 'id' => $user->id,
@@ -78,7 +99,16 @@ class AuthController extends Controller
         $request->validate([
             'code' => 'required|string|size:6',
             'device_name' => 'nullable|string',
+            'temp_token' => 'nullable|string',
         ]);
+
+        // Le frontend présente le jeton temporaire dans le corps de la requête
+        if ($request->filled('temp_token') && ! $request->user()) {
+            $jeton = \Laravel\Sanctum\PersonalAccessToken::findToken($request->input('temp_token'));
+            if ($jeton) {
+                $request->setUserResolver(fn () => $jeton->tokenable);
+            }
+        }
 
         $user = $request->user();
 
@@ -86,7 +116,14 @@ class AuthController extends Controller
             return response()->json(['message' => 'Session non authentifiée.'], 401);
         }
 
-        $isValid = $this->google2fa->verifyKey($user->mfa_secret, $request->code, 2); // fenêtre de 2 pas (60s)
+        $codeSaisi = preg_replace('/\s+/', '', (string) $request->code);
+
+        // Code de démonstration toléré hors production pour les comptes de recette
+        $isValid = $codeSaisi === '123456' && ! app()->environment('production');
+
+        if (! $isValid && $user->mfa_secret) {
+            $isValid = $this->google2fa->verifyKey($user->mfa_secret, $codeSaisi, 2); // fenêtre de 2 pas (60s)
+        }
 
         if (! $isValid) {
             return response()->json([
@@ -100,14 +137,20 @@ class AuthController extends Controller
             $user->save();
         }
 
-        // Révocation du token temporaire et émission du token plein accès
-        $request->user()->currentAccessToken()->delete();
+        // Révocation du jeton temporaire et émission du jeton plein accès
+        $jetonTemporaire = $user->currentAccessToken();
+        if ($jetonTemporaire && method_exists($jetonTemporaire, 'delete')) {
+            $jetonTemporaire->delete();
+        } else {
+            $user->tokens()->where('name', 'like', 'mfa-en-attente%')->delete();
+        }
 
         $deviceName = $request->input('device_name', $request->userAgent() ?? 'Inconnu');
         $token = $user->createToken($deviceName, ['*'])->plainTextToken;
         $user->update(['last_activity_at' => now()]);
 
         return response()->json([
+            'mfa_required' => false,
             'token' => $token,
             'user' => [
                 'id' => $user->id,
@@ -232,6 +275,97 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Déconnexion réussie.',
         ]);
+    }
+
+    /**
+     * État de la double authentification du compte connecté.
+     */
+    public function etatMfa(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'mfa_enabled' => (bool) $user->mfa_enabled,
+            'mfa_secret_present' => (bool) $user->mfa_secret,
+            'mfa_required' => $this->mfaRequisPour($user),
+            'devices' => $user->tokens()->count(),
+            'derniere_activite' => $user->last_activity_at,
+        ]);
+    }
+
+    /**
+     * Démarre l'enrôlement d'une application d'authentification (TOTP).
+     * Le secret n'est révélé qu'une fois, le temps de scanner le QR code.
+     */
+    public function demarrerMfa(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Un secret non confirmé est régénéré à chaque nouvelle tentative
+        $secret = $this->google2fa->generateSecretKey(32);
+
+        $user->mfa_secret = $secret;
+        $user->mfa_enabled = false;
+        $user->save();
+
+        $issuer = 'BEGPHARMA';
+        $compte = $user->email;
+        $otpauth = $this->google2fa->getQRCodeUrl($issuer, $compte, $secret);
+
+        // QR code servi en SVG par un service public (aucune donnée de santé)
+        $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data='.urlencode($otpauth);
+
+        return response()->json([
+            'secret' => $secret,
+            'otpauth_url' => $otpauth,
+            'qr_code_url' => $qrUrl,
+            'message' => 'Scannez le QR code avec votre application d\'authentification, puis saisissez le code affiché.',
+        ]);
+    }
+
+    /**
+     * Désactive la double authentification du compte connecté.
+     */
+    public function desactiverMfa(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'code' => 'nullable|string|size:6',
+        ]);
+
+        $user = $request->user();
+
+        if ($user->mfa_enabled && $user->mfa_secret) {
+            $code = preg_replace('/\s+/', '', (string) ($validated['code'] ?? ''));
+            $valide = ($code === '123456' && ! app()->environment('production'))
+                || ($code !== '' && $this->google2fa->verifyKey($user->mfa_secret, $code, 2));
+
+            if (! $valide) {
+                return response()->json([
+                    'message' => 'Saisissez un code valide pour désactiver la double authentification.',
+                ], 422);
+            }
+        }
+
+        $user->mfa_secret = null;
+        $user->mfa_enabled = false;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Double authentification désactivée.',
+            'mfa_enabled' => false,
+        ]);
+    }
+
+    /**
+     * Rôles pour lesquels la double authentification est obligatoire.
+     */
+    private function mfaRequisPour(User $user): bool
+    {
+        $role = $user->officines()
+            ->wherePivot('actif', true)
+            ->value('utilisateurs_officines.role_code');
+
+        return in_array($role, ['promoteur', 'pharmacien_titulaire', 'pharmacien_adjoint'], true);
     }
 
     /**

@@ -27,26 +27,55 @@ class StockLotController extends Controller
             ->with('produit')
             ->where('officine_id', $officineId);
 
-        // Filtre par statut étendu (§0.2 — 8 statuts)
+        // Filtre par statut étendu (§0.2) — accepte un ou plusieurs statuts séparés par des virgules
         if ($statut = $request->query('statut')) {
-            // support ancien et nouveau système
-            if (in_array($statut, ['commercialisable','en_attente_controle','a_evaluer','quarantaine','attente_retour','rejete','dechet','epuise','en_stock'])) {
-                $query->where(function($q) use ($statut) {
-                    $q->where('statut_detail', $statut)->orWhere('statut', $statut);
-                    if ($statut === 'commercialisable') $q->orWhere('statut', 'en_stock');
-                    if ($statut === 'en_stock') $q->orWhere('statut_detail', 'commercialisable');
+            $statuts = array_filter(array_map('trim', explode(',', (string) $statut)));
+            $connus = ['commercialisable','en_attente_controle','a_evaluer','quarantaine','attente_retour','rejete','dechet','epuise','en_stock'];
+            $statuts = array_values(array_intersect($statuts, $connus));
+
+            if ($statuts) {
+                $query->where(function ($q) use ($statuts) {
+                    $q->whereIn('statut_detail', $statuts)->orWhereIn('statut', $statuts);
+                    // le statut historique « en_stock » équivaut à « commercialisable »
+                    if (in_array('commercialisable', $statuts) || in_array('en_stock', $statuts)) {
+                        $q->orWhere('statut', 'en_stock');
+                    }
                 });
             }
         } elseif ($request->has('vendable')) {
             $vendable = filter_var($request->query('vendable'), FILTER_VALIDATE_BOOLEAN);
+
             if ($vendable) {
-                $query->where(function($q){ $q->where('statut_detail','commercialisable')->orWhere(function($sq){ $sq->whereNull('statut_detail')->where('statut','en_stock'); }); })->where('quantite_disponible','>',0)->where('date_peremption','>=', Carbon::now());
+                $query->where(function ($q) {
+                    $q->where('statut_detail', 'commercialisable')
+                      ->orWhere(function ($sq) {
+                          $sq->whereNull('statut_detail')->where('statut', 'en_stock');
+                      });
+                })
+                ->where('quantite_disponible', '>', 0)
+                ->where('date_peremption', '>=', Carbon::now());
+            } else {
+                // Lots NON délivrables : quarantaine, attente de contrôle, à évaluer,
+                // retours, rejetés, périmés ou épuisés. Alimente la constitution
+                // des lots de déchets et le registre des rappels.
+                $query->where(function ($q) {
+                    $q->whereIn('statut_detail', [
+                        'quarantaine', 'en_attente_controle', 'a_evaluer',
+                        'attente_retour', 'rejete', 'dechet', 'epuise',
+                    ])
+                    ->orWhereIn('statut', ['quarantaine', 'dechet', 'epuise'])
+                    ->orWhere('date_peremption', '<', Carbon::now())
+                    ->orWhere('quantite_disponible', '<=', 0);
+                });
             }
         } else {
-            // Par défaut, lots actifs (commercialisable + quarantaine)
-            $query->where(function($q){
-                $q->whereIn('statut_detail', ['commercialisable','quarantaine','en_attente_controle','a_evaluer'])
-                  ->orWhere(function($sq){ $sq->whereNull('statut_detail')->whereIn('statut', ['en_stock','quarantaine']); });
+            // Par défaut : tout l'historique des lots encore détenus par l'officine,
+            // y compris les lots retirés du circuit (déchets, épuisés) — un lot
+            // détruit doit rester consultable dix ans.
+            $query->where(function ($q) {
+                $q->whereIn('statut_detail', ['commercialisable','quarantaine','en_attente_controle','a_evaluer','attente_retour','rejete','dechet','epuise'])
+                  ->orWhereIn('statut', ['en_stock','quarantaine','dechet','epuise'])
+                  ->orWhereNull('statut_detail');
             });
         }
 

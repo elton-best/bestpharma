@@ -79,6 +79,7 @@ const INVENTAIRES = {
       type: "tournant",
       zone: "Réserve — Stock principal",
       statut: "en_cours",
+      Parametres: { double_comptage: true, comptage_aveugle: false },
       date_inventaire: "2026-11-04",
       initiateur: { name: "Dr. Marcelle HOUNNOU" },
       lignes_count: 3,
@@ -96,8 +97,11 @@ const INVENTAIRES = {
       statut: "valide",
       date_inventaire: "2026-09-30",
       initiateur: { name: "Dr. Anicet ANIAMBOSSOU" },
-      lignes_count: 4,
-      lignes: [],
+      lignes_count: 2,
+      lignes: [
+        { id: "li10", produit_id: "p1", stock_lot_id: "l2", quantite_theorique: 12, quantite_comptee: 12, ecart: 0, valorisation_ecart: 0, commentaire: null, produit: { nom_commercial: "Paracétamol 500mg", code_cip: "6170123456789" }, lot: { numero_lot: "LOT-2026-002", date_peremption: "2026-12-10" } },
+        { id: "li11", produit_id: "p3", stock_lot_id: "l4", quantite_theorique: 15, quantite_comptee: 15, ecart: 0, valorisation_ecart: 0, commentaire: null, produit: { nom_commercial: "Insuline Rapide", code_cip: "6170123456791" }, lot: { numero_lot: "LOT-2026-004", date_peremption: "2027-01-20" } },
+      ],
     },
   ],
   total: 2,
@@ -144,6 +148,212 @@ const DECHETS = {
   total: 1,
 };
 
+// ─── CAISSE & VENTES
+const SESSIONS_CAISSE = [
+  {
+    id: "sess1",
+    numero_session: "CAISSE-2026-0021",
+    statut: "ouverte",
+    fond_caisse_ouverture: 20000,
+    fond_caisse_fermeture_reel: null,
+    fond_caisse_fermeture_theorique: null,
+    ecart_caisse: null,
+    opened_at: "2026-11-04T07:30:00Z",
+    closed_at: null,
+    caissier: { id: "u3", name: "Gervais KPADONOU" },
+    ventes: [],
+  },
+];
+
+const VENTES = [
+  {
+    id: "v1",
+    numero_ticket: "TICKET-2026-0142",
+    date_vente: "2026-11-04T10:12:00Z",
+    client_nom: "Client comptoir",
+    client_ifu: null,
+    mode_reglement: "especes",
+    montant_total: 4500,
+    montant_recu: 5000,
+    monnaie_rendue: 500,
+    caissier: { id: "u3", name: "Gervais KPADONOU" },
+    lignes: [
+      { id: "vl1", produit_id: "p1", quantite: 2, prix_unitaire_ttc: 1500, montant_ligne: 3000, produit: { nom_commercial: "Paracétamol 500mg", dosage: "500mg" } },
+      { id: "vl2", produit_id: "p5", quantite: 1, prix_unitaire_ttc: 1500, montant_ligne: 1500, produit: { nom_commercial: "Diazépam 10mg", dosage: "10mg" } },
+    ],
+    facture_emecef: { numero_facture: "DGI-2026-001234", qr_code_data: "BEN-DGI|MECEF|2026|001234|4500" },
+  },
+];
+
+const FACTURES_EMECEF = [
+  {
+    id: "f1",
+    numero_facture: "DGI-2026-001234",
+    vente_id: "v1",
+    montant_total: 4500,
+    regime_tva: "B_TAXABLE",
+    statut_dgi: "certifiee",
+    qr_code_data: "BEN-DGI|MECEF|2026|001234|4500",
+    date_certification: "2026-11-04T10:12:05Z",
+    vente: {
+      numero_ticket: "TICKET-2026-0142",
+      montant_total: 4500,
+      caissier: { name: "Gervais KPADONOU" },
+      lignes: [
+        { id: "vl1", quantite: 2, prix_unitaire_ttc: 1500, produit: { nom_commercial: "Paracétamol 500mg" } },
+      ],
+    },
+  },
+];
+
+const ECRITURES = [
+  { id: "ec1", numero_compte: "571100", libelle_compte: "Caisse espèces", date_piece: "2026-11-04", libelle_piece: "Vente comptoir TICKET-2026-0142", debit: 4500, credit: 0 },
+  { id: "ec2", numero_compte: "701000", libelle_compte: "Ventes de marchandises", date_piece: "2026-11-04", libelle_piece: "Vente comptoir TICKET-2026-0142", debit: 0, credit: 4500 },
+];
+
+// ─── DISPENSATIONS
+const DISPENSATIONS = [
+  {
+    id: "disp1",
+    numero_dispensation: "DISP-2026-0007",
+    type_dispensation: "ordonnance",
+    patient_nom: "Adjoua KOUGBADO",
+    patient_age: 34,
+    patient_telephone: "+229 97 21 45 63",
+    prescripteur_nom: "Dr. Sémèvo ADJOVI",
+    prescripteur_titre: "Dr",
+    prescripteur_centre: "CNHU-HKM Cotonou",
+    montant_total: 3200,
+    statut: "delivree",
+    date_dispensation: "2026-11-03T09:40:00Z",
+    commentaires_posologie: "Traitement au cours des repas",
+    lignes: [
+      { id: "dl1", produit_id: "p2", quantite: 1, posologie: "1 gélule matin et soir", duree_traitement: "7 jours", produit: { nom_commercial: "Amoxicilline 1g", dosage: "1g" } },
+    ],
+  },
+];
+
+// ─── PERSONNEL, QUALITÉ, ÉCHÉANCES
+const EMPLOYES = [
+  { id: "emp1", nom_complet: "Dr. Marcelle HOUNNOU", poste: "pharmacien_titulaire", telephone: "+229 97 45 12 30", actif: true, date_embauche: "2021-03-01", date_visite_medicale: "2026-03-12", pin_code: "1234" },
+  { id: "emp2", nom_complet: "Gervais KPADONOU", poste: "dispensateur", telephone: "+229 96 22 87 41", actif: true, date_embauche: "2023-01-09", date_visite_medicale: "2026-01-20", pin_code: "2345" },
+  { id: "emp3", nom_complet: "Sabine AGBODJAN", poste: "caissier", telephone: "+229 95 14 66 02", actif: true, date_embauche: "2024-06-17", date_visite_medicale: "2025-11-28", pin_code: "3456" },
+  { id: "emp4", nom_complet: "Ismaël DOSSOU", poste: "agent_entretien", telephone: "+229 94 70 31 18", actif: false, date_embauche: "2022-08-02", date_visite_medicale: "2025-09-15", pin_code: "4567" },
+];
+
+const INSCRIPTIONS_ORDRE = {
+  emp1: { numero_inscription: "PHB-2019-0417", statut: "a_jour" },
+  emp2: { numero_inscription: "PHB-2022-1180", statut: "a_jour" },
+};
+
+const POINTAGES = [
+  { id: "pt1", employe_id: "emp1", employe_nom: "Dr. Marcelle HOUNNOU", employe_poste: "pharmacien_titulaire", type: "arrivee", horodatage: "2026-11-04T07:28:00Z" },
+  { id: "pt2", employe_id: "emp2", employe_nom: "Gervais KPADONOU", employe_poste: "dispensateur", type: "arrivee", horodatage: "2026-11-04T07:45:00Z" },
+];
+
+const EQUIPEMENTS = [
+  { id: "eq1", code_interne: "FRIG-01", designation: "Réfrigérateur Médical Thermolabiles", categorie: "refrigerateur", marque_modele: "Dometic HC302", emplacement: "Réserve", numero_serie: "DMT-88412", periodicite_etalonnage_mois: 12, date_acquisition: "2024-01-15", date_dernier_etalonnage: "2026-01-15", certificat_ref: "CERT-ET-2026-004", statut: "en_service" },
+  { id: "eq2", code_interne: "BAL-01", designation: "Balance de précision 0,01 g", categorie: "balance", marque_modele: "Sartorius Entris", emplacement: "Préparatoire", numero_serie: "SAR-55201", periodicite_etalonnage_mois: 12, date_acquisition: "2023-05-04", date_dernier_etalonnage: "2026-05-06", certificat_ref: "CERT-ET-2026-019", statut: "en_service" },
+  { id: "eq3", code_interne: "THM-01", designation: "Thermomètre enregistreur", categorie: "thermometre", marque_modele: "Testo 175T3", emplacement: "Réfrigérateur", numero_serie: "TS-19482", periodicite_etalonnage_mois: 12, date_acquisition: "2025-02-11", date_dernier_etalonnage: "2026-02-11", certificat_ref: "CERT-ET-2026-027", statut: "en_service" },
+];
+
+const NETTOYAGES = [
+  { id: "nt1", zone: "comptoir", frequence: "quotidien", produit_utilise: "Détergent désinfectant ANIOS", conforme: true, date_heure: "2026-11-04T18:10:00Z", agent: { name: "Ismaël DOSSOU" }, visa: { name: "Dr. Marcelle HOUNNOU" } },
+  { id: "nt2", zone: "preparatoire", frequence: "quotidien", produit_utilise: "Alcool 70°", conforme: true, date_heure: "2026-11-03T18:05:00Z", agent: { name: "Ismaël DOSSOU" }, visa: null },
+];
+
+const RELEVES_TEMPERATURE = [
+  { id: "rt1", zone: "refrigeree_2_8", moment: "matin", temperature: 5.2, humidite: 58, date_releve: "2026-11-04", heure_releve: "08:00:00", statut_conformite: "conforme", notes: null, agent: { name: "Gervais KPADONOU" } },
+  { id: "rt2", zone: "magasin_reserve", moment: "matin", temperature: 24.1, humidite: 62, date_releve: "2026-11-04", heure_releve: "08:05:00", statut_conformite: "conforme", notes: null, agent: { name: "Gervais KPADONOU" } },
+  { id: "rt3", zone: "hall_dispensation", moment: "matin", temperature: 25.4, humidite: 60, date_releve: "2026-11-04", heure_releve: "08:10:00", statut_conformite: "conforme", notes: null, agent: { name: "Gervais KPADONOU" } },
+  { id: "rt4", zone: "refrigeree_2_8", moment: "soir", temperature: 9.6, humidite: 61, date_releve: "2026-11-03", heure_releve: "18:00:00", statut_conformite: "excursion_chaud", notes: "Porte laissée entrouverte", agent: { name: "Ismaël DOSSOU" } },
+];
+
+const NON_CONFORMITES = [
+  { id: "nc1", numero_nc: "NC-2026-0011", titre: "Excursion de température du réfrigérateur", description: "Relevé du soir à 9,6 °C, au-delà de la plage 2–8 °C.", gravite: "majeure", processus: "5.20", source: "releve_temperature", statut: "en_cours", action_immediate: "Transfert des thermolabiles vers le réfrigérateur de secours", action_preventive: null, analyse_causes_5m: "Porte laissée entrouverte lors du rangement", responsable_action: "Dr. Marcelle HOUNNOU", date_echeance_capa: "2026-11-18", date_creation: "2026-11-04T06:40:00Z" },
+  { id: "nc2", numero_nc: "NC-2026-0010", titre: "Étiquette de lot illisible en réserve", description: null, gravite: "mineure", processus: "5.12", source: "auto_evaluation", statut: "ouverte", action_immediate: null, action_preventive: null, analyse_causes_5m: null, responsable_action: null, date_echeance_capa: null, date_creation: "2026-11-02T15:15:00Z" },
+  { id: "nc3", numero_nc: "NC-2026-0009", titre: "Registre de nettoyage non visé", description: null, gravite: "critique", processus: "5.20", source: "audit_interne", statut: "cloturee", action_immediate: "Visa du pharmacien rattrapé le jour même", action_preventive: "Rappel du circuit de visa à l'agent d'entretien", analyse_causes_5m: "Absence du pharmacien lors du pointage du soir", responsable_action: "Dr. Marcelle HOUNNOU", date_echeance_capa: "2026-10-30", date_creation: "2026-10-27T19:00:00Z" },
+];
+
+const CHAPITRES_BPD = [
+  { numero: 1, libelle: "Personnel", total: 3, conformes: 3, ecarts_mineurs: 0, ecarts_majeurs: 0, non_applicables: 0 },
+  { numero: 5, libelle: "Locaux, matériel et stockage", total: 6, conformes: 4, ecarts_mineurs: 1, ecarts_majeurs: 1, non_applicables: 0 },
+  { numero: 6, libelle: "Documentation", total: 4, conformes: 3, ecarts_mineurs: 1, ecarts_majeurs: 0, non_applicables: 0 },
+  { numero: 9, libelle: "Vigilances et rapports", total: 3, conformes: 2, ecarts_mineurs: 0, ecarts_majeurs: 0, non_applicables: 1 },
+];
+
+const AUTO_EVALUATION = {
+  campagne: { id: "camp1", reference: "AUTO-2026-01", libelle: "Auto-inspection annuelle", statut: "en_cours", ouverte_le: "2026-10-15", score_global: 76.5 },
+  evaluations: [
+    { id: "ev1", article_numero: "1.1", article_libelle: "Personnel qualifié et formé", chapitre: 1, cotation: "conforme", preuve: "Attestations de formation 2026", commentaire: "Dossier complet" },
+    { id: "ev2", article_numero: "1.11", article_libelle: "Présence pharmaceutique continue", chapitre: 1, cotation: "conforme", preuve: "Registre de pointage", commentaire: null },
+    { id: "ev3", article_numero: "5.12", article_libelle: "Gestion FEFO des lots", chapitre: 5, cotation: "ecart_mineur", preuve: "Étiquette illisible en réserve", commentaire: "À revoir au prochain rangement" },
+    { id: "ev4", article_numero: "5.20", article_libelle: "Chaîne du froid du réfrigérateur", chapitre: 5, cotation: "ecart_majeur", preuve: "Relevé du soir à 9,6 °C", commentaire: "Action corrective en cours" },
+    { id: "ev5", article_numero: "6.2", article_libelle: "Documents approuvés et datés", chapitre: 6, cotation: "conforme", preuve: "Procédures visées", commentaire: null },
+    { id: "ev6", article_numero: "9.3", article_libelle: "Traçabilité des rappels de lots", chapitre: 9, cotation: "non_applicable", preuve: null, commentaire: "Aucun rappel en 2026" },
+    { id: "ev7", article_numero: "5.4", article_libelle: "Étalonnage des équipements de mesure", chapitre: 5, cotation: "conforme", preuve: "Certificats d'étalonnage", commentaire: null },
+    { id: "ev8", article_numero: "6.4", article_libelle: "Archivage des registres", chapitre: 6, cotation: "non_evalue", preuve: null, commentaire: null },
+  ],
+  statistiques: { score_global: 76.5, total_articles: 8, conformes: 5, ecarts_mineurs: 1, ecarts_majeurs: 1, non_applicables: 1, non_evalues: 0 },
+  synthese_chapitres: CHAPITRES_BPD,
+};
+
+const MODELES_BPD = [
+  { id: "mod1", code_document: "BPD10-F01", titre: "Fiche de fonction du pharmacien titulaire", type_document: "procédure", categorie: "personnel", processus: "01", indice_revision: "02", redacteur_nom: "Dr. Anicet ANIAMBOSSOU", contenu: null },
+  { id: "mod2", code_document: "BPD10-F07", titre: "Fiche de non-conformité et plan CAPA", type_document: "enregistrement", categorie: "qualité", processus: "06", indice_revision: "03", redacteur_nom: "Dr. Marcelle HOUNNOU", contenu: null },
+  { id: "mod3", code_document: "BPD10-F12", titre: "Registre des relevés de température", type_document: "enregistrement", categorie: "locaux", processus: "05", indice_revision: "01", redacteur_nom: "Gervais KPADONOU", contenu: null },
+];
+
+const DOCUMENTS = [
+  { id: "doc1", code_document: "PRO-001", titre: "Procédure de réception des lots et contrôles", type_doc: "procedure", processus: "05", statut: "valide", version: 3, approbateur_nom: "Dr. Marcelle HOUNNOU", approuve_le: "2026-09-12", updated_at: "2026-09-12T10:00:00Z" },
+  { id: "doc2", code_document: "ENR-014", titre: "Registre de nettoyage des locaux", type_doc: "enregistrement", processus: "05", statut: "en_attente_validation", version: 1, approbateur_nom: null, approuve_le: null, updated_at: "2026-11-02T16:20:00Z" },
+  { id: "doc3", code_document: "PRO-008", titre: "Procédure de gestion des rappels de lots", type_doc: "procedure", processus: "09", statut: "brouillon", version: 1, approbateur_nom: null, approuve_le: null, updated_at: "2026-10-28T09:30:00Z" },
+];
+
+const ECHEANCES = [
+  { id: "ech1", titre: "Renouvellement de la licence d'exploitation", categorie: "reglementaire", date_echeance: "2026-11-20", fait: false },
+  { id: "ech2", titre: "Étalonnage annuel du réfrigérateur", categorie: "equipement", date_echeance: "2026-11-10", fait: false },
+  { id: "ech3", titre: "Visite médicale de Sabine AGBODJAN", categorie: "personnel", date_echeance: "2026-12-05", fait: false },
+  { id: "ech4", titre: "Formation annuelle BPD de l'équipe", categorie: "formation", date_echeance: "2026-10-30", fait: true },
+];
+
+const PARAMETRES = [
+  { id: "par1", cle: "fuseau_horaire", libelle: "Fuseau horaire", type: "texte", valeur: "Africa/Porto-Novo", unite: null, description: "Fuseau horaire officiel du Bénin", version: 1, updated_at: "2026-10-01T08:00:00Z" },
+  { id: "par2", cle: "devise", libelle: "Devise", type: "texte", valeur: "XOF", unite: null, description: "Devise en francs CFA sans décimale", version: 1, updated_at: "2026-10-01T08:00:00Z" },
+  { id: "par3", cle: "delai_inactivite_minutes", libelle: "Verrouillage après inactivité", type: "nombre", valeur: 15, unite: "minutes", description: "Verrouillage automatique après inactivité", version: 2, updated_at: "2026-10-22T14:10:00Z" },
+  { id: "par4", cle: "tolerance_pointage_minutes", libelle: "Tolérance de pointage", type: "nombre", valeur: 10, unite: "minutes", description: "Retard toléré avant signalement", version: 1, updated_at: "2026-10-01T08:00:00Z" },
+  { id: "par5", cle: "mode_presence_pharmacien", libelle: "Absence de pharmacien", type: "texte", valeur: "alerte", unite: null, description: "Comportement en cas d'absence de pharmacien : alerte ou blocage", version: 1, updated_at: "2026-10-01T08:00:00Z" },
+  { id: "par6", cle: "conservation_registres_ans", libelle: "Conservation des registres", type: "nombre", valeur: 10, unite: "ans", description: "Durée minimale de conservation légale", version: 1, updated_at: "2026-10-01T08:00:00Z" },
+  { id: "par7", cle: "alerte_stock_minimum", libelle: "Alerte stock minimum", type: "booleen", valeur: true, unite: null, description: "Notifier le pharmacien dès qu'un produit passe sous son seuil", version: 1, updated_at: "2026-10-01T08:00:00Z" },
+];
+
+const APPAREILS = [
+  { id: "dev1", name: "Chrome · Windows", is_current: true, last_used_at: "2026-11-04T09:40:00Z", created_at: "2026-10-01T08:00:00Z" },
+  { id: "dev2", name: "Safari · iOS", is_current: false, last_used_at: "2026-11-02T17:20:00Z", created_at: "2026-09-18T11:05:00Z" },
+];
+
+const AUDIT_LOGS = [
+  { id: 41, table_name: "stocks_lots", table_libelle: "Lot de stock", record_id: "l3", action: "UPDATE", user_id: "u1", user_email: "promoteur@begpharma.bj", old_data: { statut_detail: "commercialisable" }, new_data: { statut_detail: "quarantaine" }, ip_address: "197.234.10.12", server_timestamp: "2026-11-02T09:00:00Z" },
+  { id: 40, table_name: "officine_parametres", table_libelle: "Paramètres de l'officine", record_id: "par3", action: "UPDATE", user_id: "u1", user_email: "promoteur@begpharma.bj", old_data: { valeur: 30 }, new_data: { valeur: 15 }, ip_address: "197.234.10.12", server_timestamp: "2026-10-22T14:10:00Z" },
+  { id: 39, table_name: "documents", table_libelle: "Document qualité", record_id: "doc1", action: "UPDATE", user_id: "u2", user_email: "pharmacien@begpharma.bj", old_data: { statut: "en_attente_validation" }, new_data: { statut: "valide" }, ip_address: "197.234.10.45", server_timestamp: "2026-09-12T10:00:00Z" },
+  { id: 38, table_name: "lots_dechets", table_libelle: "Lot de déchets", record_id: "dec1", action: "INSERT", user_id: "u3", user_email: "dispensateur@begpharma.bj", old_data: null, new_data: { reference: "DECHET-2026-0001", statut: "en_attente_prestataire" }, ip_address: "197.234.10.47", server_timestamp: "2026-10-30T16:45:00Z" },
+  { id: 37, table_name: "echeances", table_libelle: "Échéance", record_id: "ech4", action: "UPDATE", user_id: "u2", user_email: "pharmacien@begpharma.bj", old_data: { fait: false }, new_data: { fait: true }, ip_address: "197.234.10.45", server_timestamp: "2026-10-30T12:00:00Z" },
+];
+
+/** Journal d'audit filtrable (table, action, période) au format paginateur Laravel. */
+function filtrerJournal(url) {
+  let lignes = [...AUDIT_LOGS];
+  const table = url.searchParams.get("table_name");
+  const action = url.searchParams.get("action");
+  const depuis = url.searchParams.get("date_from");
+  const jusqua = url.searchParams.get("date_to");
+  if (table) lignes = lignes.filter((l) => l.table_name === table);
+  if (action) lignes = lignes.filter((l) => l.action === action.toUpperCase());
+  if (depuis) lignes = lignes.filter((l) => l.server_timestamp >= depuis);
+  if (jusqua) lignes = lignes.filter((l) => l.server_timestamp <= jusqua);
+  return paginer(lignes, url.searchParams.get("page") || 1, url.searchParams.get("per_page") || 50);
+}
+
 function sendJson(res, status, data) {
   const body = JSON.stringify(data);
   res.writeHead(status, {
@@ -164,6 +374,30 @@ function parseBody(req) {
       try { resolve(body ? JSON.parse(body) : {}); } catch { resolve({}); }
     });
   });
+}
+
+/** Utilisateur démo correspondant au jeton porteur (défaut : promoteur). */
+function utilisateurCourant(req) {
+  const auth = req.headers.authorization || "";
+  const uid = auth.includes("u3") ? "u3" : auth.includes("u2") ? "u2" : auth.includes("u4") ? "u4" : "u1";
+  return Object.values(DEMO_USERS).find((u) => u.id === uid) || DEMO_USERS["promoteur@begpharma.bj"];
+}
+
+const OFFICINE_COURANTE = OFFICINES[0];
+
+/** Paginateur Laravel minimal. */
+function paginer(lignes, page = 1, parPage = 30) {
+  const debut = (page - 1) * parPage;
+  return {
+    current_page: Number(page),
+    data: lignes.slice(debut, debut + parPage),
+    first_page_url: `http://localhost:${PORT}/?page=1`,
+    from: lignes.length ? debut + 1 : null,
+    last_page: Math.max(1, Math.ceil(lignes.length / parPage)),
+    per_page: parPage,
+    to: Math.min(debut + parPage, lignes.length),
+    total: lignes.length,
+  };
 }
 
 const server = http.createServer(async (req, res) => {
@@ -206,21 +440,387 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 201, { message: "Inscription réussie", token: "demo-token-new", user: { id: "new", name: "Nouveau", email: "new@begpharma.bj" }, officines: [OFFICINES[0]] });
   }
   if (path === "/api/auth/me" && method === "GET") {
-    const auth = req.headers.authorization || "";
-    const uid = auth.includes("u1") ? "u1" : auth.includes("u2") ? "u2" : auth.includes("u3") ? "u3" : "u1";
-    const user = Object.values(DEMO_USERS).find(u => u.id === uid) || DEMO_USERS["promoteur@begpharma.bj"];
-    return sendJson(res, 200, { user: { id: user.id, name: user.name, email: user.email, telephone: "+229 97 00 00 01" }, officines: OFFICINES.filter(o => user.officines.includes(o.id)) });
+    const user = utilisateurCourant(req);
+    return sendJson(res, 200, {
+      user: { id: user.id, name: user.name, email: user.email, telephone: "+229 97 00 00 01", mfa_enabled: user.mfa, last_activity_at: new Date().toISOString() },
+      officines: OFFICINES.filter(o => user.officines.includes(o.id)),
+    });
   }
   if (path === "/api/auth/logout" && method === "POST") {
     return sendJson(res, 200, { message: "Déconnecté" });
   }
   if (path === "/api/auth/devices" && method === "GET") {
-    return sendJson(res, 200, { data: [{ id: "d1", libelle: "Chrome · Windows", derniere_activite: new Date().toISOString(), actif: true }] });
+    return sendJson(res, 200, { devices: APPAREILS });
+  }
+  {
+    const m = path.match(/^\/api\/auth\/devices\/([^/]+)$/);
+    if (m && method === "DELETE") {
+      const i = APPAREILS.findIndex(a => a.id === m[1]);
+      if (i === -1) return sendJson(res, 404, { message: "Appareil introuvable." });
+      APPAREILS.splice(i, 1);
+      return sendJson(res, 200, { message: "Session révoquée avec succès." });
+    }
+  }
+  if (path === "/api/auth/mfa" && method === "GET") {
+    const user = utilisateurCourant(req);
+    return sendJson(res, 200, {
+      mfa_enabled: user.mfa,
+      mfa_secret_present: user.mfa,
+      mfa_required: ["promoteur", "pharmacien_titulaire"].includes(user.role),
+      devices: APPAREILS.length,
+      derniere_activite: new Date().toISOString(),
+    });
+  }
+  if (path === "/api/auth/mfa/demarrer" && method === "POST") {
+    const secret = "JBSWY3DPEHPK3PXP";
+    return sendJson(res, 200, {
+      secret,
+      otpauth_url: `otpauth://totp/BEGPHARMA:${utilisateurCourant(req).email}?secret=${secret}&issuer=BEGPHARMA`,
+      qr_code_url: "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=demo",
+      message: "Scannez le QR code puis saisissez le code affiché (démo : 123456).",
+    });
+  }
+  if (path === "/api/auth/mfa" && method === "DELETE") {
+    return sendJson(res, 200, { message: "Double authentification désactivée.", mfa_enabled: false });
   }
 
   // OFFICINES
   if (path === "/api/officines" && method === "GET") {
-    return sendJson(res, 200, { data: OFFICINES });
+    const user = utilisateurCourant(req);
+    return sendJson(res, 200, OFFICINES.filter(o => user.officines.includes(o.id)));
+  }
+  if (path === "/api/officines" && method === "POST") {
+    const b = await parseBody(req);
+    const officine = {
+      id: "off" + (OFFICINES.length + 1),
+      nom: b.nom,
+      raison_sociale: b.raison_sociale || `${b.nom} SARL`,
+      ville: b.ville || "Cotonou",
+      adresse: b.adresse || "Cotonou",
+      telephone: b.telephone || "+229 00 00 00 00",
+      numero_licence: b.numero_licence || `BEN-OFF-2026-${900 + OFFICINES.length}`,
+      pivot: { role_code: "promoteur", actif: true },
+    };
+    OFFICINES.push(officine);
+    for (const p of PARAMETRES) {
+      p.officine_id = officine.id;
+    }
+    return sendJson(res, 201, officine);
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)$/);
+    if (m && method === "GET") {
+      const off = OFFICINES.find(o => o.id === m[1]);
+      return off ? sendJson(res, 200, off) : sendJson(res, 404, { message: "Officine introuvable" });
+    }
+    if (m && method === "PUT") {
+      const off = OFFICINES.find(o => o.id === m[1]);
+      if (!off) return sendJson(res, 404, { message: "Officine introuvable" });
+      Object.assign(off, await parseBody(req));
+      return sendJson(res, 200, off);
+    }
+    if (m && method === "POST" && path.endsWith("/rattacher")) { /* géré plus bas */ }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/rattacher$/);
+    if (m && method === "POST") {
+      const off = OFFICINES.find(o => o.id === m[1]);
+      if (!off) return sendJson(res, 404, { message: "Officine introuvable" });
+      const user = utilisateurCourant(req);
+      if (!user.officines.includes(off.id)) user.officines.push(off.id);
+      return sendJson(res, 200, { message: "Officine rattachée à votre compte.", officine: off });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/parametres$/);
+    if (m && method === "GET") return sendJson(res, 200, PARAMETRES);
+    if (m && method === "PUT") {
+      const b = await parseBody(req);
+      for (const entree of b.parametres || []) {
+        const param = PARAMETRES.find(p => p.cle === entree.cle);
+        if (!param) continue;
+        param.valeur = entree.valeur;
+        param.version += 1;
+        param.updated_at = new Date().toISOString();
+      }
+      return sendJson(res, 200, { message: "Paramètres enregistrés.", parametres: PARAMETRES });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/parametres\/([^/]+)$/);
+    if (m && method === "PUT") {
+      const b = await parseBody(req);
+      const param = PARAMETRES.find(p => p.cle === decodeURIComponent(m[2]));
+      if (!param) return sendJson(res, 404, { message: "Paramètre introuvable" });
+      param.valeur = b.valeur;
+      if (b.description) param.description = b.description;
+      param.version += 1;
+      param.updated_at = new Date().toISOString();
+      return sendJson(res, 200, param);
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/audit-logs$/);
+    if (m && method === "GET") return sendJson(res, 200, filtrerJournal(url));
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/echeances$/);
+    if (m && method === "GET") return sendJson(res, 200, ECHEANCES);
+    if (m && method === "POST") {
+      const b = await parseBody(req);
+      const echeance = { id: "ech" + (ECHEANCES.length + 1), fait: false, archived: false, ...b };
+      ECHEANCES.push(echeance);
+      return sendJson(res, 201, echeance);
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/employes$/);
+    if (m && method === "GET") return sendJson(res, 200, { employes: EMPLOYES, inscriptions_ordre: INSCRIPTIONS_ORDRE });
+    if (m && method === "POST") {
+      const b = await parseBody(req);
+      const employe = { id: "emp" + (EMPLOYES.length + 1), actif: true, ...b };
+      EMPLOYES.push(employe);
+      return sendJson(res, 201, employe);
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/employes\/([^/]+)$/);
+    if (m && method === "PUT") {
+      const b = await parseBody(req);
+      const employe = EMPLOYES.find(e => e.id === m[2]);
+      if (!employe) return sendJson(res, 404, { message: "Employé introuvable" });
+      Object.assign(employe, b);
+      return sendJson(res, 200, employe);
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/pointages$/);
+    if (m && method === "GET") {
+      return sendJson(res, 200, {
+        pointages: POINTAGES,
+        pharmacien_present: true,
+        pharmaciens_sur_place: ["Dr. Marcelle HOUNNOU"],
+        statut_reglementaire: "CONFORME_BPD",
+        message: "Présence pharmaceutique continue assurée.",
+      });
+    }
+    if (m && method === "POST") {
+      const b = await parseBody(req);
+      const employe = EMPLOYES.find(e => e.id === b.employe_id);
+      const pointage = {
+        id: "pt" + (POINTAGES.length + 1),
+        employe_id: b.employe_id,
+        employe_nom: employe?.nom_complet || "Employé",
+        employe_poste: employe?.poste || "dispensateur",
+        type: b.type,
+        horodatage: new Date().toISOString(),
+      };
+      POINTAGES.unshift(pointage);
+      return sendJson(res, 201, { message: "Pointage enregistré avec succès.", pointage_id: pointage.id, pharmacien_present: true });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/equipements$/);
+    if (m && method === "GET") return sendJson(res, 200, EQUIPEMENTS);
+    if (m && method === "POST") {
+      const b = await parseBody(req);
+      const equipement = { id: "eq" + (EQUIPEMENTS.length + 1), statut: "en_service", ...b };
+      EQUIPEMENTS.push(equipement);
+      return sendJson(res, 201, equipement);
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/nettoyages$/);
+    if (m && method === "GET") return sendJson(res, 200, paginer(NETTOYAGES));
+    if (m && method === "POST") {
+      const b = await parseBody(req);
+      const nettoyage = {
+        id: "nt" + (NETTOYAGES.length + 1),
+        ...b,
+        conforme: b.conforme !== false,
+        date_heure: new Date().toISOString(),
+        agent: { name: utilisateurCourant(req).name },
+        visa: null,
+      };
+      NETTOYAGES.unshift(nettoyage);
+      return sendJson(res, 201, nettoyage);
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/temperatures$/);
+    if (m && method === "GET") return sendJson(res, 200, paginer(RELEVES_TEMPERATURE));
+    if (m && method === "POST") {
+      const b = await parseBody(req);
+      const excursion = Number(b.temperature) < 2 || Number(b.temperature) > 8;
+      const releve = {
+        id: "rt" + (RELEVES_TEMPERATURE.length + 1),
+        ...b,
+        statut_conformite: excursion ? "excursion_chaud" : "conforme",
+        agent: { name: utilisateurCourant(req).name },
+      };
+      RELEVES_TEMPERATURE.unshift(releve);
+      return sendJson(res, 201, {
+        releve,
+        alerte_excursion: excursion,
+        message: excursion ? "ATTENTION : excursion de température détectée." : "Relevé enregistré.",
+      });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/temperatures\/stats$/);
+    if (m && method === "GET") {
+      const zones = {};
+      for (const code of ["refrigeree_2_8", "magasin_reserve", "hall_dispensation"]) {
+        const duJour = RELEVES_TEMPERATURE.filter(r => r.zone === code && r.date_releve === "2026-11-04");
+        const dernier = duJour[0];
+        zones[code] = {
+          matin_fait: duJour.some(r => r.moment === "matin"),
+          soir_fait: duJour.some(r => r.moment === "soir"),
+          dernier_releve: dernier || null,
+          statut_actuel: dernier ? dernier.statut_conformite : "en_attente",
+          temp_actuelle: dernier ? dernier.temperature : null,
+        };
+      }
+      return sendJson(res, 200, {
+        date: "2026-11-04",
+        zones,
+        historique_30j: { total_releves: 58, total_excursions: 1, taux_conformite: 98.3 },
+      });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/non-conformites$/);
+    if (m && method === "GET") return sendJson(res, 200, NON_CONFORMITES);
+    if (m && method === "POST") {
+      const b = await parseBody(req);
+      const nc = {
+        id: "nc" + (NON_CONFORMITES.length + 1),
+        numero_nc: `NC-2026-${String(NON_CONFORMITES.length + 12).padStart(4, "0")}`,
+        statut: "ouverte",
+        date_creation: new Date().toISOString(),
+        ...b,
+      };
+      NON_CONFORMITES.unshift(nc);
+      return sendJson(res, 201, nc);
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/non-conformites\/([^/]+)$/);
+    if (m && method === "PUT") {
+      const b = await parseBody(req);
+      const nc = NON_CONFORMITES.find(n => n.id === m[2]);
+      if (!nc) return sendJson(res, 404, { message: "Non-conformité introuvable" });
+      Object.assign(nc, b);
+      return sendJson(res, 200, nc);
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/auto-evaluation\/campagne-courante$/);
+    if (m && method === "GET") return sendJson(res, 200, AUTO_EVALUATION);
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/auto-evaluation\/evaluer\/([^/]+)$/);
+    if (m && method === "PUT") {
+      const b = await parseBody(req);
+      const evaluation = AUTO_EVALUATION.evaluations.find(e => e.id === m[2]);
+      if (!evaluation) return sendJson(res, 404, { message: "Article introuvable" });
+      Object.assign(evaluation, b);
+      const notees = AUTO_EVALUATION.evaluations.filter(e => e.cotation && e.cotation !== "non_evalue");
+      const conformesPondere = notees.filter(e => e.cotation === "conforme").length + notees.filter(e => e.cotation === "ecart_mineur").length * 0.5;
+      const score = notees.length ? Math.round((conformesPondere / notees.length) * 1000) / 10 : 0;
+      AUTO_EVALUATION.statistiques.score_global = score;
+      return sendJson(res, 200, { evaluation, nouveau_score_global: score });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/auto-evaluation\/generer-capa\/([^/]+)$/);
+    if (m && method === "POST") {
+      const evaluation = AUTO_EVALUATION.evaluations.find(e => e.id === m[2]);
+      const nc = {
+        id: "nc" + (NON_CONFORMITES.length + 1),
+        numero_nc: `NC-2026-${String(NON_CONFORMITES.length + 12).padStart(4, "0")}`,
+        titre: `Écart BPD sur l'article ${evaluation?.article_numero ?? ""}`.trim(),
+        gravite: "majeure",
+        processus: "06",
+        source: "auto_evaluation",
+        statut: "ouverte",
+        date_creation: new Date().toISOString(),
+      };
+      NON_CONFORMITES.unshift(nc);
+      return sendJson(res, 201, {
+        evaluation,
+        non_conformite: nc,
+        message: `Fiche Non-Conformité et plan CAPA créés pour l'article ${evaluation?.article_numero ?? ""}.`,
+      });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/auto-evaluation\/rapport$/);
+    if (m && method === "GET") {
+      return sendJson(res, 200, {
+        campagne: AUTO_EVALUATION.campagne,
+        officine: OFFICINE_COURANTE,
+        date_generation: new Date().toISOString(),
+        score_global: AUTO_EVALUATION.statistiques.score_global,
+        synthese_statuts: AUTO_EVALUATION.statistiques,
+        synthese_chapitres: CHAPITRES_BPD,
+        actions_correctives_requises: NON_CONFORMITES.filter(n => n.statut !== "cloturee").length,
+      });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/documents$/);
+    if (m && method === "GET") {
+      let docs = [...DOCUMENTS];
+      if (url.searchParams.get("statut") && url.searchParams.get("statut") !== "tous") {
+        docs = docs.filter(d => d.statut === url.searchParams.get("statut"));
+      }
+      return sendJson(res, 200, docs);
+    }
+    if (m && method === "POST") {
+      const b = await parseBody(req);
+      const doc = {
+        id: "doc" + (DOCUMENTS.length + 1),
+        code_document: b.code_document || `DOC-${String(DOCUMENTS.length + 1).padStart(3, "0")}`,
+        statut: "brouillon",
+        version: 1,
+        updated_at: new Date().toISOString(),
+        ...b,
+      };
+      DOCUMENTS.unshift(doc);
+      return sendJson(res, 201, doc);
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/documents\/([^/]+)$/);
+    if (m && method === "PUT") {
+      const b = await parseBody(req);
+      const doc = DOCUMENTS.find(d => d.id === m[2]);
+      if (!doc) return sendJson(res, 404, { message: "Document introuvable" });
+      Object.assign(doc, b);
+      doc.version = (doc.version || 1) + 1;
+      doc.updated_at = new Date().toISOString();
+      return sendJson(res, 200, doc);
+    }
+  }
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/modeles-bpd\/([^/]+)\/instancier$/);
+    if (m && method === "POST") {
+      const modele = MODELES_BPD.find(x => x.id === m[2]);
+      if (!modele) return sendJson(res, 404, { message: "Modèle introuvable" });
+      const doc = {
+        id: "doc" + (DOCUMENTS.length + 1),
+        code_document: modele.code_document,
+        titre: modele.titre,
+        type_doc: modele.type_document,
+        processus: modele.processus,
+        statut: "brouillon",
+        version: 1,
+        updated_at: new Date().toISOString(),
+      };
+      DOCUMENTS.unshift(doc);
+      return sendJson(res, 201, { message: "Modèle BPD instancié en brouillon avec succès.", document: doc });
+    }
   }
 
   // PRODUITS
@@ -238,7 +838,18 @@ const server = http.createServer(async (req, res) => {
   if (path === "/api/stocks" && method === "GET") {
     const alerte = url.searchParams.get("alerte");
     const q = url.searchParams.get("q")?.toLowerCase();
+    const statut = url.searchParams.get("statut");
+    const vendable = url.searchParams.get("vendable");
     let filtered = [...LOTS];
+    if (statut) {
+      const demandes = statut.split(",").map((x) => x.trim());
+      filtered = filtered.filter((l) => demandes.includes(l.statut_detail) || demandes.includes(l.statut_effectif) || demandes.includes(l.statut));
+    } else if (vendable !== null) {
+      const veutVendable = vendable === "true" || vendable === "1";
+      filtered = veutVendable
+        ? filtered.filter((l) => l.est_vendable && l.quantite_disponible > 0)
+        : filtered.filter((l) => !l.est_vendable || l.quantite_disponible <= 0 || ["dechet", "epuise"].includes(l.statut_effectif));
+    }
     if (q) filtered = filtered.filter(l => l.numero_lot.toLowerCase().includes(q) || l.produit.nom_commercial.toLowerCase().includes(q));
     if (alerte === "perime") filtered = filtered.filter(l => l.jours_avant_peremption < 0);
     if (alerte === "critique_1m") filtered = filtered.filter(l => l.jours_avant_peremption >= 0 && l.jours_avant_peremption <= 30);
@@ -249,7 +860,14 @@ const server = http.createServer(async (req, res) => {
   if (path === "/api/stocks" && method === "POST") {
     const b = await parseBody(req);
     const prod = PRODUITS.find(p => p.id === b.produit_id) || PRODUITS[0];
-    const newLot = { id: "l" + Date.now(), produit_id: b.produit_id, numero_lot: b.numero_lot, date_peremption: b.date_peremption, quantite_disponible: b.quantite, quantite_initiale: b.quantite, emplacement: b.emplacement || "Réserve", fournisseur_nom: b.fournisseur_nom, bon_livraison_ref: b.bon_livraison_ref, statut: b.controles_reception && Object.values(b.controles_reception).every(Boolean) ? "en_stock" : "quarantaine", statut_detail: b.controles_reception && Object.values(b.controles_reception).every(Boolean) ? "commercialisable" : "en_attente_controle", statut_effectif: b.controles_reception && Object.values(b.controles_reception).every(Boolean) ? "commercialisable" : "en_attente_controle", est_vendable: !!(b.controles_reception && Object.values(b.controles_reception).every(Boolean)), jours_avant_peremption: Math.floor((new Date(b.date_peremption) - new Date())/86400000), statut_peremption: "normal", produit: prod, prix_achat_unitaire: b.prix_achat_unitaire || 900 };
+    // Un lot n'est commercialisable que si tous les contrôles renseignés sont conformes
+    // ET que la batterie de contrôles réglementaires est complète.
+    const controlesAttendus = ["alerte_sanitaire_verifiee", "emballage_intact", "conformite_livraison", "dates_conformes", "chaine_froid_respectee"];
+    const controles = b.controles_reception || {};
+    const lotConforme =
+      controlesAttendus.every((cle) => controles[cle] === true) &&
+      Object.values(controles).every((v) => v === true || v === null || v === undefined);
+    const newLot = { id: "l" + Date.now(), produit_id: b.produit_id, numero_lot: b.numero_lot, date_peremption: b.date_peremption, quantite_disponible: b.quantite, quantite_initiale: b.quantite, emplacement: b.emplacement || "Réserve", fournisseur_nom: b.fournisseur_nom, bon_livraison_ref: b.bon_livraison_ref, statut: lotConforme ? "en_stock" : "quarantaine", statut_detail: lotConforme ? "commercialisable" : "en_attente_controle", statut_effectif: lotConforme ? "commercialisable" : "en_attente_controle", est_vendable: lotConforme, motif_quarantaine: lotConforme ? null : "Contrôles de réception incomplets : lot isolé en quarantaine", jours_avant_peremption: Math.floor((new Date(b.date_peremption) - new Date())/86400000), statut_peremption: "normal", produit: prod, prix_achat_unitaire: b.prix_achat_unitaire || 900 };
     LOTS.push(newLot);
     MOUVEMENTS.unshift({ id: "m"+Date.now(), type_mouvement: "entree_reception", quantite: b.quantite, stock_avant: 0, stock_apres: b.quantite, motif: "Réception contrôlée", reference_piece: b.bon_livraison_ref, created_at: new Date().toISOString(), produit: prod, lot: newLot, auteur: { name: "Démo" } });
     return sendJson(res, 201, { status: "success", message: `Lot ${newLot.numero_lot} réceptionné — FEFO appliqué`, data: newLot });
@@ -336,7 +954,26 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 201, { status: "success", message: "Rectificative créée", data: { id: "rect"+Date.now() } });
   }
   if (path === "/api/stupefiants/inventaire" && method === "POST") {
-    return sendJson(res, 201, { status: "success", alerte_ecart: false, message: "Concordance parfaite", data: null });
+    const b = await parseBody(req);
+    const ligne = (STUPEFIANTS.balance_produits || []).find((x) => x.id === b.produit_id);
+    const theorique = ligne ? ligne.stock_theorique_registre : 0;
+    const physique = Number(b.quantite_physique ?? theorique);
+    const ecart = physique - theorique;
+
+    if (ligne) {
+      ligne.stock_physique_lots = physique;
+      ligne.ecart = ecart;
+      ligne.concordance_exacte = ecart === 0;
+    }
+
+    return sendJson(res, 201, {
+      status: "success",
+      alerte_ecart: ecart !== 0,
+      message: ecart === 0
+        ? "Concordance parfaite entre le registre et le comptage physique."
+        : `Écart de ${ecart} unité(s) constaté : une fiche de non-conformité doit être ouverte.`,
+      data: { produit_id: b.produit_id, stock_theorique: theorique, quantite_physique: physique, ecart, date_inventaire: new Date().toISOString() },
+    });
   }
   if (path === "/api/stupefiants/declaration-vol" && method === "POST") {
     return sendJson(res, 201, { status: "success", message: "Déclaration enregistrée — alerte promoteur SMS/push", data: {} });
@@ -564,6 +1201,226 @@ const server = http.createServer(async (req, res) => {
       dechet.date_destruction_reelle = new Date().toISOString().slice(0, 10);
       return sendJson(res, 200, { status: "success", message: `Destruction ${dechet.reference} validée — procès-verbal à archiver dix ans`, data: dechet });
     }
+  }
+
+  // ─── CAISSE
+  if (path === "/api/caisse/session-active" && method === "GET") {
+    const session = SESSIONS_CAISSE.find(s => s.statut === "ouverte") || null;
+    if (session) session.ventes = VENTES;
+    return sendJson(res, 200, { status: "success", data: session });
+  }
+  if (path === "/api/caisse/ouvrir" && method === "POST") {
+    const b = await parseBody(req);
+    if (b.fond_caisse_ouverture === undefined || Number(b.fond_caisse_ouverture) < 0) {
+      return sendJson(res, 422, { message: "Le fond de caisse d'ouverture est obligatoire.", errors: { fond_caisse_ouverture: ["Champ obligatoire."] } });
+    }
+    const ouverte = SESSIONS_CAISSE.find(s => s.statut === "ouverte");
+    if (ouverte) {
+      return sendJson(res, 422, { message: "Une session de caisse est déjà ouverte." });
+    }
+    const session = {
+      id: "sess" + (SESSIONS_CAISSE.length + 1),
+      numero_session: `CAISSE-2026-${String(20 + SESSIONS_CAISSE.length).padStart(4, "0")}`,
+      statut: "ouverte",
+      fond_caisse_ouverture: Number(b.fond_caisse_ouverture),
+      fond_caisse_fermeture_reel: null,
+      fond_caisse_fermeture_theorique: null,
+      ecart_caisse: null,
+      opened_at: new Date().toISOString(),
+      closed_at: null,
+      caissier: { id: utilisateurCourant(req).id, name: utilisateurCourant(req).name },
+      ventes: [],
+    };
+    SESSIONS_CAISSE.unshift(session);
+    return sendJson(res, 201, { status: "success", message: "Session de caisse ouverte.", data: session });
+  }
+  {
+    const m = path.match(/^\/api\/caisse\/session\/([^/]+)\/fermer$/);
+    if (m && method === "POST") {
+      const b = await parseBody(req);
+      const session = SESSIONS_CAISSE.find(s => s.id === m[1]);
+      if (!session) return sendJson(res, 404, { message: "Session de caisse introuvable." });
+      if (session.statut === "fermee") {
+        return sendJson(res, 422, { message: "Cette session de caisse est déjà fermée." });
+      }
+      if (b.fond_caisse_fermeture_reel === undefined || Number(b.fond_caisse_fermeture_reel) < 0) {
+        return sendJson(res, 422, { message: "Le fond de caisse réel est obligatoire.", errors: { fond_caisse_fermeture_reel: ["Champ obligatoire."] } });
+      }
+      const encaisse = VENTES.filter(v => v.mode_reglement === "especes").reduce((t, v) => t + v.montant_total, 0);
+      session.statut = "fermee";
+      session.fond_caisse_fermeture_reel = Number(b.fond_caisse_fermeture_reel);
+      session.fond_caisse_fermeture_theorique = session.fond_caisse_ouverture + encaisse;
+      session.ecart_caisse = session.fond_caisse_fermeture_reel - session.fond_caisse_fermeture_theorique;
+      session.closed_at = new Date().toISOString();
+      session.notes_cloture = b.notes_cloture || null;
+      return sendJson(res, 200, { status: "success", message: "Session de caisse fermée.", data: session });
+    }
+  }
+  {
+    const m = path.match(/^\/api\/caisse\/session\/([^/]+)\/ticket-x$/);
+    if (m && method === "GET") {
+      const session = SESSIONS_CAISSE.find(s => s.id === m[1]);
+      if (!session) return sendJson(res, 404, { message: "Session de caisse introuvable." });
+      const somme = (mode) => VENTES.filter(v => v.mode_reglement === mode).reduce((t, v) => t + v.montant_total, 0);
+      return sendJson(res, 200, {
+        type_rapport: "TICKET_X_INTERMEDIAIRE",
+        data: {
+          session,
+          nombre_ventes: VENTES.length,
+          chiffre_affaires_total: VENTES.reduce((t, v) => t + v.montant_total, 0),
+          especes_theoriques: session.fond_caisse_ouverture + somme("especes"),
+          mobile_money: somme("mobile_money"),
+          carte_bancaire: somme("carte"),
+        },
+      });
+    }
+  }
+  if (path === "/api/caisse/ventes" && method === "POST") {
+    const b = await parseBody(req);
+    if (!b.lignes || !b.lignes.length) {
+      return sendJson(res, 422, { message: "La vente doit comporter au moins une ligne.", errors: { lignes: ["Champ obligatoire."] } });
+    }
+    const session = SESSIONS_CAISSE.find(s => s.statut === "ouverte");
+    if (!session) {
+      return sendJson(res, 422, { message: "Aucune session de caisse ouverte : ouvrez la caisse avant d'encaisser." });
+    }
+    const lignes = b.lignes.map((l, i) => {
+      const produit = PRODUITS.find(p => p.id === l.produit_id) || PRODUITS[0];
+      const prix = produit.prix_public_ttc || 0;
+      return {
+        id: `vl${VENTES.length}${i}`,
+        produit_id: produit.id,
+        quantite: l.quantite,
+        prix_unitaire_ttc: prix,
+        montant_ligne: prix * l.quantite,
+        produit: { nom_commercial: produit.nom_commercial, dosage: produit.dosage },
+      };
+    });
+    const total = lignes.reduce((t, l) => t + l.montant_ligne, 0);
+    const numero = `TICKET-2026-${String(143 + VENTES.length).padStart(4, "0")}`;
+    const vente = {
+      id: "v" + (VENTES.length + 1),
+      numero_ticket: numero,
+      date_vente: new Date().toISOString(),
+      client_nom: b.client_nom || "Client comptoir",
+      client_ifu: b.client_ifu || null,
+      mode_reglement: b.mode_reglement,
+      montant_total: total,
+      montant_recu: b.montant_recu ?? total,
+      monnaie_rendue: Math.max(0, (b.montant_recu ?? total) - total),
+      caissier: { id: utilisateurCourant(req).id, name: utilisateurCourant(req).name },
+      lignes,
+      facture_emecef: {
+        numero_facture: `DGI-2026-${String(1235 + VENTES.length).padStart(6, "0")}`,
+        qr_code_data: `BEN-DGI|MECEF|2026|${numero}|${total}`,
+      },
+    };
+    VENTES.unshift(vente);
+    session.ventes = VENTES;
+    FACTURES_EMECEF.unshift({
+      id: "f" + (FACTURES_EMECEF.length + 1),
+      numero_facture: vente.facture_emecef.numero_facture,
+      vente_id: vente.id,
+      montant_total: total,
+      regime_tva: "B_TAXABLE",
+      statut_dgi: "certifiee",
+      qr_code_data: vente.facture_emecef.qr_code_data,
+      date_certification: new Date().toISOString(),
+      vente,
+    });
+    ECRITURES.unshift(
+      { id: "ec" + (ECRITURES.length + 1), numero_compte: "571100", libelle_compte: "Caisse espèces", date_piece: vente.date_vente.slice(0, 10), libelle_piece: `Vente comptoir ${numero}`, debit: total, credit: 0 },
+      { id: "ec" + (ECRITURES.length + 2), numero_compte: "701000", libelle_compte: "Ventes de marchandises", date_piece: vente.date_vente.slice(0, 10), libelle_piece: `Vente comptoir ${numero}`, debit: 0, credit: total },
+    );
+    return sendJson(res, 201, {
+      status: "success",
+      message: `Vente encaissée — ticket ${numero}`,
+      data: vente,
+    });
+  }
+
+  // ─── FACTURATION & COMPTABILITÉ
+  if (path === "/api/facturation/emecef" && method === "GET") {
+    return sendJson(res, 200, { status: "success", data: paginer(FACTURES_EMECEF, 1, 25) });
+  }
+  if (path === "/api/comptabilite/journal-ventes" && method === "GET") {
+    const comptes = {};
+    for (const e of ECRITURES) {
+      const c = (comptes[e.numero_compte] ||= { numero_compte: e.numero_compte, libelle_compte: e.libelle_compte, total_debit: 0, total_credit: 0 });
+      c.total_debit += e.debit;
+      c.total_credit += e.credit;
+    }
+    return sendJson(res, 200, { status: "success", data: paginer(ECRITURES), balance: Object.values(comptes) });
+  }
+  if (path === "/api/comptabilite/clotures" && method === "GET") {
+    const fermees = SESSIONS_CAISSE.filter(s => s.statut === "fermee");
+    return sendJson(res, 200, { status: "success", data: paginer(fermees, 1, 20) });
+  }
+
+  // ─── DISPENSATIONS
+  if (path === "/api/dispensations" && method === "GET") {
+    return sendJson(res, 200, { status: "success", data: paginer(DISPENSATIONS) });
+  }
+  if (path === "/api/dispensations" && method === "POST") {
+    const b = await parseBody(req);
+    if (!b.patient_nom) {
+      return sendJson(res, 422, { message: "Le nom du patient est obligatoire.", errors: { patient_nom: ["Champ obligatoire."] } });
+    }
+    if (!b.lignes || !b.lignes.length) {
+      return sendJson(res, 422, { message: "La dispensation doit comporter au moins une ligne.", errors: { lignes: ["Champ obligatoire."] } });
+    }
+    const lignes = b.lignes.map((l, i) => {
+      const produit = PRODUITS.find(p => p.id === l.produit_id) || PRODUITS[0];
+      return {
+        id: `dl${DISPENSATIONS.length}${i}`,
+        produit_id: produit.id,
+        quantite: l.quantite,
+        posologie: l.posologie || null,
+        duree_traitement: l.duree_traitement || null,
+        produit: { nom_commercial: produit.nom_commercial, dosage: produit.dosage },
+      };
+    });
+    const dispensation = {
+      id: "disp" + (DISPENSATIONS.length + 1),
+      numero_dispensation: `DISP-2026-${String(8 + DISPENSATIONS.length).padStart(4, "0")}`,
+      ...b,
+      lignes,
+      montant_total: lignes.reduce((t, l) => t + (PRODUITS.find(p => p.id === l.produit_id)?.prix_public_ttc || 0) * l.quantite, 0),
+      statut: "delivree",
+      date_dispensation: new Date().toISOString(),
+    };
+    DISPENSATIONS.unshift(dispensation);
+    return sendJson(res, 201, { status: "success", message: `Dispensation ${dispensation.numero_dispensation} enregistrée.`, data: dispensation });
+  }
+
+  // ─── MODÈLES BPD
+  if (path === "/api/modeles-bpd" && method === "GET") {
+    return sendJson(res, 200, MODELES_BPD);
+  }
+
+  // ─── ÉCHÉANCES
+  if (path === "/api/echeances" && method === "GET") {
+    return sendJson(res, 200, ECHEANCES.filter(e => !e.archived));
+  }
+  {
+    const m = path.match(/^\/api\/echeances\/([^/]+)$/);
+    if (m && method === "PUT") {
+      const echeance = ECHEANCES.find(e => e.id === m[1]);
+      if (!echeance) return sendJson(res, 404, { message: "Échéance introuvable" });
+      Object.assign(echeance, await parseBody(req));
+      return sendJson(res, 200, echeance);
+    }
+    if (m && method === "DELETE") {
+      const echeance = ECHEANCES.find(e => e.id === m[1]);
+      if (!echeance) return sendJson(res, 404, { message: "Échéance introuvable" });
+      echeance.archived = true;
+      return sendJson(res, 200, { message: "Échéance archivée." });
+    }
+  }
+
+  // ─── JOURNAL D'AUDIT
+  if (path === "/api/audit-logs" && method === "GET") {
+    return sendJson(res, 200, filtrerJournal(url));
   }
 
   // DIVERS

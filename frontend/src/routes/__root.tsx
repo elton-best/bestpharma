@@ -3,7 +3,6 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
-  useRouter,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
@@ -13,7 +12,6 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
   return (
@@ -150,19 +148,12 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const router = useRouter();
 
-  // Un seul abonné aux changements de session, filtré aux transitions d'identité :
-  // on invalide le routeur (la barrière réagit) et le cache, jamais sur les
-  // rafraîchissements de jeton ni sur INITIAL_SESSION.
+  // La session est portée par un jeton Sanctum : on repart d'un cache propre
+  // à chaque montage, sans écouter d'événement d'authentification externe.
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-    });
-    return () => subscription.unsubscribe();
-  }, [router, queryClient]);
+    queryClient.invalidateQueries();
+  }, [queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>

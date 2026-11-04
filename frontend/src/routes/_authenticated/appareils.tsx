@@ -1,18 +1,15 @@
-import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { MonitorSmartphone, ShieldAlert } from "lucide-react";
 
-import { supabase } from "@/integrations/supabase/client";
-import { appareilCourant } from "@/lib/appareil";
+import { api } from "@/lib/api-client";
 import { deconnecter } from "@/lib/session";
 import { fr } from "@/lib/i18n/fr";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useRouter } from "@tanstack/react-router";
-import { useQueryClient as useQC } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/appareils")({
   head: () => ({
@@ -20,122 +17,128 @@ export const Route = createFileRoute("/_authenticated/appareils")({
       { title: "Appareils connectés — BEGPHARMA" },
       {
         name: "description",
-        content: "Appareils connectés à votre compte BEGPHARMA et révocation à distance.",
+        content: "Appareils connectés à votre compte BEGPHARMA et déconnexion à distance.",
       },
-      { property: "og:title", content: "Appareils connectés — BEGPHARMA" },
-      {
-        property: "og:description",
-        content: "Appareils connectés à votre compte BEGPHARMA et révocation à distance.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: PageAppareils,
 });
 
 interface Appareil {
-  id: string;
-  libelle: string;
-  derniere_activite: string;
-  revoquee: boolean;
+  id: number | string;
+  name: string;
+  is_current: boolean;
+  last_used_at: string | null;
+  created_at: string | null;
 }
 
-const fmtDate = new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" });
+const fmtDate = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short" });
 
 function PageAppareils() {
-  const queryClient = useQC();
+  const queryClient = useQueryClient();
   const router = useRouter();
-  const { user } = Route.useRouteContext() as unknown as { user: { id: string } };
-  const userId = user.id;
-  const [courant, setCourant] = useState<string | null>(null);
 
-  useEffect(() => setCourant(appareilCourant()), []);
-
-  const { data: appareils, isLoading } = useQuery({
-    queryKey: ["appareils", userId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sessions_appareils")
-        .select("id, libelle, derniere_activite, revoquee")
-        .eq("user_id", userId)
-        .order("derniere_activite", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Appareil[];
-    },
+  const { data, isLoading } = useQuery<{ devices: Appareil[] }>({
+    queryKey: ["appareils"],
+    queryFn: () => api.get<{ devices: Appareil[] }>("/auth/devices"),
   });
 
-  async function revoquer(id: string) {
-    const { error } = await supabase
-      .from("sessions_appareils")
-      .update({ revoquee: true })
-      .eq("id", id);
-    if (error) {
-      toast.error(fr.commun.erreur);
-      return;
-    }
-    toast.success(fr.appareils.revoque);
-    await queryClient.invalidateQueries({ queryKey: ["appareils", userId] });
-    if (id === courant) await deconnecter(queryClient, router);
-  }
+  const revoquer = useMutation({
+    mutationFn: (id: string | number) => api.delete(`/auth/devices/${id}`),
+    onSuccess: async (_res, id) => {
+      const etaitCourant = (data?.devices ?? []).find((a) => a.id === id)?.is_current;
+      toast.success(fr.appareils.revoque);
+      if (etaitCourant) {
+        await deconnecter(queryClient, router);
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["appareils"] });
+    },
+    onError: (e: any) => toast.error(e.message || fr.commun.erreur),
+  });
 
-  async function revoquerAutres() {
-    if (!courant) return;
-    const { error } = await supabase
-      .from("sessions_appareils")
-      .update({ revoquee: true })
-      .eq("user_id", userId)
-      .neq("id", courant)
-      .eq("revoquee", false);
-    if (error) {
-      toast.error(fr.commun.erreur);
-      return;
-    }
-    toast.success(fr.appareils.revoque);
-    await queryClient.invalidateQueries({ queryKey: ["appareils", userId] });
-  }
+  const revoquerAutres = useMutation({
+    mutationFn: async (courantId: string | number) => {
+      const autres = (data?.devices ?? []).filter((a) => a.id !== courantId);
+      for (const appareil of autres) {
+        await api.delete(`/auth/devices/${appareil.id}`);
+      }
+      return autres.length;
+    },
+    onSuccess: async (nombre) => {
+      toast.success(
+        nombre > 0
+          ? `${nombre} appareil${nombre > 1 ? "s" : ""} déconnecté${nombre > 1 ? "s" : ""}.`
+          : "Aucun autre appareil à déconnecter.",
+      );
+      await queryClient.invalidateQueries({ queryKey: ["appareils"] });
+    },
+    onError: (e: any) => toast.error(e.message || fr.commun.erreur),
+  });
 
-  const actifs = (appareils ?? []).filter((a) => !a.revoquee);
+  const appareils = data?.devices ?? [];
+  const courant = appareils.find((a) => a.is_current);
 
   return (
     <div className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
             {fr.appareils.titre}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">{fr.appareils.sousTitre}</p>
         </div>
-        {actifs.length > 1 ? (
-          <Button variant="outline" onClick={revoquerAutres}>
+        {appareils.length > 1 && courant ? (
+          <Button
+            variant="outline"
+            className="h-12 gap-2"
+            onClick={() => revoquerAutres.mutate(courant.id)}
+            disabled={revoquerAutres.isPending}
+          >
+            <ShieldAlert className="size-4" />
             {fr.appareils.toutRevoquer}
           </Button>
         ) : null}
       </div>
 
       {isLoading ? <Skeleton className="h-16 w-full" /> : null}
-      {(appareils ?? []).map((a) => (
-        <Card key={a.id} className={a.revoquee ? "opacity-50" : ""}>
-          <CardContent className="flex items-center justify-between gap-3 p-4">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-medium text-foreground">{a.libelle}</span>
-                {a.id === courant ? <Badge>{fr.appareils.actuel}</Badge> : null}
-                {a.revoquee ? <Badge variant="destructive">{fr.appareils.revoque}</Badge> : null}
+
+      {appareils.map((a) => (
+        <Card key={a.id} className={a.is_current ? "border-[#CFF1D2] bg-[#F7FBF8]" : ""}>
+          <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="rounded-lg bg-[#EFF7F1] p-2 text-[#0F3B27]">
+                <MonitorSmartphone className="size-5" />
               </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {fr.appareils.derniere} : {fmtDate.format(new Date(a.derniere_activite))}
-              </p>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium text-foreground">{a.name || "Navigateur"}</span>
+                  {a.is_current ? <Badge>{fr.appareils.actuel}</Badge> : null}
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {fr.appareils.derniere} :{" "}
+                  {a.last_used_at ? fmtDate.format(new Date(a.last_used_at)) : "à l'instant"}
+                </p>
+                {a.created_at ? (
+                  <p className="text-xs text-muted-foreground">
+                    Ouverture de session : {fmtDate.format(new Date(a.created_at))}
+                  </p>
+                ) : null}
+              </div>
             </div>
-            {!a.revoquee ? (
-              <Button variant="outline" size="sm" onClick={() => revoquer(a.id)}>
-                {fr.appareils.revoquer}
-              </Button>
-            ) : null}
+            <Button
+              variant="outline"
+              className="h-11 shrink-0"
+              onClick={() => revoquer.mutate(a.id)}
+              disabled={revoquer.isPending}
+            >
+              {fr.appareils.revoquer}
+            </Button>
           </CardContent>
         </Card>
       ))}
-      {!isLoading && (appareils ?? []).length === 0 ? (
+
+      {!isLoading && appareils.length === 0 ? (
         <p className="text-sm text-muted-foreground">{fr.commun.vide}</p>
       ) : null}
     </div>

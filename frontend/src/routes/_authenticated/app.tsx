@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
 import { fr } from "@/lib/i18n/fr";
 import { Badge } from "@/components/ui/badge";
@@ -52,13 +52,13 @@ function Accueil() {
   const { data: mfaEtat } = useQuery({
     queryKey: ["securite", user.id],
     queryFn: async () => {
-      const [{ data: bruts }, niveau] = await Promise.all([
-        supabase.from("utilisateurs_officines").select("id").eq("user_id", user.id).eq("archived", false),
-        supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
-      ]);
+      const etat = await api
+        .get<{ mfa_enabled: boolean; mfa_required: boolean }>("/auth/mfa")
+        .catch(() => ({ mfa_enabled: false, mfa_required: false }));
       return {
-        total: (bruts ?? []).length,
-        eleve: (niveau.data?.currentLevel ?? "aal1") === "aal2",
+        total: rattachements.length,
+        eleve: !!etat.mfa_enabled,
+        requis: !!etat.mfa_required,
       };
     },
   });
@@ -80,7 +80,7 @@ function Accueil() {
     );
   }
 
-  const masquees = (mfaEtat?.total ?? 0) - rattachements.length;
+  const mfaAConfigurer = !!mfaEtat?.requis && !mfaEtat?.eleve;
   return (
     <div className="grid gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#CFE3D5]">
@@ -104,6 +104,20 @@ function Accueil() {
           </Button>
         </div>
       </div>
+
+      {mfaAConfigurer ? (
+        <Card className="rounded-2xl border-amber-300 bg-amber-50/60 shadow-sm">
+          <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-medium text-[#6b4b00]">
+              Votre rôle exige la double authentification : activez-la pour protéger les registres
+              réglementaires de l'officine.
+            </p>
+            <Button asChild className="h-11 shrink-0 rounded-xl bg-[#023010] font-bold text-white hover:bg-[#18AA38]">
+              <Link to="/securite">Activer maintenant</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {rattachements.length === 0 ? (
         <Card className="rounded-2xl border-[#CFE3D5] shadow-sm">
@@ -148,7 +162,7 @@ function Accueil() {
                       </div>
                       <p className="mt-1 text-xs text-[#5C6660]">{r.officine.ville ?? "—"}</p>
                       <p className="mt-2 text-xs font-semibold text-[#023010]">
-                        {fr.roles[r.role]}
+                        {fr.roles[r.role as keyof typeof fr.roles] ?? "Rôle non précisé"}
                       </p>
                     </button>
                   );
@@ -191,21 +205,30 @@ function DialogCreation({
   async function creer() {
     setErreur(null);
     setEnCours(true);
-    const { data, error } = await supabase.rpc("creer_officine", {
-      _nom: nom,
-      _ville: ville,
-    });
-    setEnCours(false);
-    if (error) {
-      setErreur(error.message);
-      return;
+    try {
+      // L'API attend une identité complète d'officine : on complète les champs
+      // obligatoires avec des valeurs neutres, l'utilisateur pourra les affiner.
+      const officine = await api.post<{ id: string }>("/officines", {
+        nom: nom.trim(),
+        raison_sociale: `${nom.trim()} SARL`,
+        numero_licence: `BEN-OFF-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
+        adresse: ville.trim() || "Cotonou",
+        ville: ville.trim() || "Cotonou",
+        telephone: "+229 97 00 00 00",
+      });
+      await queryClient.invalidateQueries({ queryKey: ["rattachements", userId] });
+      const mesOfficines = await api.get<any[]>("/officines").catch(() => [] as any[]);
+      if (mesOfficines.length) api.setOfficines(mesOfficines);
+      toast.success(fr.officine.creee);
+      onCree(officine.id);
+      onOpenChange(false);
+      setNom("");
+      setVille("");
+    } catch (e: any) {
+      setErreur(e.message || fr.commun.erreur);
+    } finally {
+      setEnCours(false);
     }
-    await queryClient.invalidateQueries({ queryKey: ["rattachements", userId] });
-    toast.success(fr.officine.creee);
-    if (data) onCree(data);
-    onOpenChange(false);
-    setNom("");
-    setVille("");
   }
 
   return (

@@ -1,13 +1,26 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
-import type { Database } from "@/integrations/supabase/types";
+/** Rôles métier reconnus par le backend (colonne `role_code`). */
+/** Rôles connus, avec leur libellé métier (source unique, alignée sur fr.roles). */
+export const ROLES_METIER = {
+  promoteur: "Promoteur",
+  pharmacien_titulaire: "Pharmacien titulaire",
+  pharmacien_adjoint: "Pharmacien adjoint",
+  rmq: "Responsable qualité (RMQ)",
+  comptable: "Comptable",
+  preparateur: "Préparateur",
+  caissier: "Caissier",
+  magasinier: "Magasinier",
+  agent_entretien: "Agent d'entretien",
+  dispensateur: "Dispensateur",
+} as const;
 
-export type Role = Database["public"]["Enums"]["role_officine"];
+export type Role = keyof typeof ROLES_METIER;
 export interface Rattachement {
   officine_id: string;
   role: Role;
-  officine: { id: string; nom: string; ville: string | null };
+  officine: { id: string; nom: string; ville: string | null; numero_licence?: string | null };
 }
 
 interface Ctx {
@@ -34,7 +47,7 @@ export function OfficineProvider({ userId, children }: { userId: string; childre
       return (offs || []).map((o: any) => ({
         officine_id: o.id,
         role: (o.pivot?.role_code || "dispensateur") as Role,
-        officine: { id: o.id, nom: o.nom, ville: o.ville ?? null },
+        officine: { id: o.id, nom: o.nom, ville: o.ville ?? null, numero_licence: o.numero_licence ?? null },
       })) as Rattachement[];
     },
     queryFn: async () => {
@@ -42,7 +55,7 @@ export function OfficineProvider({ userId, children }: { userId: string; childre
       return (offs || []).map((o: any) => ({
         officine_id: o.id,
         role: (o.pivot?.role_code || "dispensateur") as Role,
-        officine: { id: o.id, nom: o.nom, ville: o.ville ?? null },
+        officine: { id: o.id, nom: o.nom, ville: o.ville ?? null, numero_licence: o.numero_licence ?? null },
       })) as Rattachement[];
     },
   });

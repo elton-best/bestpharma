@@ -35,7 +35,20 @@ class SetPostgresTenantContext
             $user->timestamps = true;
 
             // 2. Détermination de l'officine active
-            $officineId = $request->header('X-Officine-Id') ?? $request->input('officine_id');
+            $officineId = $request->header('X-Officine-Id')
+                ?? $request->input('officine_id')
+                ?? $user->officines()->wherePivot('actif', true)->value('officines.id');
+
+            if ($officineId) {
+                $user->officine_id = $officineId;
+
+                // Rôle de l'utilisateur sur cette officine : indispensable aux
+                // contrôles d'habilitation (visa pharmacien, promotion, paramètres).
+                $role = $user->officines()
+                    ->where('officines.id', $officineId)
+                    ->value('utilisateurs_officines.role_code');
+                $user->role_code = $role;
+            }
 
             // 3. Injection des variables de session PostgreSQL pour RLS et triggers d'audit (set_config supporte les bindings PDO)
             DB::select("SELECT set_config('app.current_user_id', ?, true)", [(string) $user->id]);

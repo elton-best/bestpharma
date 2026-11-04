@@ -28,6 +28,19 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "reicon-react";
+import {
+  Layers,
+  Package,
+  Boxes,
+  MapPin,
+  History,
+  ScanLine,
+  ClipboardList,
+  CalendarDays,
+  ShieldAlert,
+  Trash2,
+  TrendingUp,
+} from "lucide-react";
 import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
 import { deconnecter } from "@/lib/session";
@@ -40,11 +53,14 @@ interface Leaf {
   label: string;
   icon: Icon;
   badge?: string;
+  tab?: string;
 }
 
 interface Group {
   label: string;
   icon: Icon;
+  badge?: string;
+  isBorderedList?: boolean;
   children: Leaf[];
 }
 
@@ -62,10 +78,26 @@ const NAV_ENTRIES: NavEntry[] = [
     ],
   },
   {
-    label: "Magasin & Stocks",
+    label: "Stock",
     icon: ShoppingBag,
     children: [
-      { to: "/stock", label: "Stock par Lots (FEFO)", icon: ShoppingBag },
+      { to: "/stock", tab: "vue-ensemble", label: "Vue d’ensemble", icon: Layers },
+      { to: "/stock", tab: "produits", label: "Produits", icon: Package },
+      { to: "/stock", tab: "lots", label: "Lots", icon: Boxes, badge: "FEFO" },
+      { to: "/stock", tab: "emplacements", label: "Emplacements", icon: MapPin },
+      { to: "/stock", tab: "mouvements", label: "Mouvements", icon: History },
+      { to: "/stock", tab: "reception", label: "Réception", icon: ScanLine, badge: "Scan" },
+      { to: "/stock", tab: "inventaires", label: "Inventaires", icon: ClipboardList },
+      { to: "/stock", tab: "peremptions", label: "Péremptions", icon: CalendarDays },
+      { to: "/stock", tab: "quarantaine", label: "Quarantaine & Rappels", icon: ShieldAlert },
+      { to: "/stock", tab: "dechets", label: "Déchets", icon: Trash2 },
+      { to: "/stock", tab: "valorisation", label: "Valorisation", icon: TrendingUp },
+    ],
+  },
+  {
+    label: "Stupéfiants & Préparations",
+    icon: Lock,
+    children: [
       { to: "/stupefiants", label: "Registre Stupéfiants", icon: Lock, badge: "Tab. B" },
       { to: "/preparations", label: "Préparations Magistrales", icon: TestTube },
     ],
@@ -115,16 +147,30 @@ export function AppSidebar({
   onNavigate?: () => void;
 }) {
   const currentPath = useRouterState({ select: (s) => s.location.pathname });
+  const currentSearch = useRouterState({ select: (s) => s.location.search }) as Record<string, any>;
+  const activeTab = currentSearch?.tab || "lots";
   const { courante } = useOfficine();
   const queryClient = useQueryClient();
   const router = useRouter();
 
   // Gestion des groupes ouverts
-  const isGroupActive = (g: Group) => g.children.some((c) => c.to === currentPath);
+  const isChildActive = (c: Leaf) => {
+    if (c.tab) {
+      return (
+        currentPath === c.to &&
+        (currentSearch?.tab ? currentSearch.tab === c.tab : c.tab === "lots")
+      );
+    }
+    return currentPath === c.to;
+  };
+
+  const isGroupActive = (g: Group) => g.children.some(isChildActive);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {};
+    const init: Record<string, boolean> = {
+      Stock: true,
+    };
     NAV_ENTRIES.forEach((e) => {
-      if ("children" in e) init[e.label] = isGroupActive(e);
+      if ("children" in e) init[e.label] = isGroupActive(e) || e.label === "Stock";
     });
     return init;
   });
@@ -135,7 +181,7 @@ export function AppSidebar({
         setOpenGroups((prev) => ({ ...prev, [e.label]: true }));
       }
     });
-  }, [currentPath]);
+  }, [currentPath, activeTab]);
 
   function toggleGroup(label: string) {
     setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -243,16 +289,17 @@ export function AppSidebar({
             return (
               <div key={entry.label} className="space-y-1 border-t border-[#CFF1D2]/60 pt-2 mt-2">
                 {entry.children.map((child) => {
-                  const active = currentPath === child.to;
+                  const active = isChildActive(child);
                   return (
                     <Link
-                      key={child.to}
+                      key={child.label}
                       to={child.to as any}
+                      search={child.tab ? ({ tab: child.tab } as any) : undefined}
                       onClick={onNavigate}
                       title={child.label}
                       className={`flex size-9 items-center justify-center rounded-xl mx-auto text-xs transition-colors ${
                         active
-                          ? "bg-[#0F3B27] text-[#92FF5F] shadow-sm"
+                          ? "bg-[#0F3B27] text-[#92FF5F] shadow-sm font-bold"
                           : "text-[#475C50] hover:bg-[#CFF1D2]/40 hover:text-[#0F3B27]"
                       }`}
                     >
@@ -293,11 +340,12 @@ export function AppSidebar({
                 <div className="overflow-hidden">
                   <div className="relative ml-[19px] mt-1 space-y-0.5 pl-3 border-l-2 border-[#CFF1D2]">
                     {entry.children.map((child) => {
-                      const active = currentPath === child.to;
+                      const active = isChildActive(child);
                       return (
                         <Link
-                          key={child.to}
+                          key={child.label}
                           to={child.to as any}
+                          search={child.tab ? ({ tab: child.tab } as any) : undefined}
                           onClick={onNavigate}
                           className={`flex items-center gap-2.5 rounded-lg py-1.5 px-2.5 text-xs transition-colors ${
                             active
@@ -305,7 +353,7 @@ export function AppSidebar({
                               : "font-medium text-[#475C50] hover:text-[#0F3B27] hover:bg-[#CFF1D2]/25"
                           }`}
                         >
-                          <child.icon size={15} className="shrink-0" />
+                          <child.icon size={15} className={`shrink-0 ${active ? "text-[#0F3B27]" : "text-[#475C50]"}`} />
                           <span className="min-w-0 flex-1 truncate">{child.label}</span>
                           {child.badge && (
                             <span className="rounded-full bg-[#92FF5F]/25 border border-[#0F3B27]/15 px-1.5 py-0.2 text-[9px] font-extrabold text-[#0F3B27]">

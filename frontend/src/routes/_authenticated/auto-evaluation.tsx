@@ -17,6 +17,16 @@ import {
   ShieldAlert,
   FileWarning,
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Cell,
+} from "recharts";
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
@@ -155,52 +165,170 @@ function PageAutoEvaluation() {
         </div>
       </div>
 
-      {/* BANNIÈRE SCORE GLOBAL BPD */}
-      <Card className="border-2 border-primary/30 bg-gradient-to-r from-primary/10 via-background to-background shadow-sm">
-        <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-primary text-primary-foreground font-display font-extrabold text-3xl shadow-md">
-              {scoreGlobal}%
+      {/* BANNIÈRE COCKPIT QUALITÉ & SCORE GLOBAL BPD */}
+      <div className="rounded-3xl border-2 border-[#0F3B27]/20 bg-white p-6 shadow-sm">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
+            {/* Jauge / Badge radial de score */}
+            <div className="relative size-24 sm:size-28 shrink-0 flex items-center justify-center rounded-2xl bg-gradient-to-br from-[#0F3B27] to-[#164E35] text-white shadow-md border-2 border-[#92FF5F]/40">
+              <div className="text-center">
+                <span className="font-display text-3xl sm:text-4xl font-black text-[#92FF5F] tracking-tight">
+                  {scoreGlobal}%
+                </span>
+                <span className="block text-[10px] font-bold text-[#CFF1D2] uppercase tracking-wider">
+                  Conformité
+                </span>
+              </div>
             </div>
+
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-foreground text-lg">Indice de Conformité Globale BPD</span>
-                <Badge className={scoreGlobal >= 80 ? "bg-emerald-600" : scoreGlobal >= 50 ? "bg-amber-600" : "bg-red-600"}>
-                  {scoreGlobal >= 80 ? "Niveau Conforme" : scoreGlobal >= 50 ? "Mise à niveau requise" : "Non Conforme"}
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="font-display text-xl sm:text-2xl font-black text-[#0F3B27]">
+                  Indice de Conformité Globale BPD
+                </h2>
+                <Badge className={scoreGlobal >= 80 ? "bg-[#0F3B27] text-[#92FF5F] border border-[#92FF5F]/50" : scoreGlobal >= 50 ? "bg-[#FF7036] text-white" : "bg-red-600 text-white"}>
+                  {scoreGlobal >= 80 ? "★ Niveau Conforme (Audit Validé)" : scoreGlobal >= 50 ? "Mise à niveau requise" : "Non Conforme"}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground mt-1 max-w-xl">
-                Calcul officiel : Conforme = 1 pt, Écart mineur = 0.5 pt, Écart majeur = 0 pt. Les articles non applicables sont exclus du dénominateur.
+              <p className="text-xs text-[#475C50] mt-1.5 max-w-xl font-medium leading-relaxed">
+                Calcul officiel Guide BPD ABMed : Conforme = 1 pt, Écart mineur = 0.5 pt, Écart majeur = 0 pt.
+                Les articles non applicables sont exclus du dénominateur (267 articles de référence).
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs shrink-0 w-full sm:w-auto">
-            <div className="p-2.5 rounded-lg border bg-card">
-              <span className="text-muted-foreground text-[11px]">Conformes</span>
-              <p className="font-bold font-display text-lg text-emerald-600">{stats?.total_conformes ?? 0}</p>
+          {/* 4 Cartes statistiques percutantes avec bordures nettes */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full lg:w-auto shrink-0">
+            <div className="p-3 rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 text-center">
+              <span className="text-emerald-800 text-[11px] font-bold block">Conformes</span>
+              <p className="font-display font-black text-2xl text-emerald-700">{stats?.total_conformes ?? 0}</p>
+              <span className="text-[10px] text-emerald-800 font-medium">100% conformité</span>
             </div>
-            <div className="p-2.5 rounded-lg border bg-card">
-              <span className="text-muted-foreground text-[11px]">Écarts min.</span>
-              <p className="font-bold font-display text-lg text-amber-600">{stats?.total_ecarts_mineurs ?? 0}</p>
+            <div className="p-3 rounded-2xl border-2 border-amber-200 bg-amber-50/50 text-center">
+              <span className="text-amber-800 text-[11px] font-bold block">Écarts min.</span>
+              <p className="font-display font-black text-2xl text-amber-700">{stats?.total_ecarts_mineurs ?? 0}</p>
+              <span className="text-[10px] text-amber-800 font-medium">0.5 pt pondéré</span>
             </div>
-            <div className="p-2.5 rounded-lg border bg-card">
-              <span className="text-muted-foreground text-[11px]">Écarts maj.</span>
-              <p className="font-bold font-display text-lg text-red-600">{stats?.total_ecarts_majeurs ?? 0}</p>
+            <div className="p-3 rounded-2xl border-2 border-red-200 bg-red-50/50 text-center">
+              <span className="text-red-800 text-[11px] font-bold block">Écarts maj.</span>
+              <p className="font-display font-black text-2xl text-red-700">{stats?.total_ecarts_majeurs ?? 0}</p>
+              <span className="text-[10px] text-red-800 font-medium">CAPA requise</span>
             </div>
-            <div className="p-2.5 rounded-lg border bg-card">
-              <span className="text-muted-foreground text-[11px]">Non évalués</span>
-              <p className="font-bold font-display text-lg text-muted-foreground">{stats?.total_non_evalues ?? 0}</p>
+            <div className="p-3 rounded-2xl border-2 border-[#CFF1D2] bg-[#F7F9F7] text-center">
+              <span className="text-[#475C50] text-[11px] font-bold block">Non évalués</span>
+              <p className="font-display font-black text-2xl text-[#0F3B27]">{stats?.total_non_evalues ?? 0}</p>
+              <span className="text-[10px] text-[#475C50] font-medium">À coter</span>
             </div>
           </div>
-        </CardContent>
+        </div>
+      </div>
+
+      {/* GRAPHIQUE RECHARTS : TAUX DE CONFORMITÉ PAR CHAPITRE DU GUIDE BPD (10 CHAPITRES) */}
+      <Card className="rounded-3xl border border-[#CFF1D2] bg-white p-5 sm:p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Award className="size-5 text-[#0F3B27]" />
+              <h3 className="font-display font-extrabold text-lg text-[#0F3B27]">
+                Taux de Conformité par Chapitre (Guide BPD ABMed)
+              </h3>
+            </div>
+            <p className="text-xs text-[#475C50] mt-0.5">
+              Comparatif des 10 chapitres réglementaires. Cliquez sur une barre ou une carte pour filtrer les articles.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-xs font-bold shrink-0">
+            <span className="flex items-center gap-1.5 text-emerald-800">
+              <span className="size-2.5 rounded-full bg-[#0F3B27]" /> &ge;80% Conforme
+            </span>
+            <span className="flex items-center gap-1.5 text-amber-700">
+              <span className="size-2.5 rounded-full bg-[#FF7036]" /> 50–79% Vigilance
+            </span>
+            <span className="flex items-center gap-1.5 text-red-700">
+              <span className="size-2.5 rounded-full bg-red-600" /> &lt;50% Critique
+            </span>
+          </div>
+        </div>
+
+        {/* Le BarChart interactif Recharts */}
+        <div className="h-64 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chapitres.map((ch: any) => ({
+                numero: `Ch. ${ch.numero}`,
+                chapitreNum: ch.numero,
+                titre: ch.titre,
+                score: ch.score_chapitre,
+                conformes: ch.conformes,
+                total: ch.total_articles,
+              }))}
+              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              onClick={(data: any) => {
+                if (data && data.activePayload && data.activePayload.length > 0) {
+                  const num = data.activePayload[0].payload.chapitreNum;
+                  setChapitreFiltre(chapitreFiltre === num ? null : num);
+                }
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5ECE7" />
+              <XAxis
+                dataKey="numero"
+                tick={{ fill: "#475C50", fontSize: 11, fontWeight: 700 }}
+                axisLine={{ stroke: "#CFF1D2" }}
+                tickLine={false}
+              />
+              <YAxis
+                domain={[0, 100]}
+                tick={{ fill: "#475C50", fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(val) => `${val}%`}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#0F3B27",
+                  borderRadius: "16px",
+                  border: "none",
+                  color: "#FFFFFF",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  boxShadow: "0 10px 25px -5px rgba(0,0,0,0.25)",
+                }}
+                formatter={(val: any, _name: any, item: any) => [
+                  `${val}% (${item.payload.conformes}/${item.payload.total} articles conformes)`,
+                  item.payload.titre,
+                ]}
+                labelStyle={{ color: "#92FF5F", fontWeight: 800 }}
+              />
+              <Bar dataKey="score" radius={[8, 8, 0, 0]}>
+                {chapitres.map((entry: any, index: number) => {
+                  const val = entry.score_chapitre;
+                  const couleur = val >= 80 ? "#0F3B27" : val >= 50 ? "#FF7036" : "#dc2626";
+                  return <Cell key={`cell-${index}`} fill={couleur} cursor="pointer" />;
+                })}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </Card>
 
-      {/* SYNTHÈSE DES 10 CHAPITRES DU GUIDE BPD */}
+      {/* SYNTHÈSE DES 10 CHAPITRES DU GUIDE BPD (CARTES CLICABLES AVEC BARRE DE PROGRESSION) */}
       <section className="grid gap-3">
-        <h2 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-          <Award className="size-4 text-primary" /> Conformité par Chapitre du Guide BPD (10 Chapitres)
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-black text-[#0F3B27] uppercase tracking-wider flex items-center gap-2">
+            <Award className="size-4 text-[#0F3B27]" /> Les 10 Chapitres du Guide BPD (Cliquer pour filtrer)
+          </h2>
+          {chapitreFiltre !== null && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setChapitreFiltre(null)}
+              className="text-xs h-7 text-[#0F3B27] hover:bg-[#CFF1D2]/30"
+            >
+              Afficher tous les chapitres
+            </Button>
+          )}
+        </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
           {chapitres.map((ch: any) => {
@@ -210,22 +338,43 @@ function PageAutoEvaluation() {
                 key={ch.numero}
                 type="button"
                 onClick={() => setChapitreFiltre(actif ? null : ch.numero)}
-                className={`p-3 rounded-xl border text-left transition-all text-xs flex flex-col justify-between ${
+                className={`p-3 rounded-2xl border-2 text-left transition-all text-xs flex flex-col justify-between ${
                   actif
-                    ? "border-primary bg-primary/10 shadow-sm ring-1 ring-primary"
-                    : "border-border bg-card hover:border-primary/40"
+                    ? "border-[#0F3B27] bg-[#CFF1D2]/25 shadow-md ring-2 ring-[#92FF5F]"
+                    : "border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-sm"
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[11px] font-mono text-primary">Ch. {ch.numero}</span>
-                    <Badge variant="outline" className="text-[10px] px-1 py-0">{ch.score_chapitre}%</Badge>
+                    <span className="font-bold text-[11px] font-mono text-[#0F3B27]">Ch. {ch.numero}</span>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] px-1.5 py-0 font-bold ${
+                        ch.score_chapitre >= 80
+                          ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                          : ch.score_chapitre >= 50
+                          ? "border-amber-300 bg-amber-50 text-amber-800"
+                          : "border-red-300 bg-red-50 text-red-800"
+                      }`}
+                    >
+                      {ch.score_chapitre}%
+                    </Badge>
                   </div>
-                  <p className="font-semibold text-foreground text-xs mt-1.5 line-clamp-2">{ch.titre}</p>
+                  <p className="font-bold text-[#0F3B27] text-xs mt-1.5 line-clamp-2 leading-snug">{ch.titre}</p>
                 </div>
-                <div className="mt-2 text-[10px] text-muted-foreground flex justify-between">
-                  <span>{ch.conformes} / {ch.total_articles} conf.</span>
-                  <span className="font-mono">{ch.processus}</span>
+                <div className="mt-2.5 pt-2 border-t border-[#CFF1D2]/60">
+                  <div className="w-full h-1.5 rounded-full bg-[#E5ECE7] overflow-hidden mb-1.5">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        ch.score_chapitre >= 80 ? "bg-[#0F3B27]" : ch.score_chapitre >= 50 ? "bg-[#FF7036]" : "bg-red-600"
+                      }`}
+                      style={{ width: `${ch.score_chapitre}%` }}
+                    />
+                  </div>
+                  <div className="text-[10px] text-[#475C50] flex justify-between font-medium">
+                    <span>{ch.conformes} / {ch.total_articles} conf.</span>
+                    <span className="font-mono text-[#0F3B27]">{ch.processus}</span>
+                  </div>
                 </div>
               </button>
             );
@@ -275,35 +424,35 @@ function PageAutoEvaluation() {
               return (
                 <div
                   key={art.id}
-                  className={`p-3.5 rounded-xl border transition-all text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                  className={`p-4 rounded-2xl border-2 transition-all text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm ${
                     estConforme
-                      ? "bg-emerald-500/5 border-emerald-500/30"
+                      ? "bg-emerald-50/30 border-emerald-300"
                       : estMineur
-                      ? "bg-amber-500/5 border-amber-500/30"
+                      ? "bg-amber-50/30 border-amber-300"
                       : estMajeur
-                      ? "bg-red-500/5 border-red-500/30"
-                      : "bg-card border-border"
+                      ? "bg-red-50/30 border-red-300"
+                      : "bg-white border-[#CFF1D2]"
                   }`}
                 >
-                  <div className="space-y-1 max-w-2xl">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-muted text-foreground">
+                  <div className="space-y-1.5 max-w-2xl">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-[#0F3B27] text-[#92FF5F]">
                         Art. {art.article_numero}
                       </span>
-                      <span className="text-[11px] text-muted-foreground font-medium">
+                      <span className="text-[11px] text-[#475C50] font-medium">
                         Ch. {art.chapitre_numero} : {art.chapitre_titre} ({art.processus})
                       </span>
                       {art.non_conformite && (
-                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-red-600 font-bold ml-2">
+                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-red-700 font-bold bg-red-100 border border-red-200 px-2 py-0.5 rounded-full">
                           <FileWarning className="size-3" /> CAPA : {art.non_conformite.numero_nc || "En cours"}
                         </span>
                       )}
                     </div>
-                    <p className="font-semibold text-foreground text-xs leading-relaxed">
+                    <p className="font-bold text-[#0F3B27] text-xs leading-relaxed">
                       {art.article_libelle}
                     </p>
                     {art.preuve && (
-                      <p className="text-[11px] text-emerald-700 italic">Preuve : {art.preuve}</p>
+                      <p className="text-[11px] text-emerald-800 font-medium italic">Preuve requise : {art.preuve}</p>
                     )}
                   </div>
 
@@ -312,10 +461,10 @@ function PageAutoEvaluation() {
                     <button
                       type="button"
                       onClick={() => coterArticle(art.id, "conforme")}
-                      className={`px-2.5 py-1 rounded text-[11px] font-semibold border transition-all ${
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all ${
                         estConforme
-                          ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
-                          : "bg-background text-muted-foreground hover:border-emerald-500 hover:text-emerald-600"
+                          ? "bg-emerald-700 text-white border-emerald-700 shadow-sm"
+                          : "bg-white text-[#475C50] border-[#CFF1D2] hover:border-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"
                       }`}
                     >
                       Conforme (1 pt)
@@ -324,10 +473,10 @@ function PageAutoEvaluation() {
                     <button
                       type="button"
                       onClick={() => coterArticle(art.id, "ecart_mineur")}
-                      className={`px-2.5 py-1 rounded text-[11px] font-semibold border transition-all ${
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all ${
                         estMineur
-                          ? "bg-amber-500 text-white border-amber-500 shadow-sm"
-                          : "bg-background text-muted-foreground hover:border-amber-500 hover:text-amber-600"
+                          ? "bg-amber-600 text-white border-amber-600 shadow-sm"
+                          : "bg-white text-[#475C50] border-[#CFF1D2] hover:border-amber-500 hover:text-amber-700 hover:bg-amber-50"
                       }`}
                     >
                       Écart mineur (0.5 pt)
@@ -336,10 +485,10 @@ function PageAutoEvaluation() {
                     <button
                       type="button"
                       onClick={() => coterArticle(art.id, "ecart_majeur")}
-                      className={`px-2.5 py-1 rounded text-[11px] font-semibold border transition-all ${
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all ${
                         estMajeur
                           ? "bg-red-600 text-white border-red-600 shadow-sm"
-                          : "bg-background text-muted-foreground hover:border-red-500 hover:text-red-600"
+                          : "bg-white text-[#475C50] border-[#CFF1D2] hover:border-red-500 hover:text-red-700 hover:bg-red-50"
                       }`}
                     >
                       Écart majeur (0 pt)
@@ -348,10 +497,10 @@ function PageAutoEvaluation() {
                     <button
                       type="button"
                       onClick={() => coterArticle(art.id, "non_applicable")}
-                      className={`px-2 py-1 rounded text-[11px] border transition-all ${
+                      className={`px-2.5 py-1.5 rounded-xl text-[11px] font-medium border transition-all ${
                         estNA
-                          ? "bg-muted-foreground text-white border-muted-foreground"
-                          : "bg-background text-muted-foreground hover:bg-muted"
+                          ? "bg-slate-700 text-white border-slate-700"
+                          : "bg-white text-[#475C50] border-[#CFF1D2] hover:bg-slate-100"
                       }`}
                     >
                       N/A
@@ -361,7 +510,7 @@ function PageAutoEvaluation() {
                       <Button
                         size="sm"
                         variant="destructive"
-                        className="h-7 text-[10px] px-2 ml-1"
+                        className="h-8 text-[11px] px-2.5 ml-1 rounded-xl font-bold"
                         onClick={() => setDialogCapa(art)}
                       >
                         Créer CAPA

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   PackageCheck,
@@ -27,6 +27,9 @@ import {
   Verified,
   Boxes,
   ScanLine,
+  LayoutGrid,
+  List,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,6 +43,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
 import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DechetsStock, InventairesStock, RappelsStock } from "@/components/modules/magasin-avance";
 
 export const Route = createFileRoute("/_authenticated/stock")({
@@ -326,10 +330,32 @@ function ZoneDepot({ label, onFiles }: { label: string; onFiles?: (files: FileLi
 
 function PageStockMagasin() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState("vue-ensemble");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(typeof location.search === "string" ? location.search : "");
+  const urlTab = searchParams.get("tab") || (location.search as any)?.tab;
+  const [tab, setTabState] = useState(urlTab || "lots");
+
+  useEffect(() => {
+    if (urlTab && urlTab !== tab) {
+      setTabState(urlTab);
+    }
+  }, [urlTab]);
+
+  const setTab = (newTab: string) => {
+    setTabState(newTab);
+    navigate({ to: "/stock", search: { tab: newTab } as any });
+  };
+  const [modeAffichageLots, setModeAffichageLots] = useState<"cartes" | "tableau">("cartes");
+  const [modeAffichageProduits, setModeAffichageProduits] = useState<"cartes" | "tableau">("cartes");
+  const [sousSectionLot, setSousSectionLot] = useState("tous");
+  const [sousSectionProduit, setSousSectionProduit] = useState("tous");
+  const [sousSectionEmplacement, setSousSectionEmplacement] = useState("toutes");
+  const [sousSectionMouvement, setSousSectionMouvement] = useState("tous");
   const [recherche, setRecherche] = useState("");
   const [filtreAlerte, setFiltreAlerte] = useState("tous");
   const [dialogReceptionOuvert, setDialogReceptionOuvert] = useState(false);
+  const [dialogAjoutProduitOuvert, setDialogAjoutProduitOuvert] = useState(false);
   const [dialogQuarantaineOuvert, setDialogQuarantaineOuvert] = useState(false);
   const [dialogChangementStatutOuvert, setDialogChangementStatutOuvert] = useState(false);
   const [lotPourAction, setLotPourAction] = useState<StockLotItem | null>(null);
@@ -343,6 +369,20 @@ function PageStockMagasin() {
   const [bonLivraisonRef, setBonLivraisonRef] = useState("");
   const [emplacement, setEmplacement] = useState("Réserve — Stock principal");
   const [controles, setControles] = useState({ alerte_sanitaire_verifiee: false, emballage_intact: false, conformite_livraison: false, dates_conformes: false, chaine_froid_respectee: false });
+
+  const [nouveauProduit, setNouveauProduit] = useState({
+    code_cip: "",
+    nom_commercial: "",
+    dci: "",
+    forme: "Comprimé",
+    dosage: "",
+    classe_therapeutique: "",
+    tableau_substance: "sans",
+    est_thermolabile: false,
+    necessite_ordonnance: false,
+    prix_public_ttc: "",
+    seuil_stock_min: "5",
+  });
 
   // Queries
   const { data: produitsData } = useQuery<{ data: Produit[] }>({ queryKey: ["produits"], queryFn: () => api.get("/produits") });
@@ -363,6 +403,42 @@ function PageStockMagasin() {
   const { data: valorisationData } = useQuery<{ data: any }>({ queryKey: ["valorisation"], queryFn: () => api.get<any>("/stocks/valorisation").catch(() => ({ data: { total: 0, par_produit: [] } })) });
 
   const reinitialiserControles = () => setControles({ alerte_sanitaire_verifiee: false, emballage_intact: false, conformite_livraison: false, dates_conformes: false, chaine_froid_respectee: false });
+
+  const mutationAjoutProduit = useMutation({
+    mutationFn: (payload: any) => api.post("/produits", payload),
+    onSuccess: (res: any) => {
+      toast.success(res.message || "Produit ajouté avec succès au catalogue");
+      queryClient.invalidateQueries({ queryKey: ["produits"] });
+      setDialogAjoutProduitOuvert(false);
+      setNouveauProduit({
+        code_cip: "",
+        nom_commercial: "",
+        dci: "",
+        forme: "Comprimé",
+        dosage: "",
+        classe_therapeutique: "",
+        tableau_substance: "sans",
+        est_thermolabile: false,
+        necessite_ordonnance: false,
+        prix_public_ttc: "",
+        seuil_stock_min: "5",
+      });
+    },
+    onError: (err: any) => toast.error(err.message || "Erreur lors de l'enregistrement du produit"),
+  });
+
+  const handleAjoutProduitSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nouveauProduit.code_cip || !nouveauProduit.nom_commercial || !nouveauProduit.prix_public_ttc) {
+      toast.error("Veuillez renseigner le code CIP, le nom commercial et le prix TTC.");
+      return;
+    }
+    mutationAjoutProduit.mutate({
+      ...nouveauProduit,
+      prix_public_ttc: parseFloat(nouveauProduit.prix_public_ttc),
+      seuil_stock_min: parseInt(nouveauProduit.seuil_stock_min || "5", 10),
+    });
+  };
 
   const mutationReception = useMutation({
     mutationFn: (payload: any) => api.post("/stocks", payload),
@@ -419,86 +495,172 @@ function PageStockMagasin() {
 
   return (
     <div className="space-y-6">
-      {/* En-tête avec charte BEGPHARMA */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-display text-2xl font-black tracking-tight text-[#0F3B27]">Magasin & Stocks</h1>
-            <Badge className="bg-[#0F3B27] text-[#92FF5F] border-[#0F3B27]">BPD-5 · FEFO · STO</Badge>
-            <Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Chaque statut, expliqué en clair</Badge>
-          </div>
-          <p className="mt-1 text-sm text-[#475C50] max-w-2xl">
-            Tout ce qui entre, sort ou dort en réserve, raconté simplement : chaque boîte garde son lot, son
-            emplacement et son statut. La caisse ne vend que ce qui est vendable, dans l’ordre de péremption ;
-            la dispensation pioche au bon endroit ; la comptabilité suit le coût moyen et les pertes.
-          </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-[#CFF1D2] px-3 py-1 text-[#0F3B27]"><Thermometer className="w-3.5 h-3.5" /> Chaîne du froid 2–8 °C</span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0F3B27] text-[#92FF5F] px-3 py-1"><Verified className="w-3.5 h-3.5" /> Lot unique (INT-01)</span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F]/30 border border-[#0F3B27]/10 px-3 py-1 text-[#0F3B27]">FCFA sans décimale · JJ/MM/AAAA</span>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2 shrink-0">
-          <Button onClick={() => setDialogReceptionOuvert(true)} className="gap-2 bg-[#0F3B27] hover:bg-[#164E35] text-white font-bold shadow-md">
-            <Plus className="w-4 h-4" /> Réceptionner un lot
-          </Button>
-          <div className="flex items-center gap-2 text-xs">
-            <Button variant="outline" className="h-8 text-xs border-[#CFF1D2] text-[#0F3B27]"><Download className="w-3.5 h-3.5 mr-1" /> Export</Button>
-            <Badge variant="outline" className="border-amber-400 text-amber-800 bg-amber-50">{alertes.lots_bloques} bloqués</Badge>
-          </div>
-        </div>
-      </div>
-
-      {/* Barre d'état permanente (0.5) */}
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#CFF1D2] bg-white px-4 py-2.5 shadow-sm text-xs font-bold text-[#0F3B27]">
-        <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-emerald-500" /> En ligne</span>
-        <span className="text-[#475C50]">•</span>
-        <span>{stats.total_lots_actifs} lots actifs</span>
-        <span className="text-[#475C50]">•</span>
-        <span className={alertes.lots_bloques > 0 ? "text-amber-700" : ""}><AlertTriangle className="w-3.5 h-3.5 inline mr-1" /> {alertes.lots_bloques} bloqués</span>
-        <span className="text-[#475C50]">•</span>
-        <span className={stats.perimes > 0 ? "text-red-700" : ""}><ShieldAlert className="w-3.5 h-3.5 inline mr-1" /> {stats.perimes} périmés</span>
-        <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-[#F7F9F7] border border-[#CFF1D2] px-2.5 py-1">Valeur stock : {nombre(stats.valorisation_totale || valorisation.total || 0)} FCFA</span>
-      </div>
-
-      {/* Navigation : une seule liste déroulante, filtrable, au lieu des onglets */}
-      <div className="rounded-2xl border border-[#CFF1D2] bg-white p-3 shadow-sm sm:p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end">
-          <SelecteurFiltrable
-            id="section-magasin"
-            etiquette="Section du magasin"
-            options={SECTIONS}
-            valeur={tab}
-            onChange={setTab}
-            placeholder="Choisir une section du magasin…"
-            placeholderRecherche="Filtrer : produits, lots, rappels, déchets…"
-            className="md:max-w-xl"
-          />
-          <p className="text-[11px] font-medium leading-snug text-[#475C50] md:pb-2">
-            Tapez quelques lettres pour aller droit au but. La section choisie s’affiche juste en dessous.
-          </p>
-        </div>
-      </div>
-
-      {/* VUE D'ENSEMBLE STO-01 */}
+      {/* VUE D'ENSEMBLE STO-01 : EXCLUSIVEMENT AFFICHÉE DANS L'ONGLET VUE D'ENSEMBLE */}
       {tab === "vue-ensemble" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* En-tête avec charte BEGPHARMA */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
+                  BPD-5 · FEFO · STO
+                </span>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
+                  Chaque statut, expliqué en clair
+                </span>
+              </div>
+              <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
+                Vue d’ensemble du Stock & Magasin
+              </h1>
+              <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
+                Tout ce qui entre, sort ou dort en réserve, raconté simplement : chaque boîte garde son lot, son
+                emplacement et son statut. La caisse ne vend que ce qui est vendable, dans l’ordre de péremption ;
+                la dispensation pioche au bon endroit ; la comptabilité suit le coût moyen et les pertes.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
+                  <Thermometer className="w-3.5 h-3.5 text-[#92FF5F]" /> Chaîne du froid 2–8 °C
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
+                  <Verified className="w-3.5 h-3.5" /> Lot unique (INT-01)
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
+                  FCFA sans décimale · JJ/MM/AAAA
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 shrink-0">
+              <Button
+                onClick={() => setDialogReceptionOuvert(true)}
+                className="gap-2 bg-[#92FF5F] hover:bg-[#82ea52] text-[#0F3B27] font-black text-xs h-10 px-4 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Réceptionner un lot
+              </Button>
+              <div className="flex items-center gap-2 text-xs">
+                <Button variant="outline" className="h-8 text-xs border-white/20 bg-white/10 text-white hover:bg-white/20">
+                  <Download className="w-3.5 h-3.5 mr-1" /> Export
+                </Button>
+                <Badge variant="outline" className="border-amber-400 text-amber-300 bg-amber-950/40">
+                  {alertes.lots_bloques} bloqués
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Barre d'état de synthèse */}
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#CFF1D2] bg-white px-4 py-2.5 shadow-sm text-xs font-bold text-[#0F3B27]">
+            <span className="flex items-center gap-1.5">
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" /> En ligne
+            </span>
+            <span className="text-[#475C50]">•</span>
+            <span>{stats.total_lots_actifs} lots actifs</span>
+            <span className="text-[#475C50]">•</span>
+            <span className={alertes.lots_bloques > 0 ? "text-amber-700" : ""}>
+              <AlertTriangle className="w-3.5 h-3.5 inline mr-1" /> {alertes.lots_bloques} bloqués
+            </span>
+            <span className="text-[#475C50]">•</span>
+            <span className={stats.perimes > 0 ? "text-red-700" : ""}>
+              <ShieldAlert className="w-3.5 h-3.5 inline mr-1" /> {stats.perimes} périmés
+            </span>
+            <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-[#F7F9F7] border border-[#CFF1D2] px-2.5 py-1">
+              Valeur stock : {nombre(stats.valorisation_totale || valorisation.total || 0)} FCFA
+            </span>
+          </div>
+
+          {/* Cartes KPI Vue d'ensemble */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-[#CFF1D2] bg-white shadow-sm"><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Valeur du stock (coût moyen)</CardTitle><TrendingUp className="w-4 h-4 text-[#0F3B27]" /></CardHeader><CardContent><div className="text-2xl font-black font-display text-[#0F3B27]">{nombre(valorisation.total || stats.valorisation_totale || 0)} <span className="text-sm font-sans">FCFA</span></div><p className="text-xs text-[#475C50]">Coût moyen pondéré, rapproché du compte de stock.</p></CardContent></Card>
-            <Card className={`border-[#CFF1D2] ${alertes.ruptures > 0 ? "border-amber-400 bg-amber-50/30" : "bg-white"}`}><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Ruptures & sous minimum</CardTitle><AlertOctagon className="w-4 h-4 text-amber-600" /></CardHeader><CardContent><div className="text-2xl font-black text-amber-700">{alertes.ruptures ?? 0}</div><p className="text-xs text-[#475C50]">Produits sous leur seuil de réassort.</p></CardContent></Card>
-            <Card className="border-[#CFF1D2] bg-white"><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Lots actifs FEFO</CardTitle><Layers className="w-4 h-4 text-[#0F3B27]" /></CardHeader><CardContent><div className="text-2xl font-black text-[#0F3B27]">{stats.total_lots_actifs}</div><p className="text-xs text-[#475C50]">Le lot qui périme le plus tôt sort le premier.</p></CardContent></Card>
-            <Card className={`border-[#CFF1D2] ${stats.perimes > 0 ? "border-red-500 bg-red-50" : "bg-white"}`}><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-bold text-[#475C50]">Périmés interdits</CardTitle><ShieldAlert className="w-4 h-4 text-red-600" /></CardHeader><CardContent><div className="text-2xl font-black text-red-700">{stats.perimes}</div><p className="text-xs text-red-700">Mise en quarantaine obligatoire, vente refusée.</p></CardContent></Card>
+            <Card className="border-[#CFF1D2] bg-white shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-[#475C50]">Valeur du stock (coût moyen)</CardTitle>
+                <TrendingUp className="w-4 h-4 text-[#0F3B27]" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black font-display text-[#0F3B27]">
+                  {nombre(valorisation.total || stats.valorisation_totale || 0)} <span className="text-sm font-sans">FCFA</span>
+                </div>
+                <p className="text-xs text-[#475C50]">Coût moyen pondéré, rapproché du compte de stock.</p>
+              </CardContent>
+            </Card>
+
+            <Card className={`border-[#CFF1D2] ${alertes.ruptures > 0 ? "border-amber-400 bg-amber-50/30" : "bg-white"}`}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-[#475C50]">Ruptures & sous minimum</CardTitle>
+                <AlertOctagon className="w-4 h-4 text-amber-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black text-amber-700">{alertes.ruptures ?? 0}</div>
+                <p className="text-xs text-[#475C50]">Produits sous leur seuil de réassort.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-[#CFF1D2] bg-white">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-[#475C50]">Lots actifs FEFO</CardTitle>
+                <Layers className="w-4 h-4 text-[#0F3B27]" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black text-[#0F3B27]">{stats.total_lots_actifs}</div>
+                <p className="text-xs text-[#475C50]">Le lot qui périme le plus tôt sort le premier.</p>
+              </CardContent>
+            </Card>
+
+            <Card className={`border-[#CFF1D2] ${stats.perimes > 0 ? "border-red-500 bg-red-50" : "bg-white"}`}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-[#475C50]">Périmés interdits</CardTitle>
+                <ShieldAlert className="w-4 h-4 text-red-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black text-red-700">{stats.perimes}</div>
+                <p className="text-xs text-red-700">Mise en quarantaine obligatoire, vente refusée.</p>
+              </CardContent>
+            </Card>
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Péremptions à surveiller</CardTitle></CardHeader><CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-[#475C50]">À 6 mois</span><strong className="text-[#0F3B27]">{peremptions.a_6_mois?.length ?? 0}</strong></div>
-              <div className="flex justify-between"><span className="text-[#475C50]">À 3 mois</span><strong className="text-amber-700">{peremptions.a_3_mois?.length ?? 0}</strong></div>
-              <div className="flex justify-between"><span className="text-[#475C50]">À 1 mois (critique)</span><strong className="text-red-700">{peremptions.a_1_mois?.length ?? 0}</strong></div>
-              <div className="flex justify-between border-t border-[#CFF1D2] pt-2"><span className="text-[#475C50]">Lots bloqués</span><strong className="text-[#0F3B27]">{alertes.lots_bloques}</strong></div>
-            </CardContent></Card>
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Produits dormants & surstock</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Classement ABC, rotation et couverture en jours dans la section Valorisation (STO-19).</CardContent></Card>
-            <Card className="border-[#CFF1D2] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-sm font-bold text-[#92FF5F] flex items-center gap-2"><PackageCheck className="w-4 h-4" /> Règle FEFO</CardTitle></CardHeader><CardContent className="text-xs leading-relaxed">La vente propose toujours le lot à péremption la plus proche. Choisir un autre lot demande une justification journalisée (STO-08).</CardContent></Card>
+            <Card className="border-[#CFF1D2]">
+              <CardHeader>
+                <CardTitle className="text-sm font-bold text-[#0F3B27]">Péremptions à surveiller</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-[#475C50]">À 6 mois</span>
+                  <strong className="text-[#0F3B27]">{peremptions.a_6_mois?.length ?? 0}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#475C50]">À 3 mois</span>
+                  <strong className="text-amber-700">{peremptions.a_3_mois?.length ?? 0}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#475C50]">À 1 mois (critique)</span>
+                  <strong className="text-red-700">{peremptions.a_1_mois?.length ?? 0}</strong>
+                </div>
+                <div className="flex justify-between border-t border-[#CFF1D2] pt-2">
+                  <span className="text-[#475C50]">Lots bloqués</span>
+                  <strong className="text-[#0F3B27]">{alertes.lots_bloques}</strong>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-[#CFF1D2]">
+              <CardHeader>
+                <CardTitle className="text-sm font-bold text-[#0F3B27]">Produits dormants & surstock</CardTitle>
+              </CardHeader>
+              <CardContent className="text-xs text-[#475C50]">
+                Classement ABC, rotation et couverture en jours dans la section Valorisation (STO-19).
+              </CardContent>
+            </Card>
+
+            <Card className="border-[#CFF1D2] bg-[#0F3B27] text-white">
+              <CardHeader>
+                <CardTitle className="text-sm font-bold text-[#92FF5F] flex items-center gap-2">
+                  <PackageCheck className="w-4 h-4" /> Règle FEFO
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-xs leading-relaxed">
+                La vente propose toujours le lot à péremption la plus proche. Choisir un autre lot demande une
+                justification journalisée (STO-08).
+              </CardContent>
+            </Card>
           </div>
 
           {/* Les statuts d’un lot, avec des mots simples */}
@@ -531,185 +693,1559 @@ function PageStockMagasin() {
       )}
 
       {/* PRODUITS STO-02 */}
-      {tab === "produits" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-display font-black text-[#0F3B27]">Catalogue produits — fiche complète (STO-02)</h3>
-            <Badge variant="outline" className="border-[#0F3B27] text-[#0F3B27]">{produits.length} produits</Badge>
-          </div>
-          <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-[#475C50]" /><Input placeholder="Rechercher par nom, DCI, code CIP ou laboratoire…" value={recherche} onChange={e => setRecherche(e.target.value)} className="pl-9 border-[#CFF1D2]" /></div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {produits.map(p => (
-              <Card key={p.id} className="border-[#CFF1D2] hover:shadow-md transition-shadow">
-                <CardHeader className="pb-2"><CardTitle className="text-sm font-black text-[#0F3B27] truncate">{p.nom_commercial}</CardTitle><CardDescription className="text-xs">{p.dci || "—"} · {p.forme || ""} {p.dosage || ""} · Labo: {p.laboratoire || "—"}</CardDescription></CardHeader>
-                <CardContent className="space-y-2 text-xs">
-                  <div className="flex flex-wrap gap-1">{p.est_thermolabile && <Badge className="bg-blue-50 text-blue-800 border-blue-200 text-[11px]">❄️ Thermolabile</Badge>}{p.tableau_substance === "stupefiant" && <Badge className="bg-purple-50 text-purple-800 text-[11px]">🔒 Stupéfiant</Badge>}{p.groupe_taxation === "B_TAXABLE" && <Badge className="bg-amber-50 text-amber-800 text-[11px]">B Taxable</Badge>}</div>
-                  <div className="flex justify-between"><span className="text-[#475C50]">CIP {p.code_cip}</span><span className="font-mono font-bold text-[#0F3B27]">{p.stock_total} boîtes</span></div>
-                  <div className="flex justify-between"><span className="text-[#475C50]">Prix TTC</span><span className="font-bold">{nombre(p.prix_public_ttc)} FCFA</span></div>
-                  {p.alerte_rupture && <div className="rounded-xl bg-amber-50 border border-amber-300 px-2 py-1 text-amber-800 font-bold text-[11px]">⚠️ Sous stock minimum — rupture imminente</div>}
-                  {p.prochain_lot_fefo && <div className="rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] px-2 py-1">FEFO → Lot {p.prochain_lot_fefo.numero_lot} · {p.prochain_lot_fefo.jours_avant_peremption}j</div>}
+      {tab === "produits" && (() => {
+        const countsProduits = {
+          tous: produits.length,
+          rupture: produits.filter((p) => p.alerte_rupture || p.stock_total <= (p.stock_minimum || 0)).length,
+          thermolabile: produits.filter((p) => p.est_thermolabile).length,
+          stupefiant: produits.filter((p) => p.tableau_substance === "stupefiant" || p.tableau_substance === "liste_1" || p.tableau_substance === "liste_2").length,
+          taxable: produits.filter((p) => p.groupe_taxation === "B_TAXABLE").length,
+        };
+
+        const produitsAffiches = produits.filter((p) => {
+          if (recherche.trim()) {
+            const q = recherche.toLowerCase();
+            const match =
+              (p.nom_commercial || "").toLowerCase().includes(q) ||
+              (p.dci || "").toLowerCase().includes(q) ||
+              (p.code_cip || "").toLowerCase().includes(q) ||
+              (p.laboratoire || "").toLowerCase().includes(q);
+            if (!match) return false;
+          }
+          if (sousSectionProduit === "rupture") return p.alerte_rupture || p.stock_total <= (p.stock_minimum || 0);
+          if (sousSectionProduit === "thermolabile") return !!p.est_thermolabile;
+          if (sousSectionProduit === "stupefiant") return p.tableau_substance === "stupefiant" || p.tableau_substance === "liste_1" || p.tableau_substance === "liste_2";
+          if (sousSectionProduit === "taxable") return p.groupe_taxation === "B_TAXABLE";
+          return true;
+        });
+
+        return (
+          <div className="space-y-6">
+            {/* En-tête dédié Produits BPD-5 */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
+                    BPD-5 · RÉFÉRENTIEL · STO-02
+                  </span>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
+                    Catalogue & Nomenclature Officinale
+                  </span>
+                </div>
+                <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
+                  Catalogue & Référentiel des Médicaments
+                </h1>
+                <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
+                  Gestion centralisée du référentiel pharmaceutique : codes CIP, DCI, formes galéniques, dosages,
+                  seuils d'alerte de réassort, et classification réglementaire (thermolabiles 2–8 °C, stupéfiants, TVA).
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
+                    <Package className="w-3.5 h-3.5 text-[#92FF5F]" /> Nomenclature Nationale Bénin
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
+                    <Verified className="w-3.5 h-3.5" /> DCI & Codes CIP Uniques
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2 shrink-0">
+                <Button
+                  onClick={() => setDialogAjoutProduitOuvert(true)}
+                  className="gap-2 bg-[#92FF5F] hover:bg-[#82ea52] text-[#0F3B27] font-black text-xs h-10 px-4 shadow-sm"
+                >
+                  <Plus className="w-4 h-4" /> Nouveau Produit
+                </Button>
+                <div className="flex items-center gap-2 text-xs">
+                  <Button variant="outline" className="h-8 text-xs border-white/20 bg-white/10 text-white hover:bg-white/20">
+                    <Download className="w-3.5 h-3.5 mr-1" /> Exporter catalogue
+                  </Button>
+                  <Badge variant="outline" className="border-emerald-400 text-emerald-300 bg-emerald-950/40">
+                    {countsProduits.tous} références
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 KPIs Spécifiques aux Produits */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Card className="border-[#CFF1D2] bg-white shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Total Références</CardTitle>
+                  <Package className="w-4 h-4 text-[#0F3B27]" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black font-display text-[#0F3B27]">{countsProduits.tous}</div>
+                  <p className="text-xs text-[#475C50]">Médicaments et dispositifs actifs au catalogue.</p>
                 </CardContent>
               </Card>
-            ))}
-            {produits.length === 0 && <div className="col-span-full p-8 text-center text-sm text-[#475C50]">Aucun produit — importez le catalogue (CSV ou Excel, 10 Mo maximum) ou ajoutez-le avec l’assistant (STO-02).</div>}
+
+              <Card className={`border-[#CFF1D2] ${countsProduits.rupture > 0 ? "border-amber-400 bg-amber-50/30" : "bg-white"}`}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Ruptures & Sous Seuil</CardTitle>
+                  <AlertOctagon className="w-4 h-4 text-amber-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-amber-700">{countsProduits.rupture}</div>
+                  <p className="text-xs text-[#475C50]">Articles sous le seuil minimum de sécurité.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#CFF1D2] bg-white">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Thermolabiles 2–8 °C</CardTitle>
+                  <Thermometer className="w-4 h-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-blue-700">{countsProduits.thermolabile}</div>
+                  <p className="text-xs text-[#475C50]">Conservés en réfrigérateur avec suivi sonde.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#CFF1D2] bg-white">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Stupéfiants & Tableaux</CardTitle>
+                  <ShieldAlert className="w-4 h-4 text-purple-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-purple-700">{countsProduits.stupefiant}</div>
+                  <p className="text-xs text-[#475C50]">Réglementation stricte en armoire sous clé.</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Barre de Recherche & Sous-sections de Produits */}
+            <div className="flex flex-col gap-3 rounded-2xl border border-[#CFF1D2] bg-white p-3 shadow-sm">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475C50]" />
+                  <Input
+                    value={recherche}
+                    onChange={(e) => setRecherche(e.target.value)}
+                    placeholder="Rechercher par nom de spécialité, DCI, code CIP, laboratoire..."
+                    className="pl-9 h-10 border-[#CFF1D2] rounded-xl text-xs bg-[#F7F9F7] focus:bg-white"
+                  />
+                  {recherche && (
+                    <button
+                      onClick={() => setRecherche("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#475C50] hover:text-[#0F3B27]"
+                    >
+                      Effacer
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1 shrink-0 self-end sm:self-auto">
+                  <Button
+                    variant={modeAffichageProduits === "cartes" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setModeAffichageProduits("cartes")}
+                    className={`h-8 text-xs font-bold gap-1 rounded-xl ${
+                      modeAffichageProduits === "cartes" ? "bg-[#0F3B27] text-[#92FF5F]" : "border-[#CFF1D2] text-[#475C50]"
+                    }`}
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" /> Fiches
+                  </Button>
+                  <Button
+                    variant={modeAffichageProduits === "tableau" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setModeAffichageProduits("tableau")}
+                    className={`h-8 text-xs font-bold gap-1 rounded-xl ${
+                      modeAffichageProduits === "tableau" ? "bg-[#0F3B27] text-[#92FF5F]" : "border-[#CFF1D2] text-[#475C50]"
+                    }`}
+                  >
+                    <List className="w-3.5 h-3.5" /> Tableau
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-[#CFF1D2]/40">
+                {[
+                  { id: "tous", label: "Tous les produits", count: countsProduits.tous },
+                  { id: "rupture", label: "Ruptures & Sous seuil", count: countsProduits.rupture, alert: countsProduits.rupture > 0 },
+                  { id: "thermolabile", label: "Thermolabiles ❄️", count: countsProduits.thermolabile },
+                  { id: "stupefiant", label: "Stupéfiants 🔒", count: countsProduits.stupefiant },
+                  { id: "taxable", label: "B Taxable (18%)", count: countsProduits.taxable },
+                ].map((ss) => (
+                  <button
+                    key={ss.id}
+                    onClick={() => setSousSectionProduit(ss.id)}
+                    className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
+                      sousSectionProduit === ss.id
+                        ? "bg-[#0F3B27] text-[#92FF5F] shadow-sm"
+                        : "bg-[#F7F9F7] text-[#475C50] hover:bg-[#CFF1D2]/30 border border-[#CFF1D2]/60"
+                    }`}
+                  >
+                    <span>{ss.label}</span>
+                    <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-black ${
+                      ss.alert ? "bg-red-500 text-white" : sousSectionProduit === ss.id ? "bg-[#92FF5F] text-[#0F3B27]" : "bg-white text-[#475C50]"
+                    }`}>
+                      {ss.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {modeAffichageProduits === "cartes" ? (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {produitsAffiches.map((p) => {
+                  const sousSeuil = p.alerte_rupture || p.stock_total <= (p.stock_minimum || 0);
+                  return (
+                    <div
+                      key={p.id}
+                      className={`rounded-2xl border-2 p-4 bg-white shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3 ${
+                        sousSeuil ? "border-amber-400 bg-amber-50/15" : "border-[#CFF1D2] hover:border-[#0F3B27]/40"
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h4 className="font-display font-black text-base text-[#0F3B27] line-clamp-1">{p.nom_commercial}</h4>
+                            <p className="text-xs text-[#475C50] line-clamp-1 mt-0.5">{p.dci || "—"} · {p.forme || ""} {p.dosage || ""}</p>
+                          </div>
+                          <Badge variant="outline" className="font-mono text-[11px] border-[#CFF1D2] shrink-0">
+                            CIP {p.code_cip}
+                          </Badge>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5 mt-2.5">
+                          {p.est_thermolabile && <Badge className="bg-blue-50 text-blue-800 border-blue-200 text-[10px]">❄️ Thermolabile 2–8°C</Badge>}
+                          {p.tableau_substance === "stupefiant" && <Badge className="bg-purple-50 text-purple-800 text-[10px]">🔒 Stupéfiant</Badge>}
+                          {p.groupe_taxation === "B_TAXABLE" ? (
+                            <Badge className="bg-amber-50 text-amber-800 text-[10px]">TVA 18% (Groupe B)</Badge>
+                          ) : (
+                            <Badge className="bg-[#CFF1D2] text-[#0F3B27] text-[10px]">Exonéré TVA (Groupe A)</Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 pt-2 border-t border-[#CFF1D2]/60 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[#475C50]">Stock total en magasin</span>
+                          <span className={`font-mono font-black text-sm ${sousSeuil ? "text-amber-700" : "text-[#0F3B27]"}`}>
+                            {p.stock_total} boîtes
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[#475C50]">Prix public TTC</span>
+                          <span className="font-bold text-[#0F3B27]">{nombre(p.prix_public_ttc)} FCFA</span>
+                        </div>
+                        {sousSeuil && (
+                          <div className="rounded-xl bg-amber-50 border border-amber-300 p-2 text-amber-900 font-bold text-[11px] flex items-center gap-1.5">
+                            <AlertTriangle className="size-3.5 text-amber-700 shrink-0" />
+                            <span>Stock sous le seuil d'alerte ({p.stock_minimum || 5} min)</span>
+                          </div>
+                        )}
+                        {p.prochain_lot_fefo && (
+                          <div className="rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] p-2 flex items-center justify-between text-[11px]">
+                            <span className="text-[#475C50]">Prochain lot FEFO</span>
+                            <span className="font-mono font-bold text-[#0F3B27]">Lot {p.prochain_lot_fefo.numero_lot} ({p.prochain_lot_fefo.jours_avant_peremption}j)</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {produitsAffiches.length === 0 && (
+                  <div className="col-span-full p-8 text-center text-sm text-[#475C50] rounded-2xl border border-dashed border-[#CFF1D2] bg-[#F7F9F7]">
+                    Aucun produit ne correspond au filtre actif.
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Card className="border-[#CFF1D2]">
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-[#F7F9F7] text-[#475C50] border-b border-[#CFF1D2] font-bold">
+                        <tr>
+                          <th className="py-2.5 px-3">Produit & DCI</th>
+                          <th className="py-2.5 px-3">Code CIP</th>
+                          <th className="py-2.5 px-3">Propriétés</th>
+                          <th className="py-2.5 px-3">Stock Magasin</th>
+                          <th className="py-2.5 px-3">Prix TTC</th>
+                          <th className="py-2.5 px-3">Prochain Lot FEFO</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#CFF1D2]/50">
+                        {produitsAffiches.map((p) => (
+                          <tr key={p.id} className="hover:bg-[#F7F9F7]">
+                            <td className="py-2.5 px-3">
+                              <div className="font-bold text-[#0F3B27]">{p.nom_commercial}</div>
+                              <div className="text-[11px] text-[#475C50]">{p.dci || "—"} · {p.forme || ""}</div>
+                            </td>
+                            <td className="py-2.5 px-3 font-mono">{p.code_cip}</td>
+                            <td className="py-2.5 px-3">
+                              {p.est_thermolabile && <span className="inline-block rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold text-blue-700 mr-1">❄️ 2–8°C</span>}
+                              {p.tableau_substance === "stupefiant" && <span className="inline-block rounded bg-purple-50 px-1.5 py-0.5 text-[10px] font-bold text-purple-700">🔒 Stupéfiant</span>}
+                            </td>
+                            <td className="py-2.5 px-3 font-mono font-bold text-[#0F3B27]">{p.stock_total} boîtes</td>
+                            <td className="py-2.5 px-3 font-bold">{nombre(p.prix_public_ttc)} FCFA</td>
+                            <td className="py-2.5 px-3 font-mono text-[11px]">
+                              {p.prochain_lot_fefo ? `Lot ${p.prochain_lot_fefo.numero_lot} (${p.prochain_lot_fefo.jours_avant_peremption}j)` : "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <ZoneDepot label="Importer le catalogue produits (CSV ou Excel)" />
           </div>
-          <ZoneDepot label="Importer le catalogue produits (CSV ou Excel)" />
+        );
+      })()}
+
+      {/* LOTS FEFO STO-03 — SECTION PAR LOTS STRUCTURÉE AVEC SES SOUS-SECTIONS & FICHES BORDÉES */}
+      {tab === "lots" && (() => {
+        // Calcul des compteurs pour chaque sous-section de lots
+        const countsLots = {
+          tous: lots.length,
+          fefo: lots.filter((l) => l.est_vendable && l.jours_avant_peremption >= 0).length,
+          thermolabile: lots.filter((l) => !!l.produit?.est_thermolabile).length,
+          critique_1m: lots.filter((l) => l.statut_peremption === "critique_1m" || (l.jours_avant_peremption >= 0 && l.jours_avant_peremption <= 30)).length,
+          alerte_3m: lots.filter((l) => l.statut_peremption === "alerte_3m" || (l.jours_avant_peremption > 30 && l.jours_avant_peremption <= 90)).length,
+          attention_6m: lots.filter((l) => l.statut_peremption === "attention_6m" || (l.jours_avant_peremption > 90 && l.jours_avant_peremption <= 180)).length,
+          quarantaine: lots.filter((l) => l.statut_effectif === "quarantaine" || l.statut === "quarantaine").length,
+          perime: lots.filter((l) => l.statut_peremption === "perime" || l.jours_avant_peremption < 0).length,
+        };
+
+        // Filtrage des lots affichés
+        const lotsAffiches = lots.filter((lot) => {
+          if (recherche.trim()) {
+            const q = recherche.toLowerCase();
+            const match =
+              (lot.numero_lot || "").toLowerCase().includes(q) ||
+              (lot.produit?.nom_commercial || "").toLowerCase().includes(q) ||
+              (lot.produit?.dci || "").toLowerCase().includes(q) ||
+              (lot.produit?.code_cip || "").toLowerCase().includes(q) ||
+              (lot.bon_livraison_ref || "").toLowerCase().includes(q) ||
+              (lot.fournisseur_nom || "").toLowerCase().includes(q);
+            if (!match) return false;
+          }
+          if (sousSectionLot === "fefo") return lot.est_vendable && lot.jours_avant_peremption >= 0;
+          if (sousSectionLot === "thermolabile") return !!lot.produit?.est_thermolabile;
+          if (sousSectionLot === "critique_1m") return lot.statut_peremption === "critique_1m" || (lot.jours_avant_peremption >= 0 && lot.jours_avant_peremption <= 30);
+          if (sousSectionLot === "alerte_3m") return lot.statut_peremption === "alerte_3m" || (lot.jours_avant_peremption > 30 && lot.jours_avant_peremption <= 90);
+          if (sousSectionLot === "attention_6m") return lot.statut_peremption === "attention_6m" || (lot.jours_avant_peremption > 90 && lot.jours_avant_peremption <= 180);
+          if (sousSectionLot === "quarantaine") return lot.statut_effectif === "quarantaine" || lot.statut === "quarantaine";
+          if (sousSectionLot === "perime") return lot.statut_peremption === "perime" || lot.jours_avant_peremption < 0;
+          return true;
+        });
+
+        return (
+          <div className="space-y-6">
+            {/* En-tête dédié Lots FEFO BPD-5 */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
+                    BPD-5 · TRAÇABILITÉ FEFO · STO-03
+                  </span>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
+                    Priorité Péremption Strict (Art. 5.8 BPD)
+                  </span>
+                </div>
+                <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
+                  Lots & Traçabilité FEFO
+                </h1>
+                <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
+                  Suivi unitaire de chaque lot de médicament en stock : numéro de lot fabricant, date de péremption,
+                  quantité physique, affectation d'emplacement et sortie prioritaire du lot le plus ancien (FEFO).
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
+                    <Verified className="w-3.5 h-3.5" /> Règle FEFO Appliquée
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
+                    <Clock className="w-3.5 h-3.5 text-[#92FF5F]" /> Péremptions Échelonnées
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2 shrink-0">
+                <Button
+                  onClick={() => setDialogReceptionOuvert(true)}
+                  className="gap-2 bg-[#92FF5F] hover:bg-[#82ea52] text-[#0F3B27] font-black text-xs h-10 px-4 shadow-sm"
+                >
+                  <Plus className="w-4 h-4" /> Réceptionner un lot
+                </Button>
+                <div className="flex items-center gap-2 text-xs">
+                  <Button variant="outline" className="h-8 text-xs border-white/20 bg-white/10 text-white hover:bg-white/20">
+                    <Download className="w-3.5 h-3.5 mr-1" /> Export registre lots
+                  </Button>
+                  <Badge variant="outline" className="border-amber-400 text-amber-300 bg-amber-950/40">
+                    {countsLots.quarantaine} isolés
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 KPIs Spécifiques aux Lots */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Card className="border-[#CFF1D2] bg-white shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Lots Commercialisables</CardTitle>
+                  <Boxes className="w-4 h-4 text-[#0F3B27]" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black font-display text-[#0F3B27]">{countsLots.fefo}</div>
+                  <p className="text-xs text-[#475C50]">Disponibles pour vente & délivrance comptoir.</p>
+                </CardContent>
+              </Card>
+
+              <Card className={`border-[#CFF1D2] ${countsLots.critique_1m > 0 ? "border-red-400 bg-red-50/30" : "bg-white"}`}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Critique &lt; 30 jours</CardTitle>
+                  <AlertTriangle className="w-4 h-4 text-red-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-red-700">{countsLots.critique_1m}</div>
+                  <p className="text-xs text-[#475C50]">À déstocker en urgence ou retourner grossiste.</p>
+                </CardContent>
+              </Card>
+
+              <Card className={`border-[#CFF1D2] ${countsLots.alerte_3m > 0 ? "border-amber-400 bg-amber-50/30" : "bg-white"}`}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Alerte 3 Mois</CardTitle>
+                  <Clock className="w-4 h-4 text-amber-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-amber-700">{countsLots.alerte_3m}</div>
+                  <p className="text-xs text-[#475C50]">Sous surveillance rapprochée du pharmacien.</p>
+                </CardContent>
+              </Card>
+
+              <Card className={`border-[#CFF1D2] ${countsLots.quarantaine > 0 ? "border-purple-400 bg-purple-50/30" : "bg-white"}`}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Quarantaine & Bloqués</CardTitle>
+                  <ShieldAlert className="w-4 h-4 text-purple-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-purple-700">{countsLots.quarantaine}</div>
+                  <p className="text-xs text-[#475C50]">Délivrance interdite, isolés physiquement.</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Barre de Recherche & Sous-sections de filtrage des lots */}
+            <div className="flex flex-col gap-3 rounded-2xl border border-[#CFF1D2] bg-white p-3 shadow-sm">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475C50]" />
+                  <Input
+                    value={recherche}
+                    onChange={(e) => setRecherche(e.target.value)}
+                    placeholder="Rechercher par numéro de lot, médicament, bon de livraison, fournisseur..."
+                    className="pl-9 h-10 border-[#CFF1D2] rounded-xl text-xs bg-[#F7F9F7] focus:bg-white"
+                  />
+                  {recherche && (
+                    <button
+                      onClick={() => setRecherche("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#475C50] hover:text-[#0F3B27]"
+                    >
+                      Effacer
+                    </button>
+                  )}
+                </div>
+
+                {/* Bascule d'affichage : Fiches avec bord vs Tableau */}
+                <div className="flex items-center gap-1 shrink-0 self-end sm:self-auto">
+                  <Button
+                    variant={modeAffichageLots === "cartes" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setModeAffichageLots("cartes")}
+                    className={`h-8 text-xs font-bold gap-1 rounded-xl ${
+                      modeAffichageLots === "cartes" ? "bg-[#0F3B27] text-[#92FF5F]" : "border-[#CFF1D2] text-[#475C50]"
+                    }`}
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" /> Fiches bordées
+                  </Button>
+                  <Button
+                    variant={modeAffichageLots === "tableau" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setModeAffichageLots("tableau")}
+                    className={`h-8 text-xs font-bold gap-1 rounded-xl ${
+                      modeAffichageLots === "tableau" ? "bg-[#0F3B27] text-[#92FF5F]" : "border-[#CFF1D2] text-[#475C50]"
+                    }`}
+                  >
+                    <List className="w-3.5 h-3.5" /> Tableau
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-[#CFF1D2]/40">
+                {[
+                  { id: "tous", label: "Tous les lots", count: countsLots.tous },
+                  { id: "fefo", label: "Priorité FEFO (Sortie immédiate)", count: countsLots.fefo, highlight: true },
+                  { id: "thermolabile", label: "Thermolabiles 2–8 °C", count: countsLots.thermolabile },
+                  { id: "critique_1m", label: "Critique < 30j", count: countsLots.critique_1m, alert: countsLots.critique_1m > 0 },
+                  { id: "alerte_3m", label: "Alerte 3 mois", count: countsLots.alerte_3m, warning: countsLots.alerte_3m > 0 },
+                  { id: "attention_6m", label: "Attention 6 mois", count: countsLots.attention_6m },
+                  { id: "quarantaine", label: "Quarantaine & Bloqués", count: countsLots.quarantaine, warning: countsLots.quarantaine > 0 },
+                  { id: "perime", label: "Périmés interdits", count: countsLots.perime, alert: countsLots.perime > 0 },
+                ].map((ss) => (
+                  <button
+                    key={ss.id}
+                    onClick={() => setSousSectionLot(ss.id)}
+                    className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
+                      sousSectionLot === ss.id
+                        ? "bg-[#0F3B27] text-[#92FF5F] shadow-sm"
+                        : "bg-[#F7F9F7] text-[#475C50] hover:bg-[#CFF1D2]/30 border border-[#CFF1D2]/60"
+                    }`}
+                  >
+                    <span>{ss.label}</span>
+                    <span
+                      className={`rounded-full px-1.5 py-0.2 text-[10px] font-black ${
+                        ss.alert
+                          ? "bg-red-500 text-white"
+                          : ss.warning
+                          ? "bg-amber-500 text-white"
+                          : sousSectionLot === ss.id
+                          ? "bg-[#92FF5F] text-[#0F3B27]"
+                          : "bg-white text-[#475C50]"
+                      }`}
+                    >
+                      {ss.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* VUE FICHES / CARTES DE LOTS AVEC ENCADREMENT ET STRUCTURE NETTE */}
+            {modeAffichageLots === "cartes" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {isLoading ? (
+                  <div className="col-span-full p-12 text-center text-[#475C50] font-bold">Chargement des lots du magasin...</div>
+                ) : lotsAffiches.length === 0 ? (
+                  <div className="col-span-full p-12 text-center text-sm text-[#475C50] rounded-2xl border border-dashed border-[#CFF1D2] bg-[#F7F9F7]">
+                    Aucun lot ne correspond aux filtres sélectionnés. Réceptionnez une livraison ou ajustez la sous-section.
+                  </div>
+                ) : (
+                  lotsAffiches.map((lot, idx) => {
+                    const estProchainFEFO = idx === 0 && lot.est_vendable && sousSectionLot === "tous";
+                    const estQuarantaine = lot.statut_effectif === "quarantaine" || lot.statut === "quarantaine";
+                    const estPerime = lot.statut_peremption === "perime" || lot.jours_avant_peremption < 0;
+                    const pctDispo = Math.min(100, Math.max(0, Math.round((lot.quantite_disponible / (lot.quantite_initiale || 1)) * 100)));
+
+                    return (
+                      <div
+                        key={lot.id}
+                        className={`rounded-2xl border-2 p-4 bg-white shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3 ${
+                          estPerime
+                            ? "border-red-400 bg-red-50/15"
+                            : estQuarantaine
+                            ? "border-amber-400 bg-amber-50/20"
+                            : estProchainFEFO
+                            ? "border-[#0F3B27] bg-[#CFF1D2]/15 ring-2 ring-[#92FF5F]/50"
+                            : "border-[#CFF1D2] hover:border-[#0F3B27]/40"
+                        }`}
+                      >
+                        {/* En-tête de la fiche de lot */}
+                        <div>
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            {estProchainFEFO ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-[#0F3B27] px-2.5 py-1 text-xs font-black text-[#92FF5F] shadow-sm">
+                                <ArrowRight className="w-3.5 h-3.5" /> #1 Prochain FEFO
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-[#F7F9F7] border border-[#CFF1D2] px-2 py-0.5 text-xs font-mono font-bold text-[#475C50]">
+                                Priorité FEFO #{idx + 1}
+                              </span>
+                            )}
+                            {badgeStatut(lot)}
+                          </div>
+
+                          <h4 className="font-display font-black text-base text-[#0F3B27] line-clamp-1">
+                            {lot.produit?.nom_commercial}
+                          </h4>
+                          <p className="text-xs text-[#475C50] line-clamp-1 mt-0.5">
+                            CIP {lot.produit?.code_cip} · DCI {lot.produit?.dci || "—"}
+                          </p>
+
+                          <div className="flex flex-wrap gap-1.5 mt-2.5">
+                            {lot.produit?.est_thermolabile && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-bold text-blue-700">
+                                <Thermometer className="w-3 h-3" /> Frigo 2–8 °C
+                              </span>
+                            )}
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[#F7F9F7] border border-[#CFF1D2] px-2 py-0.5 text-[10px] font-bold text-[#0F3B27]">
+                              <MapPin className="w-3 h-3 text-[#0F3B27]" /> {lot.emplacement}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Corps structuré de la fiche de lot */}
+                        <div className="space-y-2.5 pt-2 border-t border-[#CFF1D2]/60 text-xs">
+                          {/* Cartouche Numéro de lot & Fournisseur */}
+                          <div className="rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] p-2.5 flex items-center justify-between">
+                            <div>
+                              <span className="text-[10px] text-[#475C50] font-bold uppercase tracking-wider block">Numéro de Lot</span>
+                              <span className="font-mono font-black text-sm text-[#0F3B27]">{lot.numero_lot}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-[10px] text-[#475C50] font-bold block">{lot.fournisseur_nom || "CAMEG BÉNIN"}</span>
+                              <span className="text-[11px] font-mono text-[#475C50]">BL : {lot.bon_livraison_ref || "—"}</span>
+                            </div>
+                          </div>
+
+                          {/* Jauge de stock avec barre de progression */}
+                          <div>
+                            <div className="flex justify-between items-center mb-1 text-[11px]">
+                              <span className="text-[#475C50] font-medium">Stock disponible</span>
+                              <span className="font-bold text-[#0F3B27]">
+                                <strong className="text-sm font-black text-[#0F3B27]">{lot.quantite_disponible}</strong> / {lot.quantite_initiale} boîtes ({pctDispo}%)
+                              </span>
+                            </div>
+                            <div className="w-full h-2 rounded-full bg-[#E5ECE7] overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all ${
+                                  pctDispo <= 15 ? "bg-red-500" : pctDispo <= 40 ? "bg-amber-500" : "bg-[#0F3B27]"
+                                }`}
+                                style={{ width: `${pctDispo}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Péremption & Compte à rebours */}
+                          <div className="flex items-center justify-between pt-1">
+                            <div>
+                              <span className="text-[10px] text-[#475C50] font-medium block">Péremption</span>
+                              <span className="font-mono font-bold text-xs text-[#0F3B27]">{lot.date_peremption}</span>
+                            </div>
+                            <div>
+                              {badgeAlerte(lot.statut_peremption, lot.jours_avant_peremption)}
+                            </div>
+                          </div>
+
+                          {lot.motif_statut && (
+                            <p className="rounded-lg bg-amber-50 border border-amber-200 px-2 py-1 text-[11px] text-amber-900 line-clamp-2">
+                              Motif : {lot.motif_statut}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Pied de carte avec boutons d'action rapide */}
+                        <div className="pt-2 border-t border-[#CFF1D2]/60 flex items-center justify-between gap-1.5">
+                          {lot.statut_effectif === "commercialisable" ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setLotPourAction(lot);
+                                setStatutCible("quarantaine");
+                                setDialogChangementStatutOuvert(true);
+                              }}
+                              className="text-xs h-8 border-amber-300 text-amber-800 hover:bg-amber-50 flex-1 rounded-xl"
+                            >
+                              <ShieldAlert className="w-3.5 h-3.5 mr-1 text-amber-600" /> Bloquer
+                            </Button>
+                          ) : lot.statut_effectif === "quarantaine" ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => mutationLever.mutate(lot.id)}
+                              className="text-xs h-8 border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 flex-1 font-bold rounded-xl"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" /> Lever
+                            </Button>
+                          ) : null}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setLotPourAction(lot);
+                              setDialogChangementStatutOuvert(true);
+                            }}
+                            className="text-xs h-8 text-[#0F3B27] hover:bg-[#CFF1D2]/30 rounded-xl"
+                          >
+                            Changer statut
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            ) : (
+              /* VUE TABLEAU CLASSIQUE AVEC BORDURES AMÉLIORÉES */
+              <Card className="border-[#CFF1D2]">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-black text-[#0F3B27]">Tableau des Lots — Ordre FEFO strict (STO-08)</CardTitle>
+                  <CardDescription className="text-xs">
+                    Le premier lot de la liste est celui à sortir. Seul un lot « Commercialisable » peut être vendu ou délivré.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-[#F7F9F7] text-[#475C50] border-b border-[#CFF1D2] font-bold">
+                        <tr>
+                          <th className="py-2.5 px-3">Priorité</th>
+                          <th className="py-2.5 px-3">Médicament</th>
+                          <th className="py-2.5 px-3">Lot & BL</th>
+                          <th className="py-2.5 px-3">Péremption</th>
+                          <th className="py-2.5 px-3">Quantité</th>
+                          <th className="py-2.5 px-3">Emplacement</th>
+                          <th className="py-2.5 px-3">Statut</th>
+                          <th className="py-2.5 px-3 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#CFF1D2]/50">
+                        {lotsAffiches.map((lot, idx) => (
+                          <tr
+                            key={lot.id}
+                            className={`hover:bg-[#F7F9F7] ${lot.statut_effectif === "quarantaine" ? "bg-amber-50/50" : ""} ${
+                              idx === 0 && lot.est_vendable ? "bg-[#CFF1D2]/20" : ""
+                            }`}
+                          >
+                            <td className="py-2.5 px-3">
+                              {idx === 0 && lot.est_vendable ? (
+                                <span className="inline-flex items-center gap-1 text-xs font-black text-[#0F3B27] bg-[#92FF5F] px-2 py-0.5 rounded-full">
+                                  <ArrowRight className="w-3 h-3" /> Prochain
+                                </span>
+                              ) : (
+                                <span className="text-xs font-mono text-[#475C50]">#{idx + 1}</span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <div className="font-bold text-[#0F3B27]">{lot.produit?.nom_commercial}</div>
+                              <div className="text-[11px] text-[#475C50]">CIP {lot.produit?.code_cip} · DCI {lot.produit?.dci || "—"}</div>
+                              {lot.produit?.est_thermolabile && <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1 rounded">❄️ 2–8 °C</span>}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <div className="font-mono font-bold">{lot.numero_lot}</div>
+                              <div className="text-[11px] text-[#475C50]">{lot.fournisseur_nom} · BL {lot.bon_livraison_ref}</div>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <div className="font-bold">{lot.date_peremption}</div>
+                              <div className="mt-1">{badgeAlerte(lot.statut_peremption, lot.jours_avant_peremption)}</div>
+                            </td>
+                            <td className="py-2.5 px-3 font-mono font-bold text-[#0F3B27]">
+                              {lot.quantite_disponible} <span className="font-normal text-[#475C50] text-xs">/ {lot.quantite_initiale}</span>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <span className="text-xs font-bold bg-[#F7F9F7] border border-[#CFF1D2] px-2 py-1 rounded-xl">{lot.emplacement}</span>
+                            </td>
+                            <td className="py-2.5 px-3">{badgeStatut(lot)}</td>
+                            <td className="py-2.5 px-3 text-right">
+                              <div className="flex justify-end gap-1">
+                                {lot.statut_effectif === "commercialisable" ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setLotPourAction(lot);
+                                      setStatutCible("quarantaine");
+                                      setDialogChangementStatutOuvert(true);
+                                    }}
+                                    className="text-xs h-7 border-amber-300 text-amber-800"
+                                  >
+                                    <ShieldAlert className="w-3 h-3 mr-1" /> Bloquer
+                                  </Button>
+                                ) : lot.statut_effectif === "quarantaine" ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => mutationLever.mutate(lot.id)}
+                                    className="text-xs h-7 border-[#CFF1D2] text-[#0F3B27]"
+                                  >
+                                    <CheckCircle2 className="w-3 h-3 mr-1" /> Lever
+                                  </Button>
+                                ) : null}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setLotPourAction(lot);
+                                    setDialogChangementStatutOuvert(true);
+                                  }}
+                                  className="text-xs h-7"
+                                >
+                                  Changer
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* EMPLACEMENTS STO-04 */}
+      {tab === "emplacements" && (() => {
+        const tousEmplacements = emplacements.length
+          ? emplacements
+          : [
+              { code: "COMPTOIR", libelle: "Comptoir — Délivrance", type_zone: "comptoir", lots_count: 0 },
+              { code: "RESERVE", libelle: "Réserve — Stock principal", type_zone: "reserve", lots_count: 0 },
+              { code: "FRIGO", libelle: "Réfrigérateur 2 °C – 8 °C", type_zone: "frigo", lots_count: 0 },
+              { code: "ARMOIRE", libelle: "Armoire sécurisée — Stupéfiants", type_zone: "armoire_securisee", lots_count: 0 },
+              { code: "ATTENTE", libelle: "Zone d’attente de contrôle", type_zone: "attente_controle", lots_count: 0 },
+              { code: "RETOURS", libelle: "Zone des retours fournisseur", type_zone: "retours", lots_count: 0 },
+              { code: "DECHETS", libelle: "Aire des déchets sécurisée", type_zone: "dechets", lots_count: 0 },
+            ];
+
+        const emplacementsAffiches = tousEmplacements.filter((e: any) => {
+          if (sousSectionEmplacement === "frigo") return e.type_zone === "frigo";
+          if (sousSectionEmplacement === "reserve") return e.type_zone === "reserve";
+          if (sousSectionEmplacement === "comptoir") return e.type_zone === "comptoir";
+          if (sousSectionEmplacement === "armoire") return e.type_zone === "armoire_securisee";
+          if (sousSectionEmplacement === "isolement") return ["attente_controle", "retours", "dechets"].includes(e.type_zone);
+          return true;
+        });
+
+        return (
+          <div className="space-y-6">
+            {/* En-tête dédié Emplacements BPD-4/BPD-5 */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
+                    BPD-4 / BPD-5 · ZONAGE 5M · STO-04
+                  </span>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
+                    Organisation Spatiale & Stockage
+                  </span>
+                </div>
+                <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
+                  Emplacements & Rangement Magasin
+                </h1>
+                <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
+                  Cartographie et zonage réglementaire des locaux de l'officine : comptoir de délivrance, réserve principale,
+                  armoire sécurisée sous clé pour stupéfiants, réfrigérateur 2–8 °C et zones d'isolement sanitaire.
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
+                    <MapPin className="w-3.5 h-3.5" /> 7 Zones BPD Homologuées
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
+                    <Thermometer className="w-3.5 h-3.5 text-[#92FF5F]" /> Sonde Frigo 24h/24
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 KPIs Emplacements */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Card className="border-[#CFF1D2] bg-white shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Zones Référencées</CardTitle>
+                  <MapPin className="w-4 h-4 text-[#0F3B27]" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black font-display text-[#0F3B27]">{tousEmplacements.length}</div>
+                  <p className="text-xs text-[#475C50]">Zones physiques homologuées BPD.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#CFF1D2] bg-white">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Réserve Principale</CardTitle>
+                  <Layers className="w-4 h-4 text-[#0F3B27]" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-[#0F3B27]">
+                    {tousEmplacements.find((e: any) => e.type_zone === "reserve")?.lots_count ?? 0}
+                  </div>
+                  <p className="text-xs text-[#475C50]">Lots stockés en rayonnage standard.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#CFF1D2] bg-white">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Chaîne du Froid 2–8°C</CardTitle>
+                  <Thermometer className="w-4 h-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-blue-700">
+                    {tousEmplacements.find((e: any) => e.type_zone === "frigo")?.lots_count ?? 0}
+                  </div>
+                  <p className="text-xs text-[#475C50]">Thermolabiles sous température surveillée.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#CFF1D2] bg-white">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Armoire Stupéfiants</CardTitle>
+                  <ShieldAlert className="w-4 h-4 text-purple-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-purple-700">
+                    {tousEmplacements.find((e: any) => e.type_zone === "armoire_securisee")?.lots_count ?? 0}
+                  </div>
+                  <p className="text-xs text-[#475C50]">Sous clé du pharmacien titulaire.</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-[#CFF1D2] bg-white p-3 shadow-sm">
+              {[
+                { id: "toutes", label: "Toutes les zones" },
+                { id: "reserve", label: "Réserve principale" },
+                { id: "frigo", label: "Chaîne du froid 2–8°C ❄️" },
+                { id: "comptoir", label: "Comptoir délivrance" },
+                { id: "armoire", label: "Armoire stupéfiants 🔒" },
+                { id: "isolement", label: "Isolement & Déchets" },
+              ].map((ss) => (
+                <button
+                  key={ss.id}
+                  onClick={() => setSousSectionEmplacement(ss.id)}
+                  className={`rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
+                    sousSectionEmplacement === ss.id
+                      ? "bg-[#0F3B27] text-[#92FF5F] shadow-sm"
+                      : "bg-[#F7F9F7] text-[#475C50] hover:bg-[#CFF1D2]/30 border border-[#CFF1D2]/60"
+                  }`}
+                >
+                  {ss.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {emplacementsAffiches.map((e: any) => (
+                <div
+                  key={e.code}
+                  className={`rounded-2xl border-2 p-4 bg-white shadow-sm hover:shadow-md transition-all ${
+                    e.type_zone === "frigo"
+                      ? "border-blue-300 bg-blue-50/20"
+                      : e.type_zone === "armoire_securisee"
+                      ? "border-purple-300 bg-purple-50/20"
+                      : e.type_zone === "dechets"
+                      ? "border-red-300 bg-red-50/20"
+                      : "border-[#CFF1D2]"
+                  }`}
+                >
+                  <div className="flex items-center justify-between pb-2">
+                    <h4 className="font-display font-black text-sm text-[#0F3B27] flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-[#0F3B27]" /> {e.libelle}
+                    </h4>
+                    <Badge variant="outline" className="font-mono text-[10px]">{e.code}</Badge>
+                  </div>
+                  <div className="space-y-2 text-xs pt-2 border-t border-[#CFF1D2]/60">
+                    <div className="flex justify-between">
+                      <span className="text-[#475C50]">Lots hébergés</span>
+                      <strong className="font-mono font-black text-[#0F3B27]">{e.lots_count ?? 0} lots</strong>
+                    </div>
+                    <div className="text-[11px] text-[#475C50]">
+                      {e.type_zone === "frigo"
+                        ? "❄️ Réservé aux produits thermolabiles (contrôle sonde 24h)"
+                        : e.type_zone === "armoire_securisee"
+                        ? "🔒 Clé sous la responsabilité du pharmacien titulaire"
+                        : e.type_zone === "dechets"
+                        ? "🗑️ Déchets pharmaceutiques en attente de destruction sécurisée"
+                        : "Rayonnages étiquetés avec code-barres"}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Contraintes d’affectation (STO-04)</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Le frigo n’accepte que les produits thermolabiles, l’armoire que les stupéfiants et les listes. Déplacer un lot d’une zone à l’autre crée un transfert tracé, avec scan et confirmation.</CardContent></Card>
+          </div>
+        );
+      })()}
+
+      {/* MOUVEMENTS STO-09 */}
+      {tab === "mouvements" && (() => {
+        const mouvementsAffiches = mouvements.filter((m: any) => {
+          if (sousSectionMouvement === "entree") return m.type_mouvement === "entree" || m.quantite > 0;
+          if (sousSectionMouvement === "sortie") return m.type_mouvement === "sortie" || m.quantite < 0;
+          if (sousSectionMouvement === "transfert") return m.type_mouvement === "transfert";
+          if (sousSectionMouvement === "quarantaine") return m.type_mouvement === "quarantaine" || m.type_mouvement === "blocage";
+          return true;
+        });
+
+        return (
+          <div className="space-y-6">
+            {/* En-tête dédié Mouvements BPD-8 */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
+                    BPD-8 · PISTE D'AUDIT · STO-09
+                  </span>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
+                    Inaltérabilité & Traçabilité Complète
+                  </span>
+                </div>
+                <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
+                  Journal des Mouvements & Audit Trail
+                </h1>
+                <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
+                  Registre chronologique inaltérable de tous les flux physiques : entrées réceptions, sorties caisse,
+                  ajustements d'inventaire, transferts de zones et blocages sanitaires. Aucune suppression autorisée, contre-passation obligatoire.
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
+                    <History className="w-3.5 h-3.5" /> Piste d’Audit Inaltérable
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
+                    Signature & Pièce Justificative Requise
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 KPIs Mouvements */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Card className="border-[#CFF1D2] bg-white shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Total Opérations</CardTitle>
+                  <History className="w-4 h-4 text-[#0F3B27]" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black font-display text-[#0F3B27]">{mouvements.length}</div>
+                  <p className="text-xs text-[#475C50]">Écritures de stock journalisées.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#CFF1D2] bg-white">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Entrées / Réceptions</CardTitle>
+                  <ArrowRight className="w-4 h-4 text-emerald-600 rotate-45" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-emerald-700">
+                    {mouvements.filter((m: any) => m.type_mouvement === "entree" || m.quantite > 0).length}
+                  </div>
+                  <p className="text-xs text-[#475C50]">Arrivages grossistes et réintégrations.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#CFF1D2] bg-white">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Sorties / Ventes</CardTitle>
+                  <ArrowRight className="w-4 h-4 text-blue-600 -rotate-45" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-blue-700">
+                    {mouvements.filter((m: any) => m.type_mouvement === "sortie" || m.quantite < 0).length}
+                  </div>
+                  <p className="text-xs text-[#475C50]">Délivrances ordonnances et ventes directes.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#CFF1D2] bg-white">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-[#475C50]">Ajustements & Quarantaine</CardTitle>
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-black text-amber-700">
+                    {mouvements.filter((m: any) => ["ajustement", "quarantaine", "blocage", "transfert"].includes(m.type_mouvement)).length}
+                  </div>
+                  <p className="text-xs text-[#475C50]">Écarts inventaire et isolements qualité.</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-[#CFF1D2] bg-white p-3 shadow-sm">
+              {[
+                { id: "tous", label: "Tous les mouvements" },
+                { id: "entree", label: "Entrées / Réceptions" },
+                { id: "sortie", label: "Sorties / Ventes" },
+                { id: "transfert", label: "Transferts de zone" },
+                { id: "quarantaine", label: "Blocages & Quarantaine" },
+              ].map((ss) => (
+                <button
+                  key={ss.id}
+                  onClick={() => setSousSectionMouvement(ss.id)}
+                  className={`rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
+                    sousSectionMouvement === ss.id
+                      ? "bg-[#0F3B27] text-[#92FF5F] shadow-sm"
+                      : "bg-[#F7F9F7] text-[#475C50] hover:bg-[#CFF1D2]/30 border border-[#CFF1D2]/60"
+                  }`}
+                >
+                  {ss.label}
+                </button>
+              ))}
+            </div>
+
+            <Card className="border-[#CFF1D2]">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-black text-[#0F3B27]">Journal des mouvements (STO-09) — rien ne s’efface, tout se contre-passe</CardTitle>
+                <CardDescription className="text-xs">Entrée, vente, transfert, casse ou destruction : chaque ligne porte sa pièce justificative et son auteur.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                {mouvementsAffiches.length === 0 ? (
+                  <div className="p-8 text-center text-sm text-[#475C50]">Aucun mouvement dans cette sous-section.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-[#F7F9F7] text-[#475C50] border-b border-[#CFF1D2] font-bold">
+                        <tr>
+                          <th className="py-2.5 px-3">Date</th>
+                          <th className="py-2.5 px-3">Type</th>
+                          <th className="py-2.5 px-3">Produit / Lot</th>
+                          <th className="py-2.5 px-3">Quantité</th>
+                          <th className="py-2.5 px-3">Stock av/ap</th>
+                          <th className="py-2.5 px-3">Pièce</th>
+                          <th className="py-2.5 px-3">Auteur</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#CFF1D2]/50">
+                        {mouvementsAffiches.slice(0, 30).map((m: any) => (
+                          <tr key={m.id} className="hover:bg-[#F7F9F7]">
+                            <td className="py-2.5 px-3 font-mono text-[11px]">{formatDate(m.created_at)}</td>
+                            <td className="py-2.5 px-3">
+                              <Badge variant="outline" className="text-[11px] border-[#CFF1D2]">{m.type_mouvement}</Badge>
+                            </td>
+                            <td className="py-2.5 px-3 font-bold text-[#0F3B27]">
+                              {m.produit?.nom_commercial || ""} <span className="font-normal text-[#475C50]">· {m.lot?.numero_lot || ""}</span>
+                            </td>
+                            <td className="py-2.5 px-3 font-mono font-black text-[#0F3B27]">
+                              {m.quantite > 0 ? `+${m.quantite}` : m.quantite}
+                            </td>
+                            <td className="py-2.5 px-3 font-mono">{m.stock_avant} → {m.stock_apres}</td>
+                            <td className="py-2.5 px-3 font-mono text-[11px]">{m.reference_piece || "—"}</td>
+                            <td className="py-2.5 px-3">{m.auteur?.name || "Système"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        );
+      })()}
+
+      {/* RÉCEPTION STO-05/06/07 */}
+      {tab === "reception" && (
+        <div className="space-y-6">
+          {/* En-tête dédié Réception BPD-5 */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
+                  BPD-5 · CONTRÔLE RÉCEPTION · STO-05/06/07
+                </span>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
+                  Arrivages & Contrôles Obligatoires
+                </span>
+              </div>
+              <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
+                Réception des Livraisons & Contrôle BPD-5
+              </h1>
+              <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
+                Point de contrôle obligatoire des arrivages grossistes-répartiteurs (CAMEG, UBIPHARM, LABOREX).
+                Rapprochement bon de livraison / commande, inspection visuelle des conditionnements et vérification stricte de la chaîne du froid 2–8 °C.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
+                  <ScanLine className="w-3.5 h-3.5" /> Contrôle Rapprochement BL
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
+                  <Thermometer className="w-3.5 h-3.5 text-[#92FF5F]" /> Chaîne du Froid 2–8 °C
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 shrink-0">
+              <Button
+                onClick={() => setDialogReceptionOuvert(true)}
+                className="gap-2 bg-[#92FF5F] hover:bg-[#82ea52] text-[#0F3B27] font-black text-xs h-10 px-4 shadow-sm"
+              >
+                <Plus className="w-4 h-4" /> Enregistrer une réception
+              </Button>
+            </div>
+          </div>
+
+          {/* 4 KPIs Réception */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card className="border-[#CFF1D2] bg-white shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-[#475C50]">Protocole BPD-5</CardTitle>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black font-display text-emerald-700">5 Points</div>
+                <p className="text-xs text-[#475C50]">Contrôles obligatoires avant mise en stock.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-[#CFF1D2] bg-white">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-[#475C50]">Grossistes Agréés</CardTitle>
+                <Package className="w-4 h-4 text-[#0F3B27]" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black text-[#0F3B27]">3 Partenaires</div>
+                <p className="text-xs text-[#475C50]">CAMEG · UBIPHARM · LABOREX BÉNIN.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-[#CFF1D2] bg-white">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-[#475C50]">Chaîne du Froid</CardTitle>
+                <Thermometer className="w-4 h-4 text-blue-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black text-blue-700">2–8 °C</div>
+                <p className="text-xs text-[#475C50]">Mise au frigo immédiate à réception.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-[#CFF1D2] bg-white">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-[#475C50]">En Attente Contrôle</CardTitle>
+                <Clock className="w-4 h-4 text-amber-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black text-amber-700">
+                  {lots.filter((l: any) => l.statut_effectif === "en_attente_controle" || l.statut === "en_attente_controle").length}
+                </div>
+                <p className="text-xs text-[#475C50]">Isolement provisoire zone réception.</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <ZoneDepot label="Déposer le bon de livraison et la facture du fournisseur (photo ou PDF)" />
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <Card className="border-[#CFF1D2]">
+              <CardHeader>
+                <CardTitle className="text-xs font-black text-[#0F3B27]">Contrôles obligatoires</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-xs">
+                {[
+                  ["alerte_sanitaire_verifiee", "Alerte sanitaire sur le lot (recherche automatique)", "BPD5-F05"],
+                  ["emballage_intact", "État des emballages conforme", "APP-03"],
+                  ["conformite_livraison", "Conformité livraison / commande", "STO-05"],
+                  ["dates_conformes", "Dates et péremptions conformes", "—"],
+                  ["chaine_froid_respectee", "Chaîne du froid respectée", "BPD5-F11"],
+                ].map(([k, l, ref]) => (
+                  <label key={k} className="flex items-center gap-2 rounded-xl border border-[#CFF1D2] px-3 py-2">
+                    <input
+                      type="checkbox"
+                      checked={(controles as any)[k]}
+                      onChange={(e) => setControles({ ...controles, [k]: e.target.checked })}
+                      className="accent-[#0F3B27] size-4"
+                    />
+                    <span className="font-bold text-[#0F3B27]">{l}</span>
+                    <span className="ml-auto text-[10px] text-[#475C50]">{ref}</span>
+                  </label>
+                ))}
+              </CardContent>
+            </Card>
+            <Card className="border-amber-300 bg-amber-50">
+              <CardHeader>
+                <CardTitle className="text-xs font-black text-amber-900 flex items-center gap-2">
+                  <FileWarning className="w-4 h-4" /> Anomalies de réception (STO-07)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-xs text-amber-900">
+                Casse, manquant, excédent ou produit non commandé : on ouvre une fiche, on joint des photos annotées, on isole le lot et on suit le litige fournisseur jusqu’à l’avoir.
+              </CardContent>
+            </Card>
+          </div>
+          <Button onClick={() => setDialogReceptionOuvert(true)} className="w-full bg-[#0F3B27] text-white font-bold h-12 rounded-xl">
+            Ouvrir la réception — scan et contrôles
+          </Button>
         </div>
       )}
 
-      {/* LOTS FEFO STO-03 */}
-      {tab === "lots" && (
-        <div className="space-y-4">
-          <Card className="border-[#CFF1D2]"><CardContent className="pt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="relative flex-1"><Search className="absolute left-3 top-3 h-4 w-4 text-[#475C50]" /><Input placeholder="Médicament, DCI, code CIP ou numéro de lot…" value={recherche} onChange={e => setRecherche(e.target.value)} className="pl-9" /></div>
-            <div className="flex flex-wrap items-center gap-1 text-xs font-bold">
-              <Filter className="w-4 h-4 text-[#475C50]" />
-              {[
-                { id: "tous", label: "Tous" }, { id: "critique_1m", label: "Moins d’un mois" }, { id: "alerte_3m", label: "Moins de 3 mois" }, { id: "attention_6m", label: "Moins de 6 mois" }, { id: "perime", label: "Périmés" },
-              ].map(f => <Button key={f.id} variant={filtreAlerte===f.id ? "default":"outline"} size="sm" onClick={()=>setFiltreAlerte(f.id)} className={filtreAlerte===f.id ? "bg-[#0F3B27] text-[#92FF5F] text-xs h-9": "text-[#475C50] text-xs h-9 border-[#CFF1D2]"}>{f.label}</Button>)}
+      {/* INVENTAIRES STO-12 */}
+      {tab === "inventaires" && (
+        <div className="space-y-6">
+          {/* En-tête dédié Inventaires BPD-5 */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
+                  BPD-5 · CONTRÔLE PHYSIQUE · STO-12
+                </span>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
+                  Campagnes de Comptage & Rapprochement (Art. 5.7 BPD)
+                </span>
+              </div>
+              <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
+                Inventaires & Campagnes de Comptage
+              </h1>
+              <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
+                Comptage physique périodique et tournant des stocks, confrontation avec les écritures théoriques,
+                justification contradictoire de chaque écart constaté et double validation obligatoire du titulaire.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
+                  <ClipboardList className="w-3.5 h-3.5" /> Inventaire Conforme BPD
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
+                  Justification Obligatoire des Écarts
+                </span>
+              </div>
             </div>
-          </CardContent></Card>
+          </div>
+          <InventairesStock />
+        </div>
+      )}
+
+      {/* PÉREMPTIONS STO-11 */}
+      {tab === "peremptions" && (
+        <div className="space-y-6">
+          {/* En-tête dédié Péremptions */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
+                  BPD-5 / CSP ART. 11 · VEILLE SANITAIRE · STO-11
+                </span>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
+                  Retrait Systématique avant Expiration
+                </span>
+              </div>
+              <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
+                Surveillance & Retrait des Péremptions
+              </h1>
+              <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
+                Tableau de bord de prévention du risque de délivrance de produits périmés. Tout lot atteignant le seuil
+                critique (&lt; 30 jours) est immédiatement consigné pour retour fournisseur ou destruction réglementaire.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
+                  <Calendar className="w-3.5 h-3.5" /> Surveillance Échelonnée
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/20 border border-red-400/40 text-red-200 px-3 py-1">
+                  <ShieldAlert className="w-3.5 h-3.5 text-red-400" /> Vente Interdite après Expiration
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 4 KPIs Péremptions */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card className="border-[#CFF1D2] bg-white">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-blue-700 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> À 6 Mois
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black text-blue-700">{peremptions.a_6_mois?.length ?? 0}</div>
+                <p className="text-xs text-[#475C50]">À surveiller tranquillement.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-amber-300 bg-amber-50/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-amber-700 flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> À 3 Mois
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black text-amber-700">{peremptions.a_3_mois?.length ?? 0}</div>
+                <p className="text-xs text-[#475C50]">À écouler en priorité au comptoir (FEFO).</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-red-300 bg-red-50">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-red-700 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" /> À 1 Mois · Critique
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black text-red-700">{peremptions.a_1_mois?.length ?? 0}</div>
+                <p className="text-xs text-red-700">Retrait par scan — vente bloquée (STO-11).</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-red-500 bg-red-100/50">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-bold text-red-800 flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4" /> Périmés Stricts
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black text-red-800">{stats.perimes}</div>
+                <p className="text-xs text-red-800">Isolement obligatoire vers rebuts.</p>
+              </CardContent>
+            </Card>
+          </div>
+
           <Card className="border-[#CFF1D2]">
-            <CardHeader><CardTitle className="text-sm font-black text-[#0F3B27]">Lots — ordre FEFO strict (STO-08)</CardTitle><CardDescription>Le premier lot de la liste est celui à sortir. Choisir un autre lot exige une justification journalisée. Seul un lot « Commercialisable » peut être vendu.</CardDescription></CardHeader>
-            <CardContent>
-              {isLoading ? <div className="p-8 text-center text-[#475C50]">Chargement FEFO...</div> : lots.length===0 ? <div className="p-8 text-center text-[#475C50]">Aucun lot — réceptionnez une livraison dans la section Réception.</div> : (
-                <div className="overflow-x-auto"><table className="w-full text-sm text-left">
-                  <thead className="bg-[#F7F9F7] text-[#475C50] border-b border-[#CFF1D2] text-xs font-bold"><tr><th className="py-2 px-3">Priorité</th><th className="py-2 px-3">Médicament</th><th className="py-2 px-3">Lot & BL</th><th className="py-2 px-3">Péremption</th><th className="py-2 px-3">Qté</th><th className="py-2 px-3">Emplacement</th><th className="py-2 px-3">Statut</th><th className="py-2 px-3 text-right">Action</th></tr></thead>
-                  <tbody className="divide-y divide-[#CFF1D2]/50">
-                    {lots.map((lot, idx) => (
-                      <tr key={lot.id} className={`hover:bg-[#F7F9F7] ${lot.statut_effectif==="quarantaine" ? "bg-amber-50/50":""} ${idx===0 && lot.est_vendable ? "bg-[#CFF1D2]/20":""}`}>
-                        <td className="py-2 px-3">{idx===0 && lot.est_vendable ? <span className="inline-flex items-center gap-1 text-xs font-black text-[#0F3B27] bg-[#92FF5F] px-2 py-0.5 rounded-full"><ArrowRight className="w-3 h-3" /> Prochain</span> : <span className="text-xs font-mono text-[#475C50]">#{idx+1}</span>}</td>
-                        <td className="py-2 px-3"><div className="font-bold text-[#0F3B27] text-xs">{lot.produit?.nom_commercial}</div><div className="text-[11px] text-[#475C50]">CIP {lot.produit?.code_cip} · DCI {lot.produit?.dci || "—"}</div>{lot.produit?.est_thermolabile && <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1 rounded">❄️ 2–8 °C</span>}</td>
-                        <td className="py-2 px-3"><div className="font-mono text-xs font-bold">{lot.numero_lot}</div><div className="text-[11px] text-[#475C50]">{lot.fournisseur_nom} · BL {lot.bon_livraison_ref}</div></td>
-                        <td className="py-2 px-3"><div className="font-bold text-xs">{lot.date_peremption}</div><div className="mt-1">{badgeAlerte(lot.statut_peremption, lot.jours_avant_peremption)}</div></td>
-                        <td className="py-2 px-3 font-black text-[#0F3B27]">{lot.quantite_disponible} <span className="font-normal text-[#475C50] text-xs">/ {lot.quantite_initiale}</span></td>
-                        <td className="py-2 px-3"><span className="text-xs font-bold bg-[#F7F9F7] border border-[#CFF1D2] px-2 py-1 rounded-xl">{lot.emplacement}</span></td>
-                        <td className="py-2 px-3">{badgeStatut(lot)}{lot.motif_statut && <div className="text-[10px] text-[#475C50] max-w-[160px] truncate">{lot.motif_statut}</div>}</td>
-                        <td className="py-2 px-3 text-right">
-                          <div className="flex justify-end gap-1">
-                            {lot.statut_effectif==="commercialisable" ? (
-                              <Button variant="outline" size="sm" onClick={()=>{setLotPourAction(lot); setStatutCible("quarantaine"); setDialogChangementStatutOuvert(true);}} className="text-xs h-8 border-amber-300 text-amber-800"><ShieldAlert className="w-3 h-3 mr-1" /> Bloquer</Button>
-                            ) : lot.statut_effectif==="quarantaine" ? (
-                              <Button variant="outline" size="sm" onClick={()=> mutationLever.mutate(lot.id)} className="text-xs h-8 border-[#CFF1D2] text-[#0F3B27]"><CheckCircle2 className="w-3 h-3 mr-1" /> Lever</Button>
-                            ) : null}
-                            <Button variant="ghost" size="sm" onClick={()=>{setLotPourAction(lot); setDialogChangementStatutOuvert(true);}} className="text-xs h-8">Changer</Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table></div>
-              )}
+            <CardHeader>
+              <CardTitle className="text-sm font-bold text-[#0F3B27]">Aucun lot périmé en stock ? C’est bon signe.</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs text-[#475C50]">
+              Deux issues possibles : retour au fournisseur ou rebut vers la filière déchet pharmaceutique (BPD5-F14, STK-06). Le bordereau de retrait s’exporte en PDF ou en Excel et se conserve cinq ans.
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* EMPLACEMENTS STO-04 */}
-      {tab === "emplacements" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between"><h3 className="font-display font-black text-[#0F3B27]">Plan des zones — chaque boîte a sa place (STO-04)</h3><Badge variant="outline" className="border-[#CFF1D2]">{emplacements.length || 7} zones</Badge></div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {(emplacements.length ? emplacements : [
-              { code:"COMPTOIR", libelle:"Comptoir — Délivrance", type_zone:"comptoir", lots_count: 0 },
-              { code:"RESERVE", libelle:"Réserve — Stock principal", type_zone:"reserve", lots_count: 0 },
-              { code:"FRIGO", libelle:"Réfrigérateur 2 °C – 8 °C", type_zone:"frigo", lots_count: 0 },
-              { code:"ARMOIRE", libelle:"Armoire sécurisée — Stupéfiants", type_zone:"armoire_securisee", lots_count: 0 },
-              { code:"ATTENTE", libelle:"Zone d’attente de contrôle", type_zone:"attente_controle", lots_count: 0 },
-              { code:"RETOURS", libelle:"Zone des retours fournisseur", type_zone:"retours", lots_count: 0 },
-              { code:"DECHETS", libelle:"Aire des déchets sécurisée", type_zone:"dechets", lots_count: 0 },
-            ] as any).map((e: any)=>(
-              <Card key={e.code} className={`border-2 ${e.type_zone==="frigo" ? "border-blue-200 bg-blue-50/30" : e.type_zone==="armoire_securisee" ? "border-purple-200 bg-purple-50/30" : e.type_zone==="dechets" ? "border-red-200 bg-red-50/20" : "border-[#CFF1D2] bg-white"}`}>
-                <CardHeader className="pb-2"><CardTitle className="text-sm font-black text-[#0F3B27] flex items-center gap-2"><MapPin className="w-4 h-4" /> {e.libelle}</CardTitle><CardDescription className="text-xs">{e.code} · {e.type_zone}</CardDescription></CardHeader>
-                <CardContent className="text-xs"><div className="flex justify-between"><span className="text-[#475C50]">Lots</span><strong>{e.lots_count ?? 0}</strong></div><div className="mt-2 text-[11px] text-[#475C50]">{e.type_zone==="frigo" ? "❄️ Réservé aux produits thermolabiles" : e.type_zone==="armoire_securisee" ? "🔒 Stupéfiants et listes uniquement" : "Étiquettes imprimables"}</div></CardContent>
-              </Card>
-            ))}
-          </div>
-          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Contraintes d’affectation (STO-04)</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Le frigo n’accepte que les produits thermolabiles, l’armoire que les stupéfiants et les listes. Déplacer un lot d’une zone à l’autre crée un transfert tracé, avec scan et confirmation.</CardContent></Card>
-        </div>
-      )}
-
-      {/* MOUVEMENTS STO-09 */}
-      {tab === "mouvements" && (
-        <div className="space-y-4">
-          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-black text-[#0F3B27]">Journal des mouvements (STO-09) — rien ne s’efface, tout se contre-passe</CardTitle><CardDescription>Entrée, vente, transfert, casse ou destruction : chaque ligne porte sa pièce justificative et son auteur.</CardDescription></CardHeader><CardContent>
-            {mouvements.length===0 ? <div className="p-6 text-center text-sm text-[#475C50]">Aucun mouvement — les réceptions et les transferts apparaîtront ici.</div> : (
-              <div className="overflow-x-auto"><table className="w-full text-xs text-left">
-                <thead className="bg-[#F7F9F7] text-[#475C50] border-b border-[#CFF1D2] font-bold"><tr><th className="py-2 px-3">Date</th><th className="py-2 px-3">Type</th><th className="py-2 px-3">Produit / Lot</th><th className="py-2 px-3">Qté</th><th className="py-2 px-3">Stock av/ap</th><th className="py-2 px-3">Pièce</th><th className="py-2 px-3">Auteur</th></tr></thead>
-                <tbody className="divide-y divide-[#CFF1D2]/50">
-                  {mouvements.slice(0,20).map((m:any)=>(
-                    <tr key={m.id} className="hover:bg-[#F7F9F7]"><td className="py-2 px-3 font-mono text-[11px]">{formatDate(m.created_at)}</td><td className="py-2 px-3"><Badge variant="outline" className="text-[11px]">{m.type_mouvement}</Badge></td><td className="py-2 px-3 font-bold text-[#0F3B27]">{m.produit?.nom_commercial || ""} <span className="font-normal text-[#475C50]">· {m.lot?.numero_lot || ""}</span></td><td className="py-2 px-3 font-mono font-bold">{m.quantite>0 ? `+${m.quantite}`: m.quantite}</td><td className="py-2 px-3 font-mono">{m.stock_avant} → {m.stock_apres}</td><td className="py-2 px-3">{m.reference_piece || "—"}</td><td className="py-2 px-3">{m.auteur?.name || "Système"}</td></tr>
-                  ))}
-                </tbody>
-              </table></div>
-            )}
-          </CardContent></Card>
-        </div>
-      )}
-
-      {/* RÉCEPTION STO-05/06/07 */}
-      {tab === "reception" && (
-        <div className="space-y-4">
-          <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white font-display font-black flex items-center gap-2"><ScanLine className="w-5 h-5 text-[#92FF5F]" /> Réception contrôlée (STO-05)</CardTitle><CardDescription className="text-[#CFF1D2]">On scanne le bon de livraison, puis les boîtes. On rapproche de la commande et on vérifie la chaîne du froid.</CardDescription></CardHeader><CardContent className="text-xs leading-relaxed text-[#CFF1D2]">Le lot ne devient « Commercialisable » qu’une fois tous les contrôles obligatoires validés. Hors des heures d’ouverture, il attend en zone d’isolement (STO-06). Casse, manquant ou excédent : une fiche, des photos et un isolement (STO-07).</CardContent></Card>
-          <ZoneDepot label="Déposer le bon de livraison et la facture du fournisseur (photo ou PDF)" />
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-black text-[#0F3B27]">Contrôles obligatoires</CardTitle></CardHeader><CardContent className="space-y-2 text-xs">
-              {[
-                ["alerte_sanitaire_verifiee","Alerte sanitaire sur le lot (recherche automatique)","BPD5-F05"],
-                ["emballage_intact","État des emballages conforme","APP-03"],
-                ["conformite_livraison","Conformité livraison / commande","STO-05"],
-                ["dates_conformes","Dates et péremptions conformes","—"],
-                ["chaine_froid_respectee","Chaîne du froid respectée","BPD5-F11"],
-              ].map(([k,l,ref])=>(
-                <label key={k} className="flex items-center gap-2 rounded-xl border border-[#CFF1D2] px-3 py-2"><input type="checkbox" checked={(controles as any)[k]} onChange={e=> setControles({...controles, [k]: e.target.checked})} className="accent-[#0F3B27] size-4" /><span className="font-bold text-[#0F3B27]">{l}</span><span className="ml-auto text-[10px] text-[#475C50]">{ref}</span></label>
-              ))}
-            </CardContent></Card>
-            <Card className="border-amber-300 bg-amber-50"><CardHeader><CardTitle className="text-xs font-black text-amber-900 flex items-center gap-2"><FileWarning className="w-4 h-4" /> Anomalies de réception (STO-07)</CardTitle></CardHeader><CardContent className="text-xs text-amber-900">Casse, manquant, excédent ou produit non commandé : on ouvre une fiche, on joint des photos annotées, on isole le lot et on suit le litige fournisseur jusqu’à l’avoir.</CardContent></Card>
-          </div>
-          <Button onClick={()=> setDialogReceptionOuvert(true)} className="w-full bg-[#0F3B27] text-white font-bold">Ouvrir la réception — scan et contrôles</Button>
-        </div>
-      )}
-
-      {/* INVENTAIRES STO-12 */}
-      {tab === "inventaires" && <InventairesStock />}
-
-      {/* PÉREMPTIONS STO-11 */}
-      {tab === "peremptions" && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-black text-blue-700 flex items-center gap-2"><Calendar className="w-4 h-4" /> À 6 mois</CardTitle></CardHeader><CardContent><div className="text-2xl font-black text-blue-700">{peremptions.a_6_mois?.length ?? 0}</div><p className="text-xs text-[#475C50]">À surveiller tranquillement.</p></CardContent></Card>
-            <Card className="border-amber-300 bg-amber-50/30"><CardHeader><CardTitle className="text-sm font-black text-amber-700 flex items-center gap-2"><Clock className="w-4 h-4" /> À 3 mois</CardTitle></CardHeader><CardContent><div className="text-2xl font-black text-amber-700">{peremptions.a_3_mois?.length ?? 0}</div><p className="text-xs text-[#475C50]">À écouler en priorité au comptoir.</p></CardContent></Card>
-            <Card className="border-red-300 bg-red-50"><CardHeader><CardTitle className="text-sm font-black text-red-700 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> À 1 mois · critique</CardTitle></CardHeader><CardContent><div className="text-2xl font-black text-red-700">{peremptions.a_1_mois?.length ?? 0}</div><p className="text-xs text-red-700">Retrait par scan — la vente est interdite après la date (STO-11).</p></CardContent></Card>
-          </div>
-          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Aucun lot périmé en stock ? C’est bon signe.</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Deux issues possibles : retour au fournisseur ou rebut vers la filière déchet pharmaceutique (BPD5-F14, STK-06). Le bordereau de retrait s’exporte en PDF ou en Excel et se conserve cinq ans.</CardContent></Card>
-        </div>
-      )}
-
       {/* QUARANTAINE & RAPPELS STO-14 */}
       {tab === "quarantaine" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* En-tête dédié Quarantaine */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
+                  ABMed / CSP · SÉCURITÉ SANITAIRE · STO-14
+                </span>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
+                  Rappels Sanitaires & Isolement (Art. 5.14 BPD)
+                </span>
+              </div>
+              <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
+                Quarantaine & Rappels Sanitaires des Lots
+              </h1>
+              <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
+                Dispositif d'isolement numérique et physique pour les lots frappés d'un avis d'alerte ou rappel sanitaire
+                (ABMed, fabricant, OMS), d'une suspicion de contrefaçon ou d'une avarie majeure constatée en officine.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/20 border border-red-400/40 text-red-200 px-3 py-1">
+                  <ShieldAlert className="w-3.5 h-3.5 text-red-400" /> Blocage Immédiat en Caisse
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
+                  Rapprochement des Délivrances Patients
+                </span>
+              </div>
+            </div>
+          </div>
           <RappelsStock />
         </div>
       )}
 
       {/* DÉCHETS STO-17 */}
-      {tab === "dechets" && <DechetsStock />}
+      {tab === "dechets" && (
+        <div className="space-y-6">
+          {/* En-tête dédié Déchets */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
+                  ENV-01 / BPD-5 · FILIÈRE ÉCOLOGIQUE · STO-17
+                </span>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
+                  Destruction Sécurisée & Rebuts (Art. 5.15 BPD)
+                </span>
+              </div>
+              <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
+                Déchets Pharmaceutiques & Rebuts
+              </h1>
+              <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
+                Filière d'élimination et destruction des médicaments périmés, altérés ou cassés. Établissement du
+                bordereau officiel contradictoire signé pour transmission à l'inspection pharmaceutique et filière agréée.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
+                  <Trash2 className="w-3.5 h-3.5" /> Bordereau Contradictoire
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
+                  Conservation 5 Ans (BPD-5 F14)
+                </span>
+              </div>
+            </div>
+          </div>
+          <DechetsStock />
+        </div>
+      )}
 
       {/* VALORISATION STO-18/19 */}
       {tab === "valorisation" && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white flex items-center gap-2"><TrendingUp className="w-4 h-4 text-[#92FF5F]" /> Valorisation au coût moyen</CardTitle></CardHeader><CardContent><div className="text-2xl font-black font-display">{nombre(valorisation.total)} FCFA</div><p className="text-xs text-[#CFF1D2]">Coût moyen pondéré à la date du jour, rapproché du compte de stock (STO-18).</p></CardContent></Card>
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">ABC et rotation</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Classement ABC, couverture en jours et marge par famille, avec le cahier des ruptures et des demandes non satisfaites (STO-19, STK-08, BPD5-F15).</CardContent></Card>
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-sm font-bold text-[#0F3B27]">Étiquettes</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Impression des étiquettes d’emplacement, de quarantaine et de rebut (STO-20) sur l’imprimante d’étiquettes.</CardContent></Card>
+        <div className="space-y-6">
+          {/* En-tête dédié Valorisation */}
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
+                  SYSCOHADA · COMPTABILITÉ MATIÈRE · STO-18/19
+                </span>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
+                  Coût Moyen Pondéré & Analyse Pareto ABC
+                </span>
+              </div>
+              <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
+                Valorisation Financière du Stock & Analyse ABC
+              </h1>
+              <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
+                Valorisation comptable au Coût Moyen Pondéré (CMP), suivi de la rotation des stocks, classement ABC des
+                familles de médicaments et calcul du taux de couverture en jours pour éviter tout surstock dormant.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
+                  <TrendingUp className="w-3.5 h-3.5" /> Valorisation CMP Temps Réel
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
+                  Rapprochement Compte de Stock SYSCOHADA
+                </span>
+              </div>
+            </div>
           </div>
-          <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Détail par produit (coût moyen pondéré)</CardTitle></CardHeader><CardContent>
-            {valorisation.par_produit?.length ? (
-              <div className="overflow-x-auto"><table className="w-full text-xs text-left"><thead className="bg-[#F7F9F7] text-[#475C50] font-bold border-b border-[#CFF1D2]"><tr><th className="py-2 px-3">Produit</th><th className="py-2 px-3">Qté</th><th className="py-2 px-3">Coût moyen</th><th className="py-2 px-3">Valeur</th></tr></thead><tbody className="divide-y divide-[#CFF1D2]/50">{valorisation.par_produit.slice(0,20).map((v:any)=>(
-                <tr key={v.produit.id}><td className="py-2 px-3 font-bold text-[#0F3B27]">{v.produit.nom_commercial}</td><td className="py-2 px-3 font-mono">{v.quantite}</td><td className="py-2 px-3 font-mono">{nombre(v.cmp || 0)} FCFA</td><td className="py-2 px-3 font-mono font-bold">{nombre(v.valeur)} FCFA</td></tr>
-              ))}</tbody></table></div>
-            ) : <div className="text-sm text-[#475C50]">La valorisation se calcule dès qu’un lot est réceptionné.</div>}
-          </CardContent></Card>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <Card className="border-[#0F3B27] bg-[#0F3B27] text-white">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-[#92FF5F]" /> Valorisation au coût moyen
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-black font-display">{nombre(valorisation.total)} FCFA</div>
+                <p className="text-xs text-[#CFF1D2]">Coût moyen pondéré à la date du jour, rapproché du compte de stock (STO-18).</p>
+              </CardContent>
+            </Card>
+            <Card className="border-[#CFF1D2]">
+              <CardHeader>
+                <CardTitle className="text-sm font-bold text-[#0F3B27]">ABC et rotation</CardTitle>
+              </CardHeader>
+              <CardContent className="text-xs text-[#475C50]">
+                Classement ABC, couverture en jours et marge par famille, avec le cahier des ruptures et des demandes non satisfaites (STO-19, STK-08, BPD5-F15).
+              </CardContent>
+            </Card>
+            <Card className="border-[#CFF1D2]">
+              <CardHeader>
+                <CardTitle className="text-sm font-bold text-[#0F3B27]">Étiquettes</CardTitle>
+              </CardHeader>
+              <CardContent className="text-xs text-[#475C50]">
+                Impression des étiquettes d’emplacement, de quarantaine et de rebut (STO-20) sur l’imprimante d’étiquettes.
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="border-[#CFF1D2]">
+            <CardHeader>
+              <CardTitle className="text-xs font-bold text-[#0F3B27]">Détail par produit (coût moyen pondéré)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {valorisation.par_produit?.length ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-[#F7F9F7] text-[#475C50] font-bold border-b border-[#CFF1D2]">
+                      <tr>
+                        <th className="py-2 px-3">Produit</th>
+                        <th className="py-2 px-3">Qté</th>
+                        <th className="py-2 px-3">Coût moyen</th>
+                        <th className="py-2 px-3">Valeur</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#CFF1D2]/50">
+                      {valorisation.par_produit.slice(0, 20).map((v: any) => (
+                        <tr key={v.produit.id}>
+                          <td className="py-2 px-3 font-bold text-[#0F3B27]">{v.produit.nom_commercial}</td>
+                          <td className="py-2 px-3 font-mono">{v.quantite}</td>
+                          <td className="py-2 px-3 font-mono">{nombre(v.cmp || 0)} FCFA</td>
+                          <td className="py-2 px-3 font-mono font-bold">{nombre(v.valeur)} FCFA</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-sm text-[#475C50]">La valorisation se calcule dès qu’un lot est réceptionné.</div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -817,6 +2353,161 @@ function PageStockMagasin() {
               </div>
 
               <ZoneDepot label="Joindre le bon de livraison ou la facture (photo ou PDF)" />
+            </ColonneFiche>
+          </form>
+        </ModaleFiche>
+      </Dialog>
+
+      {/* Dialog Nouveau Produit — STO-02 */}
+      <Dialog open={dialogAjoutProduitOuvert} onOpenChange={setDialogAjoutProduitOuvert}>
+        <ModaleFiche
+          titre="Nouveau Médicament au Catalogue"
+          sousTitre="Enregistrement d'une référence officinale : code CIP, DCI, forme galénique, dosage, statut réglementaire et seuil d'alerte."
+          badge={<Badge className="bg-[#0F3B27] text-[#92FF5F]">STO-02</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" onClick={() => setDialogAjoutProduitOuvert(false)} className="h-12 rounded-xl sm:h-11">
+                Annuler
+              </Button>
+              <Button type="submit" form="form-ajout-produit" disabled={mutationAjoutProduit.isPending} className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11">
+                {mutationAjoutProduit.isPending ? "Enregistrement…" : "Ajouter le médicament au catalogue"}
+              </Button>
+            </div>
+          }
+        >
+          <form id="form-ajout-produit" onSubmit={handleAjoutProduitSubmit} className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <ColonneFiche titre="Identification du Médicament" aide="Les informations réglementaires imprimées sur le conditionnement.">
+              <Champ label="Code CIP / Code-barres" obligatoire aide="Numéro CIP à 7 ou 13 chiffres, unique pour chaque référence.">
+                <Input
+                  value={nouveauProduit.code_cip}
+                  onChange={(e) => setNouveauProduit({ ...nouveauProduit, code_cip: e.target.value })}
+                  placeholder="Ex. 3400936000123"
+                  className="h-12 rounded-xl font-mono"
+                  required
+                />
+              </Champ>
+
+              <Champ label="Nom commercial / Spécialité" obligatoire aide="Nom de marque tel qu'il figure sur la boîte.">
+                <Input
+                  value={nouveauProduit.nom_commercial}
+                  onChange={(e) => setNouveauProduit({ ...nouveauProduit, nom_commercial: e.target.value })}
+                  placeholder="Ex. PARACÉTAMOL BIOGARAN"
+                  className="h-12 rounded-xl"
+                  required
+                />
+              </Champ>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Champ label="DCI (Principe actif)" aide="Dénomination Commune Internationale">
+                  <Input
+                    value={nouveauProduit.dci}
+                    onChange={(e) => setNouveauProduit({ ...nouveauProduit, dci: e.target.value })}
+                    placeholder="Ex. Paracétamol"
+                    className="h-12 rounded-xl"
+                  />
+                </Champ>
+                <Champ label="Forme galénique">
+                  <Input
+                    value={nouveauProduit.forme}
+                    onChange={(e) => setNouveauProduit({ ...nouveauProduit, forme: e.target.value })}
+                    placeholder="Ex. Comprimé, Sirop, Gélule"
+                    className="h-12 rounded-xl"
+                  />
+                </Champ>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Champ label="Dosage">
+                  <Input
+                    value={nouveauProduit.dosage}
+                    onChange={(e) => setNouveauProduit({ ...nouveauProduit, dosage: e.target.value })}
+                    placeholder="Ex. 500 mg, 1 g"
+                    className="h-12 rounded-xl"
+                  />
+                </Champ>
+                <Champ label="Classe thérapeutique">
+                  <Input
+                    value={nouveauProduit.classe_therapeutique}
+                    onChange={(e) => setNouveauProduit({ ...nouveauProduit, classe_therapeutique: e.target.value })}
+                    placeholder="Ex. Antalgique antipyrétique"
+                    className="h-12 rounded-xl"
+                  />
+                </Champ>
+              </div>
+            </ColonneFiche>
+
+            <ColonneFiche titre="Tarification & Cadre Réglementaire" aide="Prix, seuil de stock et contraintes de conservation.">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Champ label="Prix public TTC (FCFA)" obligatoire aide="Prix de vente officiel au comptoir.">
+                  <Input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={nouveauProduit.prix_public_ttc}
+                    onChange={(e) => setNouveauProduit({ ...nouveauProduit, prix_public_ttc: e.target.value })}
+                    placeholder="Ex. 1500"
+                    className="h-12 rounded-xl font-bold font-mono"
+                    required
+                  />
+                </Champ>
+                <Champ label="Seuil d'alerte stock (min)" aide="Nombre de boîtes déclenchant l'alerte réassort.">
+                  <Input
+                    type="number"
+                    min="0"
+                    value={nouveauProduit.seuil_stock_min}
+                    onChange={(e) => setNouveauProduit({ ...nouveauProduit, seuil_stock_min: e.target.value })}
+                    placeholder="5"
+                    className="h-12 rounded-xl font-mono"
+                  />
+                </Champ>
+              </div>
+
+              <Champ label="Tableau de substance vénéneuse">
+                <select
+                  value={nouveauProduit.tableau_substance}
+                  onChange={(e) => setNouveauProduit({ ...nouveauProduit, tableau_substance: e.target.value })}
+                  className="mt-1 h-12 w-full rounded-xl border border-[#CFF1D2] bg-white px-3 text-sm font-medium text-[#0F3B27]"
+                >
+                  <option value="sans">Sans liste / Médicament libre</option>
+                  <option value="liste_1">Liste I (Cadre rouge)</option>
+                  <option value="liste_2">Liste II (Cadre vert)</option>
+                  <option value="stupefiant">Stupéfiant (Armoire sous clé)</option>
+                </select>
+              </Champ>
+
+              <div className="space-y-3 pt-2">
+                <label className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50/50 p-3 text-xs text-blue-900 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={nouveauProduit.est_thermolabile}
+                    onChange={(e) => setNouveauProduit({ ...nouveauProduit, est_thermolabile: e.target.checked })}
+                    className="mt-0.5 size-4 accent-[#0F3B27]"
+                  />
+                  <div>
+                    <span className="font-bold flex items-center gap-1.5 text-blue-950">
+                      ❄️ Médicament Thermolabile (2 °C – 8 °C)
+                    </span>
+                    <p className="text-[11px] text-blue-800/80 mt-0.5">
+                      Ce médicament sera automatiquement orienté vers le réfrigérateur à réception, avec suivi de température obligatoire.
+                    </p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] p-3 text-xs text-[#0F3B27] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={nouveauProduit.necessite_ordonnance}
+                    onChange={(e) => setNouveauProduit({ ...nouveauProduit, necessite_ordonnance: e.target.checked })}
+                    className="mt-0.5 size-4 accent-[#0F3B27]"
+                  />
+                  <div>
+                    <span className="font-bold">Prescription médicale obligatoire (Ordonnance)</span>
+                    <p className="text-[11px] text-[#475C50] mt-0.5">
+                      La caisse exigera la saisie du médecin prescripteur et du numéro d'ordonnance lors de la délivrance.
+                    </p>
+                  </div>
+                </label>
+              </div>
             </ColonneFiche>
           </form>
         </ModaleFiche>

@@ -112,19 +112,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       {
-        rel: "preload",
-        href: "/fonts/Satoshi-Variable.woff2",
-        as: "font",
-        type: "font/woff2",
-        crossOrigin: "anonymous",
+        rel: "preconnect",
+        href: "https://fonts.googleapis.com",
       },
       {
         rel: "preconnect",
-        href: "https://api.fontshare.com",
-      },
-      {
-        rel: "preconnect",
-        href: "https://cdn.fontshare.com",
+        href: "https://fonts.gstatic.com",
         crossOrigin: "anonymous",
       },
       {

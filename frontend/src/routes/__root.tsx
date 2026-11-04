@@ -111,16 +111,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary" },
     ],
     links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "preconnect", href: "https://api.fontshare.com", crossOrigin: "anonymous" },
       {
-        rel: "stylesheet",
-        href: "https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800,900&display=swap",
+        rel: "preload",
+        href: "/fonts/Satoshi-Variable.woff2",
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
       },
       {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Sora:wght@600;700;800&display=swap",
+        rel: "preload",
+        href: "/fonts/Stardom-Regular.woff2",
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
       },
       {
         rel: "stylesheet",

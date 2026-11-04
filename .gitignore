@@ -36,3 +36,7 @@ cahier_des_charges_extracted.txt
 .idea/
 *.log
 .DS_Store
+
+# Archives de polices brutes (fichiers web intégrés dans frontend/public/fonts)
+Satoshi_Complete/
+Stardom_Complete/

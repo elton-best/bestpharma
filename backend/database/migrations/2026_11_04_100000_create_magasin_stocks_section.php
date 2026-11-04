@@ -49,7 +49,6 @@ return new class extends Migration
             $table->enum('classe_produit', ['libre', 'liste_1', 'liste_2', 'stupefiant', 'psychotrope', 'derive_sang', 'thermolabile', 'medication_officinale', 'standard'])->default('standard')->after('tableau_substance');
             $table->decimal('prix_achat_moyen', 12, 2)->default(0)->after('prix_achat_ht'); // CMP pour STO-18
             $table->boolean('est_dormant')->default(false);
-            $table->timestamps(); // déjà existant mais safe
         });
 
         // ------------------------------------------------------------

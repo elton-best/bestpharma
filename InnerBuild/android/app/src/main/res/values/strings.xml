@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">AIFAC</string>
-    <string name="title_activity_main">AIFAC</string>
-    <string name="package_name">me.eltonhounnou.aifactory</string>
-    <string name="custom_url_scheme">me.eltonhounnou.aifactory</string>
-</resources>

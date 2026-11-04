@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import {
   NotificationBing,
   TickCircle,
@@ -20,6 +20,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
+import { joursRestants } from "@/components/modules/commun";
+import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
 
 interface NotificationItem {
   id: string;
@@ -41,7 +43,7 @@ export function NotificationsSheet() {
   const navigate = useNavigate();
 
   // Récupérer le statut du pointage et des températures pour générer des notifications temps réel
-  const { data: pointage } = useQuery({
+  const { data: pointage, isLoading: presenceCharge, isError: presenceErreur } = useQuery({
     queryKey: ["pointage-actif", id],
     enabled: !!id,
     queryFn: async () => {
@@ -51,7 +53,7 @@ export function NotificationsSheet() {
     },
   });
 
-  const { data: tempStats } = useQuery({
+  const { data: tempStats, isLoading: temperaturesCharge, isError: temperaturesErreur } = useQuery({
     queryKey: ["temp-stats-dash", id],
     enabled: !!id,
     queryFn: async () => {
@@ -59,67 +61,128 @@ export function NotificationsSheet() {
     },
   });
 
-  // Construction des notifications dynamiques de l'officine
-  const notifications: NotificationItem[] = [
-    ...(pointage && !pointage.pharmacien_present
-      ? [
-          {
-            id: "notif-presence-1",
-            type: "presence" as const,
-            titre: "Alerte Présence Pharmacien (Art. 1.11)",
-            description: "Aucun pharmacien diplômé n'a validé sa prise de service sur le site de l'officine.",
-            heure: "À l'instant",
-            lu: lusManuels.includes("notif-presence-1"),
-            lien: "/pointage",
-            gravite: "haute" as const,
-          },
-        ]
-      : []),
-    {
-      id: "notif-froid-2",
-      type: "temp",
-      titre: "Relevé Enceinte Frigorifique Vaccins",
-      description:
-        tempStats?.zones?.refrigeree_2_8?.temp_actuelle
-          ? `Température actuelle conforme : ${tempStats.zones.refrigeree_2_8.temp_actuelle}°C (plage légale 2°C à 8°C).`
-          : "N'oubliez pas d'effectuer le contrôle bi-quotidien de la chaîne du froid.",
-      heure: "Il y a 15 min",
-      lu: lusManuels.includes("notif-froid-2"),
-      lien: "/temperatures",
-      gravite: "info",
-    },
-    {
-      id: "notif-fefo-3",
-      type: "fefo",
-      titre: "Contrôle FEFO des spécialités à 90 jours",
-      description: "Des lots en rayon atteignent le seuil critique de péremption. Déstockage prioritaire requis.",
-      heure: "Il y a 1 h",
-      lu: lusManuels.includes("notif-fefo-3"),
-      lien: "/stock",
-      gravite: "moyenne",
-    },
-    {
-      id: "notif-emecef-4",
-      type: "caisse",
-      titre: "Certification e-MECeF DGI active",
-      description: "Le serveur fiscalisateur DGI répond normalement. Toutes les ventes sont normalisées avec QR Code.",
-      heure: "Il y a 2 h",
-      lu: lusManuels.includes("notif-emecef-4"),
-      lien: "/facturation",
-      gravite: "info",
-    },
-    {
-      id: "notif-bpd-5",
-      type: "bpd",
-      titre: "Auto-évaluation annuelle Guide BPD",
-      description: "Campagne 2026 ouverte : 267 articles auditables pour l'Agence Béninoise du Médicament.",
-      heure: "Aujourd'hui",
-      lu: lusManuels.includes("notif-bpd-5"),
-      lien: "/auto-evaluation",
-      gravite: "info",
-    },
-  ];
+  // Échéances qualité : les plus proches d'abord, pour ne rien laisser passer.
+  const { data: echeances, isLoading: echeancesCharge, isError: echeancesErreur } = useQuery({
+    queryKey: ["echeances", id],
+    enabled: !!id,
+    queryFn: () => api.get<any[]>(`/api/officines/${id}/echeances`),
+  });
 
+  // Lots du magasin : péremptions, quarantaine et ruptures de stock.
+  const { data: stocks, isLoading: stocksCharge, isError: stocksErreur } = useQuery({
+    queryKey: ["stocks", "tous", ""],
+    enabled: !!id,
+    queryFn: () => api.get<any>("/api/stocks"),
+  });
+
+  // Campagne d'auto-inspection en cours, s'il y en a une.
+  const { data: campagne, isLoading: campagneCharge, isError: campagneErreur } = useQuery({
+    queryKey: ["bpd-campagne-dash", id],
+    enabled: !!id,
+    queryFn: () => api.get<any>(`/api/officines/${id}/auto-evaluation/campagne-courante`),
+  });
+
+  const notifications: NotificationItem[] = [];
+
+  // 1. Présence pharmaceutique continue
+  if (pointage && !pointage.pharmacien_present) {
+    notifications.push({
+      id: "notif-presence",
+      type: "presence",
+      titre: "Aucun pharmacien pointé présent",
+      description:
+        "La dispensation doit rester sous la responsabilité d'un pharmacien : faites valider une prise de service.",
+      heure: "Maintenant",
+      lu: lusManuels.includes("notif-presence"),
+      lien: "/pointage",
+      gravite: "haute",
+    });
+  }
+
+  // 2. Chaîne du froid
+  const temperatureFrigo = tempStats?.zones?.refrigeree_2_8?.temp_actuelle;
+  const frigoHorsPlage =
+    temperatureFrigo != null && Number.isFinite(Number(temperatureFrigo)) &&
+    (Number(temperatureFrigo) < 2 || Number(temperatureFrigo) > 8);
+  if (frigoHorsPlage || (tempStats && temperatureFrigo == null)) {
+    notifications.push({
+      id: "notif-froid",
+      type: "temp",
+      titre: frigoHorsPlage ? "Enceinte réfrigérée hors plage" : "Relevé de température attendu",
+      description: frigoHorsPlage
+        ? "La dernière mesure est hors de la plage de conservation réfrigérée. Contrôlez les produits concernés et appliquez la procédure de quarantaine."
+        : "Aucune mesure récente sur l'enceinte réfrigérée : contrôlez la chaîne du froid et émargez le relevé.",
+      heure: "Aujourd'hui",
+      lu: lusManuels.includes("notif-froid"),
+      lien: "/temperatures",
+      gravite: frigoHorsPlage ? "haute" : "moyenne",
+    });
+  }
+
+  // 3. Lots à péremption proche ou déjà périmés
+  const statsLots = stocks?.stats;
+  if (statsLots && (statsLots.critiques_1m > 0 || statsLots.perimes > 0)) {
+    notifications.push({
+      id: "notif-fefo",
+      type: "fefo",
+      titre: "Lots à sortir en priorité",
+      description: statsLots.perimes > 0
+        ? "Des lots périmés doivent être retirés de la vente et mis en quarantaine immédiatement."
+        : "Des lots arrivent à péremption prochainement. Priorisez les lots vendables qui périment le plus tôt.",
+      heure: "Aujourd'hui",
+      lu: lusManuels.includes("notif-fefo"),
+      lien: "/stock",
+      gravite: statsLots.perimes > 0 ? "haute" : "moyenne",
+    });
+  }
+
+  // 4. Échéances réglementaires en retard ou imminentes
+  const echeancesProches = (echeances ?? []).filter((e) => {
+    if (e.fait || e.archived) return false;
+    const jours = joursRestants(e.date_echeance);
+    return jours <= 30;
+  });
+  if (echeancesProches.length > 0) {
+    const enRetard = echeancesProches.filter((e) => joursRestants(e.date_echeance) < 0).length;
+    notifications.push({
+      id: "notif-echeances",
+      type: "bpd",
+      titre: "Échéances réglementaires à traiter",
+      description: enRetard
+        ? `Une partie des échéances du mois est dépassée. Ouvrez le calendrier pour les traiter ou les justifier.`
+        : `Des échéances arrivent dans les trente jours : licence, visites médicales, contrôles métrologiques.`,
+      heure: "Aujourd'hui",
+      lu: lusManuels.includes("notif-echeances"),
+      lien: "/echeances",
+      gravite: enRetard ? "haute" : "moyenne",
+    });
+  }
+
+  // 5. Campagne d'auto-inspection
+  if (campagne?.campagne) {
+    // Les articles restés « non évalués » sont la vraie mesure de l'avancement.
+    const restants =
+      campagne.statistiques?.total_non_evalues ??
+      campagne.statistiques?.non_evalues ??
+      campagne.stats?.non_evalues ??
+      (campagne.evaluations ?? []).filter((e: any) => !e.cotation || e.cotation === "non_evalue").length;
+    if (restants > 0) {
+      notifications.push({
+        id: "notif-bpd",
+        type: "bpd",
+        titre: "Auto-inspection qualité en cours",
+        description:
+          "Des exigences du référentiel restent à coter. L'inspection peut demander le rapport signé à tout moment.",
+        heure: "Cette semaine",
+        lu: lusManuels.includes("notif-bpd"),
+        lien: "/auto-evaluation",
+        gravite: "info",
+      });
+    }
+  }
+
+  const chargement = presenceCharge || temperaturesCharge || echeancesCharge || stocksCharge || campagneCharge;
+  const erreur = presenceErreur || temperaturesErreur || echeancesErreur || stocksErreur || campagneErreur;
   const nonLues = notifications.filter((n) => !n.lu);
   const elementsAffiches = filtre === "unread" ? nonLues : notifications;
 
@@ -156,7 +219,7 @@ export function NotificationsSheet() {
         <button
           type="button"
           aria-label="Centre de notifications"
-          className="relative flex size-9 items-center justify-center rounded-xl border border-[#CFF1D2] bg-white text-[#0F3B27] hover:bg-[#CFF1D2]/30 transition-colors shadow-xs"
+          className="relative flex size-12 items-center justify-center rounded-xl border border-[#CFF1D2] bg-white text-[#0F3B27] hover:bg-[#CFF1D2]/30 transition-colors shadow-xs"
         >
           <NotificationBing size={18} />
           {nonLues.length > 0 && (
@@ -185,39 +248,29 @@ export function NotificationsSheet() {
             <button
               type="button"
               onClick={marquerTousLus}
-              className="inline-flex items-center gap-1 text-xs font-bold text-[#0F3B27] hover:underline cursor-pointer"
+              className="inline-flex min-h-12 items-center gap-1 text-xs font-bold text-[#0F3B27] hover:underline cursor-pointer"
             >
               <TickCircle size={15} className="text-[#0F3B27]" /> Tout lire
             </button>
           )}
         </SheetHeader>
 
-        {/* Filtres Onglets */}
-        <div className="flex items-center border-b border-[#CFF1D2] px-5 py-2.5 gap-2 bg-[#F7F9F7]">
-          <button
-            type="button"
-            onClick={() => setFiltre("all")}
-            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-              filtre === "all"
-                ? "bg-[#0F3B27] text-[#92FF5F] shadow-xs"
-                : "text-[#475C50] hover:bg-white hover:text-[#0F3B27]"
-            }`}
-          >
-            Toutes ({notifications.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFiltre("unread")}
-            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-              filtre === "unread"
-                ? "bg-[#0F3B27] text-[#92FF5F] shadow-xs"
-                : "text-[#475C50] hover:bg-white hover:text-[#0F3B27]"
-            }`}
-          >
-            Non lues ({nonLues.length})
-          </button>
+        {/* Filtre */}
+        <div className="border-b border-[#CFF1D2] bg-[#F7F9F7] px-5 py-2.5">
+          <SelecteurFiltrable
+            options={[
+              { valeur: "all", libelle: `Toutes les alertes (${notifications.length})`, motsCles: ["tout"] },
+              { valeur: "unread", libelle: `Non lues (${nonLues.length})`, motsCles: ["nouvelles", "à lire"] },
+            ]}
+            valeur={filtre}
+            onChange={(v) => setFiltre(v as "all" | "unread")}
+            placeholder="Toutes les alertes"
+            placeholderRecherche="Filtrer : toutes, non lues…"
+          />
         </div>
 
+        {chargement && <p role="status" className="px-5 py-3 text-xs">Actualisation des alertes…</p>}
+        {erreur && <p role="alert" className="px-5 py-3 text-xs text-amber-800">Certaines alertes ne peuvent pas être vérifiées. Réessayez ou consultez les modules concernés.</p>}
         {/* Liste des Notifications */}
         <div className="flex-1 overflow-y-auto divide-y divide-[#CFF1D2]/60">
           {elementsAffiches.length === 0 ? (
@@ -227,13 +280,16 @@ export function NotificationsSheet() {
               </div>
               <p className="text-sm font-bold text-[#0F3B27]">Aucune notification</p>
               <p className="text-xs mt-1">
-                {filtre === "unread" ? "Toutes vos alertes sont traitées !" : "Aucune alerte pour l'instant."}
+                {filtre === "unread" ? "Toutes vos alertes sont traitées !" : erreur ? "Vérification des alertes incomplète." : chargement ? "Vérification en cours." : "Aucune alerte pour l'instant."}
               </p>
             </div>
           ) : (
             elementsAffiches.map((notif) => (
               <div
                 key={notif.id}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); marquerLu(notif.id, notif.lien); } }}
                 onClick={() => marquerLu(notif.id, notif.lien)}
                 className={`p-4 transition-colors cursor-pointer flex items-start gap-3 hover:bg-[#CFF1D2]/20 ${
                   !notif.lu ? "bg-[#CFF1D2]/10 font-medium" : ""
@@ -267,7 +323,7 @@ export function NotificationsSheet() {
 
         {/* Footer */}
         <div className="p-3 border-t border-[#CFF1D2] bg-[#F7F9F7] text-center text-xs text-[#475C50]">
-          BESTPHARMA · Système d'alerte et de conformité temps réel
+          BEGPHARMA · Alertes et conformité de l'officine
         </div>
       </SheetContent>
     </Sheet>

@@ -7,17 +7,17 @@ export function renderErrorPage(): string {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
       :root {
-        --ib-deep: #023010;
-        --ib-vibrant: #18AA38;
-        --ib-pale: #EFF7F1;
-        --ib-line: #CFE3D5;
-        --ib-ink: #1F2420;
+        --ib-deep: #0F3B27;
+        --ib-vibrant: #92FF5F;
+        --ib-pale: #F7F9F7;
+        --ib-line: #CFF1D2;
+        --ib-ink: #0F3B27;
       }
       body {
-        font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         background-color: #f8faf8;
         color: var(--ib-ink);
         display: grid;

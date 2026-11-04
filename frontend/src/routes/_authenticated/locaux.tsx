@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { formatDateHeure } from "@/lib/format";
 import { useOfficine } from "@/lib/officine-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 
 export const Route = createFileRoute("/_authenticated/locaux")({
   head: () => ({
@@ -150,7 +152,7 @@ function PageLocaux() {
               Locaux, Équipements & Hygiène
             </h1>
             <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 bg-emerald-50">
-              BPD-4 / Art. 4.1 à 4.25
+              Locaux, matériel et hygiène
             </Badge>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -195,7 +197,7 @@ function PageLocaux() {
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Sparkles className="size-4" /> Plan de Bio-Nettoyage (GAR-PL-004)
+          <Sparkles className="size-4" /> Plan de bio-nettoyage
         </button>
 
         <button
@@ -261,12 +263,12 @@ function PageLocaux() {
         <Card>
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-base">Registre d'émargement du Bio-Nettoyage (GAR-PL-004)</CardTitle>
+              <CardTitle className="text-base">Registre de bio-nettoyage</CardTitle>
               <CardDescription className="text-xs">
-                Nettoyage quotidien obligatoire du comptoir, du préparatoire, de la réserve et des sanitaires (Art. 4.20).
+                Le comptoir, le préparatoire, la réserve et les sanitaires se nettoient chaque jour, et chaque passage s'émarge.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="font-mono text-xs">Conservation 5 ans</Badge>
+            <Badge variant="outline" className="font-mono text-xs">Registre conservé</Badge>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -285,7 +287,7 @@ function PageLocaux() {
                   {nettoyages?.data && nettoyages.data.length > 0 ? (
                     nettoyages.data.map((n: any) => (
                       <tr key={n.id} className="hover:bg-muted/20">
-                        <td className="p-2.5 font-mono">{new Date(n.date_heure).toLocaleString("fr-FR")}</td>
+                        <td className="p-2.5 font-mono">{formatDateHeure(n.date_heure)}</td>
                         <td className="p-2.5 font-semibold capitalize">{n.zone?.replace("_", " ")}</td>
                         <td className="p-2.5 text-muted-foreground">{n.produit_utilise}</td>
                         <td className="p-2.5 capitalize">{n.frequence}</td>
@@ -318,7 +320,7 @@ function PageLocaux() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Bug className="size-5 text-amber-600" />
-                <CardTitle className="text-base">Lutte contre les Nuisibles (Art. 4.19)</CardTitle>
+                <CardTitle className="text-base">Lutte contre les nuisibles</CardTitle>
               </div>
               <CardDescription className="text-xs">
                 Contrat de dératisation et désinsectisation avec prestataire agréé.
@@ -343,7 +345,7 @@ function PageLocaux() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <ShieldAlert className="size-5 text-red-600" />
-                <CardTitle className="text-base">Sécurité Incendie & Extincteurs (Art. 4.7)</CardTitle>
+                <CardTitle className="text-base">Sécurité incendie et extincteurs</CardTitle>
               </div>
               <CardDescription className="text-xs">
                 Contrôle annuel obligatoire des extincteurs et consignes de secours.
@@ -366,155 +368,182 @@ function PageLocaux() {
         </div>
       )}
 
-      {/* MODAL NOUVEL ÉQUIPEMENT */}
+      {/* Nouvel équipement du carnet de vie */}
       <Dialog open={modalEquipement} onOpenChange={setModalEquipement}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Ajouter un équipement au carnet de vie</DialogTitle>
-            <DialogDescription>
-              Enregistrement d'un matériel soumis à maintenance ou étalonnage (Art. 4.23 & 4.25).
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={creerEquipement} className="grid gap-3 py-2 text-xs">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="grid gap-1.5">
-                <Label htmlFor="code">Code Interne</Label>
+        <ModaleFiche
+          titre="Inscrire un équipement au carnet de vie"
+          sousTitre="Tout matériel qui conditionne la qualité du médicament : conservation, pesée, secours électrique, surveillance des températures."
+          badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Carnet de vie</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] text-[#475C50]">
+                L'étalonnage et la maintenance se planifient à partir de la périodicité inscrite ici.
+              </p>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                <Button type="button" variant="outline" onClick={() => setModalEquipement(false)} className="h-12 rounded-xl sm:h-11">
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  form="formulaire-equipement"
+                  disabled={enCours || !codeInterne || !designation}
+                  className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
+                >
+                  Enregistrer l'équipement
+                </Button>
+              </div>
+            </div>
+          }
+        >
+          <form id="formulaire-equipement" onSubmit={creerEquipement} className="grid gap-4 md:grid-cols-2">
+            <ColonneFiche titre="Identification" aide="Le code interne sert de repère sur l'étiquette collée à l'appareil.">
+              <Champ label="Code interne" obligatoire aide="Court et unique, par exemple FRIG-02.">
                 <Input
                   id="code"
-                  placeholder="ex: FRIG-02"
+                  placeholder="FRIG-02"
                   value={codeInterne}
                   onChange={(e) => setCodeInterne(e.target.value)}
                   required
+                  className="h-11"
                 />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="cat">Catégorie</Label>
+              </Champ>
+              <Champ label="Désignation complète" obligatoire>
+                <Input
+                  id="desig"
+                  placeholder="Réfrigérateur médical deux portes"
+                  value={designation}
+                  onChange={(e) => setDesignation(e.target.value)}
+                  required
+                  className="h-11"
+                />
+              </Champ>
+              <Champ label="Marque et modèle">
+                <Input
+                  id="modele"
+                  placeholder="Liebherr, Dometic, Carrier…"
+                  value={marqueModele}
+                  onChange={(e) => setMarqueModele(e.target.value)}
+                  className="h-11"
+                />
+              </Champ>
+            </ColonneFiche>
+
+            <ColonneFiche titre="Suivi" aide="Où se trouve l'appareil et à quelle fréquence il se vérifie.">
+              <Champ
+                label="Catégorie"
+                aide="La catégorie détermine les contrôles attendus par l'inspection."
+              >
                 <select
                   id="cat"
                   value={categorie}
                   onChange={(e) => setCategorie(e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-xs"
+                  className="h-11 w-full rounded-xl border border-[#CFF1D2] bg-white px-3 text-sm"
                 >
-                  <option value="refrigerateur">Réfrigérateur (2°C-8°C)</option>
-                  <option value="climatiseur">Climatiseur (&lt; 25°C)</option>
+                  <option value="refrigerateur">Réfrigérateur (2 °C à 8 °C)</option>
+                  <option value="climatiseur">Climatiseur (moins de 25 °C)</option>
                   <option value="balance_precision">Balance de précision</option>
-                  <option value="onduleur_groupe">Onduleur / Groupe secours</option>
-                  <option value="enregistreur_temperature">Sonde enregistreur T°</option>
+                  <option value="onduleur_groupe">Onduleur ou groupe de secours</option>
+                  <option value="enregistreur_temperature">Sonde enregistreur de température</option>
                 </select>
-              </div>
-            </div>
-
-            <div className="grid gap-1.5">
-              <Label htmlFor="desig">Désignation complète</Label>
-              <Input
-                id="desig"
-                placeholder="ex: Réfrigérateur Liebherr Médical..."
-                value={designation}
-                onChange={(e) => setDesignation(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div className="grid gap-1.5">
-                <Label htmlFor="modele">Marque / Modèle</Label>
-                <Input
-                  id="modele"
-                  placeholder="Dometic / Carrier..."
-                  value={marqueModele}
-                  onChange={(e) => setMarqueModele(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="empl">Emplacement</Label>
+              </Champ>
+              <Champ label="Emplacement">
                 <Input
                   id="empl"
-                  placeholder="Réserve, Comptoir..."
+                  placeholder="Réserve, comptoir, préparatoire…"
                   value={emplacement}
                   onChange={(e) => setEmplacement(e.target.value)}
+                  className="h-11"
                 />
-              </div>
-            </div>
-
-            <div className="grid gap-1.5">
-              <Label htmlFor="period">Périodicité d'étalonnage (mois)</Label>
-              <Input
-                id="period"
-                type="number"
-                value={periodicite}
-                onChange={(e) => setPeriodicite(parseInt(e.target.value) || 12)}
-              />
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" onClick={() => setModalEquipement(false)}>
-                Annuler
-              </Button>
-              <Button type="submit" disabled={enCours || !codeInterne || !designation}>
-                Enregistrer l'équipement
-              </Button>
-            </DialogFooter>
+              </Champ>
+              <Champ
+                label="Périodicité d'étalonnage"
+                aide="En mois. La prochaine échéance se calcule automatiquement."
+              >
+                <Input
+                  id="period"
+                  type="number"
+                  min="1"
+                  value={periodicite}
+                  onChange={(e) => setPeriodicite(parseInt(e.target.value) || 12)}
+                  className="h-11"
+                />
+              </Champ>
+            </ColonneFiche>
           </form>
-        </DialogContent>
+        </ModaleFiche>
       </Dialog>
 
-      {/* MODAL ÉMARGEMENT NETTOYAGE */}
+      {/* Émargement du bio-nettoyage */}
       <Dialog open={modalNettoyage} onOpenChange={setModalNettoyage}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Émargement du Bio-Nettoyage</DialogTitle>
-            <DialogDescription>
-              Attestation d'exécution du plan de désinfection conforme à l'article 4.20 du Guide BPD.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={emargerNettoyage} className="grid gap-3 py-2 text-xs">
-            <div className="grid gap-1.5">
-              <Label htmlFor="zoneN">Zone nettoyée & désinfectée</Label>
-              <select
-                id="zoneN"
-                value={zoneNettoyage}
-                onChange={(e) => setZoneNettoyage(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-xs"
-              >
-                <option value="comptoir">Comptoir & Hall de dispensation</option>
-                <option value="reserve">Réserve de stockage & Magasin</option>
-                <option value="preparatoire">Préparatoire officinal</option>
-                <option value="sanitaires_vestiaires">Sanitaires & Vestiaires du personnel</option>
-              </select>
+        <ModaleFiche
+          titre="Émarger le bio-nettoyage d'une zone"
+          sousTitre="L'attestation d'exécution du plan de désinfection, signée par l'agent qui l'a réalisé."
+          badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Hygiène des locaux</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] text-[#475C50]">
+                Une zone émargée ne peut pas être déclarée deux fois pour le même jour.
+              </p>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                <Button type="button" variant="outline" onClick={() => setModalNettoyage(false)} className="h-12 rounded-xl sm:h-11">
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  form="formulaire-nettoyage"
+                  disabled={enCours}
+                  className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
+                >
+                  Signer et émarger
+                </Button>
+              </div>
             </div>
+          }
+        >
+          <form id="formulaire-nettoyage" onSubmit={emargerNettoyage} className="grid gap-4 md:grid-cols-2">
+            <ColonneFiche titre="Zone traitée" aide="Une fiche par zone, pour que le registre reste lisible en inspection.">
+              <Champ label="Zone nettoyée et désinfectée" obligatoire>
+                <select
+                  id="zoneN"
+                  value={zoneNettoyage}
+                  onChange={(e) => setZoneNettoyage(e.target.value)}
+                  className="h-11 w-full rounded-xl border border-[#CFF1D2] bg-white px-3 text-sm"
+                >
+                  <option value="comptoir">Comptoir et hall de dispensation</option>
+                  <option value="reserve">Réserve de stockage et magasin</option>
+                  <option value="preparatoire">Préparatoire officinal</option>
+                  <option value="sanitaires_vestiaires">Sanitaires et vestiaires du personnel</option>
+                </select>
+              </Champ>
+              <Champ label="Produit détergent ou désinfectant utilisé" obligatoire aide="Nom commercial et dilution, tels qu'inscrits sur la fiche technique.">
+                <Input
+                  id="prod"
+                  placeholder="Eau de Javel diluée, détergent désinfectant…"
+                  value={produitNettoyage}
+                  onChange={(e) => setProduitNettoyage(e.target.value)}
+                  required
+                  className="h-11"
+                />
+              </Champ>
+            </ColonneFiche>
 
-            <div className="grid gap-1.5">
-              <Label htmlFor="prod">Produit détergent / désinfectant utilisé</Label>
-              <Input
-                id="prod"
-                value={produitNettoyage}
-                onChange={(e) => setProduitNettoyage(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="grid gap-1.5">
-              <Label htmlFor="obs">Remarques éventuelles</Label>
-              <Input
-                id="obs"
-                placeholder="R.A.S. surfaces propres et séchées"
-                value={notesNettoyage}
-                onChange={(e) => setNotesNettoyage(e.target.value)}
-              />
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" onClick={() => setModalNettoyage(false)}>
-                Annuler
-              </Button>
-              <Button type="submit" disabled={enCours} className="bg-emerald-600 hover:bg-emerald-700">
-                Signer & Émarger
-              </Button>
-            </DialogFooter>
+            <ColonneFiche titre="Observation" aide="Signalez ce qui change la lecture du registre : surface abîmée, produit remplacé, zone à refaire.">
+              <Champ label="Remarques éventuelles">
+                <Input
+                  id="obs"
+                  placeholder="Surfaces propres et séchées"
+                  value={notesNettoyage}
+                  onChange={(e) => setNotesNettoyage(e.target.value)}
+                  className="h-11"
+                />
+              </Champ>
+              <div className="rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] p-3 text-[11px] leading-relaxed text-[#475C50]">
+                L'émargement enregistre l'agent connecté et l'heure de saisie. Une signature papier reste possible
+                en complément, mais le registre numérique fait foi.
+              </div>
+            </ColonneFiche>
           </form>
-        </DialogContent>
+        </ModaleFiche>
       </Dialog>
     </div>
   );

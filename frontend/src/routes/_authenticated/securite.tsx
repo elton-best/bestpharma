@@ -1,124 +1,95 @@
 import { useState } from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2, ShieldCheck, ShieldOff, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api-client";
 import { fr } from "@/lib/i18n/fr";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
+import { Dialog } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/securite")({
   ssr: false,
   head: () => ({
     meta: [
       { title: "Sécurité — BEGPHARMA" },
-      {
-        name: "description",
-        content: "Double authentification de votre compte BEGPHARMA.",
-      },
+      { name: "description", content: "Double authentification de votre compte BEGPHARMA." },
       { property: "og:title", content: "Sécurité — BEGPHARMA" },
-      {
-        property: "og:description",
-        content: "Activez la double authentification exigée pour votre rôle.",
-      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: PageSecurite,
 });
 
-function qrEnDataUri(qr: string): string {
-  if (qr.startsWith("data:")) return qr;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(qr)}`;
+interface EtatMfa {
+  mfa_enabled: boolean;
+  mfa_secret_present: boolean;
+  mfa_required: boolean;
+  devices: number;
+  derniere_activite: string | null;
+}
+
+interface Enrollement {
+  secret: string;
+  otpauth_url: string;
+  qr_code_url: string;
 }
 
 function PageSecurite() {
-  const { user } = Route.useRouteContext();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  const [enCours, setEnCours] = useState(false);
   const [code, setCode] = useState("");
-  const [enrollement, setEnrollement] = useState<{ factorId: string; qr: string } | null>(null);
+  const [enrollement, setEnrollement] = useState<Enrollement | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [desactivation, setDesactivation] = useState(false);
 
-  const { data: etat, isLoading } = useQuery({
-    queryKey: ["securite", user.id],
-    queryFn: async () => {
-      const [{ data: factors }, { data: requise }, niveau] = await Promise.all([
-        supabase.auth.mfa.listFactors(),
-        supabase.rpc("mfa_requise"),
-        supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
-      ]);
-      if (requise === null) throw new Error("Statut indisponible");
-      return {
-        facteurVerifie: (factors?.all ?? []).find((f) => f.status === "verified")?.id ?? null,
-        aal2: (niveau.data?.currentLevel ?? "aal1") === "aal2",
-        requise: !!requise,
-      };
+  const { data: etat, isLoading } = useQuery<EtatMfa>({
+    queryKey: ["securite"],
+    queryFn: () => api.get<EtatMfa>("/auth/mfa"),
+  });
+
+  const demarrer = useMutation({
+    mutationFn: () => api.post<Enrollement>("/auth/mfa/demarrer", {}),
+    onSuccess: (donnees) => {
+      setErreur(null);
+      setCode("");
+      setEnrollement(donnees);
+    },
+    onError: (e: any) => setErreur(e.message || fr.commun.erreur),
+  });
+
+  const confirmer = useMutation({
+    mutationFn: () =>
+      api.post<{ token?: string; user?: unknown }>("/auth/verify-mfa", {
+        code: code.replace(/\s+/g, ""),
+      }),
+    onSuccess: async () => {
+      toast.success(fr.mfa.active);
+      setEnrollement(null);
+      setCode("");
+      await queryClient.invalidateQueries();
+      navigate({ to: "/app" });
+    },
+    onError: () => {
+      setErreur("Code incorrect ou expiré. Vérifiez l'heure de votre téléphone puis réessayez.");
     },
   });
 
-  async function demarrer() {
-    setErreur(null);
-    setEnCours(true);
-    // On nettoie une éventuelle tentative précédente restée non vérifiée.
-    const { data: existants } = await supabase.auth.mfa.listFactors();
-    for (const f of existants?.all ?? []) {
-      if (f.status !== "verified") {
-        await supabase.auth.mfa.unenroll({ factorId: f.id });
-      }
-    }
-    const { data, error } = await supabase.auth.mfa.enroll({
-      factorType: "totp",
-      friendlyName: "BEGPHARMA",
-    });
-    setEnCours(false);
-    if (error || !data) {
-      setErreur(error?.message || fr.commun.erreur);
-      return;
-    }
-    setEnrollement({ factorId: data.id, qr: data.totp.qr_code });
-  }
-
-  async function verifier() {
-    const factorId = enrollement?.factorId ?? etat?.facteurVerifie;
-    if (!factorId) return;
-    setErreur(null);
-    setEnCours(true);
-    const { error } = await supabase.auth.mfa.challengeAndVerify({
-      factorId,
-      code: code.replace(/\s+/g, ""),
-    });
-    if (error) {
-      setErreur("Code incorrect. Réessayez.");
-      setEnCours(false);
-      return;
-    }
-    // La session doit repartir avec un jeton portant le niveau aal2,
-    // sinon les règles de la base continuent de masquer les officines.
-    await supabase.auth.refreshSession();
-    await queryClient.invalidateQueries();
-    toast.success(fr.mfa.active);
-    setEnrollement(null);
-    setCode("");
-    navigate({ to: "/app" });
-  }
-
-  async function annuler() {
-    if (enrollement) {
-      await supabase.auth.mfa.unenroll({ factorId: enrollement.factorId });
-    }
-    setEnrollement(null);
-    setCode("");
-    setErreur(null);
-  }
+  const desactiver = useMutation({
+    mutationFn: () => api.delete("/auth/mfa"),
+    onSuccess: async () => {
+      toast.success("Double authentification désactivée.");
+      setDesactivation(false);
+      await queryClient.invalidateQueries({ queryKey: ["securite"] });
+    },
+    onError: (e: any) => toast.error(e.message || fr.commun.erreur),
+  });
 
   if (isLoading) {
     return (
@@ -129,28 +100,39 @@ function PageSecurite() {
     );
   }
 
+  const active = !!etat?.mfa_enabled;
+
   return (
     <div className="grid gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
-          {fr.mfa.titre}
-        </h1>
-        {etat?.requise ? (
-          <p className="mt-1 text-sm text-muted-foreground">{fr.mfa.obligatoire}</p>
-        ) : null}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
+            {fr.mfa.titre}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {etat?.mfa_required
+              ? fr.mfa.obligatoire
+              : "Renforcez la protection de votre compte avec un code temporaire à chaque connexion."}
+          </p>
+        </div>
+        <Badge
+          variant={active ? "default" : "outline"}
+          className={active ? "h-8 gap-1.5 bg-emerald-600 px-3 text-white" : "h-8 gap-1.5 px-3"}
+        >
+          {active ? <ShieldCheck className="size-4" /> : <ShieldOff className="size-4" />}
+          {active ? "Double authentification active" : "Double authentification inactive"}
+        </Badge>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{fr.mfa.titre}</CardTitle>
+          <CardTitle>Application d'authentification</CardTitle>
           <CardDescription>
-            {etat?.facteurVerifie && etat.aal2
+            {active
               ? fr.mfa.active
               : enrollement
                 ? fr.mfa.scanner
-                : etat?.facteurVerifie
-                  ? fr.mfa.confirmerDesc
-                  : fr.mfa.obligatoire}
+                : "Scannez le QR code avec une application d'authentification, puis saisissez le code à six chiffres."}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -160,76 +142,136 @@ function PageSecurite() {
             </Alert>
           ) : null}
 
-          {etat?.facteurVerifie && etat.aal2 ? (
-            <Button asChild className="h-11 w-fit">
-              <Link to="/app">{fr.nav.tableau}</Link>
-            </Button>
-          ) : enrollement ? (
-            <>
-              <img
-                src={qrEnDataUri(enrollement.qr)}
-                alt="QR code d'activation"
-                className="mx-auto size-56 rounded-lg bg-white p-2"
-              />
-              <div className="grid gap-2">
-                <Label htmlFor="code-mfa">{fr.mfa.code}</Label>
-                <Input
-                  id="code-mfa"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                  placeholder="123456"
-                  className="text-center text-lg tracking-[0.4em]"
+          {enrollement ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid place-items-center gap-2 rounded-xl border border-[#CFE3D5] bg-[#F7FBF8] p-4">
+                <img
+                  src={enrollement.qr_code_url}
+                  alt="QR code d'activation de la double authentification"
+                  className="size-52 rounded-lg bg-white p-2"
                 />
+                <p className="text-center text-xs text-muted-foreground">
+                  Clé de secours à recopier si le scan échoue : <strong>{enrollement.secret}</strong>
+                </p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={verifier}
-                  disabled={enCours || code.length !== 6}
-                  className="h-11"
-                >
-                  {enCours ? <Loader2 className="size-4 animate-spin" /> : null}
-                  {fr.mfa.verifier}
-                </Button>
-                <Button variant="outline" onClick={annuler} disabled={enCours} className="h-11">
-                  {fr.commun.annuler}
-                </Button>
+              <div className="grid content-start gap-3">
+                <Champ label={fr.mfa.code} obligatoire>
+                  <Input
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                    placeholder="123456"
+                    className="h-14 text-center text-lg tracking-[0.4em]"
+                  />
+                </Champ>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => confirmer.mutate()}
+                    disabled={confirmer.isPending || code.length !== 6}
+                    className="h-12"
+                  >
+                    {confirmer.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+                    {fr.mfa.verifier}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-12"
+                    onClick={() => {
+                      setEnrollement(null);
+                      setCode("");
+                      setErreur(null);
+                    }}
+                    disabled={confirmer.isPending}
+                  >
+                    {fr.commun.annuler}
+                  </Button>
+                </div>
               </div>
-            </>
-          ) : etat?.facteurVerifie ? (
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="code-mfa">{fr.mfa.code}</Label>
-                <Input
-                  id="code-mfa"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                  placeholder="123456"
-                  className="max-w-48 text-center text-lg tracking-[0.4em]"
-                />
-              </div>
+            </div>
+          ) : active ? (
+            <div className="flex flex-wrap gap-2">
+              <Button asChild className="h-12">
+                <Link to="/app">{fr.nav.tableau}</Link>
+              </Button>
               <Button
-                onClick={verifier}
-                disabled={enCours || code.length !== 6}
-                className="h-11 w-fit"
+                variant="outline"
+                className="h-12"
+                onClick={() => setDesactivation(true)}
               >
-                {enCours ? <Loader2 className="size-4 animate-spin" /> : null}
-                {fr.mfa.verifier}
+                Désactiver la double authentification
               </Button>
             </div>
           ) : (
-            <Button onClick={demarrer} disabled={enCours} className="h-11 w-fit">
-              {enCours ? <Loader2 className="size-4 animate-spin" /> : null}
-              {fr.mfa.titre}
+            <Button onClick={() => demarrer.mutate()} disabled={demarrer.isPending} className="h-12 w-fit">
+              {demarrer.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+              Activer la double authentification
             </Button>
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Smartphone className="size-5" /> Appareils connectés
+          </CardTitle>
+          <CardDescription>
+            Chaque connexion ouvre une session nominative. Déconnectez à distance tout appareil que
+            vous ne reconnaissez pas.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            {etat?.devices ?? 0} appareil{(etat?.devices ?? 0) > 1 ? "s" : ""} connecté
+            {(etat?.devices ?? 0) > 1 ? "s" : ""} à votre compte.
+          </p>
+          <Button asChild variant="outline" className="h-12">
+            <Link to="/appareils">Gérer les appareils</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      {desactivation ? (
+        <Dialog open onOpenChange={(o) => !o && setDesactivation(false)}>
+          <ModaleFiche
+            titre="Désactiver la double authentification"
+            sousTitre="Cette protection est exigée pour les rôles à responsabilité."
+            pied={
+              <>
+                <Button variant="outline" className="h-12" onClick={() => setDesactivation(false)}>
+                  {fr.commun.annuler}
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="h-12"
+                  onClick={() => desactiver.mutate()}
+                  disabled={desactiver.isPending}
+                >
+                  {desactiver.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+                  Désactiver
+                </Button>
+              </>
+            }
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <ColonneFiche titre="Ce qui change">
+                <p className="rounded-xl border border-[#CFE3D5] bg-[#F7FBF8] p-3 text-sm text-[#0F3B27]">
+                  Votre compte ne demandera plus de code temporaire à la connexion. Cette opération
+                  est consignée dans le journal d'audit.
+                </p>
+              </ColonneFiche>
+              <ColonneFiche titre="Recommandation">
+                <p className="text-sm text-muted-foreground">
+                  Conservez votre application d'authentification : vous pourrez réactiver la
+                  protection à tout moment, sans perdre vos accès.
+                </p>
+              </ColonneFiche>
+            </div>
+          </ModaleFiche>
+        </Dialog>
+      ) : null}
     </div>
   );
 }

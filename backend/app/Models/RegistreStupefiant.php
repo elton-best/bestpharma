@@ -18,6 +18,7 @@ class RegistreStupefiant extends Model
         'numero_ordre',
         'date_mouvement',
         'type_mouvement',
+        'categorie',
         'produit_id',
         'stock_lot_id',
         'quantite',
@@ -25,20 +26,31 @@ class RegistreStupefiant extends Model
         'stock_nouveau',
         'reference_piece',
         'tiers_nom',
+        'patient_nom',
+        'patient_telephone',
         'prescripteur_nom',
+        'ordonnance_id',
         'operateur_id',
         'pharmacien_visa_id',
         'date_visa',
         'observations',
+        'declaration_vol_ref',
+        'autorisation_destruction_ref',
+        'pieces_jointes',
+        'est_ordonnancier',
+        'date_ecart_detecte',
     ];
 
     protected $casts = [
         'numero_ordre' => 'integer',
         'date_mouvement' => 'datetime',
         'date_visa' => 'datetime',
+        'date_ecart_detecte' => 'datetime',
         'quantite' => 'integer',
         'stock_precedent' => 'integer',
         'stock_nouveau' => 'integer',
+        'pieces_jointes' => 'array',
+        'est_ordonnancier' => 'boolean',
     ];
 
     public function officine(): BelongsTo

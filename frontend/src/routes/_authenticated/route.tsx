@@ -12,7 +12,6 @@ import { Menu, X } from "reicon-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { NotificationsSheet } from "@/components/notifications-sheet";
 import { TourProvider, BoutonGuide } from "@/components/guide-tour";
-import { supabase } from "@/integrations/supabase/client";
 import { api } from "@/lib/api-client";
 import { enregistrerAppareil } from "@/lib/appareil";
 import { OfficineProvider, useOfficine } from "@/lib/officine-context";
@@ -27,9 +26,27 @@ const MINUTES_INACTIVITE = 15;
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth", search: {} });
-    return { user: data.user };
+    // Session nominative Sanctum : le jeton est émis par /auth/login (et confirmé
+    // par le code TOTP le cas échéant).
+    const token = api.getToken();
+    if (!token) throw redirect({ to: "/auth", search: {} });
+
+    const localUser = api.getUser();
+    if (localUser?.id) {
+      return { user: { id: localUser.id, email: localUser.email ?? "" } } as any;
+    }
+
+    // Profil non conservé localement : on le redemande à l'API.
+    try {
+      const profil = await api.get<{ user: { id: string; email: string } }>("/auth/me");
+      if (profil?.user?.id) {
+        api.setUser(profil.user as any);
+        return { user: { id: profil.user.id, email: profil.user.email ?? "" } } as any;
+      }
+    } catch {}
+
+    api.logout();
+    throw redirect({ to: "/auth", search: {} });
   },
   component: LayoutAuthentifie,
 });

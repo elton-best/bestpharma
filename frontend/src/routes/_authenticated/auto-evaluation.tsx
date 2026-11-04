@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { formatDate } from "@/lib/format";
 import { useOfficine } from "@/lib/officine-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 
 export const Route = createFileRoute("/_authenticated/auto-evaluation")({
   head: () => ({
@@ -373,114 +375,140 @@ function PageAutoEvaluation() {
         </CardContent>
       </Card>
 
-      {/* DIALOG DE CRÉATION RAPIDE D'ACTION CAPA */}
+      {/* Modale de création rapide d'une action corrective */}
       <Dialog open={!!dialogCapa} onOpenChange={(o) => !o && setDialogCapa(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Générer une action corrective (Plan CAPA)</DialogTitle>
-            <DialogDescription>
-              Pour l'article {dialogCapa?.article_numero} ({dialogCapa?.chapitre_titre}).
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={soumettreCapa} className="grid gap-3 py-2 text-xs">
-            <div className="p-2.5 rounded-lg bg-muted text-muted-foreground">
-              <p className="font-semibold text-foreground text-[11px]">Exigence réglementaire :</p>
-              <p className="text-[11px] mt-0.5">{dialogCapa?.article_libelle}</p>
+        <ModaleFiche
+          titre="Ouvrir une action corrective"
+          sousTitre="Cette exigence non satisfaite devient une non-conformité suivie, avec un responsable et une échéance."
+          badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Plan d'action qualité</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] text-[#475C50]">
+                La fiche est créée avec le statut « ouverte » : elle reste au registre jusqu'à sa clôture.
+              </p>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                <Button type="button" variant="outline" onClick={() => setDialogCapa(null)} className="h-12 rounded-xl sm:h-11">
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  form="formulaire-capa"
+                  disabled={enCours || !actionCapa}
+                  className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
+                >
+                  Ouvrir la fiche
+                </Button>
+              </div>
             </div>
+          }
+        >
+          <form id="formulaire-capa" onSubmit={soumettreCapa} className="grid gap-4 md:grid-cols-2">
+            <ColonneFiche
+              titre="Exigence non satisfaite"
+              aide={`Article ${dialogCapa?.article_numero ?? ""} · ${dialogCapa?.chapitre_titre ?? ""}`}
+            >
+              <div className="rounded-xl border-2 border-[#CFF1D2] bg-[#F7F9F7] p-3">
+                <p className="text-[11px] leading-relaxed text-[#475C50]">{dialogCapa?.article_libelle}</p>
+              </div>
+            </ColonneFiche>
 
-            <div className="grid gap-1.5">
-              <Label htmlFor="action">Action corrective immédiate / à mener</Label>
-              <Input
-                id="action"
-                placeholder="ex: Rédiger la SOP manquante et former l'équipe sous 15 jours..."
-                value={actionCapa}
-                onChange={(e) => setActionCapa(e.target.value)}
-                required
-                autoFocus
-              />
-            </div>
-
-            <div className="grid gap-1.5">
-              <Label htmlFor="cause">Cause principale identifiée (Analyse 5M)</Label>
-              <Input
-                id="cause"
-                placeholder="ex: Méthode / Formation / Procédure obsolète..."
-                value={cause5m}
-                onChange={(e) => setCause5m(e.target.value)}
-              />
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" onClick={() => setDialogCapa(null)}>
-                Annuler
-              </Button>
-              <Button type="submit" disabled={enCours || !actionCapa} className="bg-red-600 hover:bg-red-700 text-white">
-                Ouvrir la fiche Non-Conformité
-              </Button>
-            </DialogFooter>
+            <ColonneFiche titre="Traitement" aide="Ce qui sera fait, et pourquoi le manquement est survenu.">
+              <Champ label="Action corrective à mener" obligatoire>
+                <Input
+                  id="action"
+                  placeholder="Rédiger la procédure manquante et former l'équipe"
+                  value={actionCapa}
+                  onChange={(e) => setActionCapa(e.target.value)}
+                  required
+                  autoFocus
+                  className="h-11"
+                />
+              </Champ>
+              <Champ
+                label="Cause principale identifiée"
+                aide="Méthode, personnel, matériel, milieu ou matière première : la cause oriente la correction."
+              >
+                <Input
+                  id="cause"
+                  placeholder="Procédure obsolète, formation à refaire…"
+                  value={cause5m}
+                  onChange={(e) => setCause5m(e.target.value)}
+                  className="h-11"
+                />
+              </Champ>
+            </ColonneFiche>
           </form>
-        </DialogContent>
+        </ModaleFiche>
       </Dialog>
 
-      {/* DIALOG RAPPORT OFFICIEL D'INSPECTION ABMED */}
+      {/* Rapport d'auto-inspection */}
       <Dialog open={dialogRapport} onOpenChange={setDialogRapport}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-primary">
-              <Award className="size-5" /> Rapport Officiel d'Auto-Inspection Qualité — Guide BPD
-            </DialogTitle>
-            <DialogDescription>
-              Conforme au chapitre 10 du Guide des Bonnes Pratiques de Dispensation (ABMed).
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2 text-xs max-h-[60vh] overflow-y-auto">
-            <div className="p-3 rounded-lg border bg-muted/30 space-y-1">
-              <p className="font-bold text-foreground text-sm">{courante?.officine?.nom}</p>
-              <p className="text-muted-foreground">Licence : {courante?.officine?.numero_licence ?? "En cours"} · Ville : {courante?.officine?.ville ?? "Cotonou"}</p>
-              <p className="text-muted-foreground">Date d'audit : {new Date().toLocaleDateString("fr-FR")} · Auditeur : Pharmacien Titulaire / RMQ</p>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-              <div className="p-2 border rounded-lg">
-                <span className="text-[10px] text-muted-foreground">Score Global</span>
-                <p className="font-bold text-lg text-primary">{scoreGlobal}%</p>
-              </div>
-              <div className="p-2 border rounded-lg">
-                <span className="text-[10px] text-muted-foreground">Conformes</span>
-                <p className="font-bold text-lg text-emerald-600">{stats?.total_conformes ?? 0}</p>
-              </div>
-              <div className="p-2 border rounded-lg">
-                <span className="text-[10px] text-muted-foreground">Écarts mineurs</span>
-                <p className="font-bold text-lg text-amber-600">{stats?.total_ecarts_mineurs ?? 0}</p>
-              </div>
-              <div className="p-2 border rounded-lg">
-                <span className="text-[10px] text-muted-foreground">Écarts majeurs</span>
-                <p className="font-bold text-lg text-red-600">{stats?.total_ecarts_majeurs ?? 0}</p>
+        <ModaleFiche
+          titre="Rapport d'auto-inspection qualité"
+          sousTitre="Le bilan de l'officine sur le référentiel des bonnes pratiques de dispensation, chapitre par chapitre."
+          badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Guide BPD · ABMed</Badge>}
+          pied={
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[11px] text-[#475C50]">
+                Le rapport imprimé est daté et signé par le pharmacien responsable.
+              </p>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                <Button variant="outline" onClick={() => setDialogRapport(false)} className="h-12 rounded-xl sm:h-11">
+                  Fermer
+                </Button>
+                <Button onClick={() => window.print()} className="h-12 gap-2 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11">
+                  <Printer className="size-4" /> Imprimer le rapport
+                </Button>
               </div>
             </div>
+          }
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <ColonneFiche titre="Officine inspectée" aide="Identité de l'établissement au jour de l'auto-inspection.">
+              <div className="space-y-1 rounded-xl border-2 border-[#CFF1D2] bg-[#F7F9F7] p-4 text-xs">
+                <p className="text-sm font-bold text-[#0F3B27]">{courante?.officine?.nom}</p>
+                <p className="text-[#475C50]">
+                  Licence : {courante?.officine?.numero_licence ?? "En cours"} · Ville : {courante?.officine?.ville ?? "Cotonou"}
+                </p>
+                <p className="text-[#475C50]">
+                  Audité le {formatDate(new Date())} par le pharmacien titulaire et le responsable qualité.
+                </p>
+              </div>
 
-            <div className="border rounded-lg p-3 space-y-2">
-              <p className="font-bold text-foreground">Score détaillé par Chapitre BPD :</p>
-              <div className="divide-y text-[11px]">
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="rounded-xl border border-[#CFF1D2] p-3">
+                  <span className="block text-[10px] uppercase tracking-wide text-[#475C50]">Score global</span>
+                  <p className="text-xl font-black text-[#0F3B27]">{scoreGlobal} %</p>
+                </div>
+                <div className="rounded-xl border border-[#CFF1D2] p-3">
+                  <span className="block text-[10px] uppercase tracking-wide text-[#475C50]">Exigences conformes</span>
+                  <p className="text-xl font-black text-emerald-700">{stats?.total_conformes ?? 0}</p>
+                </div>
+                <div className="rounded-xl border border-[#CFF1D2] p-3">
+                  <span className="block text-[10px] uppercase tracking-wide text-[#475C50]">Écarts mineurs</span>
+                  <p className="text-xl font-black text-amber-700">{stats?.total_ecarts_mineurs ?? 0}</p>
+                </div>
+                <div className="rounded-xl border border-[#CFF1D2] p-3">
+                  <span className="block text-[10px] uppercase tracking-wide text-[#475C50]">Écarts majeurs</span>
+                  <p className="text-xl font-black text-red-700">{stats?.total_ecarts_majeurs ?? 0}</p>
+                </div>
+              </div>
+            </ColonneFiche>
+
+            <ColonneFiche titre="Détail par chapitre" aide="Chaque chapitre du guide, avec son taux de conformité.">
+              <div className="divide-y divide-[#CFF1D2] rounded-xl border border-[#CFF1D2] text-xs">
                 {chapitres.map((c: any) => (
-                  <div key={c.numero} className="py-1.5 flex justify-between items-center">
-                    <span>Ch. {c.numero} : {c.titre}</span>
-                    <span className="font-bold font-mono">{c.score_chapitre}%</span>
+                  <div key={c.numero} className="flex items-center justify-between gap-3 px-3 py-2">
+                    <span className="text-[#475C50]">
+                      <span className="font-bold text-[#0F3B27]">Chapitre {c.numero}</span> · {c.titre}
+                    </span>
+                    <span className="font-mono font-bold text-[#0F3B27]">{c.score_chapitre} %</span>
                   </div>
                 ))}
               </div>
-            </div>
+            </ColonneFiche>
           </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogRapport(false)}>Fermer</Button>
-            <Button onClick={() => window.print()} className="gap-1.5">
-              <Printer className="size-3.5" /> Imprimer / Sauvegarder PDF
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+        </ModaleFiche>
       </Dialog>
     </div>
   );

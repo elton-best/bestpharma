@@ -1,46 +1,63 @@
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api-client";
 
+/**
+ * Un appareil = une session Sanctum. L'identifiant local n'a plus qu'un rôle de
+ * confort : c'est la liste des jetons du backend qui fait foi, et la révocation
+ * d'un jeton invalide immédiatement la session correspondante.
+ */
 const CLE = "begpharma.appareil";
 
-function libelleAppareil() {
-  const ua = navigator.userAgent;
-  const os = /Android/.test(ua) ? "Android" : /iPhone|iPad/.test(ua) ? "iOS" : /Windows/.test(ua) ? "Windows" : /Mac/.test(ua) ? "macOS" : "Linux";
-  const nav = /Edg\//.test(ua) ? "Edge" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "Navigateur";
-  return `${nav} · ${os}`;
-}
-
+/** Identifiant de session local (facultatif, utilisé pour l'affichage). */
 export function appareilCourant(): string | null {
-  return localStorage.getItem(CLE);
-}
-
-/** Enregistre/actualise l'appareil. Retourne false UNIQUEMENT si l'appareil a été expressément révoqué à distance. */
-export async function enregistrerAppareil(userId: string): Promise<boolean> {
   try {
-    const id = appareilCourant();
-    if (id) {
-      const { data, error } = await supabase.from("sessions_appareils").select("revoquee").eq("id", id).maybeSingle();
-      if (!error && data?.revoquee) {
-        localStorage.removeItem(CLE);
-        return false;
-      }
-      if (data) {
-        await supabase.from("sessions_appareils").update({ derniere_activite: new Date().toISOString() }).eq("id", id).catch(() => {});
-        return true;
-      }
-    }
-    const { data } = await supabase
-      .from("sessions_appareils")
-      .insert({ user_id: userId, libelle: libelleAppareil() })
-      .select("id")
-      .single()
-      .catch(() => ({ data: null }));
-    if (data?.id) localStorage.setItem(CLE, data.id);
-    return true;
+    return localStorage.getItem(CLE);
   } catch {
-    return true; // En cas de doute ou d'indisponibilité réseau, ne pas déconnecter l'utilisateur
+    return null;
   }
 }
 
+export function memoriserAppareil(id: string) {
+  try {
+    localStorage.setItem(CLE, id);
+  } catch {}
+}
+
+/**
+ * Vérifie que la session courante est toujours valide côté backend.
+ * Retourne false UNIQUEMENT si elle a été révoquée à distance ; en cas
+ * d'indisponibilité réseau on ne déconnecte jamais l'utilisateur.
+ */
+export async function verifierAppareil(): Promise<boolean> {
+  if (!api.getToken()) return true;
+  try {
+    const reponse = await api.get<{ devices: { id: string | number; is_current: boolean }[] }>(
+      "/auth/devices",
+    );
+    const courante = (reponse.devices ?? []).find((d) => d.is_current);
+    if (!courante) {
+      // Le jeton présenté ne correspond à aucune session : il a été révoqué.
+      oublierAppareil();
+      return false;
+    }
+    memoriserAppareil(String(courante.id));
+    return true;
+  } catch (erreur: any) {
+    // 401 explicite = session expirée ; toute autre erreur est transitoire.
+    if (/401|non authentifi/i.test(String(erreur?.message ?? ""))) {
+      oublierAppareil();
+      return false;
+    }
+    return true;
+  }
+}
+
+/** Conservé pour la compatibilité des écrans existants. */
+export async function enregistrerAppareil(_userId?: string): Promise<boolean> {
+  return verifierAppareil();
+}
+
 export function oublierAppareil() {
-  localStorage.removeItem(CLE);
+  try {
+    localStorage.removeItem(CLE);
+  } catch {}
 }

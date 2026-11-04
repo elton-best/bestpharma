@@ -1,104 +1,34 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Sora:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
 
 /* =========================================================================
-   POLICES OFFICIELLES : SATOSHI (Corps/UI) & STARDOM (Titres/Display)
+   POLICES OFFICIELLES BEGPHARMA — HealthTech Moderne
+   PLUS JAKARTA SANS (Corps/UI) — 300-800, la plus lisible à 48px tactile
+   SORA (Titres/Display) — 400-800, ink traps, accents français parfaits
+   Choix : duo 100% Google Fonts, gratuit, variable, ultra-performant
+   - Jakarta : géométrique chaleureuse, excellente à petite taille mobile
+   - Sora : même ADN moderne, très lisible en titres, contraste doux
+   - Parfait pour BPD Bénin : confiance + modernité + accessibilité
+   Alternatives conservées localement : Satoshi (fallback), Pharmacy (logo)
    ========================================================================= */
 
-/* STARDOM — Titres & Typographie Display */
+/* Fallback locaux conservés pour mode hors-ligne */
 @font-face {
-  font-family: "Stardom";
-  src: url("/fonts/Stardom-Regular.woff2") format("woff2"),
-       url("/fonts/Stardom-Regular.woff") format("woff"),
-       url("/fonts/Stardom-Regular.ttf") format("truetype");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Stardom-Regular";
-  src: url("/fonts/Stardom-Regular.woff2") format("woff2"),
-       url("/fonts/Stardom-Regular.woff") format("woff"),
-       url("/fonts/Stardom-Regular.ttf") format("truetype");
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Regular.woff2") format("woff2"), url("/fonts/Satoshi-Regular.woff") format("woff");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
-
-/* SATOSHI — Variable Font (300 à 900) */
 @font-face {
   font-family: "Satoshi";
-  src: url("/fonts/Satoshi-Variable.woff2") format("woff2"),
-       url("/fonts/Satoshi-Variable.woff") format("woff"),
-       url("/fonts/Satoshi-Variable.ttf") format("truetype");
-  font-weight: 300 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Satoshi";
-  src: url("/fonts/Satoshi-VariableItalic.woff2") format("woff2"),
-       url("/fonts/Satoshi-VariableItalic.woff") format("woff"),
-       url("/fonts/Satoshi-VariableItalic.ttf") format("truetype");
-  font-weight: 300 900;
-  font-style: italic;
-  font-display: swap;
-}
-
-/* SATOSHI — Poids statiques dédiés pour compatibilité maximale */
-@font-face {
-  font-family: "Satoshi";
-  src: url("/fonts/Satoshi-Light.woff2") format("woff2"),
-       url("/fonts/Satoshi-Light.woff") format("woff"),
-       url("/fonts/Satoshi-Light.ttf") format("truetype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Satoshi";
-  src: url("/fonts/Satoshi-Regular.woff2") format("woff2"),
-       url("/fonts/Satoshi-Regular.woff") format("woff"),
-       url("/fonts/Satoshi-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Satoshi";
-  src: url("/fonts/Satoshi-Medium.woff2") format("woff2"),
-       url("/fonts/Satoshi-Medium.woff") format("woff"),
-       url("/fonts/Satoshi-Medium.ttf") format("truetype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Satoshi";
-  src: url("/fonts/Satoshi-Bold.woff2") format("woff2"),
-       url("/fonts/Satoshi-Bold.woff") format("woff"),
-       url("/fonts/Satoshi-Bold.ttf") format("truetype");
+  src: url("/fonts/Satoshi-Bold.woff2") format("woff2"), url("/fonts/Satoshi-Bold.woff") format("woff");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
-
-@font-face {
-  font-family: "Satoshi";
-  src: url("/fonts/Satoshi-Black.woff2") format("woff2"),
-       url("/fonts/Satoshi-Black.woff") format("woff"),
-       url("/fonts/Satoshi-Black.ttf") format("truetype");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
-
 @font-face {
   font-family: "Pharmacy";
   src: url("/fonts/PHARMACY.ttf") format("truetype");
@@ -109,18 +39,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* BESTPHARMA · Charte Image 2 & InnerBuild
-   Move Green (#0F3B27), Signal Lime (#92FF5F), Soft White (#F7F9F7),
-   Orange (#FF7036), Ice (#BFF2F0), Mint (#CFF1D2) */
+/* BEGPHARMA · Charte Officine Bénin — v3 HealthTech Jakarta+Sora
+   Move Green (#0F3B27) = confiance médicale, Signal Lime (#92FF5F) = vitalité,
+   Soft White (#F7F9F7) = propreté pharmaceutique, Orange (#FF7036) = alerte,
+   Ice (#BFF2F0) = chaîne du froid, Mint (#CFF1D2) = validation */
 
 @theme inline {
-  --font-sans: "Satoshi", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Stardom", "Satoshi", sans-serif;
-  --font-stardom: "Stardom", "Satoshi", sans-serif;
-  --font-satoshi: "Satoshi", sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Sora", "Plus Jakarta Sans", sans-serif;
+  --font-jakarta: "Plus Jakarta Sans", sans-serif;
+  --font-sora: "Sora", sans-serif;
   --font-pharmacy: "Pharmacy", cursive, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "Geist Mono", "JetBrains Mono", monospace;
-
 
   --radius-sm: calc(var(--radius) - 6px);
   --radius-md: calc(var(--radius) - 3px);
@@ -154,7 +84,6 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Couleurs de marque officielles Image 2 */
   --color-move-green: #0F3B27;
   --color-signal-lime: #92FF5F;
   --color-soft-white: #F7F9F7;
@@ -162,7 +91,7 @@
   --color-ice: #BFF2F0;
   --color-mint: #CFF1D2;
 
-  /* Rétrocompatibilité tokens InnerBuild */
+  /* Alias historiques (compatibilité) */
   --color-ib-deep: #0F3B27;
   --color-ib-vibrant: #92FF5F;
   --color-ib-pale: #F7F9F7;
@@ -232,24 +161,32 @@
   }
   html {
     font-size: 17.5px;
-    letter-spacing: 0.015em;
+    letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-size: 1.035rem;
-    letter-spacing: 0.018em;
-    line-height: 1.65;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: -0.012em;
+    line-height: 1.6;
     -webkit-tap-highlight-color: transparent;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    letter-spacing: 0.028em;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
     color: var(--color-foreground);
   }
+  /* Jakarta + Sora : meilleure hiérarchie */
+  h1 { font-size: 1.9em; font-weight: 800; }
+  h2 { font-size: 1.5em; font-weight: 700; }
+  h3 { font-size: 1.25em; font-weight: 700; }
 }
 
 @utility bg-hero {

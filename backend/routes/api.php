@@ -17,6 +17,11 @@ use App\Http\Controllers\Api\ComptabiliteController;
 use App\Http\Controllers\Api\DispensationController;
 use App\Http\Controllers\Api\PreparationController;
 use App\Http\Controllers\Api\ProduitController;
+use App\Http\Controllers\Api\AvisRappelController;
+use App\Http\Controllers\Api\DechetController;
+use App\Http\Controllers\Api\EmplacementController;
+use App\Http\Controllers\Api\InventaireController;
+use App\Http\Controllers\Api\MouvementStockController;
 use App\Http\Controllers\Api\ReleveTemperatureController;
 use App\Http\Controllers\Api\StockLotController;
 use App\Http\Controllers\Api\StupefiantController;
@@ -33,6 +38,9 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 Route::middleware('auth:sanctum')->group(function () {
     // Authentification, MFA TOTP et appareils (E0-S3)
     Route::post('/auth/verify-mfa', [AuthController::class, 'verifyMfa']);
+    Route::get('/auth/mfa', [AuthController::class, 'etatMfa']);
+    Route::post('/auth/mfa/demarrer', [AuthController::class, 'demarrerMfa']);
+    Route::delete('/auth/mfa', [AuthController::class, 'desactiverMfa']);
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/devices', [AuthController::class, 'devices']);
@@ -43,10 +51,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/officines', [OfficineController::class, 'store']);
     Route::get('/officines/{id}', [OfficineController::class, 'show']);
     Route::put('/officines/{id}', [OfficineController::class, 'update']);
+    // Rattachement de l'utilisateur courant comme promoteur d'une officine qu'il vient de créer
+    Route::post('/officines/{id}/rattacher', [OfficineController::class, 'rattacher']);
 
     // Paramètres d'officine (E0-S5)
     Route::get('/officines/{officineId}/parametres', [ParametreController::class, 'index']);
     Route::put('/officines/{officineId}/parametres/{cle}', [ParametreController::class, 'update']);
+    Route::put('/officines/{officineId}/parametres', [ParametreController::class, 'updateLot']);
 
     // Journal d'audit inaltérable (E0-S4)
     Route::get('/officines/{officineId}/audit-logs', [AuditController::class, 'index']);
@@ -127,20 +138,59 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/produits', [ProduitController::class, 'index']);
     Route::post('/produits', [ProduitController::class, 'store']);
 
-    // Gestion des Stocks & Règle FEFO (BPD5-F08 & STK-02)
+    // Gestion des Stocks & Règle FEFO (BPD5-F08 & STK-02) — Section Magasin & Stocks v1.0
     Route::get('/stocks', [StockLotController::class, 'index']);
     Route::post('/stocks', [StockLotController::class, 'store']);
     Route::post('/stocks/{id}/quarantaine', [StockLotController::class, 'miseEnQuarantaine']);
     Route::post('/stocks/{id}/lever-quarantaine', [StockLotController::class, 'leverQuarantaine']);
+    Route::put('/stocks/{id}/statut', [StockLotController::class, 'changerStatut']);
+    Route::get('/stocks/peremptions', [StockLotController::class, 'peremptions']);
+    Route::get('/stocks/valorisation', [StockLotController::class, 'valorisation']);
+    Route::get('/stocks/alertes', [StockLotController::class, 'alertes']);
+
+    // Emplacements & Zones (STO-04)
+    Route::get('/emplacements', [EmplacementController::class, 'index']);
+    Route::post('/emplacements', [EmplacementController::class, 'store']);
+    Route::get('/emplacements/{id}', [EmplacementController::class, 'show']);
+
+    // Mouvements de stock — Journal (STO-09)
+    Route::get('/mouvements', [MouvementStockController::class, 'index']);
+    Route::post('/mouvements', [MouvementStockController::class, 'store']);
+
+    // Inventaires tournant & général (STO-12)
+    Route::get('/inventaires', [InventaireController::class, 'index']);
+    Route::post('/inventaires', [InventaireController::class, 'store']);
+    Route::get('/inventaires/{id}', [InventaireController::class, 'show']);
+    Route::post('/inventaires/{inventaireId}/lignes/{ligneId}/compter', [InventaireController::class, 'compter']);
+    Route::post('/inventaires/{id}/valider', [InventaireController::class, 'valider']);
+
+    // Rappels de lots (STO-14)
+    Route::get('/rappels', [AvisRappelController::class, 'index']);
+    Route::post('/rappels', [AvisRappelController::class, 'store']);
+    Route::post('/rappels/{id}/cloturer', [AvisRappelController::class, 'cloturer']);
+
+    // Déchets & Destruction (STO-17)
+    Route::get('/dechets', [DechetController::class, 'index']);
+    Route::post('/dechets', [DechetController::class, 'store']);
+    Route::post('/dechets/{id}/detruire', [DechetController::class, 'detruire']);
 
     // Dispensations / Délivrances Ordonnances & Conseil (BPD Chapitre 5 & LOT-1.3)
     Route::get('/dispensations', [DispensationController::class, 'index']);
     Route::post('/dispensations', [DispensationController::class, 'store']);
     Route::post('/dispensations/{id}/viser', [DispensationController::class, 'viser']);
 
-    // Registre Officiel des Stupéfiants & Substances Vénéneuses (BPD-3 & Art 7.15 à 7.20)
+    // Registre Officiel des Stupéfiants & Substances Vénéneuses (BPD-3 & Art 7.15 à 7.20) — STU complet 9 onglets
     Route::get('/stupefiants', [StupefiantController::class, 'index']);
+    Route::post('/stupefiants', [StupefiantController::class, 'store']);
     Route::post('/stupefiants/{id}/viser', [StupefiantController::class, 'viser']);
+    Route::post('/stupefiants/{id}/rectificative', [StupefiantController::class, 'rectificative']);
+    Route::get('/stupefiants/balance', [StupefiantController::class, 'balance']);
+    Route::get('/stupefiants/ordonnancier', [StupefiantController::class, 'ordonnancier']);
+    Route::get('/stupefiants/armoire', [StupefiantController::class, 'armoire']);
+    Route::post('/stupefiants/inventaire', [StupefiantController::class, 'inventaire']);
+    Route::post('/stupefiants/declaration-vol', [StupefiantController::class, 'declarationVol']);
+    Route::post('/stupefiants/demande-destruction', [StupefiantController::class, 'demandeDestruction']);
+    Route::get('/stupefiants/rapport', [StupefiantController::class, 'rapport']);
 
     // Registre Officiel des Préparations Magistrales et Officinales (BPD Chapitre 6 & POI-03)
     Route::get('/preparations', [PreparationController::class, 'index']);

@@ -10,7 +10,11 @@ export default defineConfig({
   },
   server: {
     port: 5174,
-    host: true,
+    host: "0.0.0.0",
+    allowedHosts: true,
+    hmr: {
+      clientPort: 443,
+    },
     proxy: {
       "/api": {
         target: process.env["BACKEND_URL"] || "http://127.0.0.1:8001",

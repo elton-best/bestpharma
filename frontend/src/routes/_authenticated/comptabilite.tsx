@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { api } from "@/lib/api-client";
+import { formatDate, nombre } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -212,10 +213,10 @@ function PageComptabilite() {
                           <div className="text-[11px] text-slate-500">{e.libelle_ecriture}</div>
                         </td>
                         <td className="py-2.5 px-3 text-right font-bold text-slate-900">
-                          {Number(e.debit) > 0 ? Number(e.debit).toLocaleString("fr-FR") : "-"}
+                          {Number(e.debit) > 0 ? nombre(e.debit) : "-"}
                         </td>
                         <td className="py-2.5 px-3 text-right font-bold text-slate-900">
-                          {Number(e.credit) > 0 ? Number(e.credit).toLocaleString("fr-FR") : "-"}
+                          {Number(e.credit) > 0 ? nombre(e.credit) : "-"}
                         </td>
                       </tr>
                     ))}
@@ -260,16 +261,16 @@ function PageComptabilite() {
                         </td>
                         <td className="py-3 px-4 font-medium text-slate-900">{b.libelle_compte}</td>
                         <td className="py-3 px-4 text-right font-mono">
-                          {Number(b.total_debit).toLocaleString("fr-FR")} FCFA
+                          {nombre(b.total_debit)} FCFA
                         </td>
                         <td className="py-3 px-4 text-right font-mono">
-                          {Number(b.total_credit).toLocaleString("fr-FR")} FCFA
+                          {nombre(b.total_credit)} FCFA
                         </td>
                         <td className="py-3 px-4 text-right font-mono font-bold">
                           {solde >= 0 ? (
-                            <span className="text-emerald-700">+{solde.toLocaleString("fr-FR")} F (D)</span>
+                            <span className="text-emerald-700">+{nombre(solde)} F (D)</span>
                           ) : (
-                            <span className="text-purple-700">{solde.toLocaleString("fr-FR")} F (C)</span>
+                            <span className="text-purple-700">{nombre(solde)} F (C)</span>
                           )}
                         </td>
                       </tr>
@@ -321,20 +322,20 @@ function PageComptabilite() {
                           {c.numero_session}
                         </td>
                         <td className="py-3 px-3 text-slate-600">
-                          {new Date(c.opened_at).toLocaleDateString("fr-FR")} au{" "}
-                          {new Date(c.closed_at).toLocaleDateString("fr-FR")}
+                          {formatDate(c.opened_at)} au{" "}
+                          {formatDate(c.closed_at)}
                         </td>
                         <td className="py-3 px-3 font-medium text-slate-900">
                           {c.caissier?.name || "Caissier"}
                         </td>
                         <td className="py-3 px-3 text-right font-bold text-slate-900">
-                          {Number(c.total_encaisse_especes).toLocaleString("fr-FR")} F
+                          {nombre(c.total_encaisse_especes)} F
                         </td>
                         <td className="py-3 px-3 text-right font-bold text-purple-700">
-                          {Number(c.total_encaisse_mobile_money).toLocaleString("fr-FR")} F
+                          {nombre(c.total_encaisse_mobile_money)} F
                         </td>
                         <td className="py-3 px-3 text-right font-bold text-slate-900">
-                          {Number(c.fond_caisse_fermeture_reel).toLocaleString("fr-FR")} F
+                          {nombre(c.fond_caisse_fermeture_reel)} F
                         </td>
                         <td className="py-3 px-3 text-center">
                           {Number(c.ecart_caisse) === 0 ? (

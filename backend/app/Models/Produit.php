@@ -17,27 +17,42 @@ class Produit extends Model
     protected $fillable = [
         'officine_id',
         'code_cip',
+        'code_interne',
+        'codes_barres',
         'nom_commercial',
         'dci',
         'forme',
         'dosage',
         'classe_therapeutique',
+        'laboratoire',
         'tableau_substance',
+        'classe_produit',
+        'groupe_taxation',
         'est_thermolabile',
         'necessite_ordonnance',
         'prix_achat_ht',
+        'prix_achat_moyen',
         'prix_public_ttc',
         'seuil_stock_min',
         'seuil_stock_securite',
+        'stock_max',
+        'stock_urgence',
+        'photo_url',
+        'est_dormant',
     ];
 
     protected $casts = [
+        'codes_barres' => 'array',
         'est_thermolabile' => 'boolean',
         'necessite_ordonnance' => 'boolean',
+        'est_dormant' => 'boolean',
         'prix_achat_ht' => 'decimal:2',
+        'prix_achat_moyen' => 'decimal:2',
         'prix_public_ttc' => 'decimal:2',
         'seuil_stock_min' => 'integer',
         'seuil_stock_securite' => 'integer',
+        'stock_max' => 'integer',
+        'stock_urgence' => 'integer',
     ];
 
     public function officine(): BelongsTo

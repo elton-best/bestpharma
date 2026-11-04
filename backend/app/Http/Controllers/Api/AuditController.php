@@ -42,6 +42,37 @@ class AuditController extends Controller
 
         $logs = $query->paginate($request->input('per_page', 50));
 
+        // Chaque ligne est enrichie du nom de la table en français : le frontend
+        // n'a jamais à exposer un nom technique de table à l'utilisateur.
+        $libelles = [
+            'officines' => 'Officine',
+            'utilisateurs_officines' => 'Rattachement du personnel',
+            'officine_parametres' => 'Paramètres de l\'officine',
+            'appareils_autorises' => 'Appareils autorisés',
+            'produits' => 'Produit',
+            'stocks_lots' => 'Lot de stock',
+            'mouvements_stock' => 'Mouvement de stock',
+            'ventes' => 'Vente au comptoir',
+            'dispensations' => 'Dispensation',
+            'inventaires' => 'Inventaire',
+            'lignes_inventaire' => 'Ligne d\'inventaire',
+            'lots_dechets' => 'Lot de déchets',
+            'avis_rappels' => 'Avis de rappel',
+            'registres_stupefiants' => 'Registre des stupéfiants',
+            'non_conformites' => 'Non-conformité',
+            'documents' => 'Document qualité',
+            'employes' => 'Employé',
+            'pointages' => 'Pointage',
+            'echeances' => 'Échéance',
+            'sessions_caisse' => 'Session de caisse',
+        ];
+
+        $logs->getCollection()->transform(function (AuditLog $log) use ($libelles) {
+            $log->table_libelle = $libelles[$log->table_name] ?? str_replace('_', ' ', (string) $log->table_name);
+
+            return $log;
+        });
+
         return response()->json($logs);
     }
 }

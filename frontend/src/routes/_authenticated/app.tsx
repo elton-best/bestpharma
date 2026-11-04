@@ -4,22 +4,15 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
 import { fr } from "@/lib/i18n/fr";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -52,13 +45,13 @@ function Accueil() {
   const { data: mfaEtat } = useQuery({
     queryKey: ["securite", user.id],
     queryFn: async () => {
-      const [{ data: bruts }, niveau] = await Promise.all([
-        supabase.from("utilisateurs_officines").select("id").eq("user_id", user.id).eq("archived", false),
-        supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
-      ]);
+      const etat = await api
+        .get<{ mfa_enabled: boolean; mfa_required: boolean }>("/auth/mfa")
+        .catch(() => ({ mfa_enabled: false, mfa_required: false }));
       return {
-        total: (bruts ?? []).length,
-        eleve: (niveau.data?.currentLevel ?? "aal1") === "aal2",
+        total: rattachements.length,
+        eleve: !!etat.mfa_enabled,
+        requis: !!etat.mfa_required,
       };
     },
   });
@@ -80,7 +73,7 @@ function Accueil() {
     );
   }
 
-  const masquees = (mfaEtat?.total ?? 0) - rattachements.length;
+  const mfaAConfigurer = !!mfaEtat?.requis && !mfaEtat?.eleve;
   return (
     <div className="grid gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#CFE3D5]">
@@ -104,6 +97,20 @@ function Accueil() {
           </Button>
         </div>
       </div>
+
+      {mfaAConfigurer ? (
+        <Card className="rounded-2xl border-amber-300 bg-amber-50/60 shadow-sm">
+          <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-medium text-[#6b4b00]">
+              Votre rôle exige la double authentification : activez-la pour protéger les registres
+              réglementaires de l'officine.
+            </p>
+            <Button asChild className="h-11 shrink-0 rounded-xl bg-[#023010] font-bold text-white hover:bg-[#18AA38]">
+              <Link to="/securite">Activer maintenant</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {rattachements.length === 0 ? (
         <Card className="rounded-2xl border-[#CFE3D5] shadow-sm">
@@ -148,7 +155,7 @@ function Accueil() {
                       </div>
                       <p className="mt-1 text-xs text-[#5C6660]">{r.officine.ville ?? "—"}</p>
                       <p className="mt-2 text-xs font-semibold text-[#023010]">
-                        {fr.roles[r.role]}
+                        {fr.roles[r.role as keyof typeof fr.roles] ?? "Rôle non précisé"}
                       </p>
                     </button>
                   );
@@ -191,60 +198,92 @@ function DialogCreation({
   async function creer() {
     setErreur(null);
     setEnCours(true);
-    const { data, error } = await supabase.rpc("creer_officine", {
-      _nom: nom,
-      _ville: ville,
-    });
-    setEnCours(false);
-    if (error) {
-      setErreur(error.message);
-      return;
+    try {
+      // L'officine se crée avec son nom et sa ville ; la licence et les mentions
+      // administratives se complètent ensuite dans la fiche officine.
+      const officine = await api.post<{ id: string }>("/officines", {
+        nom: nom.trim(),
+        ville: ville.trim() || undefined,
+      });
+      await queryClient.invalidateQueries({ queryKey: ["rattachements", userId] });
+      const mesOfficines = await api.get<any[]>("/officines").catch(() => [] as any[]);
+      if (mesOfficines.length) api.setOfficines(mesOfficines);
+      toast.success(fr.officine.creee);
+      onCree(officine.id);
+      onOpenChange(false);
+      setNom("");
+      setVille("");
+    } catch (e: any) {
+      setErreur(e.message || fr.commun.erreur);
+    } finally {
+      setEnCours(false);
     }
-    await queryClient.invalidateQueries({ queryKey: ["rattachements", userId] });
-    toast.success(fr.officine.creee);
-    if (data) onCree(data);
-    onOpenChange(false);
-    setNom("");
-    setVille("");
   }
 
   return (
     <Dialog open={ouverte} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{fr.officine.creer}</DialogTitle>
-          <DialogDescription>{fr.officine.creerDesc}</DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-2">
-          <div className="grid gap-2">
-            <Label htmlFor="officine-nom">{fr.officine.nom}</Label>
-            <Input
-              id="officine-nom"
-              value={nom}
-              onChange={(e) => setNom(e.target.value)}
-              required
-            />
+      <ModaleFiche
+        titre={fr.officine.creer}
+        sousTitre={fr.officine.creerDesc}
+        badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Nouvelle officine</Badge>}
+        pied={
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[11px] text-[#475C50]">
+              L'officine créée vous est rattachée immédiatement : vous pourrez y basculer depuis l'accueil.
+            </p>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-12 rounded-xl sm:h-11">
+                Annuler
+              </Button>
+              <Button
+                type="button"
+                onClick={creer}
+                disabled={enCours || !nom.trim()}
+                className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
+              >
+                {enCours ? "Création…" : "Créer l'officine"}
+              </Button>
+            </div>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="officine-ville">{fr.officine.ville}</Label>
-            <Input
-              id="officine-ville"
-              value={ville}
-              onChange={(e) => setVille(e.target.value)}
-            />
-          </div>
-          {erreur ? <p className="text-sm text-destructive">{erreur}</p> : null}
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          <ColonneFiche titre="Identité de l'officine" aide="Le nom apparaît sur les documents et les états remis à l'administration.">
+            <Champ label={fr.officine.nom} obligatoire>
+              <Input
+                id="officine-nom"
+                value={nom}
+                onChange={(e) => setNom(e.target.value)}
+                required
+                className="h-11"
+              />
+            </Champ>
+            <Champ label={fr.officine.ville}>
+              <Input
+                id="officine-ville"
+                value={ville}
+                onChange={(e) => setVille(e.target.value)}
+                className="h-11"
+              />
+            </Champ>
+            {erreur ? <p className="text-sm font-semibold text-red-700">{erreur}</p> : null}
+          </ColonneFiche>
+
+          <ColonneFiche titre="Après la création" aide="Trois étapes pour rendre l'officine pleinement opérationnelle.">
+            <ol className="space-y-2 text-xs text-[#475C50]">
+              <li className="rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] px-3 py-2">
+                Compléter la licence, l'adresse et le téléphone dans la fiche officine.
+              </li>
+              <li className="rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] px-3 py-2">
+                Renseigner les paramètres de gestion : TVA, seuils d'alerte, conservation.
+              </li>
+              <li className="rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] px-3 py-2">
+                Inscrire l'équipe et ouvrir la première session de caisse.
+              </li>
+            </ol>
+          </ColonneFiche>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {fr.commun.annuler}
-          </Button>
-          <Button onClick={creer} disabled={enCours || nom.trim().length < 2}>
-            {enCours ? <Loader2 className="size-4 animate-spin" /> : null}
-            {fr.commun.enregistrer}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+      </ModaleFiche>
     </Dialog>
   );
 }

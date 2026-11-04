@@ -44,14 +44,18 @@ class OfficineController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        // Seuls le nom et la ville sont demandés à l'utilisateur ; les mentions
+        // administratives (raison sociale, licence, adresse, téléphone) sont
+        // complétées plus tard dans la fiche officine. La licence reste unique
+        // et obligatoire en base : on en attribue une provisoire si elle manque.
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
-            'raison_sociale' => 'required|string|max:255',
-            'numero_licence' => 'required|string|max:100|unique:officines,numero_licence',
+            'raison_sociale' => 'nullable|string|max:255',
+            'numero_licence' => 'nullable|string|max:100|unique:officines,numero_licence',
             'date_licence' => 'nullable|date',
-            'adresse' => 'required|string',
+            'adresse' => 'nullable|string',
             'ville' => 'nullable|string|max:100',
-            'telephone' => 'required|string|max:50',
+            'telephone' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
             'regime_fiscal' => 'nullable|string|max:100',
             'fuseau' => 'nullable|string|max:50',
@@ -59,6 +63,12 @@ class OfficineController extends Controller
         ]);
 
         $user = $request->user();
+
+        $validated['ville'] = $validated['ville'] ?? 'Cotonou';
+        $validated['raison_sociale'] = $validated['raison_sociale'] ?? $validated['nom'];
+        $validated['adresse'] = $validated['adresse'] ?? $validated['ville'];
+        $validated['telephone'] = $validated['telephone'] ?? 'À compléter';
+        $validated['numero_licence'] = $validated['numero_licence'] ?? $this->licenceProvisoire();
 
         $officine = DB::transaction(function () use ($validated, $user) {
             $officine = Officine::create(array_merge($validated, [
@@ -104,6 +114,19 @@ class OfficineController extends Controller
     }
 
     /**
+     * Numéro de licence provisoire, unique, en attendant la licence délivrée
+     * par l'Ordre national des pharmaciens du Bénin.
+     */
+    private function licenceProvisoire(): string
+    {
+        do {
+            $numero = sprintf('BEN-PROV-%s-%04d', now()->format('Y'), random_int(0, 9999));
+        } while (Officine::where('numero_licence', $numero)->exists());
+
+        return $numero;
+    }
+
+    /**
      * Mise à jour d'une officine
      */
     public function update(Request $request, string $id): JsonResponse
@@ -125,5 +148,37 @@ class OfficineController extends Controller
         $officine->update($validated);
 
         return response()->json($officine);
+    }
+
+    /**
+     * Rattache l'utilisateur courant comme promoteur de l'officine indiquée.
+     * Utilisé lorsque la création d'officine est faite en deux temps.
+     */
+    public function rattacher(Request $request, string $id): JsonResponse
+    {
+        $officine = Officine::where('id', $id)->where('archived', false)->firstOrFail();
+        $user = $request->user();
+
+        $existant = UtilisateurOfficine::where('officine_id', $officine->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($existant) {
+            $existant->update(['actif' => true, 'archived' => false]);
+        } else {
+            UtilisateurOfficine::create([
+                'officine_id' => $officine->id,
+                'user_id' => $user->id,
+                'role_code' => 'promoteur',
+                'actif' => true,
+                'archived' => false,
+                'created_by' => $user->id,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Officine rattachée à votre compte.',
+            'officine' => $officine->fresh(),
+        ]);
     }
 }

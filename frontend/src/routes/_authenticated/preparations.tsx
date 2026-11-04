@@ -230,7 +230,7 @@ function PagePreparationsLabo() {
             <ZoneDepot label="Certificats d'analyse MP (PDF) — obligatoire par lot" />
             <div className="rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] p-3 text-xs">
               <p className="font-bold text-[#0F3B27]">Format JSON attendu dans le champ `Matières premières lots` :</p>
-              <code className="block mt-1 font-mono text-[11px] bg-white border border-[#CFF1D2] rounded-xl p-2">[{"matiere":"Oxyde de zinc","lot":"MP-2026-012","fournisseur":"Cooper","dlm":"2027-06-01","certificat":"CA-001.pdf"}]</code>
+              <code className="block mt-1 font-mono text-[11px] bg-white border border-[#CFF1D2] rounded-xl p-2">Exemple MP : Oxyde de zinc | lot MP-2026-012 | Cooper | DLM 2027-06-01 | CA-001.pdf</code>
             </div>
             <div className="overflow-x-auto"><table className="w-full text-xs text-left border border-[#CFF1D2] rounded-xl overflow-hidden"><thead className="bg-[#F7F9F7] font-bold text-[#475C50]"><tr><th className="py-2 px-3">Matière</th><th className="py-2 px-3">Lot MP</th><th className="py-2 px-3">Fournisseur</th><th className="py-2 px-3">Qté utilisée</th><th className="py-2 px-3">Certificat</th></tr></thead><tbody className="divide-y divide-[#CFF1D2]/50"><tr><td colSpan={5} className="py-6 text-center text-[#475C50]">Aucune MP tracée — renseignez le champ JSON lors de l'inscription</td></tr></tbody></table></div>
           </CardContent></Card>

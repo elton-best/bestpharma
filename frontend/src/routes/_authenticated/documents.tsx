@@ -134,7 +134,7 @@ function PageDocuments() {
   return (
     <div className="grid gap-6">
       <EnTete
-        titre="GED & Procédures Qualité (BPD-1 & BPD-3)"
+        titre="Documents et procédures qualité"
         description="Standardisation du cycle documentaire qualité. Seul le Pharmacien Titulaire ou le Promoteur peut approuver la mise en vigueur officielle."
         action={peutRediger && id ? <NouveauDocument officineId={id} /> : null}
       />

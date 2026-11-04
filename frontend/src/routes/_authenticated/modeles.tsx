@@ -107,7 +107,7 @@ function PageModeles() {
   return (
     <div className="grid gap-6">
       <EnTete
-        titre="Bibliothèque des Modèles BPD (BPD-C02)"
+        titre="Bibliothèque des modèles qualité"
         description="Collection officielle des 59 modèles types préchargés (procédures, registres, fiches), prêts à être adaptés et validés par le pharmacien titulaire."
       />
 

@@ -152,7 +152,7 @@ function PageLocaux() {
               Locaux, Équipements & Hygiène
             </h1>
             <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 bg-emerald-50">
-              BPD-4 / Art. 4.1 à 4.25
+              Locaux, matériel et hygiène
             </Badge>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -197,7 +197,7 @@ function PageLocaux() {
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Sparkles className="size-4" /> Plan de Bio-Nettoyage (GAR-PL-004)
+          <Sparkles className="size-4" /> Plan de bio-nettoyage
         </button>
 
         <button
@@ -263,12 +263,12 @@ function PageLocaux() {
         <Card>
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-base">Registre d'émargement du Bio-Nettoyage (GAR-PL-004)</CardTitle>
+              <CardTitle className="text-base">Registre de bio-nettoyage</CardTitle>
               <CardDescription className="text-xs">
-                Nettoyage quotidien obligatoire du comptoir, du préparatoire, de la réserve et des sanitaires (Art. 4.20).
+                Le comptoir, le préparatoire, la réserve et les sanitaires se nettoient chaque jour, et chaque passage s'émarge.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="font-mono text-xs">Conservation 5 ans</Badge>
+            <Badge variant="outline" className="font-mono text-xs">Registre conservé</Badge>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -320,7 +320,7 @@ function PageLocaux() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Bug className="size-5 text-amber-600" />
-                <CardTitle className="text-base">Lutte contre les Nuisibles (Art. 4.19)</CardTitle>
+                <CardTitle className="text-base">Lutte contre les nuisibles</CardTitle>
               </div>
               <CardDescription className="text-xs">
                 Contrat de dératisation et désinsectisation avec prestataire agréé.
@@ -345,7 +345,7 @@ function PageLocaux() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <ShieldAlert className="size-5 text-red-600" />
-                <CardTitle className="text-base">Sécurité Incendie & Extincteurs (Art. 4.7)</CardTitle>
+                <CardTitle className="text-base">Sécurité incendie et extincteurs</CardTitle>
               </div>
               <CardDescription className="text-xs">
                 Contrôle annuel obligatoire des extincteurs et consignes de secours.

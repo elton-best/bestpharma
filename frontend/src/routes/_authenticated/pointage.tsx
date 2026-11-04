@@ -85,7 +85,7 @@ function PagePointage() {
         description="L'horodatage serveur fait foi. La présence continue d'au moins un pharmacien inscrit est obligatoire pendant l'ouverture."
       />
 
-      {/* RÈGLE DU PHARMACIEN PRÉSENT (BPD-C09 & art. 1.11) */}
+      {/* Règle du pharmacien présent */}
       <Alert variant={pharmacienPresent ? "default" : "destructive"} className="border-2">
         {pharmacienPresent ? (
           <ShieldCheck className="size-5 text-emerald-600" />

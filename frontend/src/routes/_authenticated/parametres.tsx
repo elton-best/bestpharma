@@ -20,7 +20,7 @@ import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 export const Route = createFileRoute("/_authenticated/parametres")({
   head: () => ({
     meta: [
-      { title: "Paramètres — BEGPHARMA" },
+      { title: "Paramètres — BestPharma" },
       { name: "description", content: "Paramètres de votre officine, versionnés à chaque modification." },
     ],
   }),

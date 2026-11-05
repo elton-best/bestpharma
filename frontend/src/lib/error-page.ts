@@ -3,7 +3,7 @@ export function renderErrorPage(): string {
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <title>BEGPHARMA — Restauration de session</title>
+    <title>BestPharma — Restauration de session</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -123,7 +123,7 @@ export function renderErrorPage(): string {
     <div class="card">
       <div class="badge">
         <span class="badge-dot"></span>
-        BEGPHARMA · Système d'Officine
+        BestPharma · Système d'Officine
       </div>
       <div class="logo">+</div>
       <h1>Reprise de session en cours</h1>

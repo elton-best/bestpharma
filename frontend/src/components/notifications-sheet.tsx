@@ -323,7 +323,7 @@ export function NotificationsSheet() {
 
         {/* Footer */}
         <div className="p-3 border-t border-[#CFF1D2] bg-[#F7F9F7] text-center text-xs text-[#475C50]">
-          BEGPHARMA · Alertes et conformité de l'officine
+          BestPharma · Alertes et conformité de l'officine
         </div>
       </SheetContent>
     </Sheet>

@@ -50,7 +50,7 @@ import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 export const Route = createFileRoute("/_authenticated/auto-evaluation")({
   head: () => ({
     meta: [
-      { title: "Auto-évaluation Qualité BPD (267 articles) — BEGPHARMA" },
+      { title: "Auto-évaluation Qualité BPD (267 articles) — BestPharma" },
       {
         name: "description",
         content: "Grille d'auto-évaluation et calcul du score de conformité aux 267 articles du Guide BPD ABMed.",

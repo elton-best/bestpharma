@@ -17,15 +17,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 export const Route = createFileRoute("/_authenticated/journal")({
   head: () => ({
     meta: [
-      { title: "Journal d'audit — BEGPHARMA" },
+      { title: "Journal d'audit — BestPharma" },
       {
         name: "description",
-        content: "Journal d'audit inaltérable de votre officine dans BEGPHARMA.",
+        content: "Journal d'audit inaltérable de votre officine dans BestPharma.",
       },
-      { property: "og:title", content: "Journal d'audit — BEGPHARMA" },
+      { property: "og:title", content: "Journal d'audit — BestPharma" },
       {
         property: "og:description",
-        content: "Journal d'audit inaltérable de votre officine dans BEGPHARMA.",
+        content: "Journal d'audit inaltérable de votre officine dans BestPharma.",
       },
       { property: "og:type", content: "website" },
       { property: "og:type", content: "website" },

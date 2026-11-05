@@ -93,13 +93,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BEGPHARMA — Gestion d'officine" },
+      { title: "BestPharma — Gestion d'officine" },
       {
         name: "description",
         content:
           "Application de gestion d'officine au Bénin, conforme au Guide BPD de l'ABMed.",
       },
-      { property: "og:title", content: "BEGPHARMA — Gestion d'officine" },
+      { property: "og:title", content: "BestPharma — Gestion d'officine" },
       {
         property: "og:description",
         content:

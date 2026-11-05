@@ -4,7 +4,7 @@
 @import "tw-animate-css";
 
 /* =========================================================================
-   POLICES OFFICIELLES BEGPHARMA — HealthTech Moderne
+   POLICES OFFICIELLES BestPharma — HealthTech Moderne
    PLUS JAKARTA SANS (Corps/UI) — 300-800, la plus lisible à 48px tactile
    SORA (Titres/Display) — 400-800, ink traps, accents français parfaits
    Choix : duo 100% Google Fonts, gratuit, variable, ultra-performant
@@ -39,7 +39,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* BEGPHARMA · Charte Officine Bénin — v3 HealthTech Jakarta+Sora
+/* BestPharma · Charte Officine Bénin — v3 HealthTech Jakarta+Sora
    Move Green (#0F3B27) = confiance médicale, Signal Lime (#92FF5F) = vitalité,
    Soft White (#F7F9F7) = propreté pharmaceutique, Orange (#FF7036) = alerte,
    Ice (#BFF2F0) = chaîne du froid, Mint (#CFF1D2) = validation */

@@ -320,5 +320,112 @@ class Partie1BpdSeeder extends Seeder
                 'updated_at' => now(),
             ]
         );
+
+        // 4. Échéancier réglementaire initial complet (BPD Section 9)
+        $echeancesInitiales = [
+            [
+                'titre' => 'Renouvellement Licence d\'Exploitation d\'Officine (ABMed)',
+                'responsable' => 'Dr Félicien AGBO (Titulaire)',
+                'categorie' => 'reglementaire',
+                'priorite' => 'critique',
+                'date_echeance' => '2026-12-31',
+                'periodicite' => 'annuelle',
+                'reglementaire' => true,
+                'fait' => false,
+                'notes' => 'Dossier complet à déposer auprès de l\'Agence Béninoise du Médicament 60 jours avant expiration.',
+            ],
+            [
+                'titre' => 'Cotisation & Inscription Tableau de l\'Ordre Section B',
+                'responsable' => 'Dr Félicien AGBO / Dr Claire TOSSOU',
+                'categorie' => 'personnel',
+                'priorite' => 'critique',
+                'date_echeance' => date('Y-m-d', strtotime('+45 days')),
+                'periodicite' => 'annuelle',
+                'reglementaire' => true,
+                'fait' => false,
+                'notes' => 'Attestation de mise à jour annuelle du tableau de l\'Ordre National des Pharmaciens du Bénin.',
+            ],
+            [
+                'titre' => 'Étalonnage métrologique annuel des sondes de température 2-8 °C',
+                'responsable' => 'Dr Claire TOSSOU (RMQ)',
+                'categorie' => 'equipement',
+                'priorite' => 'critique',
+                'date_echeance' => date('Y-m-d', strtotime('+14 days')),
+                'periodicite' => 'annuelle',
+                'reglementaire' => true,
+                'fait' => false,
+                'notes' => 'Organisme accrédité COFRAC / CEBTP. Certificat d\'étalonnage 3 points (2°C, 5°C, 8°C).',
+            ],
+            [
+                'titre' => 'Contrôle annuel des extincteurs et robinets d\'incendie armés',
+                'responsable' => 'M. Bienvenu KOUASSI (Logistique)',
+                'categorie' => 'equipement',
+                'priorite' => 'important',
+                'date_echeance' => date('Y-m-d', strtotime('+20 days')),
+                'periodicite' => 'annuelle',
+                'reglementaire' => true,
+                'fait' => false,
+                'notes' => 'Vérification de la charge, des goupilles de sécurité et du carnet de sécurité incendie.',
+            ],
+            [
+                'titre' => 'Traitement 3D trimestriel (Dératisation, Désinsectisation, Désinfection)',
+                'responsable' => 'M. Bienvenu KOUASSI',
+                'categorie' => 'locaux',
+                'priorite' => 'important',
+                'date_echeance' => date('Y-m-d', strtotime('-5 days')), // En retard pour démonstration alerte rouge ECH-05 / ECH-07
+                'periodicite' => 'trimestrielle',
+                'reglementaire' => true,
+                'fait' => false,
+                'notes' => 'Rapport du prestataire 3D agréé avec plan d\'appâtage et fiches de données de sécurité (FDS).',
+            ],
+            [
+                'titre' => 'Revue annuelle de direction & politique qualité (BPD-1-M01)',
+                'responsable' => 'Dr Félicien AGBO (Titulaire)',
+                'categorie' => 'qualite',
+                'priorite' => 'important',
+                'date_echeance' => date('Y-m-d', strtotime('+60 days')),
+                'periodicite' => 'annuelle',
+                'reglementaire' => false,
+                'fait' => false,
+                'notes' => 'Bilan des réclamations, taux de service, écarts de température et auto-évaluation 267 articles.',
+            ],
+            [
+                'titre' => 'Test annuel du Plan de Continuité d\'Activité (PRA / sauvegarde hors site)',
+                'responsable' => 'Dr Claire TOSSOU (RMQ)',
+                'categorie' => 'qualite',
+                'priorite' => 'critique',
+                'date_echeance' => date('Y-m-d', strtotime('+90 days')),
+                'periodicite' => 'annuelle',
+                'reglementaire' => true,
+                'fait' => false,
+                'notes' => 'Simulation de coupure réseau et bascule sur le serveur local autonome.',
+            ],
+            [
+                'titre' => 'Visite médicale périodique d\'aptitude de l\'équipe',
+                'responsable' => 'Dr Félicien AGBO',
+                'categorie' => 'personnel',
+                'priorite' => 'important',
+                'date_echeance' => date('Y-m-d', strtotime('-12 days')), // Déjà réalisée dans l'historique
+                'periodicite' => 'annuelle',
+                'reglementaire' => true,
+                'fait' => true,
+                'date_realisation' => date('Y-m-d', strtotime('-10 days')),
+                'preuve_titre' => 'Certificats_Aptitude_Medecine_Travail_2026.pdf',
+                'notes' => 'Visites effectuées auprès du centre de médecine du travail agréé.',
+            ],
+        ];
+
+        foreach ($echeancesInitiales as $ech) {
+            DB::table('echeances')->updateOrInsert(
+                ['officine_id' => $officineA->id, 'titre' => $ech['titre']],
+                array_merge($ech, [
+                    'id' => (string) Str::uuid(),
+                    'created_by' => $user->id,
+                    'archived' => false,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])
+            );
+        }
     }
 }

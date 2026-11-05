@@ -1,6 +1,6 @@
 // Fichier de traduction unique (FR). Tout libellé d'interface vient d'ici.
 export const fr = {
-  app: { nom: "BEGPHARMA", baseline: "Votre officine, conforme et pilotée de partout." },
+  app: { nom: "BestPharma", baseline: "Votre officine, conforme et pilotée de partout." },
   commun: {
     enregistrer: "Enregistrer",
     annuler: "Annuler",

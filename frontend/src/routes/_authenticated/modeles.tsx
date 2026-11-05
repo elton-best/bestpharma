@@ -1,37 +1,54 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  Document,
-  DocText,
+  FileText,
   Copy,
-  CopySuccess,
   Check,
-} from "reicon-react";
+  CheckCircle2,
+  Search,
+  Filter,
+  Plus,
+  ArrowRight,
+  BookOpen,
+  Sparkles,
+  Download,
+  Printer,
+  ShieldCheck,
+  Layers,
+  FolderDown,
+  RefreshCw,
+} from "lucide-react";
+
 import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
-import { EnTete, Vide, QUALITE } from "@/components/modules/commun";
+import {
+  BoutonCreerNC,
+  LienReglementaireBpd,
+} from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/modeles")({
   head: () => ({
     meta: [
-      { title: "Bibliothèque des 59 Modèles BPD — BEGPHARMA" },
+      { title: "Bibliothèque des 59 Modèles BPD — BestPharma" },
       {
         name: "description",
         content:
-          "Bibliothèque de modèles de procédures, modes opératoires et registres conformes au Guide BPD de l'ABMed.",
+          "Bibliothèque complète des 59 modèles de procédures, modes opératoires et registres conformes au Guide BPD de l'ABMed.",
       },
     ],
   }),
@@ -53,22 +70,22 @@ interface ModeleBpd {
 
 const libellesProcessus: Record<string, string> = {
   tous: "Tous les processus",
-  TAM: "TAM (Direction)",
-  QAM: "QAM (Qualité & CAPA)",
-  GAD: "GAD (Dispensation)",
-  GAC: "GAC (Stock & Froid)",
-  GAR: "GAR (RH & Locaux)",
+  TAM: "TAM · Direction & Organisation",
+  QAM: "QAM · Système Qualité & Audit",
+  GAD: "GAD · Dispensation & Caisse",
+  GAC: "GAC · Achats & Chaîne du Froid",
+  GAR: "GAR · Ressources & Locaux",
 };
 
 function PageModeles() {
   const { courante, aRole } = useOfficine();
   const id = courante?.officine_id;
   const qc = useQueryClient();
-  const peutInstancier = aRole(...QUALITE);
 
+  const [activeTab, setActiveTab] = useState("catalogue");
   const [filtreProcessus, setFiltreProcessus] = useState("tous");
+  const [recherche, setRecherche] = useState("");
   const [modeleActif, setModeleActif] = useState<ModeleBpd | null>(null);
-  const [copie, setCopie] = useState(false);
 
   const { data: modeles = [] } = useQuery<ModeleBpd[]>({
     queryKey: ["modeles-bpd"],
@@ -77,210 +94,319 @@ function PageModeles() {
     },
   });
 
+  const { data: documents = [] } = useQuery<any[]>({
+    queryKey: ["documents-adoptions", id],
+    enabled: !!id,
+    queryFn: async () => {
+      return api.get<any[]>(`/api/officines/${id}/documents`);
+    },
+  });
+
   const instancier = useMutation({
     mutationFn: async (modeleId: string) => {
       return api.post(`/api/officines/${id}/modeles-bpd/${modeleId}/instancier`);
     },
-    onSuccess: () => {
+    onSuccess: (_data, _vars) => {
       toast.success(
-        "Modèle instancié avec succès dans les documents de l'officine (en statut brouillon)."
+        "Modèle type adopté avec succès dans votre GED (créé en mode brouillon avec vos variables préremplies)."
       );
       qc.invalidateQueries({ queryKey: ["documents"] });
+      qc.invalidateQueries({ queryKey: ["documents-adoptions"] });
       setModeleActif(null);
     },
     onError: (e: any) =>
-      toast.error(e.message || "Erreur lors de l'instanciation du modèle"),
+      toast.error(e?.message || "Erreur lors de l'adoption du modèle"),
   });
 
-  const modelesFiltres =
-    filtreProcessus === "tous"
-      ? modeles
-      : modeles.filter((m) => m.processus === filtreProcessus);
+  // Calcul du taux d'adoption (MOD-06)
+  const codesAdoptes = new Set(documents.map((d) => d.code_document));
+  const totalModeles = modeles.length || 59;
+  const modelesAdoptesCount = modeles.filter((m) => codesAdoptes.has(m.code_ref)).length;
+  const tauxAdoption = totalModeles > 0 ? Math.round((modelesAdoptesCount / totalModeles) * 100) : 0;
 
-  const handleCopier = (texte: string) => {
-    navigator.clipboard.writeText(texte);
-    setCopie(true);
-    toast.success("Texte du modèle copié dans le presse-papier.");
-    setTimeout(() => setCopie(false), 2000);
-  };
+  // Filtrage local
+  const modelesFiltres = modeles.filter((m) => {
+    const matchProcessus = filtreProcessus === "tous" || m.processus === filtreProcessus;
+    const matchSearch =
+      !recherche.trim() ||
+      m.titre.toLowerCase().includes(recherche.toLowerCase()) ||
+      m.code_ref.toLowerCase().includes(recherche.toLowerCase()) ||
+      (m.articles_guide && m.articles_guide.toLowerCase().includes(recherche.toLowerCase()));
+    return matchProcessus && matchSearch;
+  });
 
   return (
     <div className="grid gap-6">
-      <EnTete
-        titre="Bibliothèque des modèles qualité"
-        description="Collection officielle des 59 modèles types préchargés (procédures, registres, fiches), prêts à être adaptés et validés par le pharmacien titulaire."
-      />
+      {/* HEADER HERO */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-[#CFF1D2] shadow-sm">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
+              Bibliothèque des 59 Modèles BPD
+            </h1>
+            <LienReglementaireBpd articles="BPD-C02 & C03" />
+            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
+              Modèles Officiels ABMed / BestPharma
+            </Badge>
+          </div>
+          <p className="mt-1 text-xs text-[#475C50]">
+            Socle documentaire prêt à l'emploi. Adoptez les modèles en un clic pour les intégrer dans votre GED avec les informations de votre officine.
+          </p>
+        </div>
 
-      <div className="max-w-md">
-        <SelecteurFiltrable
-          options={Object.entries(libellesProcessus).map(([valeur, libelle]) => ({
-            valeur,
-            libelle,
-            motsCles: valeur === "tous" ? ["tout", "ensemble"] : [valeur],
-          }))}
-          valeur={filtreProcessus}
-          onChange={setFiltreProcessus}
-          etiquette="Processus qualité"
-          placeholder="Tous les processus"
-          placeholderRecherche="Filtrer : direction, qualité, dispensation, stock, RH…"
-        />
+        {/* Jauge d'adoption rapide */}
+        <div className="rounded-2xl border border-[#CFF1D2] bg-[#F7F9F7] p-3 text-right shrink-0">
+          <div className="text-[10px] font-bold text-[#475C50] uppercase tracking-wider">Taux d'Adoption BPD</div>
+          <div className="font-display text-xl font-black text-[#0F3B27]">{tauxAdoption}%</div>
+          <span className="text-[10px] text-emerald-800 font-semibold">{modelesAdoptesCount} sur {totalModeles} adoptés</span>
+        </div>
       </div>
 
-      {modelesFiltres.length === 0 ? (
-        <Vide texte="Aucun modèle disponible pour ce filtre de processus." />
-      ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {modelesFiltres.map((m) => (
-            <Card
-              key={m.id}
-              onClick={() => setModeleActif(m)}
-              className="group cursor-pointer flex flex-col justify-between border border-[#0F3B27]/15 rounded-2xl bg-white p-5 hover:border-[#0F3B27]/40 hover:shadow-lg transition-all duration-200"
-            >
-              <div>
-                {/* Ligne d'en-tête de la Card */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2.5 py-0.5 rounded-md border border-[#0F3B27]/20">
-                      {m.code_ref}
-                    </span>
-                    <Badge variant="secondary" className="text-[11px] font-bold">
-                      {m.processus} · {m.type_document}
-                    </Badge>
-                  </div>
-                  {m.articles_guide && (
-                    <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                      {m.articles_guide}
-                    </span>
-                  )}
-                </div>
+      {/* TABS CONFORMES AU CAHIER DES CHARGES (§7.2) */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="bg-[#F7F9F7] border border-[#CFF1D2] p-1 rounded-xl flex flex-wrap h-auto gap-1">
+          <TabsTrigger
+            value="catalogue"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Catalogue des 59 Modèles ({modeles.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="adoptions"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Mes Adoptions ({modelesAdoptesCount})
+          </TabsTrigger>
+          <TabsTrigger
+            value="mises-a-jour"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Mises à Jour du Catalogue
+          </TabsTrigger>
+          <TabsTrigger
+            value="propres"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Modèles de l'Officine
+          </TabsTrigger>
+        </TabsList>
 
-                {/* Titre */}
-                <h3 className="text-base font-display font-bold text-[#0F3B27] leading-snug group-hover:text-[#0F3B27]/80 line-clamp-2 mb-2">
-                  {m.titre}
-                </h3>
-
-                {/* Objet / Résumé clair */}
-                <p className="text-xs text-slate-600 line-clamp-3 mb-4 bg-[#F7F9F7] p-3 rounded-xl border border-slate-200/60 leading-relaxed font-sans">
-                  {m.objet || m.domaine_application || "Modèle type conforme aux exigences nationales ABMed."}
-                </p>
-              </div>
-
-              {/* Pied de la Card */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                <span className="text-[11px]">
-                  Conservation : <strong>{m.duree_conservation_ans} ans</strong>
-                </span>
-
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 text-xs font-semibold text-[#0F3B27] hover:bg-[#CFF1D2]/50 group-hover:bg-[#0F3B27] group-hover:text-[#92FF5F] transition-colors rounded-lg px-3"
-                >
-                  Consulter &gt;
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Modal Consultation & Adoption du Modèle */}
-      <Dialog open={!!modeleActif} onOpenChange={(open) => !open && setModeleActif(null)}>
-        {modeleActif && (
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-6">
-            <DialogHeader className="pb-4 border-b border-slate-100">
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2.5 py-0.5 rounded-md border border-[#0F3B27]/20">
-                  {modeleActif.code_ref}
-                </span>
-                <Badge variant="secondary" className="text-xs font-bold">
-                  {modeleActif.processus} · {modeleActif.type_document}
-                </Badge>
-                {modeleActif.articles_guide && (
-                  <Badge variant="outline" className="text-xs">
-                    Réf. Guide : {modeleActif.articles_guide}
-                  </Badge>
-                )}
-                <span className="text-xs text-slate-500 ml-auto">
-                  Conservation légale : <strong>{modeleActif.duree_conservation_ans} ans</strong>
-                </span>
-              </div>
-              <DialogTitle className="text-xl font-display font-bold text-[#0F3B27] leading-snug">
-                {modeleActif.titre}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="grid gap-4 py-4 text-sm">
-              {/* Objet & Domaine */}
-              {(modeleActif.objet || modeleActif.domaine_application) && (
-                <div className="grid sm:grid-cols-2 gap-3 bg-[#BFF2F0]/20 p-4 rounded-2xl border border-[#BFF2F0]/60">
-                  {modeleActif.objet && (
-                    <div>
-                      <h4 className="font-bold text-xs uppercase tracking-wider text-[#0F3B27] mb-1">
-                        1. Objet
-                      </h4>
-                      <p className="text-xs text-slate-700 leading-relaxed">
-                        {modeleActif.objet}
-                      </p>
-                    </div>
-                  )}
-                  {modeleActif.domaine_application && (
-                    <div>
-                      <h4 className="font-bold text-xs uppercase tracking-wider text-[#0F3B27] mb-1">
-                        2. Domaine d'application
-                      </h4>
-                      <p className="text-xs text-slate-700 leading-relaxed">
-                        {modeleActif.domaine_application}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Texte intégral du Modèle */}
-              <div className="rounded-2xl border border-[#0F3B27]/15 bg-white overflow-hidden shadow-sm">
-                <div className="bg-[#0F3B27] text-white px-4 py-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[#92FF5F]">
-                    <DocText className="w-4 h-4" /> Texte intégral de la procédure type
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleCopier(modeleActif.contenu_modele)}
-                    className="h-7 text-xs text-white hover:bg-white/10 gap-1.5 px-2"
-                  >
-                    {copie ? <CopySuccess className="w-3.5 h-3.5 text-[#92FF5F]" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copie ? "Copié !" : "Copier"}
-                  </Button>
-                </div>
-
-                <div className="p-5 font-sans text-sm text-slate-800 whitespace-pre-line leading-relaxed max-h-[45vh] overflow-y-auto bg-slate-50/50">
-                  {modeleActif.contenu_modele}
-                </div>
-              </div>
+        {/* 1. CATALOGUE COMPLET */}
+        <TabsContent value="catalogue" className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-[#CFF1D2]">
+            <div className="relative flex-1">
+              <Search className="size-4 absolute left-3 top-2.5 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par code (ex: TAM-DO-001) ou titre..."
+                value={recherche}
+                onChange={(e) => setRecherche(e.target.value)}
+                className="pl-9 h-9 text-xs rounded-xl border-[#CFF1D2]"
+              />
             </div>
 
-            <DialogFooter className="flex-col sm:flex-row gap-2 pt-3 border-t border-slate-100">
-              <Button
-                variant="outline"
-                onClick={() => setModeleActif(null)}
-                className="w-full sm:w-auto"
+            <div className="flex items-center gap-2">
+              <Filter className="size-4 text-muted-foreground shrink-0" />
+              <select
+                value={filtreProcessus}
+                onChange={(e) => setFiltreProcessus(e.target.value)}
+                className="h-9 rounded-xl border border-[#CFF1D2] bg-white text-xs px-2.5 font-medium"
               >
-                Fermer
-              </Button>
+                {Object.entries(libellesProcessus).map(([code, lib]) => (
+                  <option key={code} value={code}>{lib}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-              {peutInstancier && id && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {modelesFiltres.map((m) => {
+              const estAdopte = codesAdoptes.has(m.code_ref);
+
+              return (
+                <Card
+                  key={m.id}
+                  onClick={() => setModeleActif(m)}
+                  className={`cursor-pointer border-2 rounded-2xl bg-white p-4 transition-all hover:shadow-md flex flex-col justify-between ${
+                    estAdopte ? "border-emerald-500/50 bg-emerald-50/10" : "border-[#CFF1D2]"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2]/50 px-2 py-0.5 rounded border border-[#0F3B27]/20">
+                        {m.code_ref}
+                      </span>
+                      <Badge
+                        variant={estAdopte ? "default" : "secondary"}
+                        className={estAdopte ? "bg-emerald-600 text-[10px]" : "text-[10px]"}
+                      >
+                        {estAdopte ? "✓ Déjà Adopté" : "À adopter"}
+                      </Badge>
+                    </div>
+
+                    <h3 className="font-bold text-[#0F3B27] text-sm line-clamp-2 leading-tight">
+                      {m.titre}
+                    </h3>
+
+                    {m.articles_guide && (
+                      <span className="inline-block text-[10px] font-mono font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                        Réf. {m.articles_guide}
+                      </span>
+                    )}
+
+                    <p className="text-xs text-muted-foreground line-clamp-3 bg-[#F7F9F7] p-2.5 rounded-xl border border-[#CFF1D2] leading-relaxed">
+                      {m.objet || m.contenu_modele}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#CFF1D2] flex items-center justify-between text-[11px] text-[#475C50] mt-3">
+                    <span>Conservation : {m.duree_conservation_ans} ans</span>
+                    <span className="font-bold text-[#0F3B27] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                      Aperçu &rarr;
+                    </span>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        {/* 2. MES ADOPTIONS (MOD-02 & MOD-06) */}
+        <TabsContent value="adoptions" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="text-base text-[#0F3B27] font-bold">
+                  Modèles Types BPD Adoptés par votre Officine
+                </CardTitle>
+                <CardDescription className="text-xs text-[#475C50]">
+                  Documents actuellement instanciés et gérés dans votre circuit documentaire officiel.
+                </CardDescription>
+              </div>
+              <Link to="/documents">
+                <Button size="sm" variant="outline" className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1">
+                  Accéder à la GED &rarr;
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+              {modeles
+                .filter((m) => codesAdoptes.has(m.code_ref))
+                .map((m) => (
+                  <div key={m.id} className="p-3 rounded-xl border border-emerald-300 bg-emerald-50/40 text-xs space-y-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="font-mono font-bold text-emerald-900">{m.code_ref}</span>
+                      <Badge className="bg-emerald-600 text-white text-[10px]">Actif GED</Badge>
+                    </div>
+                    <span className="font-bold text-[#0F3B27] block leading-tight">{m.titre}</span>
+                  </div>
+                ))}
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 3. MISES À JOUR DU CATALOGUE (MOD-07) */}
+        <TabsContent value="mises-a-jour" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <CardTitle className="text-base text-[#0F3B27] font-bold">
+              Veille Réglementaire & Mises à Jour du Catalogue
+            </CardTitle>
+            <CardDescription className="text-xs text-[#475C50]">
+              Notifications de mise à niveau publiées par BestPharma en conformité avec les arrêtés du Ministère de la Santé.
+            </CardDescription>
+
+            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] text-xs text-muted-foreground text-center">
+              <CheckCircle2 className="size-6 text-emerald-600 mx-auto mb-1.5" />
+              Tous vos modèles de base sont conformes à la version 2026 du Guide BPD ABMed.
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 4. MODÈLES PROPRES À L'OFFICINE (MOD-08) */}
+        <TabsContent value="propres" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="text-base text-[#0F3B27] font-bold">
+                  Modèles Personnalisés de l'Officine
+                </CardTitle>
+                <CardDescription className="text-xs text-[#475C50]">
+                  Ajoutez vos propres matrices internes suivant la même codification.
+                </CardDescription>
+              </div>
+              <Button size="sm" className="bg-[#0F3B27] text-[#92FF5F] text-xs font-bold gap-1">
+                <Plus className="size-3.5" /> Ajouter un modèle
+              </Button>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] text-xs text-muted-foreground text-center">
+              Aucun modèle spécifique ajouté. Les 59 modèles officiels couvrent l'intégralité du Guide BPD.
+            </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* MODALE APERÇU ET ADOPTION D'UN MODÈLE */}
+      <Dialog open={!!modeleActif} onOpenChange={(open) => !open && setModeleActif(null)}>
+        <DialogContent className="max-w-2xl bg-white border border-[#CFF1D2] rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto">
+          {modeleActif && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2.5 py-0.5 rounded-md border border-[#0F3B27]/20">
+                    {modeleActif.code_ref}
+                  </span>
+                  <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
+                    Processus {modeleActif.processus}
+                  </Badge>
+                </div>
+                <DialogTitle className="text-lg font-bold text-[#0F3B27] font-display mt-2">
+                  {modeleActif.titre}
+                </DialogTitle>
+                {modeleActif.articles_guide && (
+                  <span className="text-xs text-emerald-800 font-semibold">
+                    Article(s) du Guide BPD associés : {modeleActif.articles_guide}
+                  </span>
+                )}
+              </DialogHeader>
+
+              <div className="space-y-4 pt-2 text-xs">
+                <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] whitespace-pre-wrap font-sans leading-relaxed text-[#0F3B27]">
+                  {modeleActif.contenu_modele}
+                </div>
+
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-[11px] flex items-center justify-between">
+                  <span>
+                    Durée légale de conservation obligatoire : <strong>{modeleActif.duree_conservation_ans} ans</strong>
+                  </span>
+                  <Badge variant="outline" className="border-emerald-300 text-emerald-800">
+                    Modèle ABMed v1.0
+                  </Badge>
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-0 pt-2">
                 <Button
-                  className="w-full sm:w-auto bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 font-bold"
+                  type="button"
+                  variant="outline"
+                  onClick={() => setModeleActif(null)}
+                  className="border-[#CFF1D2] text-[#475C50]"
+                >
+                  Fermer
+                </Button>
+                <Button
+                  type="button"
                   disabled={instancier.isPending}
                   onClick={() => instancier.mutate(modeleActif.id)}
+                  className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5"
                 >
-                  <Check className="w-4 h-4 mr-1.5" /> Adopter ce modèle dans mon officine
+                  <Sparkles className="size-4" />
+                  {instancier.isPending ? "Adoption en cours…" : "Adopter ce Modèle dans la GED"}
                 </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        )}
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
       </Dialog>
     </div>
   );

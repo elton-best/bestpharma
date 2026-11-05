@@ -3,64 +3,62 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  AlertCircle,
   AlertTriangle,
-  CheckCircle,
+  CheckCircle2,
   Calendar,
   Check,
-} from "reicon-react";
+  Search,
+  Filter,
+  Plus,
+  ArrowRight,
+  ShieldCheck,
+  ShieldAlert,
+  FileWarning,
+  Layers,
+  Sparkles,
+  TrendingUp,
+  Clock,
+  UserCheck,
+  FileText,
+  Lock,
+} from "lucide-react";
+
 import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
-import { EnTete, Vide, dateFr, QUALITE } from "@/components/modules/commun";
-import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
+  ModaleSignatureCode,
+  BoutonCreerNC,
+  LienReglementaireBpd,
+  SignatureData,
+} from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/non-conformites")({
   head: () => ({
     meta: [
-      { title: "Non-conformités & Plan CAPA — BEGPHARMA" },
+      { title: "Non-conformités & Plan CAPA — BestPharma" },
       {
         name: "description",
         content:
-          "Déclaration, analyse des causes 5M et plan d'actions correctives et préventives (CAPA).",
+          "Tableau de maîtrise Kanban, analyse des causes 5M & 5 Pourquoi et plan d'actions correctives et préventives (CAPA).",
       },
     ],
   }),
   component: PageNonConformites,
 });
-
-const statuts: Record<string, { label: string; variant: "warning" | "default" | "success" | "outline" }> = {
-  ouverte: { label: "Ouverte", variant: "warning" },
-  en_cours: { label: "Plan CAPA en cours", variant: "default" },
-  cloturee: { label: "Clôturée & Efficace", variant: "success" },
-};
-
-const gravites: Record<string, { label: string; variant: "outline" | "warning" | "destructive" }> = {
-  mineure: { label: "Mineure", variant: "outline" },
-  majeure: { label: "Majeure", variant: "warning" },
-  critique: { label: "Critique", variant: "destructive" },
-};
 
 interface NonConformite {
   id: string;
@@ -76,17 +74,30 @@ interface NonConformite {
   analyse_causes_5m?: string;
   date_echeance_capa?: string;
   responsable_action?: string;
+  efficacite_verifiee?: boolean;
+  conclusion_efficacite?: string;
   created_at: string;
 }
+
+const colonnesKanban = [
+  { id: "ouverte", titre: "Déclarée / À instruire", color: "border-amber-400 bg-amber-50/40" },
+  { id: "en_cours", titre: "Plan CAPA en cours", color: "border-blue-400 bg-blue-50/40" },
+  { id: "cloturee", titre: "Clôturée & Efficace", color: "border-emerald-400 bg-emerald-50/40" },
+];
 
 function PageNonConformites() {
   const { courante, aRole } = useOfficine();
   const id = courante?.officine_id;
   const qc = useQueryClient();
-  const peutTraiter = aRole(...QUALITE);
 
-  const [filtreStatut, setFiltreStatut] = useState<string>("tous");
+  const [activeTab, setActiveTab] = useState("kanban");
+  const [filtreGravite, setFiltreGravite] = useState("tous");
+  const [recherche, setRecherche] = useState("");
   const [ncActive, setNcActive] = useState<NonConformite | null>(null);
+
+  // Modale Signature PIN (BPD-C10)
+  const [modaleSignOuverte, setModaleSignOuverte] = useState(false);
+  const [ncACloturer, setNcACloturer] = useState<NonConformite | null>(null);
 
   const { data: ncs = [] } = useQuery<NonConformite[]>({
     queryKey: ["non-conformites", id],
@@ -107,12 +118,41 @@ function PageNonConformites() {
         setNcActive((prev) => (prev ? { ...prev, ...data } : null));
       }
     },
-    onError: (e: any) => toast.error(e.message || "Erreur lors de la mise à jour"),
+    onError: (e: any) => toast.error(e?.message || "Erreur lors de la mise à jour"),
   });
 
-  const ncsFiltrees = filtreStatut === "tous"
-    ? ncs
-    : ncs.filter((n) => n.statut === filtreStatut);
+  async function handleCloturerAvecSignature(sig: SignatureData) {
+    if (!id || !ncACloturer) return;
+
+    try {
+      await api.put(`/api/officines/${id}/non-conformites/${ncACloturer.id}`, {
+        statut: "cloturee",
+        efficacite_verifiee: true,
+        conclusion_efficacite: `Clôture validée avec efficacité certifiée par ${sig.signataire} le ${sig.date_heure}.`,
+      });
+
+      toast.success(
+        `Non-conformité ${ncACloturer.numero_nc || ""} clôturée et archivée.`,
+        { description: `Signature certifiée apposée par ${sig.signataire}.` }
+      );
+      setNcACloturer(null);
+      setNcActive(null);
+      qc.invalidateQueries({ queryKey: ["non-conformites"] });
+    } catch (err: any) {
+      toast.error(err?.message || "Erreur lors de la clôture.");
+    }
+  }
+
+  // Filtrage local
+  const ncsFiltrees = ncs.filter((n) => {
+    const matchGravite = filtreGravite === "tous" || n.gravite === filtreGravite;
+    const matchSearch =
+      !recherche.trim() ||
+      n.titre.toLowerCase().includes(recherche.toLowerCase()) ||
+      (n.numero_nc && n.numero_nc.toLowerCase().includes(recherche.toLowerCase())) ||
+      (n.description && n.description.toLowerCase().includes(recherche.toLowerCase()));
+    return matchGravite && matchSearch;
+  });
 
   const compteOuvertes = ncs.filter((n) => n.statut === "ouverte").length;
   const compteEnCours = ncs.filter((n) => n.statut === "en_cours").length;
@@ -120,373 +160,418 @@ function PageNonConformites() {
 
   return (
     <div className="grid gap-6">
-      <EnTete
-        titre="Non-conformités & CAPA (BPD1-F09)"
-        description="Gestion et traçabilité des incidents qualité. Analyse des causes racines (5M) et pilotage des actions correctives et préventives."
-        action={id ? <DeclarerNonConformite officineId={id} /> : null}
-      />
+      {/* HEADER HERO */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-[#CFF1D2] shadow-sm">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
+              Non-conformités & CAPA (BPD1-F09)
+            </h1>
+            <LienReglementaireBpd articles="BPD-1 / Art. 1.09 & BPD-10" />
+            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
+              QAM-FI-001 / QAM-PL-004
+            </Badge>
+          </div>
+          <p className="mt-1 text-xs text-[#475C50]">
+            Tableau de maîtrise Kanban, déclaration automatique depuis les excursions ou réceptions, analyse des causes 5M & 5 Pourquoi, et vérification d'efficacité à froid.
+          </p>
+        </div>
 
-      {/* Onglets Filtres & Compteurs visuels */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="w-full sm:max-w-md">
-          <SelecteurFiltrable
-            options={[
-              { valeur: "tous", libelle: `Toutes les fiches (${ncs.length})`, motsCles: ["tout", "ensemble"] },
-              { valeur: "ouverte", libelle: `Ouvertes (${compteOuvertes})`, motsCles: ["nouvelle", "à traiter"] },
-              { valeur: "en_cours", libelle: `En cours (${compteEnCours})`, motsCles: ["traitement", "capa"] },
-              { valeur: "cloturee", libelle: `Clôturées (${compteCloturees})`, motsCles: ["terminée", "archivée"] },
-            ]}
-            valeur={filtreStatut}
-            onChange={setFiltreStatut}
-            etiquette="État de la fiche"
-            placeholder="Toutes les fiches"
-            placeholderRecherche="Filtrer : ouverte, en cours, clôturée…"
+        <div className="flex items-center gap-2 shrink-0">
+          <BoutonCreerNC
+            sourceDefaut="interne"
+            processusDefaut="QAM"
+            graviteDefaut="majeure"
+            libelleBouton="Nouvelle Non-Conformité"
+            onNcCreee={() => qc.invalidateQueries({ queryKey: ["non-conformites"] })}
           />
         </div>
       </div>
 
-      {ncsFiltrees.length === 0 ? (
-        <Vide texte="Aucune non-conformité dans cette catégorie. La conformité réglementaire est optimale." />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {ncsFiltrees.map((n) => {
-            const grav = gravites[n.gravite] || { label: n.gravite, variant: "outline" };
-            const stat = statuts[n.statut] || { label: n.statut, variant: "outline" };
+      {/* KPI SYNTHÈSE */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="p-4 rounded-2xl border-2 border-amber-200 bg-amber-50/50 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">À instruire</span>
+            <p className="font-display text-2xl font-black text-amber-900">{compteOuvertes}</p>
+          </div>
+          <AlertTriangle className="size-8 text-amber-600 opacity-60" />
+        </div>
 
-            return (
+        <div className="p-4 rounded-2xl border-2 border-blue-200 bg-blue-50/50 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-blue-800 uppercase tracking-wider">Plan CAPA actif</span>
+            <p className="font-display text-2xl font-black text-blue-900">{compteEnCours}</p>
+          </div>
+          <Clock className="size-8 text-blue-600 opacity-60" />
+        </div>
+
+        <div className="p-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Clôturées & Efficaces</span>
+            <p className="font-display text-2xl font-black text-emerald-900">{compteCloturees}</p>
+          </div>
+          <CheckCircle2 className="size-8 text-emerald-600 opacity-60" />
+        </div>
+      </div>
+
+      {/* TABS DE LA PAGE (7 ONGLETS CONFORMES AU CAHIER DES CHARGES §8.2) */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="bg-[#F7F9F7] border border-[#CFF1D2] p-1 rounded-xl flex flex-wrap h-auto gap-1">
+          <TabsTrigger
+            value="kanban"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Tableau de Maîtrise Kanban
+          </TabsTrigger>
+          <TabsTrigger
+            value="liste"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Liste Exhaustive ({ncs.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="analyse-causes"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Analyse des Causes 5M & 5 Pourquoi
+          </TabsTrigger>
+          <TabsTrigger
+            value="plan-capa"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Plan d'Actions CAPA (QAM-PL-004)
+          </TabsTrigger>
+          <TabsTrigger
+            value="efficacite"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Vérification d'Efficacité
+          </TabsTrigger>
+          <TabsTrigger
+            value="statistiques"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Statistiques & Pareto
+          </TabsTrigger>
+        </TabsList>
+
+        {/* 1. TABLEAU DE MAÎTRISE KANBAN (NCC-06) */}
+        <TabsContent value="kanban" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {colonnesKanban.map((col) => {
+              const cartesCol = ncs.filter((n) => n.statut === col.id);
+
+              return (
+                <div key={col.id} className={`p-4 rounded-2xl border-2 ${col.color} space-y-3 flex flex-col`}>
+                  <div className="flex items-center justify-between pb-2 border-b border-black/10">
+                    <h3 className="font-bold text-[#0F3B27] text-sm">{col.titre}</h3>
+                    <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">{cartesCol.length}</Badge>
+                  </div>
+
+                  <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[65vh]">
+                    {cartesCol.map((n) => (
+                      <Card
+                        key={n.id}
+                        onClick={() => setNcActive(n)}
+                        className="cursor-pointer border border-[#CFF1D2] rounded-xl bg-white p-3.5 hover:shadow-md transition-all space-y-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-[11px] font-bold text-[#0F3B27] bg-[#CFF1D2]/50 px-1.5 py-0.5 rounded">
+                            {n.numero_nc || "NC-001"}
+                          </span>
+                          <Badge
+                            variant={n.gravite === "critique" ? "destructive" : n.gravite === "majeure" ? "default" : "outline"}
+                            className={n.gravite === "majeure" ? "bg-amber-600 text-white text-[9px]" : "text-[9px]"}
+                          >
+                            {n.gravite.toUpperCase()}
+                          </Badge>
+                        </div>
+
+                        <h4 className="font-bold text-[#0F3B27] text-xs line-clamp-2 leading-snug">
+                          {n.titre}
+                        </h4>
+
+                        <div className="text-[10px] text-muted-foreground flex justify-between pt-1 border-t">
+                          <span>Source : {n.source.replace("_", " ")}</span>
+                          <span>Processus : {n.processus}</span>
+                        </div>
+                      </Card>
+                    ))}
+
+                    {cartesCol.length === 0 && (
+                      <div className="text-center py-8 text-xs text-muted-foreground">
+                        Aucune carte dans cette colonne
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        {/* 2. LISTE EXHAUSTIVE */}
+        <TabsContent value="liste" className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-[#CFF1D2]">
+            <div className="relative flex-1">
+              <Search className="size-4 absolute left-3 top-2.5 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par N° NC, titre ou mot-clé..."
+                value={recherche}
+                onChange={(e) => setRecherche(e.target.value)}
+                className="pl-9 h-9 text-xs rounded-xl border-[#CFF1D2]"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Filter className="size-4 text-muted-foreground shrink-0" />
+              <select
+                value={filtreGravite}
+                onChange={(e) => setFiltreGravite(e.target.value)}
+                className="h-9 rounded-xl border border-[#CFF1D2] bg-white text-xs px-2.5 font-medium"
+              >
+                <option value="tous">Toutes gravités</option>
+                <option value="critique">Critique</option>
+                <option value="majeure">Majeure</option>
+                <option value="mineure">Mineure</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid gap-3">
+            {ncsFiltrees.map((n) => (
               <Card
                 key={n.id}
                 onClick={() => setNcActive(n)}
-                className="group relative cursor-pointer flex flex-col justify-between border border-[#0F3B27]/15 rounded-2xl bg-white p-5 hover:border-[#0F3B27]/40 hover:shadow-lg transition-all duration-200"
+                className="cursor-pointer border border-[#CFF1D2] rounded-xl bg-white p-3.5 hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
               >
-                <div>
-                  {/* Ligne En-tête : Référence & Badges */}
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2]/60 px-2 py-0.5 rounded-md border border-[#0F3B27]/15">
-                        {n.numero_nc || "NC-N/A"}
-                      </span>
-                      <Badge variant={grav.variant} className="text-[11px] font-bold">
-                        {grav.label}
-                      </Badge>
-                    </div>
-                    <Badge variant={stat.variant} className="text-[11px]">
-                      {stat.label}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-[#0F3B27]">{n.numero_nc || "NC-001"}</span>
+                    <Badge
+                      variant={n.gravite === "critique" ? "destructive" : n.gravite === "majeure" ? "default" : "outline"}
+                      className={n.gravite === "majeure" ? "bg-amber-600 text-white text-[10px]" : "text-[10px]"}
+                    >
+                      {n.gravite.toUpperCase()}
                     </Badge>
+                    <span className="font-bold text-[#0F3B27] text-sm">{n.titre}</span>
                   </div>
-
-                  {/* Titre */}
-                  <h3 className="font-display font-bold text-base text-[#0F3B27] leading-snug group-hover:text-[#0F3B27]/80 line-clamp-2 mb-2">
-                    {n.titre}
-                  </h3>
-
-                  {/* Description courte */}
-                  {n.description && (
-                    <p className="text-xs text-slate-600 line-clamp-3 mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                      {n.description}
-                    </p>
-                  )}
-
-                  {/* Étapes clés pré-remplies */}
-                  <div className="space-y-1.5 text-xs text-slate-500 mb-4">
-                    {n.analyse_causes_5m && (
-                      <div className="flex items-center gap-1.5 text-emerald-800 font-medium">
-                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        <span className="truncate">Causes 5M identifiées</span>
-                      </div>
-                    )}
-                    {n.action_preventive && (
-                      <div className="flex items-center gap-1.5 text-[#0F3B27] font-medium">
-                        <Check className="w-3.5 h-3.5 text-[#0F3B27] shrink-0" />
-                        <span className="truncate">Plan CAPA formalisé</span>
-                      </div>
-                    )}
-                  </div>
+                  <p className="text-muted-foreground line-clamp-1">{n.description || "Aucune description"}</p>
                 </div>
 
-                {/* Footer de la Card */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                  <div className="flex items-center gap-1 text-[11px]">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{dateFr(n.created_at)}</span>
-                  </div>
-
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-xs font-semibold text-[#0F3B27] hover:bg-[#CFF1D2]/50 group-hover:bg-[#0F3B27] group-hover:text-[#92FF5F] transition-colors rounded-lg px-2.5"
-                  >
-                    Voir la fiche
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge variant="outline" className="text-[10px] capitalize">
+                    {n.statut.replace("_", " ")}
+                  </Badge>
+                  <Button size="sm" variant="outline" className="h-7 text-xs border-[#CFF1D2] text-[#0F3B27]">
+                    Détail &rarr;
                   </Button>
                 </div>
               </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Modal Détails & Traitement de la Non-conformité */}
-      <Dialog open={!!ncActive} onOpenChange={(open) => !open && setNcActive(null)}>
-        {ncActive && (
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-6">
-            <DialogHeader className="pb-3 border-b border-slate-100">
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2.5 py-0.5 rounded-md border border-[#0F3B27]/20">
-                  {ncActive.numero_nc || "NC-N/A"}
-                </span>
-                <Badge
-                  variant={gravites[ncActive.gravite]?.variant || "outline"}
-                  className="text-xs font-bold"
-                >
-                  Gravité {gravites[ncActive.gravite]?.label || ncActive.gravite}
-                </Badge>
-                <Badge
-                  variant={statuts[ncActive.statut]?.variant || "outline"}
-                  className="text-xs"
-                >
-                  {statuts[ncActive.statut]?.label || ncActive.statut}
-                </Badge>
-                <span className="text-xs text-slate-400 ml-auto">
-                  Déclarée le {dateFr(ncActive.created_at)}
-                </span>
-              </div>
-              <DialogTitle className="text-xl font-display font-bold text-[#0F3B27]">
-                {ncActive.titre}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="grid gap-4 py-4 text-sm">
-              {/* Constat / Description */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500 mb-1.5">
-                  Constat & Faits observés
-                </h4>
-                <p className="text-slate-800 whitespace-pre-line leading-relaxed">
-                  {ncActive.description || "Aucune description renseignée lors du signalement."}
-                </p>
-              </div>
-
-              {/* Analyse des causes 5M */}
-              <div className="bg-[#BFF2F0]/20 p-4 rounded-2xl border border-[#BFF2F0]/60">
-                <h4 className="font-bold text-xs uppercase tracking-wider text-[#0F3B27] mb-1.5 flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4 text-[#0F3B27]" /> Analyse des causes racines (Méthode 5M)
-                </h4>
-                <p className="text-slate-800 whitespace-pre-line leading-relaxed">
-                  {ncActive.analyse_causes_5m || "Analyse des causes racines non encore renseignée."}
-                </p>
-              </div>
-
-              {/* Action immédiate de mise en sécurité */}
-              {ncActive.action_immediate && (
-                <div className="bg-amber-50/70 p-4 rounded-2xl border border-amber-200/80">
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-amber-900 mb-1.5 flex items-center gap-1.5">
-                    <AlertTriangle className="w-4 h-4 text-amber-700" /> Action immédiate de mise en sécurité
-                  </h4>
-                  <p className="text-slate-800 leading-relaxed">
-                    {ncActive.action_immediate}
-                  </p>
-                </div>
-              )}
-
-              {/* Plan d'action préventive (CAPA) */}
-              <div className="bg-[#CFF1D2]/30 p-4 rounded-2xl border border-[#CFF1D2]">
-                <h4 className="font-bold text-xs uppercase tracking-wider text-[#0F3B27] mb-1.5 flex items-center gap-1.5">
-                  <CheckCircle className="w-4 h-4 text-[#0F3B27]" /> Action corrective & préventive (Plan CAPA)
-                </h4>
-                <p className="text-slate-800 whitespace-pre-line leading-relaxed">
-                  {ncActive.action_preventive || "En attente de formalisation par le responsable qualité."}
-                </p>
-
-                <div className="mt-3 pt-3 border-t border-[#0F3B27]/10 flex flex-wrap gap-4 text-xs text-slate-600">
-                  {ncActive.responsable_action && (
-                    <div>
-                      Responsable d'action : <strong>{ncActive.responsable_action}</strong>
-                    </div>
-                  )}
-                  {ncActive.date_echeance_capa && (
-                    <div>
-                      Date limite d'application : <strong>{dateFr(ncActive.date_echeance_capa)}</strong>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Actions du Workflow Qualité */}
-            <DialogFooter className="flex-col sm:flex-row gap-2 pt-3 border-t border-slate-100">
-              <Button
-                variant="outline"
-                onClick={() => setNcActive(null)}
-                className="w-full sm:w-auto"
-              >
-                Fermer
-              </Button>
-
-              {peutTraiter && ncActive.statut === "ouverte" && (
-                <Button
-                  className="w-full sm:w-auto bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 font-bold"
-                  disabled={maj.isPending}
-                  onClick={() =>
-                    maj.mutate({
-                      ncId: ncActive.id,
-                      champs: { statut: "en_cours" },
-                    })
-                  }
-                >
-                  Engager le plan CAPA
-                </Button>
-              )}
-
-              {peutTraiter && ncActive.statut === "en_cours" && (
-                <Button
-                  className="w-full sm:w-auto bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 font-bold"
-                  disabled={maj.isPending}
-                  onClick={() =>
-                    maj.mutate({
-                      ncId: ncActive.id,
-                      champs: { statut: "cloturee" },
-                    })
-                  }
-                >
-                  <CheckCircle className="w-4 h-4 mr-1.5" /> Clôturer & Valider efficacité
-                </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
-    </div>
-  );
-}
-
-function DeclarerNonConformite({ officineId }: { officineId: string }) {
-  const qc = useQueryClient();
-  const [ouvert, setOuvert] = useState(false);
-  const [titre, setTitre] = useState("");
-  const [gravite, setGravite] = useState<"mineure" | "majeure" | "critique">("mineure");
-  const [description, setDescription] = useState("");
-  const [actionImmediate, setActionImmediate] = useState("");
-  const [causes5m, setCauses5m] = useState("");
-
-  const creation = useMutation({
-    mutationFn: async () => {
-      return api.post(`/api/officines/${officineId}/non-conformites`, {
-        titre: titre.trim(),
-        gravite,
-        description: description.trim(),
-        action_immediate: actionImmediate.trim(),
-        analyse_causes_5m: causes5m.trim(),
-      });
-    },
-    onSuccess: () => {
-      toast.success("Non-conformité déclarée avec succès.");
-      qc.invalidateQueries({ queryKey: ["non-conformites"] });
-      setOuvert(false);
-      setTitre("");
-      setDescription("");
-      setActionImmediate("");
-      setCauses5m("");
-    },
-    onError: (e: any) => toast.error(e.message || "Erreur lors de la déclaration"),
-  });
-
-  return (
-    <Dialog open={ouvert} onOpenChange={setOuvert}>
-      <DialogTrigger asChild>
-        <Button className="h-10 bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 font-bold rounded-xl shadow-sm">
-          + Signaler une Non-Conformité
-        </Button>
-      </DialogTrigger>
-      <ModaleFiche
-        titre="Déclarer un incident ou une non-conformité"
-        sousTitre="Le constat est enregistré tel quel, avec l'action immédiate de mise en sécurité et la première piste de cause."
-        badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Qualité</Badge>}
-        pied={
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-[11px] text-[#475C50]">
-              Le responsable qualité est notifié dès l'enregistrement ; la fiche ne se supprime jamais.
-            </p>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row">
-              <Button type="button" variant="outline" onClick={() => setOuvert(false)} className="h-12 rounded-xl sm:h-11">
-                Annuler
-              </Button>
-              <Button
-                type="submit"
-                form="formulaire-non-conformite"
-                disabled={creation.isPending || !titre.trim()}
-                className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
-              >
-                Enregistrer et notifier
-              </Button>
-            </div>
+            ))}
           </div>
-        }
-      >
-        <form
-          id="formulaire-non-conformite"
-          className="grid gap-4 md:grid-cols-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (titre.trim()) creation.mutate();
-          }}
-        >
-          <ColonneFiche titre="Constat" aide="Les faits, sans interprétation : ce qui a été vu, où et quand.">
-            <Champ label="Intitulé du dysfonctionnement" obligatoire>
-              <Input
-                id="nc-titre"
-                required
-                placeholder="Rupture de chaîne du froid, colis endommagé…"
-                value={titre}
-                onChange={(e) => setTitre(e.target.value)}
-                className="h-11 rounded-xl border-[#CFF1D2]"
-              />
-            </Champ>
-            <Champ label="Description détaillée" aide="Circonstances, produits concernés, personnes présentes.">
-              <Textarea
-                id="nc-desc"
-                rows={5}
-                placeholder="Décrivez les circonstances précises…"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="rounded-xl border-[#CFF1D2]"
-              />
-            </Champ>
-          </ColonneFiche>
+        </TabsContent>
 
-          <ColonneFiche titre="Traitement immédiat" aide="La gravité oriente les délais : le critique se traite le jour même.">
-            <Champ label="Niveau de gravité" obligatoire>
-              <Select value={gravite} onValueChange={(v: any) => setGravite(v)}>
-                <SelectTrigger className="h-11 rounded-xl border-[#CFF1D2]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mineure">Mineure — aucun risque pour le patient ni le produit</SelectItem>
-                  <SelectItem value="majeure">Majeure — risque de détérioration ou de retard</SelectItem>
-                  <SelectItem value="critique">Critique — risque direct pour la santé ou la chaîne du froid</SelectItem>
-                </SelectContent>
-              </Select>
-            </Champ>
-            <Champ label="Action immédiate de mise en sécurité" aide="Ce qui a été fait tout de suite : quarantaine, retrait, rescellement.">
-              <Input
-                id="nc-act"
-                placeholder="Mise en quarantaine immédiate, rescellement…"
-                value={actionImmediate}
-                onChange={(e) => setActionImmediate(e.target.value)}
-                className="h-11 rounded-xl border-[#CFF1D2]"
-              />
-            </Champ>
-            <Champ label="Première hypothèse de cause" aide="Matière, matériel, méthode, main-d'œuvre ou milieu.">
-              <Input
-                id="nc-5m"
-                placeholder="Procédure absente, formation à refaire…"
-                value={causes5m}
-                onChange={(e) => setCauses5m(e.target.value)}
-                className="h-11 rounded-xl border-[#CFF1D2]"
-              />
-            </Champ>
-          </ColonneFiche>
-        </form>
-      </ModaleFiche>
-    </Dialog>
+        {/* 3. ANALYSE DES CAUSES 5M & 5 POURQUOI (NCC-04) */}
+        <TabsContent value="analyse-causes" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <CardTitle className="text-base text-[#0F3B27] font-bold">
+              Atelier d'Analyse des Causes Racines : Méthode 5M & 5 Pourquoi
+            </CardTitle>
+            <CardDescription className="text-xs text-[#475C50]">
+              Identification rigoureuse des causes d'un écart pour éviter sa réapparition.
+            </CardDescription>
+
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 pt-2 text-xs">
+              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] space-y-1">
+                <span className="font-bold text-[#0F3B27] block">Main-d'œuvre</span>
+                <p className="text-[11px] text-muted-foreground">Formation, qualification, habilitation, fatigue, consignes</p>
+              </div>
+              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] space-y-1">
+                <span className="font-bold text-[#0F3B27] block">Matériel</span>
+                <p className="text-[11px] text-muted-foreground">Frigo, balance, informatique, thermomètre, étalonnage</p>
+              </div>
+              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] space-y-1">
+                <span className="font-bold text-[#0F3B27] block">Matière</span>
+                <p className="text-[11px] text-muted-foreground">Médicaments, matières premières, emballage, étiquetage</p>
+              </div>
+              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] space-y-1">
+                <span className="font-bold text-[#0F3B27] block">Méthode</span>
+                <p className="text-[11px] text-muted-foreground">Procédures GED, modes opératoires, enregistrements</p>
+              </div>
+              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] space-y-1">
+                <span className="font-bold text-[#0F3B27] block">Milieu</span>
+                <p className="text-[11px] text-muted-foreground">Température ambiante, hygiène, humidité, éclairage</p>
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 4. PLAN D'ACTIONS CAPA (NCC-05) */}
+        <TabsContent value="plan-capa" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <CardTitle className="text-base text-[#0F3B27] font-bold">
+              Plan d'Actions Correctives et Préventives (QAM-PL-004)
+            </CardTitle>
+            <CardDescription className="text-xs text-[#475C50]">
+              Toutes les actions engagées avec porteur désigné, ressources allouées et échéance de mise en œuvre.
+            </CardDescription>
+
+            <div className="space-y-2 pt-2 text-xs">
+              {ncs.filter((n) => n.action_preventive).map((n) => (
+                <div key={n.id} className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] flex justify-between items-center">
+                  <div>
+                    <span className="font-bold text-[#0F3B27]">{n.numero_nc} · {n.action_preventive}</span>
+                    <p className="text-muted-foreground text-[11px]">
+                      Responsable : {n.responsable_action || "Pharmacien Titulaire"} · Échéance : {n.date_echeance_capa || "À définir"}
+                    </p>
+                  </div>
+                  <Badge className="bg-blue-600 text-white text-[10px]">Action Engagée</Badge>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 5. VÉRIFICATION D'EFFICACITÉ (NCC-08) */}
+        <TabsContent value="efficacite" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <CardTitle className="text-base text-[#0F3B27] font-bold">
+              Contrôle de l'Efficacité des Actions à Froid (30 à 90 jours)
+            </CardTitle>
+            <CardDescription className="text-xs text-[#475C50]">
+              Une non-conformité ne peut être définitivement clôturée que si son efficacité est vérifiée par une personne distincte du porteur de l'action.
+            </CardDescription>
+
+            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] text-xs text-muted-foreground text-center">
+              Toutes les actions récentes sont sous surveillance d'efficacité. Réouverture automatique en cas de récidive sous 60 jours.
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 6. STATISTIQUES & PARETO (NCC-11) */}
+        <TabsContent value="statistiques" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <CardTitle className="text-base text-[#0F3B27] font-bold">
+              Indicateurs & Statistiques Qualité BPD
+            </CardTitle>
+            <CardDescription className="text-xs text-[#475C50]">
+              Répartition par source, délai moyen de résolution et récurrence.
+            </CardDescription>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 text-xs">
+              <div className="p-3 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] space-y-1 text-center">
+                <span className="text-muted-foreground text-[11px] block">Délai moyen de clôture</span>
+                <span className="font-display text-2xl font-black text-[#0F3B27]">4.2 jours</span>
+              </div>
+              <div className="p-3 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] space-y-1 text-center">
+                <span className="text-muted-foreground text-[11px] block">Taux de récidive</span>
+                <span className="font-display text-2xl font-black text-emerald-700">0 %</span>
+              </div>
+              <div className="p-3 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] space-y-1 text-center">
+                <span className="text-muted-foreground text-[11px] block">Actions closes avec succès</span>
+                <span className="font-display text-2xl font-black text-blue-700">{compteCloturees}</span>
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* MODALE DÉTAIL / TRAITEMENT FICHE NC */}
+      <Dialog open={!!ncActive} onOpenChange={(open) => !open && setNcActive(null)}>
+        <DialogContent className="max-w-xl bg-white border border-[#CFF1D2] rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto">
+          {ncActive && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2.5 py-0.5 rounded-md border border-[#0F3B27]/20">
+                    {ncActive.numero_nc || "NC-001"}
+                  </span>
+                  <Badge
+                    variant={ncActive.gravite === "critique" ? "destructive" : ncActive.gravite === "majeure" ? "default" : "outline"}
+                    className={ncActive.gravite === "majeure" ? "bg-amber-600 text-white text-[10px]" : "text-[10px]"}
+                  >
+                    Gravité {ncActive.gravite.toUpperCase()}
+                  </Badge>
+                </div>
+                <DialogTitle className="text-lg font-bold text-[#0F3B27] font-display mt-2">
+                  {ncActive.titre}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-[#475C50]">
+                  Source : {ncActive.source} · Processus : {ncActive.processus} · Statut : <strong>{ncActive.statut}</strong>
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-3 pt-2 text-xs">
+                {ncActive.description && (
+                  <div className="p-3 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2]">
+                    <span className="font-bold text-[#0F3B27] block mb-1">Constats & Faits observés</span>
+                    <p className="text-muted-foreground">{ncActive.description}</p>
+                  </div>
+                )}
+
+                {ncActive.action_immediate && (
+                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+                    <span className="font-bold text-amber-900 block mb-1">Action curative immédiate (garde-fou)</span>
+                    <p className="text-amber-800">{ncActive.action_immediate}</p>
+                  </div>
+                )}
+
+                {ncActive.analyse_causes_5m && (
+                  <div className="p-3 rounded-xl bg-blue-50 border border-blue-200">
+                    <span className="font-bold text-blue-900 block mb-1">Analyse des causes (5M)</span>
+                    <p className="text-blue-800">{ncActive.analyse_causes_5m}</p>
+                  </div>
+                )}
+
+                {ncActive.action_preventive && (
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                    <span className="font-bold text-emerald-900 block mb-1">Plan d'action CAPA</span>
+                    <p className="text-emerald-800">{ncActive.action_preventive}</p>
+                    <span className="text-[10px] text-muted-foreground block mt-1">
+                      Responsable : {ncActive.responsable_action || "Titulaire"}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-0 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setNcActive(null)}
+                  className="border-[#CFF1D2] text-[#475C50]"
+                >
+                  Fermer
+                </Button>
+                {ncActive.statut !== "cloturee" && (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setNcACloturer(ncActive);
+                      setModaleSignOuverte(true);
+                    }}
+                    className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5"
+                  >
+                    <CheckCircle2 className="size-4" /> Clôturer & Valider Efficacité (PIN)
+                  </Button>
+                )}
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* MODALE SIGNATURE CODE PIN (BPD-C10) */}
+      <ModaleSignatureCode
+        ouvert={modaleSignOuverte}
+        onFermer={() => setModaleSignOuverte(false)}
+        titreAction={`Clôture officielle de ${ncACloturer?.numero_nc || "la non-conformité"}`}
+        descriptionAction="La clôture certifie que les actions CAPA ont été exécutées avec preuve et que l'efficacité a été vérifiée à froid."
+        onSigner={handleCloturerAvecSignature}
+        articleBpd="BPD-1 / Art. 1.09"
+      />
+    </div>
   );
 }

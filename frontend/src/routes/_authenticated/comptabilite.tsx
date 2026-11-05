@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 export const Route = createFileRoute("/_authenticated/comptabilite")({
   head: () => ({
     meta: [
-      { title: "Comptabilité SYSCOHADA — BEGPHARMA" },
+      { title: "Comptabilité SYSCOHADA — BestPharma" },
       {
         name: "description",
         content: "Journal des ventes et grand-livre selon le plan comptable SYSCOHADA révisé (Bénin / OHADA).",

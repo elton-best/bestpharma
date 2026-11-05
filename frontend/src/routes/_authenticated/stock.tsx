@@ -49,7 +49,7 @@ import { DechetsStock, InventairesStock, RappelsStock } from "@/components/modul
 export const Route = createFileRoute("/_authenticated/stock")({
   head: () => ({
     meta: [
-      { title: "Magasin & Stocks — BEGPHARMA" },
+      { title: "Magasin & Stocks — BestPharma" },
       { name: "description", content: "Le magasin raconté simplement : chaque boîte garde son lot, son emplacement et son statut. FEFO, quarantaine, inventaires et valorisation — BPD-5 / BPD-8 / BPD-9." },
     ],
   }),
@@ -498,7 +498,7 @@ function PageStockMagasin() {
       {/* VUE D'ENSEMBLE STO-01 : EXCLUSIVEMENT AFFICHÉE DANS L'ONGLET VUE D'ENSEMBLE */}
       {tab === "vue-ensemble" && (
         <div className="space-y-6">
-          {/* En-tête avec charte BEGPHARMA */}
+          {/* En-tête avec charte BestPharma */}
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">

@@ -153,8 +153,8 @@ function PageConnexion() {
 
   function connexionRapide(compteEmail: string) {
     setEmail(compteEmail);
-    setMotDePasse("Begpharma2026!");
-    soumettre(undefined, compteEmail, "Begpharma2026!");
+    setMotDePasse("Bestpharma2026!");
+    soumettre(undefined, compteEmail, "Bestpharma2026!");
   }
 
   return (
@@ -280,7 +280,7 @@ function PageConnexion() {
         {afficherRolesDemo && (
           <div className="mt-3 p-3 rounded-2xl bg-white/60 backdrop-blur-sm border border-[#0F3B27]/10 space-y-1.5 animate-in fade-in">
             <p className="text-[11px] font-bold text-[#0F3B27] mb-1.5">
-              Mot de passe : <span className="font-mono bg-[#0F3B27]/10 px-1.5 py-0.5 rounded">Begpharma2026!</span>
+              Mot de passe : <span className="font-mono bg-[#0F3B27]/10 px-1.5 py-0.5 rounded">Bestpharma2026!</span>
             </p>
             <div className="grid grid-cols-2 gap-1.5">
               {COMPTES_TEST.map((c) => (

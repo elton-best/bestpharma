@@ -18,9 +18,9 @@ export const Route = createFileRoute("/_authenticated/securite")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Sécurité — BEGPHARMA" },
-      { name: "description", content: "Double authentification de votre compte BEGPHARMA." },
-      { property: "og:title", content: "Sécurité — BEGPHARMA" },
+      { title: "Sécurité — BestPharma" },
+      { name: "description", content: "Double authentification de votre compte BestPharma." },
+      { property: "og:title", content: "Sécurité — BestPharma" },
       { property: "og:type", content: "website" },
     ],
   }),

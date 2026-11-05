@@ -32,7 +32,7 @@ import { ligneVide, normaliserMatieres, type MatierePremiere } from "@/lib/prepa
 export const Route = createFileRoute("/_authenticated/preparations")({
   head: () => ({
     meta: [
-      { title: "Préparations Magistrales — BEGPHARMA" },
+      { title: "Préparations Magistrales — BestPharma" },
       { name: "description", content: "Cahier des préparations magistrales et officinales : matières premières lot par lot, contrôles libératoires, visa du pharmacien et étiquettes — BPD chapitre 6 et POI-03." },
     ],
   }),

@@ -27,7 +27,7 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/_authenticated/compte")({
   head: () => ({
     meta: [
-      { title: "Mon Profil & Réglages — BEGPHARMA" },
+      { title: "Mon Profil & Réglages — BestPharma" },
       {
         name: "description",
         content: "Gérez vos informations de pharmacien, vos accréditations et votre rôle officinal.",

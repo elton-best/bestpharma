@@ -98,6 +98,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Échéances réglementaires
     Route::get('/officines/{officineId}/echeances', [EcheanceController::class, 'index']);
     Route::post('/officines/{officineId}/echeances', [EcheanceController::class, 'store']);
+    Route::get('/officines/{officineId}/echeances/ical', [EcheanceController::class, 'exportIcal']);
     Route::get('/echeances', [EcheanceController::class, 'indexGlobal']);
     Route::post('/echeances', [EcheanceController::class, 'store']);
     Route::put('/echeances/{id}', [EcheanceController::class, 'update']);

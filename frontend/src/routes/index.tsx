@@ -59,7 +59,7 @@ export function LandingPage() {
             </div>
             <div>
               <span className="font-display font-black text-lg text-[#023010] tracking-tight">
-                BEGPHARMA
+                BESTPHARMA
               </span>
               <span className="hidden sm:inline-block text-[11px] font-semibold text-[#5C6660] ml-2 border-l border-[#CFE3D5] pl-2">
                 Bénin · ABMed BPD
@@ -588,7 +588,7 @@ export function LandingPage() {
             <div className="size-6 rounded-md bg-[#023010] flex items-center justify-center text-white font-display font-black text-xs">
               +
             </div>
-            <span className="font-bold text-[#1F2420]">BEGPHARMA Bénin</span>
+            <span className="font-bold text-[#1F2420]">BestPharma Bénin</span>
             <span className="text-[#CFE3D5]">|</span>
             <span>Système d'Information Officinal conforme ABMed</span>
           </div>
@@ -606,7 +606,7 @@ export function LandingPage() {
           </div>
 
           <p className="text-[11px] text-[#5C6660]">
-            © 2026 BEGPHARMA. Tous droits réservés.
+            © 2026 BestPharma. Tous droits réservés.
           </p>
         </div>
       </footer>

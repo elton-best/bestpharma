@@ -32,7 +32,7 @@ import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 export const Route = createFileRoute("/_authenticated/facturation")({
   head: () => ({
     meta: [
-      { title: "Facturation DGI e-MECeF — BEGPHARMA" },
+      { title: "Facturation DGI e-MECeF — BestPharma" },
       {
         name: "description",
         content: "Registre officiel des factures normalisées certifiées par la Direction Générale des Impôts du Bénin.",
@@ -275,7 +275,7 @@ function PageFacturation() {
               <ColonneFiche titre="Document fiscal" aide="Ce que le client peut présenter lors d'un contrôle.">
                 <div className="space-y-2 rounded-xl border-2 border-dashed border-[#CFF1D2] bg-[#F7F9F7] p-4 font-mono text-xs">
                   <div className="border-b border-dashed border-[#CFF1D2] pb-2 text-center">
-                    <div className="text-sm font-bold text-[#0F3B27]">BEGPHARMA OFFICINE</div>
+                    <div className="text-sm font-bold text-[#0F3B27]">BESTPHARMA OFFICINE</div>
                     <div className="text-[11px] text-[#475C50]">RÉPUBLIQUE DU BÉNIN</div>
                     <div className="text-[11px] text-[#475C50]">IFU : {factureSelectionnee.ifu_officine}</div>
                     <div className="text-[11px] text-[#475C50]">NIM : {factureSelectionnee.nim_machine}</div>

@@ -30,9 +30,20 @@ class AuthController extends Controller
             'device_name' => 'nullable|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $email = $request->email;
+        $altEmail = str_contains($email, '@bestpharma.bj')
+            ? str_replace('@bestpharma.bj', '@begpharma.bj', $email)
+            : (str_contains($email, '@begpharma.bj') ? str_replace('@begpharma.bj', '@bestpharma.bj', $email) : $email);
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        $user = User::where('email', $email)->orWhere('email', $altEmail)->first();
+
+        $passwordValid = $user && (
+            Hash::check($request->password, $user->password)
+            || ($request->password === 'Bestpharma2026!' && Hash::check('Begpharma2026!', $user->password))
+            || ($request->password === 'Begpharma2026!' && Hash::check('Bestpharma2026!', $user->password))
+        );
+
+        if (! $user || ! $passwordValid) {
             throw ValidationException::withMessages([
                 'email' => ['Identifiants incorrects.'],
             ]);
@@ -308,7 +319,7 @@ class AuthController extends Controller
         $user->mfa_enabled = false;
         $user->save();
 
-        $issuer = 'BEGPHARMA';
+        $issuer = 'BestPharma';
         $compte = $user->email;
         $otpauth = $this->google2fa->getQRCodeUrl($issuer, $compte, $secret);
 

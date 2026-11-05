@@ -14,10 +14,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 export const Route = createFileRoute("/_authenticated/appareils")({
   head: () => ({
     meta: [
-      { title: "Appareils connectés — BEGPHARMA" },
+      { title: "Appareils connectés — BestPharma" },
       {
         name: "description",
-        content: "Appareils connectés à votre compte BEGPHARMA et déconnexion à distance.",
+        content: "Appareils connectés à votre compte BestPharma et déconnexion à distance.",
       },
     ],
   }),

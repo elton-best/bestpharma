@@ -43,7 +43,7 @@ import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 export const Route = createFileRoute("/_authenticated/caisse")({
   head: () => ({
     meta: [
-      { title: "Caisse POS Tactile & FeexPay — BEGPHARMA" },
+      { title: "Caisse POS Tactile & FeexPay — BestPharma" },
       {
         name: "description",
         content: "Point de vente tactile, paiements Mobile Money FeexPay et certification fiscale DGI e-MECeF.",
@@ -632,7 +632,7 @@ function PageCaissePos() {
               {derniereVente ? (
                 <div className="space-y-2 rounded-xl border-2 border-dashed border-[#CFF1D2] bg-[#F7F9F7] p-4 font-mono text-xs">
                   <div className="border-b border-dashed border-[#CFF1D2] pb-2 text-center">
-                    <div className="text-sm font-bold text-[#0F3B27]">BEGPHARMA OFFICINE</div>
+                    <div className="text-sm font-bold text-[#0F3B27]">BESTPHARMA OFFICINE</div>
                     <div className="text-[11px] text-[#475C50]">RÉPUBLIQUE DU BÉNIN</div>
                     <div className="text-[11px] text-[#475C50]">IFU : {derniereVente.facture_emecef?.ifu_officine}</div>
                     <div className="text-[11px] text-[#475C50]">NIM : {derniereVente.facture_emecef?.nim_machine}</div>

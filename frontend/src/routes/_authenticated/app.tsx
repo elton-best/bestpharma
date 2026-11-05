@@ -18,15 +18,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
     meta: [
-      { title: "Accueil — BEGPHARMA" },
+      { title: "Accueil — BestPharma" },
       {
         name: "description",
-        content: "Votre officine BEGPHARMA : socle conforme au Guide BPD de l'ABMed.",
+        content: "Votre officine BestPharma : socle conforme au Guide BPD de l'ABMed.",
       },
-      { property: "og:title", content: "Accueil — BEGPHARMA" },
+      { property: "og:title", content: "Accueil — BestPharma" },
       {
         property: "og:description",
-        content: "Votre officine BEGPHARMA : socle conforme au Guide BPD de l'ABMed.",
+        content: "Votre officine BestPharma : socle conforme au Guide BPD de l'ABMed.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

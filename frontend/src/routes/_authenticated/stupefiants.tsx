@@ -39,7 +39,7 @@ import { Textarea } from "@/components/ui/textarea";
 export const Route = createFileRoute("/_authenticated/stupefiants")({
   head: () => ({
     meta: [
-      { title: "Registre Stupéfiants Tab. B — BEGPHARMA" },
+      { title: "Registre Stupéfiants Tab. B — BestPharma" },
       { name: "description", content: "Registre officiel inaltérable Tab. B : balance permanente, ordonnancier, armoire sécurisée, inventaire, vol/perte, destruction — BPD-3 Art 7.15-7.20" },
     ],
   }),

@@ -15,16 +15,26 @@ class Echeance extends Model
     protected $fillable = [
         'officine_id',
         'titre',
+        'responsable',
         'categorie',
+        'priorite',
         'date_echeance',
+        'periodicite',
+        'reglementaire',
         'fait',
+        'date_realisation',
+        'preuve_titre',
+        'justificatif_url',
+        'notes',
         'archived',
         'created_by',
     ];
 
     protected $casts = [
         'date_echeance' => 'date',
+        'date_realisation' => 'date',
         'fait' => 'boolean',
+        'reglementaire' => 'boolean',
         'archived' => 'boolean',
     ];
 

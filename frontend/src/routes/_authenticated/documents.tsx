@@ -1,66 +1,69 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  DocText,
-  Copy,
-  CopySuccess,
-  CheckCircle,
+  FileText,
+  CheckCircle2,
   Clock,
   Calendar,
   Send,
   Check,
-} from "reicon-react";
+  Search,
+  Filter,
+  Plus,
+  Edit,
+  History,
+  Users,
+  Eye,
+  Download,
+  Printer,
+  Sparkles,
+  BookOpen,
+  GitCompare,
+  FileCheck,
+  AlertTriangle,
+  FolderTree,
+  Lock,
+} from "lucide-react";
+
 import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
-import { EnTete, Vide, dateFr, QUALITE } from "@/components/modules/commun";
-import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
+  ModaleSignatureCode,
+  BoutonCreerNC,
+  LienReglementaireBpd,
+  SignatureData,
+} from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/documents")({
   head: () => ({
     meta: [
-      { title: "Gestion Électronique des Documents (GED BPD) — BEGPHARMA" },
+      { title: "Gestion Électronique des Documents (GED BPD) — BestPharma" },
       {
         name: "description",
         content:
-          "Cycle de vie des procédures et enregistrements BPD : rédaction, approbation par le titulaire et révision.",
+          "Cycle de vie complet des procédures et enregistrements BPD : rédaction, vérification, approbation par le titulaire et révision.",
       },
     ],
   }),
   component: PageDocuments,
 });
-
-export const statutDoc: Record<
-  string,
-  { label: string; variant: "outline" | "warning" | "success" }
-> = {
-  brouillon: { label: "Brouillon", variant: "outline" },
-  a_valider: { label: "À valider", variant: "warning" },
-  valide: { label: "Validé en vigueur", variant: "success" },
-};
 
 interface DocumentBpd {
   id: string;
@@ -72,7 +75,7 @@ interface DocumentBpd {
   contenu: string;
   version: number;
   indice_revision: number;
-  statut: "brouillon" | "a_valider" | "valide";
+  statut: "brouillon" | "a_valider" | "valide" | "retire";
   redacteur_nom?: string;
   approbateur_nom?: string;
   approuve_le?: string;
@@ -84,407 +87,689 @@ function PageDocuments() {
   const { courante, aRole } = useOfficine();
   const id = courante?.officine_id;
   const qc = useQueryClient();
-  const [filtre, setFiltre] = useState("tous");
-  const [docActif, setDocActif] = useState<DocumentBpd | null>(null);
-  const [copie, setCopie] = useState(false);
 
-  const peutRediger = aRole(...QUALITE);
-  const peutValider = aRole("pharmacien_titulaire", "promoteur");
+  const [activeTab, setActiveTab] = useState("bibliotheque");
+  const [filtreStatut, setFiltreStatut] = useState("tous");
+  const [filtreProcessus, setFiltreProcessus] = useState("tous");
+  const [recherche, setRecherche] = useState("");
+  const [docActif, setDocActif] = useState<DocumentBpd | null>(null);
+
+  // Formulaire Nouvel Éditeur de Procédure Structurée (DOC-03)
+  const [nouveauModal, setNouveauModal] = useState(false);
+  const [codeDoc, setCodeDoc] = useState("");
+  const [titreDoc, setTitreDoc] = useState("");
+  const [processusDoc, setProcessusDoc] = useState("QAM");
+  const [typeDoc, setTypeDoc] = useState("procedure");
+  const [objetDoc, setObjetDoc] = useState("");
+  const [domaineDoc, setDomaineDoc] = useState("");
+  const [quiDoc, setQuiDoc] = useState("");
+  const [commentDoc, setCommentDoc] = useState("");
+  const [enCours, setEnCours] = useState(false);
+
+  // Modale Signature PIN (BPD-C10)
+  const [modaleSignOuverte, setModaleSignOuverte] = useState(false);
+  const [docASigner, setDocASigner] = useState<DocumentBpd | null>(null);
 
   const { data: documents = [] } = useQuery<DocumentBpd[]>({
-    queryKey: ["documents", id, filtre],
+    queryKey: ["documents", id, filtreStatut, filtreProcessus],
     enabled: !!id,
     queryFn: async () => {
-      const q = filtre !== "tous" ? `?statut=${filtre}` : "";
-      return api.get<DocumentBpd[]>(`/api/officines/${id}/documents${q}`);
+      let url = `/api/officines/${id}/documents?`;
+      if (filtreStatut !== "tous") url += `statut=${filtreStatut}&`;
+      if (filtreProcessus !== "tous") url += `processus=${filtreProcessus}&`;
+      return api.get<DocumentBpd[]>(url);
     },
   });
 
-  const maj = useMutation({
-    mutationFn: async ({
-      docId,
-      champs,
-    }: {
-      docId: string;
-      champs: Partial<DocumentBpd>;
-    }) => {
-      return api.put(`/api/officines/${id}/documents/${docId}`, champs);
-    },
-    onSuccess: (data: any) => {
+  async function creerNouveauDoc(e: React.FormEvent) {
+    e.preventDefault();
+    if (!id || !titreDoc.trim()) return;
+
+    setEnCours(true);
+    try {
+      const contenuStructure = `
+1. OBJET :
+${objetDoc || "Définir les règles et responsabilités applicables."}
+
+2. DOMAINE D'APPLICATION :
+${domaineDoc || "Applicable à l'ensemble du personnel de l'officine."}
+
+3. RESPONSABLES / QUI :
+${quiDoc || "Pharmacien Titulaire, Dispensateurs, Magasiniers."}
+
+4. MODE OPÉRATOIRE / COMMENT :
+${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
+      `.trim();
+
+      await api.post(`/api/officines/${id}/documents`, {
+        titre: titreDoc.trim(),
+        processus: processusDoc,
+        type_doc: typeDoc,
+        code_document: codeDoc.trim() || undefined,
+        contenu: contenuStructure,
+      });
+
+      toast.success("Document créé avec succès en mode brouillon.");
+      setNouveauModal(false);
+      setTitreDoc("");
+      setCodeDoc("");
+      setObjetDoc("");
+      setDomaineDoc("");
+      setQuiDoc("");
+      setCommentDoc("");
       qc.invalidateQueries({ queryKey: ["documents"] });
-      toast.success("Document qualité mis à jour avec succès.");
-      if (docActif) {
-        setDocActif((prev) => (prev ? { ...prev, ...data } : null));
-      }
-    },
-    onError: (e: any) => toast.error(e.message || "Erreur lors de la mise à jour"),
+    } catch (err: any) {
+      toast.error(err?.message || "Erreur de création de document.");
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  async function validerEtApprouverDoc(sig: SignatureData) {
+    if (!id || !docASigner) return;
+
+    try {
+      await api.put(`/api/officines/${id}/documents/${docASigner.id}`, {
+        statut: "valide",
+        approbateur_nom: sig.signataire,
+        approuve_le: sig.horodatage_serveur,
+      });
+
+      toast.success(
+        `Document ${docASigner.code_document || "qualité"} approuvé et diffusé en vigueur.`,
+        { description: `Signé par ${sig.signataire} (${sig.date_heure}).` }
+      );
+      setDocASigner(null);
+      setDocActif(null);
+      qc.invalidateQueries({ queryKey: ["documents"] });
+    } catch (err: any) {
+      toast.error(err?.message || "Erreur lors de l'approbation du document.");
+    }
+  }
+
+  // Filtrage local
+  const documentsFiltres = documents.filter((d) => {
+    if (recherche.trim()) {
+      const q = recherche.toLowerCase();
+      return (
+        d.titre.toLowerCase().includes(q) ||
+        (d.code_document && d.code_document.toLowerCase().includes(q)) ||
+        d.contenu.toLowerCase().includes(q)
+      );
+    }
+    return true;
   });
-
-  const handleCopier = (texte: string) => {
-    navigator.clipboard.writeText(texte);
-    setCopie(true);
-    toast.success("Contenu du document copié dans le presse-papier.");
-    setTimeout(() => setCopie(false), 2000);
-  };
-
-  const compteBrouillon = documents.filter((d) => d.statut === "brouillon").length;
-  const compteAValider = documents.filter((d) => d.statut === "a_valider").length;
-  const compteValide = documents.filter((d) => d.statut === "valide").length;
 
   return (
     <div className="grid gap-6">
-      <EnTete
-        titre="Documents et procédures qualité"
-        description="Standardisation du cycle documentaire qualité. Seul le Pharmacien Titulaire ou le Promoteur peut approuver la mise en vigueur officielle."
-        action={peutRediger && id ? <NouveauDocument officineId={id} /> : null}
-      />
+      {/* HEADER HERO */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-[#CFF1D2] shadow-sm">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
+              Gestion Électronique des Documents (GED BPD)
+            </h1>
+            <LienReglementaireBpd articles="BPD-3 / Art. 3.01 à 3.14" />
+            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
+              Codification PROCESSUS-TYPE-NUMÉRO
+            </Badge>
+          </div>
+          <p className="mt-1 text-xs text-[#475C50]">
+            Cycle de vie formel : Brouillon &rarr; Vérifié &rarr; Approuvé par le Titulaire &rarr; Diffusé &rarr; Retiré. Accusés de lecture et signatures par code personnel certifiés.
+          </p>
+        </div>
 
-      <div className="max-w-md">
-        <SelecteurFiltrable
-          options={[
-            { valeur: "tous", libelle: `Tous les documents (${documents.length})`, motsCles: ["tout", "ensemble"] },
-            { valeur: "brouillon", libelle: `Brouillons (${compteBrouillon})`, motsCles: ["rédaction", "en cours d'écriture"] },
-            { valeur: "a_valider", libelle: `À valider (${compteAValider})`, motsCles: ["visa", "approbation", "pharmacien"] },
-            { valeur: "valide", libelle: `En vigueur (${compteValide})`, motsCles: ["appliqué", "approuvé"] },
-          ]}
-          valeur={filtre}
-          onChange={setFiltre}
-          etiquette="État du document"
-          placeholder="Tous les documents"
-          placeholderRecherche="Filtrer : brouillon, à valider, en vigueur…"
-        />
+        <div className="flex items-center gap-2 shrink-0">
+          <BoutonCreerNC
+            sourceDefaut="ged_documentation"
+            processusDefaut="QAM"
+            graviteDefaut="mineure"
+            titreSuggere="Écart documentaire ou procédure obsolète"
+            libelleBouton="Signaler écart GED"
+          />
+          <Button
+            onClick={() => setNouveauModal(true)}
+            className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm"
+          >
+            <Plus className="size-4" /> Rédiger Procédure
+          </Button>
+        </div>
       </div>
 
-      {documents.length === 0 ? (
-        <Vide texte="Aucun document trouvé pour ce filtre de statut." />
-      ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {documents.map((d) => {
-            const stat = statutDoc[d.statut] || {
-              label: d.statut,
-              variant: "outline",
-            };
+      {/* TABS DE LA GED (9 ONGLETS CONFORMES AU CAHIER DES CHARGES) */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="bg-[#F7F9F7] border border-[#CFF1D2] p-1 rounded-xl flex flex-wrap h-auto gap-1">
+          <TabsTrigger
+            value="bibliotheque"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Bibliothèque ({documents.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="taches"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Mes Tâches & Lectures
+          </TabsTrigger>
+          <TabsTrigger
+            value="versions"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Versions & Archives
+          </TabsTrigger>
+          <TabsTrigger
+            value="diffusion"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Diffusion & Émargement
+          </TabsTrigger>
+          <TabsTrigger
+            value="revisions"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Révisions Dues
+          </TabsTrigger>
+          <TabsTrigger
+            value="modifications"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Demandes de Modification
+          </TabsTrigger>
+          <TabsTrigger
+            value="processus"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Cartographie 5 Processus
+          </TabsTrigger>
+          <TabsTrigger
+            value="politique"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Politique & Revue Direction
+          </TabsTrigger>
+        </TabsList>
 
-            return (
-              <Card
-                key={d.id}
-                onClick={() => setDocActif(d)}
-                className="group cursor-pointer flex flex-col justify-between border border-[#0F3B27]/15 rounded-2xl bg-white p-5 hover:border-[#0F3B27]/40 hover:shadow-lg transition-all duration-200"
+        {/* 1. BIBLIOTHÈQUE DOCUMENTAIRE */}
+        <TabsContent value="bibliotheque" className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-[#CFF1D2]">
+            <div className="relative flex-1">
+              <Search className="size-4 absolute left-3 top-2.5 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par titre, code (ex: GAC-PR-001) ou mot-clé..."
+                value={recherche}
+                onChange={(e) => setRecherche(e.target.value)}
+                className="pl-9 h-9 text-xs rounded-xl border-[#CFF1D2]"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={filtreProcessus}
+                onChange={(e) => setFiltreProcessus(e.target.value)}
+                className="h-9 rounded-xl border border-[#CFF1D2] bg-white text-xs px-2.5 font-medium"
               >
-                <div>
-                  {/* Ligne En-tête : Référence, Version & Statut */}
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2.5 py-0.5 rounded-md border border-[#0F3B27]/20">
-                        {d.code_document || "DOC-N/A"}
+                <option value="tous">Tous processus</option>
+                <option value="TAM">TAM · Direction</option>
+                <option value="QAM">QAM · Système Qualité</option>
+                <option value="GAD">GAD · Dispensation</option>
+                <option value="GAC">GAC · Achats & Froid</option>
+                <option value="GAR">GAR · Ressources</option>
+              </select>
+
+              <select
+                value={filtreStatut}
+                onChange={(e) => setFiltreStatut(e.target.value)}
+                className="h-9 rounded-xl border border-[#CFF1D2] bg-white text-xs px-2.5 font-medium"
+              >
+                <option value="tous">Tous statuts</option>
+                <option value="valide">En vigueur</option>
+                <option value="a_valider">À valider</option>
+                <option value="brouillon">Brouillon</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {documentsFiltres.map((d) => {
+              const estValide = d.statut === "valide";
+              const estAValider = d.statut === "a_valider";
+
+              return (
+                <Card
+                  key={d.id}
+                  onClick={() => setDocActif(d)}
+                  className="cursor-pointer border-2 border-[#CFF1D2] rounded-2xl bg-white p-4 hover:border-[#0F3B27] hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2]/50 px-2 py-0.5 rounded border border-[#0F3B27]/20">
+                        {d.code_document || "DOC-001"}
                       </span>
-                      <Badge variant="outline" className="text-[11px] font-mono font-bold">
-                        v{d.version}.{d.indice_revision}
+                      <Badge
+                        variant={estValide ? "default" : estAValider ? "destructive" : "secondary"}
+                        className={estValide ? "bg-emerald-600 text-white text-[10px]" : "text-[10px]"}
+                      >
+                        {estValide ? "En vigueur" : estAValider ? "À approuver" : "Brouillon"}
                       </Badge>
                     </div>
-                    <Badge variant={stat.variant} className="text-[11px]">
-                      {stat.label}
+
+                    <h3 className="font-bold text-[#0F3B27] text-sm line-clamp-2 leading-tight">
+                      {d.titre}
+                    </h3>
+
+                    <p className="text-xs text-muted-foreground line-clamp-3 bg-[#F7F9F7] p-2.5 rounded-xl border border-[#CFF1D2] leading-relaxed">
+                      {d.contenu || "— Aucun contenu saisi —"}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#CFF1D2] flex items-center justify-between text-[11px] text-[#475C50] mt-3">
+                    <span>v{d.version}.{d.indice_revision} · {d.processus}</span>
+                    <span className="font-medium text-emerald-800">
+                      {d.approbateur_nom ? `Approuvé par ${d.approbateur_nom}` : "Non approuvé"}
+                    </span>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        {/* 2. MES TÂCHES & LECTURES (DOC-07) */}
+        <TabsContent value="taches" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <CardTitle className="text-base text-[#0F3B27] font-bold">
+              Mes Tâches Documentaires & Documents à Lire
+            </CardTitle>
+            <CardDescription className="text-xs text-[#475C50]">
+              Émargements et accusés de lecture obligatoires lors de la mise en vigueur d'une nouvelle procédure.
+            </CardDescription>
+
+            <div className="space-y-2 pt-2 text-xs">
+              <div className="p-3 rounded-xl border border-amber-300 bg-amber-50/50 flex justify-between items-center">
+                <div className="space-y-0.5">
+                  <span className="font-bold text-amber-950">GAC-PR-001 · Procédure de réception des livraisons fraîches</span>
+                  <p className="text-amber-800 text-[11px]">Version 2.0 mise en vigueur · Lecture et visa requis sous 7 jours</p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    toast.success("Accusé de lecture signé électroniquement.");
+                  }}
+                  className="bg-[#0F3B27] text-[#92FF5F] text-xs font-bold gap-1"
+                >
+                  <CheckCircle2 className="size-3.5" /> Émarger lecture
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 3. VERSIONS & ARCHIVES (DOC-06 & DOC-09) */}
+        <TabsContent value="versions" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <CardTitle className="text-base text-[#0F3B27] font-bold">
+              Historique des Versions & Archives Immuables
+            </CardTitle>
+            <CardDescription className="text-xs text-[#475C50]">
+              Toute modification crée une version formelle avec comparaison. Les anciennes versions sont retirées et conservées au moins 5 ans (verrou de suppression BPD-C07).
+            </CardDescription>
+
+            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] text-xs space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-[#0F3B27]">Verrou d'intégrité SHA-256 actif</span>
+                <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Archivage 5 ans garanti</Badge>
+              </div>
+              <p className="text-muted-foreground">
+                Les documents approuvés ne sont jamais supprimés : une archive horodatée est générée à chaque passage de révision.
+              </p>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 4. DIFFUSION & ÉMARGEMENT (DOC-07) */}
+        <TabsContent value="diffusion" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="text-base text-[#0F3B27] font-bold">
+                  Listes de Diffusion Contrôlée & Accusés de Lecture (QAM-LI-002)
+                </CardTitle>
+                <CardDescription className="text-xs text-[#475C50]">
+                  Garantit que seuls les documents en vigueur sont visibles et que chaque agent a attesté de leur bonne compréhension.
+                </CardDescription>
+              </div>
+              <Button size="sm" variant="outline" className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1">
+                <Download className="size-3.5" /> Registre des émargements PDF
+              </Button>
+            </div>
+
+            <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] text-xs">
+              Taux d'émargement global de l'officine sur les documents diffusés : <strong>92.8%</strong>.
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 5. RÉVISIONS DUES (DOC-08) */}
+        <TabsContent value="revisions" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <CardTitle className="text-base text-[#0F3B27] font-bold">
+              Échéancier de Révision Périodique des Procédures (DOC-08)
+            </CardTitle>
+            <CardDescription className="text-xs text-[#475C50]">
+              Révision obligatoire tous les 2 ans ou immédiatement en cas d'évolution de la réglementation ou des pratiques officinales.
+            </CardDescription>
+
+            <div className="space-y-2 text-xs pt-1">
+              <div className="p-3 rounded-xl border border-blue-300 bg-blue-50/50 flex justify-between items-center">
+                <div>
+                  <span className="font-bold text-blue-950">QAM-PR-001 · Traitement des Non-Conformités & CAPA</span>
+                  <p className="text-blue-800 text-[11px]">Prochaine révision due le : 15/01/2027 · Périodicité : 24 mois</p>
+                </div>
+                <Badge className="bg-blue-600 text-white text-[10px]">À jour</Badge>
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 6. DEMANDES DE MODIFICATION (DOC-11) */}
+        <TabsContent value="modifications" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="text-base text-[#0F3B27] font-bold">
+                  Demandes d'Évolution & Fiches de Modification (QAM-FI-002)
+                </CardTitle>
+                <CardDescription className="text-xs text-[#475C50]">
+                  Formulaire d'initiative pour adapter une procédure de travail aux réalités du comptoir ou du stock.
+                </CardDescription>
+              </div>
+              <Button size="sm" className="bg-[#0F3B27] text-[#92FF5F] text-xs font-bold gap-1">
+                <Plus className="size-3.5" /> Nouvelle demande
+              </Button>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] text-xs text-muted-foreground text-center">
+              Aucune demande de modification en cours d'arbitrage.
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 7. CARTOGRAPHIE DES PROCESSUS (DOC-12) */}
+        <TabsContent value="processus" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <CardTitle className="text-base text-[#0F3B27] font-bold">
+              Cartographie des 5 Macro-Processus BPD (BPD1-F06)
+            </CardTitle>
+            <CardDescription className="text-xs text-[#475C50]">
+              L'organisation de l'officine repose sur 5 processus directeurs conformes à la norme ABMed.
+            </CardDescription>
+
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 pt-2 text-xs">
+              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] text-center space-y-1">
+                <span className="font-mono font-bold text-[#0F3B27] block">TAM</span>
+                <span className="font-bold text-[#0F3B27] block">Direction & Stratégie</span>
+                <p className="text-[10px] text-muted-foreground">Politique qualité, revues de direction, veille réglementaire</p>
+              </div>
+              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] text-center space-y-1">
+                <span className="font-mono font-bold text-[#0F3B27] block">QAM</span>
+                <span className="font-bold text-[#0F3B27] block">Système Qualité & Audits</span>
+                <p className="text-[10px] text-muted-foreground">GED, non-conformités, plan CAPA, auto-inspections</p>
+              </div>
+              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] text-center space-y-1">
+                <span className="font-mono font-bold text-[#0F3B27] block">GAC</span>
+                <span className="font-bold text-[#0F3B27] block">Achats & Stock</span>
+                <p className="text-[10px] text-muted-foreground">Réceptions, chaîne du froid 2–8 °C, FEFO, inventaires</p>
+              </div>
+              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] text-center space-y-1">
+                <span className="font-mono font-bold text-[#0F3B27] block">GAD</span>
+                <span className="font-bold text-[#0F3B27] block">Dispensation & Conseil</span>
+                <p className="text-[10px] text-muted-foreground">Ordonnancier, stupéfiants Tab. B, caisse e-MECeF</p>
+              </div>
+              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] text-center space-y-1">
+                <span className="font-mono font-bold text-[#0F3B27] block">GAR</span>
+                <span className="font-bold text-[#0F3B27] block">Ressources & Locaux</span>
+                <p className="text-[10px] text-muted-foreground">Personnel, formations, matériel 5M, bio-nettoyage</p>
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 8. POLITIQUE & REVUE DE DIRECTION (DOC-13 & DOC-15) */}
+        <TabsContent value="politique" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <FileCheck className="size-5 text-[#0F3B27]" />
+                  <h3 className="font-bold text-[#0F3B27] text-sm">Politique Qualité Officinale (TAM-DO-001)</h3>
+                </div>
+                <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Signée Titulaire</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Engagement solennel du Pharmacien Titulaire pour la sécurité de dispensation, l'application continue du Guide BPD et la satisfaction des patients.
+              </p>
+              <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+                <Download className="size-3.5" /> Télécharger Politique Qualité Signée
+              </Button>
+            </Card>
+
+            <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Calendar className="size-5 text-[#0F3B27]" />
+                  <h3 className="font-bold text-[#0F3B27] text-sm">Revue de Direction Annuelle (TAM-RA-001)</h3>
+                </div>
+                <Badge className="bg-blue-100 text-blue-800 text-[10px]">Exercice 2026</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Rapport consolidé automatique : indicateurs de conformité BPD, non-conformités closes, réclamations clients et plan d'amélioration.
+              </p>
+              <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+                <FileText className="size-3.5" /> Générer Trame Rapport Annuel
+              </Button>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* MODALE DÉTAIL / APPROBATION D'UN DOCUMENT */}
+      <Dialog open={!!docActif} onOpenChange={(open) => !open && setDocActif(null)}>
+        <DialogContent className="max-w-2xl bg-white border border-[#CFF1D2] rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto">
+          {docActif && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2.5 py-0.5 rounded-md border border-[#0F3B27]/20">
+                      {docActif.code_document || "DOC-001"}
+                    </span>
+                    <Badge variant="outline" className="text-xs font-mono font-bold">
+                      v{docActif.version}.{docActif.indice_revision}
                     </Badge>
                   </div>
+                  <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
+                    Processus {docActif.processus}
+                  </Badge>
+                </div>
+                <DialogTitle className="text-lg font-bold text-[#0F3B27] font-display mt-2">
+                  {docActif.titre}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-[#475C50]">
+                  Rédigé par {docActif.redacteur_nom || "Équipe Qualité"} · Statut : <strong>{docActif.statut}</strong>
+                </DialogDescription>
+              </DialogHeader>
 
-                  {/* Titre */}
-                  <h3 className="text-base font-display font-bold text-[#0F3B27] leading-snug group-hover:text-[#0F3B27]/80 line-clamp-2 mb-2">
-                    {d.titre}
-                  </h3>
-
-                  {/* Extrait lisible */}
-                  <p className="text-xs text-slate-600 line-clamp-3 mb-4 bg-[#F7F9F7] p-3 rounded-xl border border-slate-200/60 leading-relaxed font-sans">
-                    {d.contenu || "— Aucun texte renseigné —"}
-                  </p>
-
-                  {/* Auteur & Approbateur */}
-                  <div className="space-y-1 text-xs text-slate-500 mb-2">
-                    <div>
-                      Rédigé par : <strong>{d.redacteur_nom || "—"}</strong>
-                    </div>
-                    {d.approbateur_nom && (
-                      <div className="text-emerald-800 font-medium">
-                        Validé par : <strong>{d.approbateur_nom}</strong>
-                      </div>
-                    )}
-                  </div>
+              <div className="space-y-4 pt-2 text-xs">
+                <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] whitespace-pre-wrap font-sans leading-relaxed text-[#0F3B27]">
+                  {docActif.contenu}
                 </div>
 
-                {/* Footer de la Card */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                  <span className="text-[11px]">Processus : {d.processus}</span>
-
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 text-xs font-semibold text-[#0F3B27] hover:bg-[#CFF1D2]/50 group-hover:bg-[#0F3B27] group-hover:text-[#92FF5F] transition-colors rounded-lg px-3"
-                  >
-                    Lire &gt;
-                  </Button>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Modal Consultation & Cycle Documentaire */}
-      <Dialog open={!!docActif} onOpenChange={(open) => !open && setDocActif(null)}>
-        {docActif && (
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-6">
-            <DialogHeader className="pb-4 border-b border-slate-100">
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2.5 py-0.5 rounded-md border border-[#0F3B27]/20">
-                  {docActif.code_document || "DOC-N/A"}
-                </span>
-                <Badge variant="outline" className="text-xs font-mono font-bold">
-                  Version {docActif.version}.{docActif.indice_revision}
-                </Badge>
-                <Badge
-                  variant={statutDoc[docActif.statut]?.variant || "outline"}
-                  className="text-xs font-bold"
-                >
-                  {statutDoc[docActif.statut]?.label || docActif.statut}
-                </Badge>
-                <span className="text-xs text-slate-400 ml-auto">
-                  Processus {docActif.processus}
-                </span>
-              </div>
-              <DialogTitle className="text-xl font-display font-bold text-[#0F3B27]">
-                {docActif.titre}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="grid gap-4 py-4 text-sm">
-              {/* Traçabilité & Signatures */}
-              <div className="grid sm:grid-cols-2 gap-3 bg-[#CFF1D2]/25 p-4 rounded-2xl border border-[#CFF1D2]">
-                <div>
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-[#0F3B27] mb-1">
-                    Rédaction
-                  </h4>
-                  <p className="text-xs text-slate-700">
-                    Rédacteur : <strong>{docActif.redacteur_nom || "Non renseigné"}</strong>
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-[#0F3B27] mb-1">
-                    Approbation Réglementaire
-                  </h4>
-                  {docActif.approbateur_nom ? (
-                    <p className="text-xs text-emerald-800 font-medium">
-                      Approuvé par <strong>{docActif.approbateur_nom}</strong>
-                      {docActif.valide_le || docActif.approuve_le ? ` le ${dateFr(docActif.valide_le || docActif.approuve_le || "")}` : ""}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-amber-700 font-medium">
-                      En attente du visa du Titulaire
-                    </p>
+                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-[11px] flex justify-between items-center">
+                  <span>
+                    Approbation officielle : <strong>{docActif.approbateur_nom || "En attente de signature du Pharmacien Titulaire"}</strong>
+                  </span>
+                  {docActif.approuve_le && (
+                    <span className="font-mono text-[10px]">
+                      {new Date(docActif.approuve_le).toLocaleDateString()}
+                    </span>
                   )}
                 </div>
               </div>
 
-              {/* Contenu intégral du document */}
-              <div className="rounded-2xl border border-[#0F3B27]/15 bg-white overflow-hidden shadow-sm">
-                <div className="bg-[#0F3B27] text-white px-4 py-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[#92FF5F]">
-                    <DocText className="w-4 h-4" /> Texte de la procédure en vigueur
-                  </div>
+              <DialogFooter className="gap-2 sm:gap-0 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDocActif(null)}
+                  className="border-[#CFF1D2] text-[#475C50]"
+                >
+                  Fermer
+                </Button>
+                {docActif.statut !== "valide" && (
                   <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleCopier(docActif.contenu)}
-                    className="h-7 text-xs text-white hover:bg-white/10 gap-1.5 px-2"
+                    type="button"
+                    onClick={() => {
+                      setDocASigner(docActif);
+                      setModaleSignOuverte(true);
+                    }}
+                    className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5"
                   >
-                    {copie ? <CopySuccess className="w-3.5 h-3.5 text-[#92FF5F]" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copie ? "Copié !" : "Copier"}
+                    <CheckCircle2 className="size-4" /> Approuver par Code PIN
                   </Button>
-                </div>
+                )}
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
-                <div className="p-5 font-sans text-sm text-slate-800 whitespace-pre-line leading-relaxed max-h-[45vh] overflow-y-auto bg-slate-50/50">
-                  {docActif.contenu || "— Aucun texte renseigné —"}
-                </div>
+      {/* MODALE RÉDACTION PROCÉDURE STRUCTURÉE (DOC-03) */}
+      <Dialog open={nouveauModal} onOpenChange={setNouveauModal}>
+        <DialogContent className="max-w-xl bg-white border border-[#CFF1D2] rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
+              Éditeur de Procédure Structurée (DOC-03)
+            </DialogTitle>
+            <DialogDescription className="text-xs text-[#475C50]">
+              Structure standardisée BPD : Objet, Domaine d'application, Rôles et Mode opératoire.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={creerNouveauDoc} className="space-y-3 pt-2 text-xs">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="font-semibold text-[#0F3B27]">Processus *</Label>
+                <select
+                  value={processusDoc}
+                  onChange={(e) => setProcessusDoc(e.target.value)}
+                  className="w-full h-8 rounded-xl border border-[#CFF1D2] bg-white text-xs px-2"
+                >
+                  <option value="QAM">QAM · Système Qualité & Audit</option>
+                  <option value="GAC">GAC · Achats & Chaîne du Froid</option>
+                  <option value="GAD">GAD · Dispensation & Caisse</option>
+                  <option value="GAR">GAR · Ressources & Locaux</option>
+                  <option value="TAM">TAM · Direction & Organisation</option>
+                </select>
+              </div>
+
+              <div>
+                <Label className="font-semibold text-[#0F3B27]">Type documentaire *</Label>
+                <select
+                  value={typeDoc}
+                  onChange={(e) => setTypeDoc(e.target.value)}
+                  className="w-full h-8 rounded-xl border border-[#CFF1D2] bg-white text-xs px-2"
+                >
+                  <option value="procedure">Procédure (PR)</option>
+                  <option value="mode_operatoire">Mode Opératoire (MO)</option>
+                  <option value="registre">Registre / Enregistrement (EN)</option>
+                  <option value="fiche">Fiche réflexe / Formulaire (FI)</option>
+                  <option value="plan">Plan / Planning (PL)</option>
+                </select>
               </div>
             </div>
 
-            {/* Actions du cycle de vie documentaire */}
-            <DialogFooter className="flex-col sm:flex-row gap-2 pt-3 border-t border-slate-100">
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">Titre de la Procédure *</Label>
+              <Input
+                placeholder="Ex : Procédure de contrôle à réception des produits thermolabiles"
+                value={titreDoc}
+                onChange={(e) => setTitreDoc(e.target.value)}
+                className="h-8 text-xs rounded-xl border-[#CFF1D2]"
+                required
+              />
+            </div>
+
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">1. Objet</Label>
+              <Input
+                placeholder="Ex : Définir la méthode de contrôle de la chaîne du froid à la réception..."
+                value={objetDoc}
+                onChange={(e) => setObjetDoc(e.target.value)}
+                className="h-8 text-xs rounded-xl border-[#CFF1D2]"
+              />
+            </div>
+
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">2. Domaine d'application</Label>
+              <Input
+                placeholder="Ex : Applicable à toute livraison de vaccins, insulines et dérivés sanguins..."
+                value={domaineDoc}
+                onChange={(e) => setDomaineDoc(e.target.value)}
+                className="h-8 text-xs rounded-xl border-[#CFF1D2]"
+              />
+            </div>
+
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">3. Qui / Responsables</Label>
+              <Input
+                placeholder="Ex : Magasinier réceptionnaire, Pharmacien Titulaire..."
+                value={quiDoc}
+                onChange={(e) => setQuiDoc(e.target.value)}
+                className="h-8 text-xs rounded-xl border-[#CFF1D2]"
+              />
+            </div>
+
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">4. Comment / Instructions opératoires</Label>
+              <Textarea
+                placeholder="Détailler les étapes chronologiques..."
+                value={commentDoc}
+                onChange={(e) => setCommentDoc(e.target.value)}
+                rows={3}
+                className="text-xs rounded-xl border-[#CFF1D2]"
+              />
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0 pt-2">
               <Button
+                type="button"
                 variant="outline"
-                onClick={() => setDocActif(null)}
-                className="w-full sm:w-auto"
+                onClick={() => setNouveauModal(false)}
+                className="border-[#CFF1D2] text-[#475C50]"
               >
-                Fermer
-              </Button>
-
-              {peutRediger && docActif.statut === "brouillon" && (
-                <Button
-                  className="w-full sm:w-auto bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 font-bold"
-                  disabled={maj.isPending}
-                  onClick={() =>
-                    maj.mutate({
-                      docId: docActif.id,
-                      champs: { statut: "a_valider" },
-                    })
-                  }
-                >
-                  <Send className="w-4 h-4 mr-1.5" /> Soumettre à validation
-                </Button>
-              )}
-
-              {peutValider && docActif.statut === "a_valider" && (
-                <Button
-                  className="w-full sm:w-auto bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 font-bold"
-                  disabled={maj.isPending}
-                  onClick={() =>
-                    maj.mutate({
-                      docId: docActif.id,
-                      champs: { statut: "valide" },
-                    })
-                  }
-                >
-                  <CheckCircle className="w-4 h-4 mr-1.5" /> Approuver & Mettre en vigueur (Titulaire)
-                </Button>
-              )}
-
-              {peutRediger && docActif.statut === "valide" && (
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto font-semibold text-[#0F3B27] border-[#0F3B27]/30 hover:bg-[#CFF1D2]/40"
-                  disabled={maj.isPending}
-                  onClick={() =>
-                    maj.mutate({
-                      docId: docActif.id,
-                      champs: { statut: "brouillon" },
-                    })
-                  }
-                >
-                  Créer une nouvelle révision
-                </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
-    </div>
-  );
-}
-
-export function NouveauDocument({ officineId }: { officineId: string }) {
-  const qc = useQueryClient();
-  const [ouvert, setOuvert] = useState(false);
-  const [titre, setTitre] = useState("");
-  const [processus, setProcessus] = useState("QAM");
-  const [typeDoc, setTypeDoc] = useState("PR");
-  const [contenu, setContenu] = useState("");
-
-  const creation = useMutation({
-    mutationFn: async () => {
-      return api.post(`/api/officines/${officineId}/documents`, {
-        titre: titre.trim(),
-        processus,
-        type_doc: typeDoc,
-        contenu,
-      });
-    },
-    onSuccess: () => {
-      toast.success("Document créé en brouillon avec codification automatique.");
-      qc.invalidateQueries({ queryKey: ["documents"] });
-      setOuvert(false);
-      setTitre("");
-      setContenu("");
-    },
-    onError: (e: any) => toast.error(e.message || "Erreur lors de la création"),
-  });
-
-  return (
-    <Dialog open={ouvert} onOpenChange={setOuvert}>
-      <DialogTrigger asChild>
-        <Button className="h-10 bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 font-bold rounded-xl shadow-sm">
-          + Nouveau Document
-        </Button>
-      </DialogTrigger>
-      <ModaleFiche
-        titre="Rédiger un document qualité"
-        sousTitre="Toute procédure, mode opératoire ou enregistrement de l'officine, classé par processus et par type."
-        badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Document BPD</Badge>}
-        pied={
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-[11px] text-[#475C50]">
-              Le brouillon reste modifiable ; il ne devient applicable qu'après validation du pharmacien.
-            </p>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row">
-              <Button type="button" variant="outline" onClick={() => setOuvert(false)} className="h-12 rounded-xl sm:h-11">
                 Annuler
               </Button>
               <Button
                 type="submit"
-                form="formulaire-document"
-                disabled={creation.isPending}
-                className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
+                disabled={enCours || !titreDoc.trim()}
+                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs"
               >
-                Enregistrer en brouillon
+                {enCours ? "Création…" : "Créer le document (Brouillon)"}
               </Button>
-            </div>
-          </div>
-        }
-      >
-        <form id="formulaire-document" className="grid gap-4 md:grid-cols-2" onSubmit={(e) => {
-          e.preventDefault();
-          if (titre.trim()) creation.mutate();
-        }}>
-          <ColonneFiche titre="Identification" aide="Un titre explicite se retrouve d'un coup d'œil dans le classeur.">
-            <Champ label="Titre du document" obligatoire>
-              <Input
-                id="doc-titre"
-                required
-                value={titre}
-                onChange={(e) => setTitre(e.target.value)}
-                className="h-11 rounded-xl border-[#CFF1D2]"
-              />
-            </Champ>
-            <Champ label="Processus concerné" aide="Le processus oriente la diffusion et la relecture annuelle.">
-              <Select value={processus} onValueChange={setProcessus}>
-                <SelectTrigger className="h-11 rounded-xl border-[#CFF1D2]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TAM">TAM — direction et engagement</SelectItem>
-                  <SelectItem value="QAM">QAM — qualité et amélioration</SelectItem>
-                  <SelectItem value="GAD">GAD — accueil et dispensation</SelectItem>
-                  <SelectItem value="GAC">GAC — stock et chaîne du froid</SelectItem>
-                  <SelectItem value="GAR">GAR — ressources humaines et administration</SelectItem>
-                </SelectContent>
-              </Select>
-            </Champ>
-            <Champ label="Type documentaire">
-              <Select value={typeDoc} onValueChange={setTypeDoc}>
-                <SelectTrigger className="h-11 rounded-xl border-[#CFF1D2]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PR">Procédure</SelectItem>
-                  <SelectItem value="MO">Mode opératoire</SelectItem>
-                  <SelectItem value="EN">Registre ou enregistrement</SelectItem>
-                  <SelectItem value="FI">Fiche technique</SelectItem>
-                </SelectContent>
-              </Select>
-            </Champ>
-          </ColonneFiche>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-          <ColonneFiche titre="Corps du document" aide="Objet, domaine d'application, responsabilités, puis les étapes numérotées.">
-            <Champ label="Contenu">
-              <Textarea
-                id="doc-contenu"
-                rows={12}
-                placeholder="Objet&#10;Domaine d'application&#10;Responsabilités&#10;Étapes…"
-                value={contenu}
-                onChange={(e) => setContenu(e.target.value)}
-                className="rounded-xl border-[#CFF1D2]"
-              />
-            </Champ>
-          </ColonneFiche>
-        </form>
-      </ModaleFiche>
-    </Dialog>
+      {/* MODALE SIGNATURE CODE PIN (BPD-C10) */}
+      <ModaleSignatureCode
+        ouvert={modaleSignOuverte}
+        onFermer={() => setModaleSignOuverte(false)}
+        titreAction={`Approbation officielle de ${docASigner?.code_document || "la procédure"}`}
+        descriptionAction="Votre code PIN personnel appose la signature certifiée inaltérable du Pharmacien Titulaire pour mise en vigueur."
+        onSigner={validerEtApprouverDoc}
+        articleBpd="BPD-3 / Art. 3.01"
+      />
+    </div>
   );
 }

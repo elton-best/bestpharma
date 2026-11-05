@@ -36,7 +36,7 @@ import {
 export const Route = createFileRoute("/_authenticated/dispensation")({
   head: () => ({
     meta: [
-      { title: "Délivrance & Ordonnancier BPD — BEGPHARMA" },
+      { title: "Délivrance & Ordonnancier BPD — BestPharma" },
       {
         name: "description",
         content: "Délivrance pharmaceutique avec allocation FEFO automatique et traçabilité ordonnancier selon l'ABMed.",

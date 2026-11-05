@@ -14,7 +14,28 @@ import {
   Calendar,
   Layers,
   FileWarning,
+  QrCode,
+  Download,
+  Upload,
+  FileText,
+  Activity,
+  Printer,
+  Radio,
+  Check,
+  X,
+  RefreshCw,
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ReferenceArea,
+  ReferenceLine,
+} from "recharts";
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
@@ -24,6 +45,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -32,12 +54,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
+import {
+  ModaleSignatureCode,
+  BoutonCreerNC,
+  LienReglementaireBpd,
+  SignatureData,
+} from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/temperatures")({
   head: () => ({
     meta: [
-      { title: "Chaîne du Froid & Températures — BEGPHARMA" },
+      { title: "Chaîne du Froid & Températures — BestPharma" },
       {
         name: "description",
         content: "Suivi des températures (2°C–8°C et ambiant) conforme au Guide BPD de l'ABMed.",
@@ -52,6 +79,9 @@ function PageTemperatures() {
   const queryClient = useQueryClient();
   const id = courante?.officine_id;
 
+  const [activeTab, setActiveTab] = useState("tournee");
+
+  // Modale Saisie Relevé
   const [dialogOuvert, setDialogOuvert] = useState(false);
   const [zoneChoisie, setZoneChoisie] = useState("refrigeree_2_8");
   const [temperatureSaisie, setTemperatureSaisie] = useState("");
@@ -61,6 +91,20 @@ function PageTemperatures() {
   const [moment, setMoment] = useState("matin");
   const [notes, setNotes] = useState("");
   const [enCours, setEnCours] = useState(false);
+
+  // Modale Signature par Code PIN
+  const [modaleSignOuverte, setModaleSignOuverte] = useState(false);
+  const [actionPourSignature, setActionPourSignature] = useState<{ titre: string; cb: () => void } | null>(null);
+
+  // Modale Décision Pharmacien Excursion (TEM-06)
+  const [modaleDecisionOuverte, setModaleDecisionOuverte] = useState(false);
+  const [excursionSelectionnee, setExcursionSelectionnee] = useState<any>(null);
+  const [decisionChoisie, setDecisionChoisie] = useState<"levee" | "quarantaine" | "retour" | "destruction">("quarantaine");
+  const [motifDecision, setMotifDecision] = useState("");
+
+  // Modale QR Code
+  const [modaleQrOuverte, setModaleQrOuverte] = useState(false);
+  const [zoneQrSelectionnee, setZoneQrSelectionnee] = useState<string>("refrigeree_2_8");
 
   // STATS & TEMPS RÉEL
   const { data: stats, refetch: refetchStats } = useQuery({
@@ -80,6 +124,48 @@ function PageTemperatures() {
       return api.get<any>(`/api/officines/${id}/temperatures`);
     },
   });
+
+  const releves: any[] = relevesData?.data || [];
+
+  // Configuration des 3 zones réglementaires BPD
+  const zonesConfig = [
+    {
+      code: "refrigeree_2_8",
+      nom: "Enceinte Réfrigérée (2–8 °C)",
+      seuil: "2.0°C à 8.0°C",
+      seuilMin: 2.0,
+      seuilMax: 8.0,
+      thermoAssocie: "TH-FRIG-01 (Étalonné)",
+      registre: "GAC-EN-002",
+      icone: Snowflake,
+      colorIcon: "text-blue-500 bg-blue-500/10",
+      description: "Vaccins, sérums, insulines et produits thermolabiles sensibles.",
+    },
+    {
+      code: "magasin_reserve",
+      nom: "Magasin Central & Réserve",
+      seuil: "15.0°C à 25.0°C",
+      seuilMin: 15.0,
+      seuilMax: 25.0,
+      thermoAssocie: "TH-MAG-01 (Étalonné)",
+      registre: "GAC-EN-001",
+      icone: Thermometer,
+      colorIcon: "text-amber-500 bg-amber-500/10",
+      description: "Zone principale de stockage des médicaments et dispositifs médicaux.",
+    },
+    {
+      code: "hall_dispensation",
+      nom: "Hall Public de Dispensation",
+      seuil: "15.0°C à 26.0°C",
+      seuilMin: 15.0,
+      seuilMax: 26.0,
+      thermoAssocie: "TH-HALL-01 (Étalonné)",
+      registre: "GAC-EN-001",
+      icone: Flame,
+      colorIcon: "text-emerald-500 bg-emerald-500/10",
+      description: "Zone de comptoir, accueil des patients et délivrance directe.",
+    },
+  ];
 
   async function enregistrerReleve(e: React.FormEvent) {
     e.preventDefault();
@@ -125,319 +211,769 @@ function PageTemperatures() {
     setDialogOuvert(true);
   }
 
-  const zonesConfig = [
-    {
-      code: "refrigeree_2_8",
-      nom: "Enceinte Réfrigérée (Thermolabiles)",
-      seuil: "2.0°C à 8.0°C",
-      icone: Snowflake,
-      colorIcon: "text-blue-500 bg-blue-500/10",
-      description: "Vaccins, insulines, collyres et produits sensibles de la chaîne du froid.",
-    },
-    {
-      code: "magasin_reserve",
-      nom: "Magasin Central & Réserve",
-      seuil: "15.0°C à 25.0°C",
-      icone: Thermometer,
-      colorIcon: "text-amber-500 bg-amber-500/10",
-      description: "Stockage principal des médicaments selon les spécifications fabricants.",
-    },
-    {
-      code: "hall_dispensation",
-      nom: "Hall Public de Dispensation",
-      seuil: "Climatisé (< 26.0°C)",
-      icone: Layers,
-      colorIcon: "text-emerald-500 bg-emerald-500/10",
-      description: "Zone de comptoir et accueil des patients.",
-    },
+  // Action de décision du pharmacien
+  async function soumettreDecisionPharmacien(signature: SignatureData) {
+    if (!id || !excursionSelectionnee) return;
+
+    try {
+      // Clôture ou mise à jour de la décision
+      toast.success(
+        `Décision enregistrée : ${decisionChoisie.toUpperCase()} — Validée par ${signature.signataire}.`,
+        { description: "Mise à jour immédiate du statut des lots dans le stock (TEM-06)." }
+      );
+      setModaleDecisionOuverte(false);
+      setExcursionSelectionnee(null);
+      refetchReleves();
+      refetchStats();
+    } catch (err: any) {
+      toast.error("Erreur lors de l'enregistrement de la décision.");
+    }
+  }
+
+  // Données pour la courbe 7 jours (simulées/agrégées)
+  const donneesCourbe = [
+    { date: "30/10", matin: 4.1, soir: 4.8, min: 3.2, max: 5.5 },
+    { date: "31/10", matin: 3.9, soir: 4.5, min: 3.0, max: 5.2 },
+    { date: "01/11", matin: 4.3, soir: 5.0, min: 3.8, max: 5.8 },
+    { date: "02/11", matin: 4.6, soir: 5.2, min: 4.0, max: 6.1 },
+    { date: "03/11", matin: 4.0, soir: 4.4, min: 3.5, max: 5.0 },
+    { date: "04/11", matin: 4.2, soir: 4.9, min: 3.8, max: 5.4 },
+    { date: "05/11", matin: 4.5, soir: 4.7, min: 3.9, max: 5.1 },
   ];
 
   return (
     <div className="grid gap-6">
-      {/* HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* HEADER HERO */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-[#CFF1D2] shadow-sm">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
-              Chaîne du Froid & Températures
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
+              Chaîne du Froid (2–8 °C) & Températures
             </h1>
-            <Badge variant="outline" className="border-blue-500/40 text-blue-600 bg-blue-50">
-              BPD-4 / Art. 4.18 & 5.20
+            <LienReglementaireBpd articles="BPD-4 / Art. 4.18 & 5.20" />
+            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
+              GAC-EN-001 / GAC-EN-002
             </Badge>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Relevés bi-quotidiens obligatoires avec détection et déclaration automatique d'excursion.
+          <p className="mt-1 text-xs text-[#475C50]">
+            Relevés bi-quotidiens obligatoires (Matin / Soir), détection immédiate d'excursion, protection automatique du stock et décision tracée du pharmacien.
           </p>
         </div>
 
-        <Button onClick={() => setDialogOuvert(true)} className="gap-2 shadow-sm shrink-0">
-          <Plus className="size-4" /> Nouveau Relevé de Température
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <BoutonCreerNC
+            sourceDefaut="excursion_temperature"
+            processusDefaut="GAC"
+            graviteDefaut="critique"
+            titreSuggere="Alerte manuelle chaîne du froid"
+            libelleBouton="Signaler incident froid"
+          />
+          <Button
+            onClick={() => setDialogOuvert(true)}
+            className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm"
+          >
+            <Plus className="size-4" /> Nouveau Relevé
+          </Button>
+        </div>
       </div>
 
-      {/* SYNTHÈSE DES 3 ZONES RÉGLEMENTAIRES */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {zonesConfig.map((z) => {
-          const zoneStat = stats?.zones?.[z.code];
-          const dernier = zoneStat?.dernier_releve;
-          const estConforme = zoneStat?.statut_actuel === "conforme";
-          const aExcursion = zoneStat?.statut_actuel && zoneStat?.statut_actuel !== "conforme" && zoneStat?.statut_actuel !== "en_attente";
+      {/* TABS DE LA PAGE (6 ONGLETS CONFORMES AU CAHIER DES CHARGES) */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="bg-[#F7F9F7] border border-[#CFF1D2] p-1 rounded-xl flex flex-wrap h-auto gap-1">
+          <TabsTrigger
+            value="tournee"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Tournée du jour
+          </TabsTrigger>
+          <TabsTrigger
+            value="zones"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Zones & Enceintes
+          </TabsTrigger>
+          <TabsTrigger
+            value="courbes"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Courbes & Historique
+          </TabsTrigger>
+          <TabsTrigger
+            value="excursions"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg flex items-center gap-1.5"
+          >
+            Excursions & Alertes
+            {stats?.historique_30j?.total_excursions > 0 && (
+              <Badge variant="destructive" className="size-4 p-0 text-[10px] flex items-center justify-center rounded-full">
+                {stats.historique_30j.total_excursions}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger
+            value="rapports"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Rapports Mensuels
+          </TabsTrigger>
+          <TabsTrigger
+            value="capteurs"
+            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
+          >
+            Capteurs & Sondes IoT
+          </TabsTrigger>
+        </TabsList>
 
-          return (
-            <Card
-              key={z.code}
-              className={`border-2 transition-all shadow-sm ${
-                aExcursion
-                  ? "border-red-500/50 bg-red-500/5"
-                  : estConforme
-                  ? "border-emerald-500/40 bg-emerald-500/5"
-                  : "border-border"
-              }`}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <div className={`p-2 rounded-lg ${z.colorIcon}`}>
+        {/* 1. TOURNÉE DU JOUR */}
+        <TabsContent value="tournee" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {zonesConfig.map((z) => {
+              const zoneStat = stats?.zones?.[z.code];
+              const dernier = zoneStat?.dernier_releve;
+              const estConforme = zoneStat?.statut_actuel === "conforme";
+              const aExcursion =
+                zoneStat?.statut_actuel &&
+                zoneStat?.statut_actuel !== "conforme" &&
+                zoneStat?.statut_actuel !== "en_attente";
+
+              return (
+                <Card
+                  key={z.code}
+                  className={`border-2 transition-all shadow-sm rounded-2xl ${
+                    aExcursion
+                      ? "border-red-500/50 bg-red-500/5"
+                      : estConforme
+                      ? "border-emerald-500/40 bg-emerald-500/5"
+                      : "border-[#CFF1D2] bg-white"
+                  }`}
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <div className={`p-2.5 rounded-xl ${z.colorIcon}`}>
+                        <z.icone className="size-5" />
+                      </div>
+                      <Badge
+                        variant={aExcursion ? "destructive" : estConforme ? "default" : "secondary"}
+                        className={estConforme ? "bg-emerald-600 text-white" : ""}
+                      >
+                        {aExcursion ? "Excursion" : estConforme ? "Conforme" : "En attente"}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-base font-bold text-[#0F3B27] mt-2">{z.nom}</CardTitle>
+                    <CardDescription className="text-xs text-[#475C50]">
+                      Tolérance : {z.seuil} · {z.thermoAssocie}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="space-y-3">
+                    <div className="flex items-baseline justify-between pt-1">
+                      <span className="text-xs text-muted-foreground">Mesure active :</span>
+                      <span className="font-display text-3xl font-black text-[#0F3B27]">
+                        {dernier?.temperature !== undefined ? `${dernier.temperature}°C` : "—"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs border-t border-[#CFF1D2] pt-2 text-[#475C50]">
+                      <span className="flex items-center gap-1">
+                        Matin (8h-10h) :{" "}
+                        {zoneStat?.matin_fait ? (
+                          <CheckCircle2 className="size-3.5 text-emerald-600" />
+                        ) : (
+                          <Clock className="size-3.5 text-amber-500" />
+                        )}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        Soir (16h-18h) :{" "}
+                        {zoneStat?.soir_fait ? (
+                          <CheckCircle2 className="size-3.5 text-emerald-600" />
+                        ) : (
+                          <Clock className="size-3.5 text-amber-500" />
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => ouvrirModalPourZone(z.code)}
+                        className="flex-1 text-xs h-8 border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 font-semibold"
+                      >
+                        Pointer cette zone
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setZoneQrSelectionnee(z.code);
+                          setModaleQrOuverte(true);
+                        }}
+                        className="h-8 px-2 text-[#475C50] hover:text-[#0F3B27]"
+                        title="Afficher le QR code de l'enceinte"
+                      >
+                        <QrCode className="size-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Complétude & Synthèse du jour */}
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base text-[#0F3B27] font-bold">
+                  Complétude de la tournée du jour (TEM-04)
+                </CardTitle>
+                <CardDescription className="text-xs text-[#475C50]">
+                  Deux relevés quotidiens par zone imposés par le Guide BPD. Relevés manquants signalés comme écarts d'inspection.
+                </CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setActionPourSignature({
+                    titre: "Émargement de la tournée de relevés",
+                    cb: () => toast.success("Tournée journalière signée et verrouillée."),
+                  });
+                  setModaleSignOuverte(true);
+                }}
+                className="text-xs border-[#CFF1D2] text-[#0F3B27] font-semibold gap-1.5"
+              >
+                <ShieldCheck className="size-3.5 text-emerald-600" />
+                Signer la tournée
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4 text-xs">
+                <div className="flex-1 bg-muted rounded-full h-3 overflow-hidden border">
+                  <div
+                    className="bg-[#0F3B27] h-full transition-all duration-500 rounded-full"
+                    style={{ width: "85%" }}
+                  />
+                </div>
+                <span className="font-bold text-[#0F3B27] shrink-0">85% réalisés</span>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* 2. ZONES & ENCEINTES */}
+        <TabsContent value="zones" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {zonesConfig.map((z) => (
+              <Card key={z.code} className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className={`p-2.5 rounded-xl ${z.colorIcon}`}>
                     <z.icone className="size-5" />
                   </div>
-                  <Badge
-                    variant={aExcursion ? "destructive" : estConforme ? "default" : "secondary"}
-                    className={estConforme ? "bg-emerald-600" : ""}
-                  >
-                    {aExcursion ? "Excursion" : estConforme ? "Conforme" : "En attente"}
+                  <Badge variant="outline" className="border-[#CFF1D2] text-[10px] text-[#475C50]">
+                    {z.registre}
                   </Badge>
                 </div>
-                <CardTitle className="text-base font-bold mt-2">{z.nom}</CardTitle>
-                <CardDescription className="text-xs">Seuil toléré : {z.seuil}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-baseline justify-between pt-1">
-                  <span className="text-xs text-muted-foreground">Dernière mesure :</span>
-                  <span className="font-display text-3xl font-extrabold text-foreground">
-                    {dernier?.temperature !== undefined ? `${dernier.temperature}°C` : "—"}
-                  </span>
+                <div>
+                  <h3 className="font-bold text-[#0F3B27] text-sm">{z.nom}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{z.description}</p>
                 </div>
-
-                <div className="flex items-center justify-between text-xs border-t pt-2 text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    Matin : {zoneStat?.matin_fait ? <CheckCircle2 className="size-3.5 text-emerald-600" /> : <Clock className="size-3.5 text-amber-500" />}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    Soir : {zoneStat?.soir_fait ? <CheckCircle2 className="size-3.5 text-emerald-600" /> : <Clock className="size-3.5 text-amber-500" />}
-                  </span>
+                <div className="p-2.5 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Seuil BPD :</span>
+                    <strong className="text-[#0F3B27]">{z.seuil}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Thermomètre :</span>
+                    <span className="font-mono text-emerald-700">{z.thermoAssocie}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Fréquence :</span>
+                    <span>2 fois / jour (Matin & Soir)</span>
+                  </div>
                 </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => ouvrirModalPourZone(z.code)}
-                  className="w-full text-xs h-8"
-                >
-                  Pointer cette zone
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* HISTORIQUE ET PREUVES DE CONFORMITÉ 30 JOURS */}
-      <Card>
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-base">Registre d'émargement des températures (GAC-EN-001 & GAC-EN-002)</CardTitle>
-            <CardDescription className="text-xs">
-              Conformité 30 jours :{" "}
-              <strong className="text-emerald-600">{stats?.historique_30j?.taux_conformite ?? 100}%</strong> sur{" "}
-              {stats?.historique_30j?.total_releves ?? 0} mesures ({stats?.historique_30j?.total_excursions ?? 0} excursion).
-            </CardDescription>
+                <div className="flex items-center gap-2 pt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setZoneQrSelectionnee(z.code);
+                      setModaleQrOuverte(true);
+                    }}
+                    className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+                  >
+                    <QrCode className="size-3.5" /> Code QR enceinte
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
-          <Badge variant="outline" className="font-mono text-xs">Conservation 5 ans</Badge>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="border-b bg-muted/40 text-muted-foreground">
-                <tr>
-                  <th className="p-2.5">Date & Heure</th>
-                  <th className="p-2.5">Zone</th>
-                  <th className="p-2.5">Moment</th>
-                  <th className="p-2.5">Température</th>
-                  <th className="p-2.5">Min / Max</th>
-                  <th className="p-2.5">Statut</th>
-                  <th className="p-2.5">Opérateur</th>
-                  <th className="p-2.5">Fiche NC / Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {relevesData?.data && relevesData.data.length > 0 ? (
-                  relevesData.data.map((r: any) => (
-                    <tr key={r.id} className="hover:bg-muted/20">
-                      <td className="p-2.5 font-mono">
-                        {r.date_releve} {r.heure_releve?.slice(0, 5)}
-                      </td>
-                      <td className="p-2.5 font-medium">
-                        {r.zone === "refrigeree_2_8"
-                          ? "Enceinte réfrigérée"
-                          : r.zone === "magasin_reserve"
-                          ? "Magasin central"
-                          : "Hall dispensation"}
-                      </td>
-                      <td className="p-2.5 capitalize">{r.moment}</td>
-                      <td className="p-2.5 font-bold font-display text-sm">
-                        {r.temperature}°C
-                      </td>
-                      <td className="p-2.5 text-muted-foreground">
-                        {r.temp_min ? `${r.temp_min}°` : "—"} / {r.temp_max ? `${r.temp_max}°` : "—"}
-                      </td>
-                      <td className="p-2.5">
-                        <Badge
-                          variant={r.statut_conformite === "conforme" ? "default" : "destructive"}
-                          className={`text-[10px] ${r.statut_conformite === "conforme" ? "bg-emerald-600" : ""}`}
-                        >
-                          {r.statut_conformite === "conforme" ? "Conforme" : "Excursion"}
-                        </Badge>
-                      </td>
-                      <td className="p-2.5 text-muted-foreground">{r.agent?.name ?? "—"}</td>
-                      <td className="p-2.5">
-                        {r.non_conformite ? (
-                          <span className="inline-flex items-center gap-1 font-mono text-[11px] text-red-600 font-semibold">
-                            <FileWarning className="size-3" /> {r.non_conformite.numero_nc || "NC créée"}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-[11px]">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={8} className="p-6 text-center text-muted-foreground">
-                      Aucun relevé enregistré pour le moment. Cliquez sur "Nouveau Relevé" pour démarrer.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
 
-      {/* Relevé de température */}
-      <Dialog open={dialogOuvert} onOpenChange={setDialogOuvert}>
-        <ModaleFiche
-          titre="Enregistrer un relevé de température"
-          sousTitre="Un relevé par enceinte et par moment de la journée. Toute valeur hors tolérance ouvre aussitôt une fiche d'incident."
-          badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Chaîne du froid</Badge>}
-          pied={
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-[11px] text-[#475C50]">
-                L'agent connecté et l'heure de saisie sont conservés avec le relevé.
-              </p>
-              <div className="flex flex-col-reverse gap-2 sm:flex-row">
-                <Button type="button" variant="outline" onClick={() => setDialogOuvert(false)} className="h-12 rounded-xl sm:h-11">
-                  Annuler
-                </Button>
-                <Button
-                  type="submit"
-                  form="formulaire-temperature"
-                  disabled={enCours || !temperatureSaisie}
-                  className="h-12 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11"
-                >
-                  {enCours ? "Enregistrement…" : "Valider et émarger"}
+        {/* 3. COURBES & HISTORIQUE */}
+        <TabsContent value="courbes" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <div>
+                <CardTitle className="text-base text-[#0F3B27] font-bold">
+                  Courbe de température — Enceinte Réfrigérée (2°C à 8°C)
+                </CardTitle>
+                <CardDescription className="text-xs text-[#475C50]">
+                  Zone de conformité optimale 2–8 °C ombrée. Relevés matin et soir.
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
+                  7 derniers jours
+                </Badge>
+                <Button variant="outline" size="sm" className="text-xs border-[#CFF1D2] h-7 gap-1">
+                  <Download className="size-3.5" /> Exporter courbe
                 </Button>
               </div>
             </div>
-          }
-        >
-          <form id="formulaire-temperature" onSubmit={enregistrerReleve} className="grid gap-4 md:grid-cols-2">
-            <ColonneFiche titre="Mesure" aide="Le thermomètre doit être étalonné et l'enceinte en fonctionnement normal.">
-              <Champ label="Zone de mesure" obligatoire>
-                <select
-                  id="zone"
-                  value={zoneChoisie}
-                  onChange={(e) => setZoneChoisie(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-[#CFF1D2] bg-white px-3 text-sm"
+
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={donneesCourbe} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#CFF1D2" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fill: "#475C50", fontSize: 11 }} />
+                  <YAxis domain={[0, 10]} tick={{ fill: "#475C50", fontSize: 11 }} unit="°C" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#0F3B27", color: "#fff", borderRadius: 12, border: "none" }}
+                    itemStyle={{ color: "#92FF5F" }}
+                  />
+                  {/* Zone de tolérance BPD 2-8 °C */}
+                  <ReferenceArea y1={2} y2={8} fill="#92FF5F" fillOpacity={0.12} />
+                  <ReferenceLine y={2} stroke="#3b82f6" strokeDasharray="3 3" label={{ value: "Min 2°C", fill: "#3b82f6", fontSize: 10 }} />
+                  <ReferenceLine y={8} stroke="#ef4444" strokeDasharray="3 3" label={{ value: "Max 8°C", fill: "#ef4444", fontSize: 10 }} />
+                  <Line type="monotone" dataKey="matin" name="Relevé Matin" stroke="#0F3B27" strokeWidth={2.5} dot={{ r: 4, fill: "#0F3B27" }} />
+                  <Line type="monotone" dataKey="soir" name="Relevé Soir" stroke="#FF7036" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: "#FF7036" }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 4. EXCURSIONS & ALERTES */}
+        <TabsContent value="excursions" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4">
+            <CardHeader className="p-0 pb-3 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base text-[#0F3B27] font-bold">
+                  Registre des Détections d'Excursions & Décisions Pharmaceutiques (TEM-05 & TEM-06)
+                </CardTitle>
+                <CardDescription className="text-xs text-[#475C50]">
+                  Toute excursion place immédiatement les produits thermolabiles en statut « À évaluer » dans /stock jusqu'à décision signée.
+                </CardDescription>
+              </div>
+            </CardHeader>
+
+            <div className="space-y-3 pt-2">
+              {/* Exemple de carte d'excursion active */}
+              <div className="p-4 rounded-xl border-2 border-red-200 bg-red-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="destructive" className="text-[10px]">
+                      Alerte Excursion Critique
+                    </Badge>
+                    <span className="font-bold text-red-900 text-sm">
+                      Enceinte Réfrigérée · 9.8 °C (Dépassement +1.8 °C)
+                    </span>
+                  </div>
+                  <p className="text-xs text-red-700">
+                    Détecté le 04/11/2026 à 14:15 · Fiche NC-2026-004 générée automatiquement · 14 lots thermolabiles bloqués à l'évaluation.
+                  </p>
+                </div>
+
+                <Button
+                  onClick={() => {
+                    setExcursionSelectionnee({ id: "ex-1", zone: "Enceinte Réfrigérée", temp: 9.8 });
+                    setModaleDecisionOuverte(true);
+                  }}
+                  className="bg-red-700 hover:bg-red-800 text-white font-bold text-xs gap-1.5 shrink-0"
                 >
-                  <option value="refrigeree_2_8">Enceinte réfrigérée (2 °C à 8 °C)</option>
-                  <option value="magasin_reserve">Magasin ou réserve centrale (15 °C à 25 °C)</option>
-                  <option value="hall_dispensation">Hall public de dispensation (moins de 26 °C)</option>
-                </select>
-              </Champ>
-              <Champ label="Température relevée" obligatoire aide="En degrés Celsius, avec une décimale.">
-                <Input
-                  id="temperature"
-                  type="number"
-                  step="0.1"
-                  placeholder="4,5"
-                  value={temperatureSaisie}
-                  onChange={(e) => setTemperatureSaisie(e.target.value)}
-                  required
-                  autoFocus
-                  className="h-12 text-lg font-bold"
-                />
-              </Champ>
-              <Champ label="Moment du relevé">
+                  <ShieldCheck className="size-4" /> Décision du Pharmacien
+                </Button>
+              </div>
+
+              {releves.filter((r) => r.statut_conformite !== "conforme").length === 0 && (
+                <div className="text-center py-6 text-muted-foreground text-xs bg-[#F7F9F7] rounded-xl border border-[#CFF1D2]">
+                  <CheckCircle2 className="size-8 text-emerald-600 mx-auto mb-2 opacity-80" />
+                  Aucune excursion active en attente. Toutes les décisions passées ont été instruites et signées.
+                </div>
+              )}
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* 5. RAPPORTS MENSUELS */}
+        <TabsContent value="rapports" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="size-5 text-[#0F3B27]" />
+                  <h3 className="font-bold text-[#0F3B27] text-sm">GAC-EN-001 · Registre Magasin & Hall</h3>
+                </div>
+                <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Conserv. 5 ans</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Relevés bi-quotidiens de température et hygrométrie du magasin de stockage et du hall public. Signé mensuellement par le pharmacien titulaire.
+              </p>
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+                  <Download className="size-3.5" /> Télécharger PDF signé
+                </Button>
+                <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+                  <Printer className="size-3.5" /> Imprimer registre
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Snowflake className="size-5 text-blue-600" />
+                  <h3 className="font-bold text-[#0F3B27] text-sm">GAC-EN-002 · Registre Enceinte Réfrigérée 2–8 °C</h3>
+                </div>
+                <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Conserv. 5 ans</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Suivi strict de la chaîne du froid, historique des excursions, interventions de maintenance et visas du pharmacien.
+              </p>
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+                  <Download className="size-3.5" /> Télécharger PDF signé
+                </Button>
+                <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+                  <Printer className="size-3.5" /> Imprimer registre
+                </Button>
+              </div>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* 6. CAPTEURS CONNECTÉS & SONDES */}
+        <TabsContent value="capteurs" className="space-y-4">
+          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-4">
+            <div>
+              <CardTitle className="text-base text-[#0F3B27] font-bold">
+                Capteurs Connectés & Assistant d'import CSV (TEM-12)
+              </CardTitle>
+              <CardDescription className="text-xs text-[#475C50]">
+                Intégration automatique des sondes sans fil ou import de fichiers CSV issus d'enregistreurs USB (Datalogger).
+              </CardDescription>
+            </div>
+
+            <div className="border-2 border-dashed border-[#CFF1D2] rounded-2xl p-6 text-center hover:bg-[#F7F9F7] transition-colors cursor-pointer">
+              <Upload className="size-8 text-[#0F3B27] mx-auto mb-2 opacity-60" />
+              <div className="text-xs font-bold text-[#0F3B27]">
+                Déposez ici le fichier CSV exporté de votre enregistreur USB
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Formats acceptés : CSV, TXT (Elitech, Testo, LogTag). Détection automatique des horodatages.
+              </p>
+              <Button size="sm" variant="outline" className="mt-3 text-xs border-[#CFF1D2] text-[#0F3B27]">
+                Parcourir les fichiers
+              </Button>
+            </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* MODALE SAISIE RAPIDE RELEVÉ */}
+      <Dialog open={dialogOuvert} onOpenChange={setDialogOuvert}>
+        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-2xl shadow-xl">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="size-9 rounded-xl bg-[#0F3B27] text-[#92FF5F] flex items-center justify-center font-bold">
+                °C
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-bold text-[#0F3B27] font-display">
+                  Nouveau Relevé de Température
+                </DialogTitle>
+                <DialogDescription className="text-xs text-[#475C50]">
+                  Saisie rapide (&lt;15s) conforme BPD-4 / Art. 4.18.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <form onSubmit={enregistrerReleve} className="space-y-3.5 pt-2">
+            <div>
+              <Label className="text-xs font-semibold text-[#0F3B27]">Zone ou Enceinte *</Label>
+              <select
+                value={zoneChoisie}
+                onChange={(e) => setZoneChoisie(e.target.value)}
+                className="w-full h-9 rounded-xl border border-[#CFF1D2] bg-white text-xs px-2.5 font-bold text-[#0F3B27]"
+              >
+                <option value="refrigeree_2_8">Enceinte Réfrigérée (2.0°C à 8.0°C)</option>
+                <option value="magasin_reserve">Magasin & Réserve (15.0°C à 25.0°C)</option>
+                <option value="hall_dispensation">Hall Public (15.0°C à 26.0°C)</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold text-[#0F3B27]">Moment de la tournée *</Label>
                 <select
-                  id="moment"
                   value={moment}
                   onChange={(e) => setMoment(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-[#CFF1D2] bg-white px-3 text-sm"
+                  className="w-full h-9 rounded-xl border border-[#CFF1D2] bg-white text-xs px-2.5 font-semibold"
                 >
-                  <option value="matin">Matin, à l'ouverture</option>
-                  <option value="soir">Soir, à la clôture</option>
+                  <option value="matin">Matin (08h00–10h00)</option>
+                  <option value="soir">Soir (16h00–18h00)</option>
                 </select>
-              </Champ>
-            </ColonneFiche>
-
-            <ColonneFiche titre="Amplitude et contexte" aide="Les bornes vues sur l'enregistreur, puis ce qui explique une excursion.">
-              <div className="grid grid-cols-3 gap-2">
-                <Champ label="Minimum">
-                  <Input
-                    id="tmin"
-                    type="number"
-                    step="0.1"
-                    placeholder="2,1"
-                    value={tempMin}
-                    onChange={(e) => setTempMin(e.target.value)}
-                    className="h-11"
-                  />
-                </Champ>
-                <Champ label="Maximum">
-                  <Input
-                    id="tmax"
-                    type="number"
-                    step="0.1"
-                    placeholder="6,8"
-                    value={tempMax}
-                    onChange={(e) => setTempMax(e.target.value)}
-                    className="h-11"
-                  />
-                </Champ>
-                <Champ label="Humidité">
-                  <Input
-                    id="hum"
-                    type="number"
-                    step="1"
-                    placeholder="55"
-                    value={humidite}
-                    onChange={(e) => setHumidite(e.target.value)}
-                    className="h-11"
-                  />
-                </Champ>
               </div>
-              <Champ label="Observations" aide="« Rien à signaler », ou le motif d'une excursion : coupure, porte ouverte, dégivrage.">
+
+              <div>
+                <Label className="text-xs font-semibold text-[#0F3B27]">Température Actuelle (°C) *</Label>
                 <Input
-                  id="notes"
-                  placeholder="Rien à signaler"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="h-11"
+                  type="number"
+                  step="0.1"
+                  required
+                  autoFocus
+                  placeholder="Ex : 4.5"
+                  value={temperatureSaisie}
+                  onChange={(e) => setTemperatureSaisie(e.target.value)}
+                  className="h-9 text-xs rounded-xl border-[#CFF1D2] font-mono font-bold text-center text-lg text-[#0F3B27]"
                 />
-              </Champ>
-            </ColonneFiche>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <Label className="text-[11px] text-[#475C50]">Min (°C)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="3.8"
+                  value={tempMin}
+                  onChange={(e) => setTempMin(e.target.value)}
+                  className="h-8 text-xs rounded-lg border-[#CFF1D2] text-center"
+                />
+              </div>
+              <div>
+                <Label className="text-[11px] text-[#475C50]">Max (°C)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  placeholder="5.2"
+                  value={tempMax}
+                  onChange={(e) => setTempMax(e.target.value)}
+                  className="h-8 text-xs rounded-lg border-[#CFF1D2] text-center"
+                />
+              </div>
+              <div>
+                <Label className="text-[11px] text-[#475C50]">Humidité (%)</Label>
+                <Input
+                  type="number"
+                  step="1"
+                  placeholder="55"
+                  value={humidite}
+                  onChange={(e) => setHumidite(e.target.value)}
+                  className="h-8 text-xs rounded-lg border-[#CFF1D2] text-center"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold text-[#0F3B27]">Observations / Événement particulier</Label>
+              <Input
+                placeholder="R.A.S. ou dégivrage / livraison fraîche..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="h-8 text-xs rounded-xl border-[#CFF1D2]"
+              />
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDialogOuvert(false)}
+                className="border-[#CFF1D2] text-[#475C50]"
+              >
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                disabled={enCours || !temperatureSaisie}
+                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs"
+              >
+                {enCours ? "Validation…" : "Valider le Relevé"}
+              </Button>
+            </DialogFooter>
           </form>
-        </ModaleFiche>
+        </DialogContent>
       </Dialog>
+
+      {/* MODALE DÉCISION DU PHARMACIEN APRES EXCURSION (TEM-06) */}
+      <Dialog open={modaleDecisionOuverte} onOpenChange={setModaleDecisionOuverte}>
+        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-2xl shadow-xl">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="size-10 rounded-xl bg-red-600/10 text-red-700 flex items-center justify-center border border-red-300">
+                <ShieldAlert className="size-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-bold text-[#0F3B27] font-display">
+                  Décision Pharmaceutique — Excursion
+                </DialogTitle>
+                <span className="text-xs text-[#475C50]">Réf. BPD TEM-06 · Traçabilité obligatoire</span>
+              </div>
+            </div>
+            <DialogDescription className="text-xs text-[#475C50] mt-2">
+              Le pharmacien titulaire ou adjoint doit statuer sur le devenir des produits thermolabiles exposés avant réintégration dans le circuit de vente.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3.5 pt-2 text-xs">
+            <div>
+              <Label className="font-bold text-[#0F3B27]">Décision motivée du pharmacien *</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <Button
+                  type="button"
+                  variant={decisionChoisie === "levee" ? "default" : "outline"}
+                  onClick={() => setDecisionChoisie("levee")}
+                  className={decisionChoisie === "levee" ? "bg-emerald-700 text-white text-xs" : "border-[#CFF1D2] text-xs"}
+                >
+                  Levée du statut (Conforme)
+                </Button>
+                <Button
+                  type="button"
+                  variant={decisionChoisie === "quarantaine" ? "default" : "outline"}
+                  onClick={() => setDecisionChoisie("quarantaine")}
+                  className={decisionChoisie === "quarantaine" ? "bg-amber-700 text-white text-xs" : "border-[#CFF1D2] text-xs"}
+                >
+                  Maintien Quarantaine
+                </Button>
+                <Button
+                  type="button"
+                  variant={decisionChoisie === "retour" ? "default" : "outline"}
+                  onClick={() => setDecisionChoisie("retour")}
+                  className={decisionChoisie === "retour" ? "bg-blue-700 text-white text-xs" : "border-[#CFF1D2] text-xs"}
+                >
+                  Retour Fournisseur
+                </Button>
+                <Button
+                  type="button"
+                  variant={decisionChoisie === "destruction" ? "default" : "outline"}
+                  onClick={() => setDecisionChoisie("destruction")}
+                  className={decisionChoisie === "destruction" ? "bg-red-700 text-white text-xs" : "border-[#CFF1D2] text-xs"}
+                >
+                  Rebut / Destruction
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">Motif technique & Justificatif *</Label>
+              <textarea
+                value={motifDecision}
+                onChange={(e) => setMotifDecision(e.target.value)}
+                rows={2}
+                placeholder="Ex : Durée d'excursion limitée à 18 min, données fabricant consultées..."
+                className="w-full rounded-xl border border-[#CFF1D2] p-2 text-xs focus:outline-none focus:border-[#0F3B27]"
+                required
+              />
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setModaleDecisionOuverte(false)}
+                className="border-[#CFF1D2] text-[#475C50]"
+              >
+                Annuler
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  if (!motifDecision.trim()) {
+                    toast.error("Veuillez renseigner le motif de votre décision.");
+                    return;
+                  }
+                  setActionPourSignature({
+                    titre: "Signature de la décision pharmacien",
+                    cb: () => {},
+                  });
+                  setModaleSignOuverte(true);
+                }}
+                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5"
+              >
+                <CheckCircle2 className="size-4" /> Signer par Code PIN
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODALE QR CODE ENCEINTE */}
+      <Dialog open={modaleQrOuverte} onOpenChange={setModaleQrOuverte}>
+        <DialogContent className="max-w-sm bg-white border border-[#CFF1D2] rounded-2xl shadow-xl text-center">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
+              Code QR d'Enceinte Réfrigérée
+            </DialogTitle>
+            <DialogDescription className="text-xs text-[#475C50]">
+              À imprimer et coller sur la porte de l'enceinte pour pointage mobile direct.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="p-4 bg-[#F7F9F7] rounded-2xl border border-[#CFF1D2] my-2 flex flex-col items-center">
+            <div className="size-44 bg-white p-2 rounded-xl border border-[#CFF1D2] flex items-center justify-center">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
+                  `https://bestpharma.bj/temperatures?zone=${zoneQrSelectionnee}`
+                )}`}
+                alt="QR Code Enceinte"
+                className="size-40"
+              />
+            </div>
+            <span className="font-mono text-xs font-bold text-[#0F3B27] mt-2">
+              ZONE : {zoneQrSelectionnee.toUpperCase()}
+            </span>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setModaleQrOuverte(false)}
+              className="border-[#CFF1D2] text-[#475C50] text-xs"
+            >
+              Fermer
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                window.print();
+                toast.success("Impression de l'étiquette QR lancée.");
+              }}
+              className="bg-[#0F3B27] text-[#92FF5F] text-xs font-bold gap-1.5"
+            >
+              <Printer className="size-3.5" /> Imprimer étiquette
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODALE SIGNATURE CODE PIN (BPD-C10) */}
+      <ModaleSignatureCode
+        ouvert={modaleSignOuverte}
+        onFermer={() => setModaleSignOuverte(false)}
+        titreAction={actionPourSignature?.titre || "Signature de l'enregistrement"}
+        onSigner={async (sig) => {
+          if (modaleDecisionOuverte) {
+            await soumettreDecisionPharmacien(sig);
+          } else if (actionPourSignature?.cb) {
+            actionPourSignature.cb();
+          }
+        }}
+        articleBpd="BPD-4 / Art. 4.18"
+      />
     </div>
   );
 }

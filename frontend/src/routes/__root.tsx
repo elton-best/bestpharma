@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import { ModaleApercuDocument } from "@/components/modules/modale-apercu-document";
 
 function NotFoundComponent() {
   return (
@@ -140,6 +141,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <body>
         {children}
         <Toaster position="top-center" richColors />
+        <ModaleApercuDocument />
         <Scripts />
       </body>
     </html>

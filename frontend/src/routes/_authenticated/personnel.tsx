@@ -59,6 +59,7 @@ import {
   LienReglementaireBpd,
   SignatureData,
 } from "@/components/modules/bpd-communs";
+import { ModaleProfilCollaborateur } from "@/components/modules/modale-profil-collaborateur";
 
 export const Route = createFileRoute("/_authenticated/personnel")({
   head: () => ({
@@ -176,8 +177,9 @@ function PagePersonnel() {
     });
   }, [employes, filtreRole, recherche]);
 
-  // Modale Dossier Collaborateur & Pièces
-  const [employeDossier, setEmployeDossier] = useState<EmployeComplet | null>(null);
+  // Modale Profil et Dossier Collaborateur
+  const [employeProfil, setEmployeProfil] = useState<Employe | null>(null);
+  const [employeDossier, setEmployeDossier] = useState<Employe | null>(null);
   const pieceInputRef = useRef<HTMLInputElement>(null);
   const [pieceCible, setPieceCible] = useState<string>("");
   const [televersementEnCours, setTeleversementEnCours] = useState(false);
@@ -205,7 +207,7 @@ function PagePersonnel() {
       employes.map((e) => ({
         Matricule: e.matricule || "N/A",
         Nom: e.nom_complet,
-        Poste: libellePoste(e.poste),
+        Poste: e.poste?.replace("_", " "),
         Téléphone: e.telephone || "",
         Embauche: e.date_embauche || "",
         "Visite médicale": e.date_visite_medicale || "Non renseignée",
@@ -398,7 +400,7 @@ function PagePersonnel() {
               return (
                 <Card
                   key={e.id}
-                  onClick={() => setEmployeDossier(e)}
+                  onClick={() => setEmployeProfil(e)}
                   className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3 cursor-pointer hover:border-[#0F3B27] hover:shadow-md transition-all"
                 >
                   <div className="flex items-start justify-between">
@@ -411,7 +413,7 @@ function PagePersonnel() {
                         )}
                       </div>
                       <div>
-                        <h3 className="font-bold text-[#0F3B27] text-sm leading-tight">{e.nom_complet}</h3>
+                        <h3 className="font-bold text-[#0F3B27] text-sm leading-tight hover:underline">{e.nom_complet}</h3>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="text-[10px] font-mono text-[#0F3B27] bg-[#CFF1D2]/50 px-1.5 py-0.2 rounded font-bold">
                             {e.matricule || `BP-${e.id.slice(0, 4).toUpperCase()}`}
@@ -454,10 +456,10 @@ function PagePersonnel() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setEmployeDossier(e)}
-                      className="flex-1 text-xs border-[#CFF1D2] text-[#0F3B27] gap-1 hover:bg-[#CFF1D2]/30 rounded-[10px]"
+                      onClick={() => setEmployeProfil(e)}
+                      className="flex-1 text-xs border-[#CFF1D2] text-[#0F3B27] gap-1 hover:bg-[#CFF1D2]/30 rounded-[10px] font-semibold"
                     >
-                      <FileText className="size-3.5" /> Dossier
+                      <FileText className="size-3.5" /> Voir Profil
                     </Button>
                     <Button
                       variant="outline"
@@ -832,15 +834,44 @@ function PagePersonnel() {
             </div>
 
             <div>
-              <Label className="font-semibold text-[#0F3B27]">Photo / Avatar Collaborateur</Label>
-              <Input
-                placeholder="URL photo (ex: https://...) ou laisser vide"
-                value={photoEmploye}
-                onChange={(e) => setPhotoEmploye(e.target.value)}
-                className="h-8 text-xs rounded-[10px] border-[#CFF1D2]"
-              />
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                Cette photo apparaîtra sur le badge PVC officiel et la borne tablette de pointage.
+              <Label className="font-semibold text-[#0F3B27] block mb-1.5">Photo / Avatar du Collaborateur</Label>
+              <div className="flex items-center gap-3">
+                <div className="size-14 rounded-full overflow-hidden bg-[#0F3B27]/10 text-[#0F3B27] flex items-center justify-center font-bold text-lg border border-[#CFF1D2] shrink-0">
+                  {photoEmploye ? (
+                    <img src={photoEmploye} alt="Aperçu" className="size-full object-cover" />
+                  ) : (
+                    <Users className="size-6 text-[#475C50]" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setPhotoEmploye(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="h-9 text-xs rounded-[10px] border-[#CFF1D2] file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:bg-[#0F3B27] file:text-[#92FF5F] file:font-semibold cursor-pointer"
+                  />
+                  {photoEmploye && (
+                    <button
+                      type="button"
+                      onClick={() => setPhotoEmploye("")}
+                      className="text-[11px] text-red-600 hover:underline font-medium block"
+                    >
+                      Supprimer la photo
+                    </button>
+                  )}
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Formats acceptés : JPG, PNG, WEBP. Cette photo figurera sur le badge PVC officiel et la borne tablette.
               </p>
             </div>
 
@@ -1048,6 +1079,12 @@ function PagePersonnel() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* GRAND MODALE PROFIL COLLABORATEUR (DOSSIER, BADGE, INFORMATIONS) */}
+      <ModaleProfilCollaborateur
+        employe={employeProfil}
+        onFermer={() => setEmployeProfil(null)}
+      />
     </div>
   );
 }

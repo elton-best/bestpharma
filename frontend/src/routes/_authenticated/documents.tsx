@@ -25,6 +25,7 @@ import {
   AlertTriangle,
   FolderTree,
   Lock,
+  ArrowLeft,
 } from "lucide-react";
 
 import { api } from "@/lib/api-client";
@@ -37,6 +38,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 import {
   Dialog,
   DialogContent,
@@ -201,10 +203,333 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
     return true;
   });
 
+  const optionsSectionsGed: OptionSection[] = [
+    {
+      valeur: "bibliotheque",
+      label: `Bibliothèque Documentaire (${documents.length})`,
+      description: "Procédures, modes opératoires et enregistrements qualité",
+      badge: `${documents.length}`,
+    },
+    {
+      valeur: "taches",
+      label: "Mes Tâches & Lectures",
+      description: "Documents assignés à lire et à émarger obligatoirement",
+    },
+    {
+      valeur: "versions",
+      label: "Versions & Archives",
+      description: "Historique des versions antérieures et traçabilité",
+    },
+    {
+      valeur: "diffusion",
+      label: "Diffusion & Émargement",
+      description: "Registre de prise de connaissance des procédures",
+    },
+    {
+      valeur: "revisions",
+      label: "Révisions Dues",
+      description: "Calendrier des revues périodiques et alertes d'obsolescence",
+    },
+    {
+      valeur: "modifications",
+      label: "Demandes de Modification",
+      description: "Fiches de demande d'évolution documentaire",
+    },
+    {
+      valeur: "processus",
+      label: "Cartographie des 5 Processus",
+      description: "TAM, QAM, GAD, GAC, GAR - Structure qualité de l'officine",
+    },
+    {
+      valeur: "politique",
+      label: "Politique & Revue Direction",
+      description: "Engagement de la direction et axes stratégiques qualité",
+    },
+  ];
+
+  // VRAIE PAGE DE CONSULTATION & VALIDATION DU DOCUMENT
+  if (docActif) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
+          <div className="flex items-start sm:items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setDocActif(null)}
+              className="border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 font-bold text-xs gap-1.5 rounded-[10px] shrink-0"
+            >
+              <ArrowLeft className="size-4" /> Retour
+            </Button>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2]/60 px-2 py-0.5 rounded-[6px]">
+                  {docActif.code_document || "DOC-GED"}
+                </span>
+                <Badge
+                  className={
+                    docActif.statut === "valide"
+                      ? "bg-emerald-600 text-white text-[10px]"
+                      : docActif.statut === "a_valider"
+                      ? "bg-amber-500 text-white text-[10px]"
+                      : "bg-gray-500 text-white text-[10px]"
+                  }
+                >
+                  {docActif.statut === "valide" ? "En vigueur" : docActif.statut === "a_valider" ? "À valider" : "Brouillon"}
+                </Badge>
+                <Badge variant="outline" className="border-[#CFF1D2] text-[#0F3B27] text-[10px]">
+                  Processus {docActif.processus}
+                </Badge>
+                <Badge variant="outline" className="border-[#CFF1D2] text-[#0F3B27] text-[10px]">
+                  v{docActif.version}.{docActif.indice_revision}
+                </Badge>
+              </div>
+              <h1 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-[#0F3B27] mt-1">
+                {docActif.titre}
+              </h1>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                imprimerFicheOfficielle(
+                  `${docActif.code_document || "DOC"} — ${docActif.titre} (v${docActif.version}.${docActif.indice_revision})`,
+                  `
+                    <div style="font-size: 11px; color: #555; margin-bottom: 15px;">
+                      <strong>Processus :</strong> ${docActif.processus} · <strong>Type :</strong> ${docActif.type_doc}<br>
+                      <strong>Rédacteur :</strong> ${docActif.redacteur_nom || "Équipe Qualité"}<br>
+                      <strong>Statut :</strong> ${docActif.statut.toUpperCase()}<br>
+                      <strong>Date de révision :</strong> ${new Date(docActif.updated_at).toLocaleDateString()}
+                    </div>
+                    <div style="white-space: pre-wrap; font-size: 13px; line-height: 1.7; background: #fafafa; border: 1px solid #eee; padding: 20px; border-radius: 8px;">${docActif.contenu}</div>
+                  `
+                );
+              }}
+              className="border-[#CFF1D2] text-[#0F3B27] gap-1.5 text-xs font-semibold rounded-[10px]"
+            >
+              <Printer className="size-3.5" /> Imprimer / PDF
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => telechargerTexte(docActif.contenu, `${docActif.code_document || "document"}_v${docActif.version}.txt`)}
+              className="border-[#CFF1D2] text-[#0F3B27] gap-1.5 text-xs font-semibold rounded-[10px]"
+            >
+              <Download className="size-3.5" /> Télécharger TXT
+            </Button>
+            {docActif.statut !== "valide" && (
+              <Button
+                onClick={() => {
+                  setDocASigner(docActif);
+                  setModaleSignOuverte(true);
+                }}
+                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 rounded-[10px]"
+              >
+                <CheckCircle2 className="size-4" /> Approuver par Code PIN
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* CONTENU PRINCIPAL DU DOCUMENT */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3 space-y-4">
+            <Card className="rounded-[10px] border border-[#CFF1D2] bg-white p-6 shadow-sm">
+              <div className="text-xs leading-relaxed text-[#0F3B27] whitespace-pre-wrap font-sans">
+                {docActif.contenu}
+              </div>
+            </Card>
+          </div>
+
+          <div className="space-y-4">
+            <Card className="rounded-[10px] border border-[#CFF1D2] bg-white p-4 shadow-sm space-y-3">
+              <h3 className="font-bold text-xs text-[#0F3B27] uppercase tracking-wider">Cartouche Documentaire</h3>
+              <div className="space-y-2 text-xs divide-y divide-[#CFF1D2]/50">
+                <div className="pt-2 flex justify-between">
+                  <span className="text-muted-foreground">Code Document :</span>
+                  <strong className="font-mono text-[#0F3B27]">{docActif.code_document || "N/A"}</strong>
+                </div>
+                <div className="pt-2 flex justify-between">
+                  <span className="text-muted-foreground">Type :</span>
+                  <span className="capitalize">{docActif.type_doc?.replace("_", " ")}</span>
+                </div>
+                <div className="pt-2 flex justify-between">
+                  <span className="text-muted-foreground">Processus :</span>
+                  <strong>{docActif.processus}</strong>
+                </div>
+                <div className="pt-2 flex justify-between">
+                  <span className="text-muted-foreground">Rédacteur :</span>
+                  <span>{docActif.redacteur_nom || "Équipe Qualité"}</span>
+                </div>
+                <div className="pt-2 flex justify-between">
+                  <span className="text-muted-foreground">Approbateur :</span>
+                  <strong>{docActif.approbateur_nom || "En attente"}</strong>
+                </div>
+                {docActif.approuve_le && (
+                  <div className="pt-2 flex justify-between">
+                    <span className="text-muted-foreground">Approuvé le :</span>
+                    <span className="font-mono">{new Date(docActif.approuve_le).toLocaleDateString()}</span>
+                  </div>
+                )}
+                <div className="pt-2 flex justify-between">
+                  <span className="text-muted-foreground">Dernière mise à jour :</span>
+                  <span className="font-mono">{new Date(docActif.updated_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* MODALE SIGNATURE CODE PIN SI APPROBATION */}
+        <ModaleSignatureCode
+          ouvert={modaleSignOuverte}
+          onFermer={() => setModaleSignOuverte(false)}
+          titreAction={`Approbation officielle de ${docASigner?.code_document || "la procédure"}`}
+          descriptionAction="Votre code PIN personnel appose la signature certifiée inaltérable du Pharmacien Titulaire pour mise en vigueur."
+          onSigner={validerEtApprouverDoc}
+          articleBpd="BPD-3 / Art. 3.01"
+        />
+      </div>
+    );
+  }
+
+  // VRAIE PAGE DE RÉDACTION D'UNE PROCÉDURE
+  if (nouveauModal) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setNouveauModal(false)}
+              className="border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 font-bold text-xs gap-1.5 rounded-[10px]"
+            >
+              <ArrowLeft className="size-4" /> Retour aux documents
+            </Button>
+            <div>
+              <h1 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-[#0F3B27]">
+                Rédaction d'une Procédure Structurée (DOC-03)
+              </h1>
+              <p className="text-xs text-[#475C50]">
+                Standardisation BPD : Objet, Domaine d'application, Rôles et Mode opératoire.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <Card className="rounded-[10px] border border-[#CFF1D2] bg-white p-6 shadow-sm">
+          <form onSubmit={creerNouveauDoc} className="space-y-4 text-xs max-w-4xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="font-semibold text-[#0F3B27]">Processus *</Label>
+                <select
+                  value={processusDoc}
+                  onChange={(e) => setProcessusDoc(e.target.value)}
+                  className="w-full h-9 rounded-[10px] border border-[#CFF1D2] bg-white text-xs px-2.5 mt-1"
+                >
+                  <option value="QAM">QAM · Système Qualité & Audit</option>
+                  <option value="GAC">GAC · Achats & Chaîne du Froid</option>
+                  <option value="GAD">GAD · Dispensation & Caisse</option>
+                  <option value="GAR">GAR · Ressources & Locaux</option>
+                  <option value="TAM">TAM · Direction & Organisation</option>
+                </select>
+              </div>
+
+              <div>
+                <Label className="font-semibold text-[#0F3B27]">Type documentaire *</Label>
+                <select
+                  value={typeDoc}
+                  onChange={(e) => setTypeDoc(e.target.value)}
+                  className="w-full h-9 rounded-[10px] border border-[#CFF1D2] bg-white text-xs px-2.5 mt-1"
+                >
+                  <option value="procedure">Procédure (PR)</option>
+                  <option value="mode_operatoire">Mode Opératoire (MO)</option>
+                  <option value="registre">Registre / Enregistrement (EN)</option>
+                  <option value="fiche">Fiche réflexe / Formulaire (FI)</option>
+                  <option value="plan">Plan / Planning (PL)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">Titre de la Procédure *</Label>
+              <Input
+                placeholder="Ex : Procédure de contrôle à réception des produits thermolabiles"
+                value={titreDoc}
+                onChange={(e) => setTitreDoc(e.target.value)}
+                className="h-9 text-xs rounded-[10px] border-[#CFF1D2] mt-1"
+                required
+              />
+            </div>
+
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">1. Objet</Label>
+              <Input
+                placeholder="Ex : Définir la méthode de contrôle de la chaîne du froid à la réception..."
+                value={objetDoc}
+                onChange={(e) => setObjetDoc(e.target.value)}
+                className="h-9 text-xs rounded-[10px] border-[#CFF1D2] mt-1"
+              />
+            </div>
+
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">2. Domaine d'application</Label>
+              <Input
+                placeholder="Ex : Applicable à toute livraison de vaccins, insulines et dérivés sanguins..."
+                value={domaineDoc}
+                onChange={(e) => setDomaineDoc(e.target.value)}
+                className="h-9 text-xs rounded-[10px] border-[#CFF1D2] mt-1"
+              />
+            </div>
+
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">3. Qui / Responsables</Label>
+              <Input
+                placeholder="Ex : Magasinier réceptionnaire, Pharmacien Titulaire..."
+                value={quiDoc}
+                onChange={(e) => setQuiDoc(e.target.value)}
+                className="h-9 text-xs rounded-[10px] border-[#CFF1D2] mt-1"
+              />
+            </div>
+
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">4. Comment / Instructions opératoires</Label>
+              <Textarea
+                placeholder="Détailler les étapes chronologiques..."
+                value={commentDoc}
+                onChange={(e) => setCommentDoc(e.target.value)}
+                rows={6}
+                className="text-xs rounded-[10px] border-[#CFF1D2] mt-1"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 pt-3 border-t border-[#CFF1D2]">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setNouveauModal(false)}
+                className="border-[#CFF1D2] text-[#475C50] rounded-[10px]"
+              >
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                disabled={enCours || !titreDoc.trim()}
+                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs rounded-[10px]"
+              >
+                {enCours ? "Création…" : "Enregistrer et publier (Brouillon)"}
+              </Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-6">
       {/* HEADER HERO */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-[#CFF1D2] shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
@@ -251,7 +576,7 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
               );
               toast.success("Répertoire GED exporté en CSV !");
             }}
-            className="border-[#CFF1D2] text-[#0F3B27] font-bold text-xs gap-1.5 hover:bg-[#CFF1D2]/30"
+            className="border-[#CFF1D2] text-[#0F3B27] font-bold text-xs gap-1.5 hover:bg-[#CFF1D2]/30 rounded-[10px]"
           >
             <Download className="size-4" /> Export CSV
           </Button>
@@ -264,65 +589,38 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
           />
           <Button
             onClick={() => setNouveauModal(true)}
-            className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm"
+            className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm rounded-[10px]"
           >
             <Plus className="size-4" /> Rédiger Procédure
           </Button>
         </div>
       </div>
 
-      {/* TABS DE LA GED (9 ONGLETS CONFORMES AU CAHIER DES CHARGES) */}
+      {/* SÉLECTEUR DÉROULANT DES SECTIONS GED */}
+      <div className="bg-white p-3.5 rounded-[10px] border border-[#CFF1D2] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-[10px] bg-[#0F3B27]/10 text-[#0F3B27]">
+            <BookOpen className="size-4" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-[#0F3B27] block">Module Gestion Documentaire (GED)</span>
+            <span className="text-[11px] text-[#475C50]">Sélectionnez la section documentaire à afficher</span>
+          </div>
+        </div>
+        <div className="w-full md:w-96">
+          <SelecteurFiltrable
+            options={optionsSectionsGed}
+            valeur={activeTab}
+            onChangement={setActiveTab}
+            placeholder="Choisir une section..."
+            recherchePlaceholder="Filtrer parmi les 8 sections..."
+            className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+          />
+        </div>
+      </div>
+
+      {/* TABS DE LA GED */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-[#F7F9F7] border border-[#CFF1D2] p-1 rounded-xl flex flex-wrap h-auto gap-1">
-          <TabsTrigger
-            value="bibliotheque"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Bibliothèque ({documents.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="taches"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Mes Tâches & Lectures
-          </TabsTrigger>
-          <TabsTrigger
-            value="versions"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Versions & Archives
-          </TabsTrigger>
-          <TabsTrigger
-            value="diffusion"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Diffusion & Émargement
-          </TabsTrigger>
-          <TabsTrigger
-            value="revisions"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Révisions Dues
-          </TabsTrigger>
-          <TabsTrigger
-            value="modifications"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Demandes de Modification
-          </TabsTrigger>
-          <TabsTrigger
-            value="processus"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Cartographie 5 Processus
-          </TabsTrigger>
-          <TabsTrigger
-            value="politique"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Politique & Revue Direction
-          </TabsTrigger>
-        </TabsList>
 
         {/* 1. BIBLIOTHÈQUE DOCUMENTAIRE */}
         <TabsContent value="bibliotheque" className="space-y-4">
@@ -641,216 +939,7 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
         </TabsContent>
       </Tabs>
 
-      {/* MODALE DÉTAIL / APPROBATION D'UN DOCUMENT */}
-      <Dialog open={!!docActif} onOpenChange={(open) => !open && setDocActif(null)}>
-        <DialogContent className="max-w-2xl bg-white border border-[#CFF1D2] rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto">
-          {docActif && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2.5 py-0.5 rounded-md border border-[#0F3B27]/20">
-                      {docActif.code_document || "DOC-001"}
-                    </span>
-                    <Badge variant="outline" className="text-xs font-mono font-bold">
-                      v{docActif.version}.{docActif.indice_revision}
-                    </Badge>
-                  </div>
-                  <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
-                    Processus {docActif.processus}
-                  </Badge>
-                </div>
-                <DialogTitle className="text-lg font-bold text-[#0F3B27] font-display mt-2">
-                  {docActif.titre}
-                </DialogTitle>
-                <DialogDescription className="text-xs text-[#475C50]">
-                  Rédigé par {docActif.redacteur_nom || "Équipe Qualité"} · Statut : <strong>{docActif.statut}</strong>
-                </DialogDescription>
-              </DialogHeader>
 
-              <div className="space-y-4 pt-2 text-xs">
-                <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] whitespace-pre-wrap font-sans leading-relaxed text-[#0F3B27]">
-                  {docActif.contenu}
-                </div>
-
-                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-[11px] flex justify-between items-center">
-                  <span>
-                    Approbation officielle : <strong>{docActif.approbateur_nom || "En attente de signature du Pharmacien Titulaire"}</strong>
-                  </span>
-                  {docActif.approuve_le && (
-                    <span className="font-mono text-[10px]">
-                      {new Date(docActif.approuve_le).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <DialogFooter className="gap-2 sm:gap-0 pt-2">
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      imprimerFicheOfficielle(
-                        `${docActif.code_document || "DOC"} — ${docActif.titre} (v${docActif.version}.${docActif.indice_revision})`,
-                        `
-                          <div style="font-size: 11px; color: #555; margin-bottom: 15px;">
-                            <strong>Processus :</strong> ${docActif.processus} · <strong>Type :</strong> ${docActif.type_doc}<br>
-                            <strong>Rédacteur :</strong> ${docActif.redacteur_nom || "Équipe Qualité"}<br>
-                            <strong>Statut :</strong> ${docActif.statut.toUpperCase()}
-                          </div>
-                          <div style="white-space: pre-wrap; font-size: 13px; line-height: 1.7; background: #fafafa; border: 1px solid #eee; padding: 15px; border-radius: 8px;">${docActif.contenu}</div>
-                        `
-                      );
-                    }}
-                    className="border-[#CFF1D2] text-[#0F3B27] gap-1.5 text-xs"
-                  >
-                    <Printer className="size-3.5" /> Imprimer / PDF
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setDocActif(null)}
-                    className="border-[#CFF1D2] text-[#475C50]"
-                  >
-                    Fermer
-                  </Button>
-                </div>
-                {docActif.statut !== "valide" && (
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setDocASigner(docActif);
-                      setModaleSignOuverte(true);
-                    }}
-                    className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5"
-                  >
-                    <CheckCircle2 className="size-4" /> Approuver par Code PIN
-                  </Button>
-                )}
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* MODALE RÉDACTION PROCÉDURE STRUCTURÉE (DOC-03) */}
-      <Dialog open={nouveauModal} onOpenChange={setNouveauModal}>
-        <DialogContent className="max-w-xl bg-white border border-[#CFF1D2] rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
-              Éditeur de Procédure Structurée (DOC-03)
-            </DialogTitle>
-            <DialogDescription className="text-xs text-[#475C50]">
-              Structure standardisée BPD : Objet, Domaine d'application, Rôles et Mode opératoire.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={creerNouveauDoc} className="space-y-3 pt-2 text-xs">
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label className="font-semibold text-[#0F3B27]">Processus *</Label>
-                <select
-                  value={processusDoc}
-                  onChange={(e) => setProcessusDoc(e.target.value)}
-                  className="w-full h-8 rounded-xl border border-[#CFF1D2] bg-white text-xs px-2"
-                >
-                  <option value="QAM">QAM · Système Qualité & Audit</option>
-                  <option value="GAC">GAC · Achats & Chaîne du Froid</option>
-                  <option value="GAD">GAD · Dispensation & Caisse</option>
-                  <option value="GAR">GAR · Ressources & Locaux</option>
-                  <option value="TAM">TAM · Direction & Organisation</option>
-                </select>
-              </div>
-
-              <div>
-                <Label className="font-semibold text-[#0F3B27]">Type documentaire *</Label>
-                <select
-                  value={typeDoc}
-                  onChange={(e) => setTypeDoc(e.target.value)}
-                  className="w-full h-8 rounded-xl border border-[#CFF1D2] bg-white text-xs px-2"
-                >
-                  <option value="procedure">Procédure (PR)</option>
-                  <option value="mode_operatoire">Mode Opératoire (MO)</option>
-                  <option value="registre">Registre / Enregistrement (EN)</option>
-                  <option value="fiche">Fiche réflexe / Formulaire (FI)</option>
-                  <option value="plan">Plan / Planning (PL)</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <Label className="font-semibold text-[#0F3B27]">Titre de la Procédure *</Label>
-              <Input
-                placeholder="Ex : Procédure de contrôle à réception des produits thermolabiles"
-                value={titreDoc}
-                onChange={(e) => setTitreDoc(e.target.value)}
-                className="h-8 text-xs rounded-xl border-[#CFF1D2]"
-                required
-              />
-            </div>
-
-            <div>
-              <Label className="font-semibold text-[#0F3B27]">1. Objet</Label>
-              <Input
-                placeholder="Ex : Définir la méthode de contrôle de la chaîne du froid à la réception..."
-                value={objetDoc}
-                onChange={(e) => setObjetDoc(e.target.value)}
-                className="h-8 text-xs rounded-xl border-[#CFF1D2]"
-              />
-            </div>
-
-            <div>
-              <Label className="font-semibold text-[#0F3B27]">2. Domaine d'application</Label>
-              <Input
-                placeholder="Ex : Applicable à toute livraison de vaccins, insulines et dérivés sanguins..."
-                value={domaineDoc}
-                onChange={(e) => setDomaineDoc(e.target.value)}
-                className="h-8 text-xs rounded-xl border-[#CFF1D2]"
-              />
-            </div>
-
-            <div>
-              <Label className="font-semibold text-[#0F3B27]">3. Qui / Responsables</Label>
-              <Input
-                placeholder="Ex : Magasinier réceptionnaire, Pharmacien Titulaire..."
-                value={quiDoc}
-                onChange={(e) => setQuiDoc(e.target.value)}
-                className="h-8 text-xs rounded-xl border-[#CFF1D2]"
-              />
-            </div>
-
-            <div>
-              <Label className="font-semibold text-[#0F3B27]">4. Comment / Instructions opératoires</Label>
-              <Textarea
-                placeholder="Détailler les étapes chronologiques..."
-                value={commentDoc}
-                onChange={(e) => setCommentDoc(e.target.value)}
-                rows={3}
-                className="text-xs rounded-xl border-[#CFF1D2]"
-              />
-            </div>
-
-            <DialogFooter className="gap-2 sm:gap-0 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setNouveauModal(false)}
-                className="border-[#CFF1D2] text-[#475C50]"
-              >
-                Annuler
-              </Button>
-              <Button
-                type="submit"
-                disabled={enCours || !titreDoc.trim()}
-                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs"
-              >
-                {enCours ? "Création…" : "Créer le document (Brouillon)"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       {/* MODALE SIGNATURE CODE PIN (BPD-C10) */}
       <ModaleSignatureCode

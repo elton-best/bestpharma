@@ -38,6 +38,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
+import { ModaleProfilCollaborateur } from "@/components/modules/modale-profil-collaborateur";
+import { ModaleHistoriquePresences } from "@/components/modules/modale-historique-presences";
 import {
   Dialog,
   DialogContent,
@@ -114,6 +116,7 @@ function PagePointage() {
   // Modale Profil et Historique
   const [employeProfil, setEmployeProfil] = useState<any | null>(null);
   const [employeHistorique, setEmployeHistorique] = useState<any | null>(null);
+  const [modaleHistoriqueGlobal, setModaleHistoriqueGlobal] = useState(false);
 
   // Modale Signature PIN (BPD-C10)
   const [modaleSignOuverte, setModaleSignOuverte] = useState(false);
@@ -357,28 +360,28 @@ function PagePointage() {
   const optionsSectionsPointage: OptionSection[] = [
     {
       valeur: "direct",
-      label: `Présence en Direct & Contrôle (${totalPresents}/${employes.length})`,
-      description: "Suivi en temps réel des présences, pharmacien sur place (Art. 1.11) et actions badges",
+      label: `Présence en Direct & Équipe (${totalPresents}/${employes.length})`,
+      description: "Suivi en temps réel des présences, pointage direct et fiches collaborateurs",
       badge: `${totalPresents} sur place`,
     },
     {
       valeur: "plannings",
-      label: "Plannings d'Équipe & Tableau des Gardes (POI-07)",
+      label: "Plannings d'Équipe & Tableau des Gardes",
       description: "Affectation des tranches horaires et respect de la continuité pharmaceutique",
     },
     {
       valeur: "absences",
-      label: "Absences Justifiées & Congés (POI-08)",
+      label: "Absences Justifiées & Congés",
       description: "Déclarations de maladie, congés payés et justificatifs médicaux",
     },
     {
       valeur: "corrections",
-      label: "Corrections d'Oublis & Régularisations (POI-09)",
+      label: "Corrections d'Oublis & Régularisations",
       description: "Régularisation des pointages manqués avec signature du pharmacien responsable",
     },
     {
       valeur: "badges",
-      label: "Badges Individuels & Émargement (POI-04)",
+      label: "Badges Individuels & Émargement",
       description: "Impression des cartes badges PVC avec QR Code pour borne tablette",
     },
     {
@@ -388,127 +391,63 @@ function PagePointage() {
     },
     {
       valeur: "parametres",
-      label: "Paramètres & Règle Pivot Art. 1.11",
+      label: "Paramètres & Règle Pivot Caisse",
       description: "Tolérance de retard, blocage de caisse et seuils de présence",
     },
   ];
 
   return (
     <div className="grid gap-6">
-      {/* HEADER PRINCIPAL */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
+      {/* HEADER PRINCIPAL UNIQUE & ÉPURÉ */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2.5">
             <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
-              Pointage & Présence Pharmacien (Art. 1.11)
+              Pointage & Présence de l'Équipe
             </h1>
-            <LienReglementaireBpd articles="BPD-1 / Art. 1.11" />
-            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
-              Règle pivot Dispensation / Caisse
+            <Badge
+              className={
+                pharmacienPresent
+                  ? "bg-[#0F3B27] text-[#92FF5F] text-xs font-semibold px-2.5 py-0.5"
+                  : "bg-red-600 text-white text-xs font-semibold px-2.5 py-0.5"
+              }
+            >
+              {pharmacienPresent ? "Présence Pharmaceutique Conforme" : "Alerte : Aucun Pharmacien Pointé"}
+            </Badge>
+            <Badge variant="outline" className="border-[#CFF1D2] text-[#0F3B27] text-xs font-bold">
+              {totalPresents} / {employes.length} sur place
             </Badge>
           </div>
-          <p className="mt-1 text-xs text-[#475C50]">
-            Horodatage inaltérable certifié. L'ouverture de la caisse et la délivrance des médicaments exigent la présence continue d'au moins un pharmacien inscrit à l'Ordre.
+          <p className="text-xs text-[#475C50]">
+            Horodatage certifié, conformité réglementaire et continuité du service de l'officine.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <Button
+            variant="outline"
+            onClick={() => setModaleHistoriqueGlobal(true)}
+            className="border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 font-bold text-xs gap-1.5 rounded-[10px] h-10 px-3.5 shadow-sm"
+          >
+            <History className="size-4 text-[#0F3B27]" /> Historique des Présences
+          </Button>
+
           <Button
             onClick={() => setModeBorne(true)}
-            className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm rounded-[10px]"
+            className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm rounded-[10px] h-10 px-3.5"
           >
             <Smartphone className="size-4" /> Lancer Borne Tablette H24
           </Button>
 
-          {/* Horloge numérique en direct Porto-Novo */}
-          <div className="rounded-[10px] border border-[#CFF1D2] bg-[#F7F9F7] px-3 py-1.5 text-right shrink-0">
-            <div className="font-mono font-bold text-sm text-[#0F3B27]">{heureBenin || "--:--"}</div>
-            <div className="text-[10px] text-[#475C50] font-medium">Bénin (GMT+1)</div>
+          {/* Horloge numérique */}
+          <div className="rounded-[10px] border border-[#CFF1D2] bg-[#F7F9F7] px-3.5 py-1.5 text-right shrink-0 h-10 flex flex-col justify-center">
+            <div className="font-mono font-bold text-xs text-[#0F3B27] leading-none">{heureBenin || "--:--"}</div>
+            <div className="text-[9px] text-[#475C50] font-medium leading-none mt-0.5">Bénin (GMT+1)</div>
           </div>
         </div>
       </div>
 
-      {/* HERO BANNER ART. 1.11 (PHARMACIEN PRÉSENT / ABSENT) */}
-      <div
-        className={`rounded-[10px] border-2 p-6 shadow-sm transition-all ${
-          pharmacienPresent
-            ? "border-[#0F3B27] bg-gradient-to-r from-[#0F3B27] to-[#164E35] text-white"
-            : "border-red-500 bg-red-50 text-red-950 animate-pulse"
-        }`}
-      >
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div
-              className={`p-3.5 rounded-[10px] shrink-0 shadow-md ${
-                pharmacienPresent ? "bg-[#92FF5F] text-[#0F3B27]" : "bg-red-600 text-white"
-              }`}
-            >
-              {pharmacienPresent ? <ShieldCheck className="w-8 h-8" /> : <ShieldAlert className="w-8 h-8" />}
-            </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className={`font-display text-lg sm:text-xl font-black ${pharmacienPresent ? "text-white" : "text-red-900"}`}>
-                  {pharmacienPresent
-                    ? "Présence Pharmaceutique Conforme"
-                    : "Alerte : Aucun pharmacien pointé sur place"}
-                </h2>
-                <Badge
-                  className={
-                    pharmacienPresent
-                      ? "bg-[#92FF5F] text-[#0F3B27] font-extrabold uppercase text-[10px]"
-                      : "bg-red-600 text-white font-extrabold uppercase text-[10px]"
-                  }
-                >
-                  {pharmacienPresent ? "Délivrance & Caisse Actives" : "Délivrance Suspendue"}
-                </Badge>
-              </div>
-
-              <p className={`text-xs mt-1.5 max-w-2xl leading-relaxed ${pharmacienPresent ? "text-[#CFF1D2]" : "text-red-800"}`}>
-                {pharmacienPresent ? (
-                  <span>
-                    La présence effective d'un pharmacien responsable est confirmée. Les opérations de l'officine sont autorisées.
-                  </span>
-                ) : (
-                  <span>
-                    La délivrance des ordonnances et des médicaments exige la présence effective d'un pharmacien sur place.
-                  </span>
-                )}
-              </p>
-
-              {pharmacienPresent && pharmaciensSurPlace.length > 0 && (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-bold text-[#92FF5F]">Pharmacien(s) sur place :</span>
-                  {pharmaciensSurPlace.map((nom, i) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-[#92FF5F]/40 px-3 py-1 text-xs font-bold text-white"
-                    >
-                      <Award className="w-3.5 h-3.5 text-[#92FF5F]" />
-                      {nom}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Ratios & Compteurs */}
-          <div className="grid grid-cols-2 gap-3 w-full lg:w-auto shrink-0">
-            <div className={`p-3 rounded-[10px] border text-center ${pharmacienPresent ? "bg-white/10 border-white/20 text-white" : "bg-white border-red-200 text-red-900"}`}>
-              <span className="text-[10px] font-bold block uppercase tracking-wider opacity-80">Effectif présent</span>
-              <p className="font-display font-black text-2xl mt-0.5">{totalPresents} / {employes.length}</p>
-              <span className="text-[10px] opacity-75">Agents sur place</span>
-            </div>
-            <div className={`p-3 rounded-[10px] border text-center ${pharmacienPresent ? "bg-white/10 border-white/20 text-white" : "bg-white border-red-200 text-red-900"}`}>
-              <span className="text-[10px] font-bold block uppercase tracking-wider opacity-80">Pharmaciens</span>
-              <p className="font-display font-black text-2xl mt-0.5">{pharmaciensSurPlace.length}</p>
-              <span className="text-[10px] opacity-75">Section B Ordre</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* SÉLECTEUR DÉROULANT FILTRABLE DES SECTIONS (REMPLACE LES ONGLETS HORIZONTAUX) */}
+      {/* SÉLECTEUR DÉROULANT DES SECTIONS */}
       <div className="bg-white p-3.5 rounded-[10px] border border-[#CFF1D2] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-[10px] bg-[#0F3B27]/10 text-[#0F3B27]">
@@ -531,106 +470,177 @@ function PagePointage() {
         </div>
       </div>
 
-      {/* TABS CONFORMES AU CAHIER DES CHARGES */}
+      {/* TABS CONFORMES */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
 
-        {/* 1. PRÉSENCE EN DIRECT */}
+        {/* 1. PRÉSENCE EN DIRECT (TABLEAU DU PERSONNEL) */}
         <TabsContent value="direct" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {employes.map((e: any) => {
-              const d = dernier(e.id);
-              const estLa = d?.type === "arrivee";
-              const estPharmacien = ["pharmacien_titulaire", "pharmacien_adjoint", "pharmacien_remplacant", "promoteur"].includes(e.poste);
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-[#CFF1D2] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[#F7F9F7]">
+              <div>
+                <h3 className="text-sm font-bold text-[#0F3B27]">
+                  Tableau du Personnel & Suivi des Mouvements
+                </h3>
+                <p className="text-xs text-[#475C50]">
+                  Visualisez en temps réel l'équipe sur place et effectuez les pointages ou consultations de dossier.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-[#0F3B27] text-[#92FF5F] text-xs font-bold">
+                  {totalPresents} présent(s)
+                </Badge>
+                <Badge variant="outline" className="border-[#CFF1D2] text-[#475C50] text-xs">
+                  {employes.length - totalPresents} absent(s)
+                </Badge>
+              </div>
+            </div>
 
-              return (
-                <Card
-                  key={e.id}
-                  className={`border-2 rounded-[10px] p-4 transition-all shadow-sm ${
-                    estLa
-                      ? "border-emerald-500/50 bg-emerald-50/20"
-                      : "border-[#CFF1D2] bg-white opacity-90"
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="size-11 rounded-[10px] overflow-hidden bg-[#0F3B27]/10 text-[#0F3B27] flex items-center justify-center font-bold text-sm shrink-0 border border-[#CFF1D2]">
-                        {e.photo_url ? (
-                          <img src={e.photo_url} alt={e.nom_complet} className="size-full object-cover" />
-                        ) : (
-                          <span>{e.nom_complet.charAt(0)}</span>
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-[#0F3B27] text-sm">{e.nom_complet}</span>
-                          {estPharmacien && (
-                            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[9px] px-1.5 py-0">
-                              Pharmacien
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="bg-[#0F3B27]/5 border-b border-[#CFF1D2] text-[#0F3B27] font-bold">
+                  <tr>
+                    <th className="p-3 text-left">Collaborateur</th>
+                    <th className="p-3 text-left">Poste / Rôle</th>
+                    <th className="p-3 text-center">Statut Actuel</th>
+                    <th className="p-3 text-left">Dernier Mouvement</th>
+                    <th className="p-3 text-right">Actions Directes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#CFF1D2]/50">
+                  {employes.map((e: any) => {
+                    const d = dernier(e.id);
+                    const estLa = d?.type === "arrivee";
+                    const estPharmacien = [
+                      "pharmacien_titulaire",
+                      "pharmacien_adjoint",
+                      "pharmacien_remplacant",
+                      "promoteur",
+                    ].includes(e.poste);
+
+                    return (
+                      <tr key={e.id} className="hover:bg-[#F7F9F7] transition-colors">
+                        <td className="p-3">
+                          <div className="flex items-center gap-3">
+                            <div
+                              onClick={() => setEmployeProfil(e)}
+                              className="size-10 rounded-full overflow-hidden bg-[#0F3B27]/10 text-[#0F3B27] flex items-center justify-center font-bold text-xs shrink-0 border border-[#CFF1D2] cursor-pointer hover:ring-2 hover:ring-[#0F3B27] transition-all"
+                              title="Cliquer pour ouvrir le dossier complet"
+                            >
+                              {e.photo_url ? (
+                                <img src={e.photo_url} alt={e.nom_complet} className="size-full object-cover" />
+                              ) : (
+                                <span>{e.nom_complet.charAt(0)}</span>
+                              )}
+                            </div>
+                            <div>
+                              <button
+                                onClick={() => setEmployeProfil(e)}
+                                className="font-bold text-[#0F3B27] hover:underline text-left block"
+                              >
+                                {e.nom_complet}
+                              </button>
+                              <span className="text-[10px] font-mono text-[#475C50]">
+                                {e.matricule || `BP-${e.id.slice(0, 4).toUpperCase()}`}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-medium text-[#0F3B27] capitalize">
+                              {e.poste?.replace("_", " ")}
+                            </span>
+                            {estPharmacien && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700">
+                                <Award className="size-3" /> Ordre Section B
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3 text-center">
+                          {estLa ? (
+                            <Badge className="bg-emerald-600 text-white text-[10px] px-2.5 py-0.5 font-bold shadow-sm">
+                              Présent sur place
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="border-gray-300 text-gray-500 text-[10px] px-2 py-0.5">
+                              Absent
                             </Badge>
                           )}
-                        </div>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[10px] font-mono text-[#0F3B27] bg-[#CFF1D2]/50 px-1.5 py-0.2 rounded font-bold">
-                            {e.matricule || `BP-${e.id.slice(0, 4).toUpperCase()}`}
-                          </span>
-                          <span className="text-xs text-[#475C50] capitalize">
-                            {e.poste.replace("_", " ")}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                        </td>
+                        <td className="p-3">
+                          {d ? (
+                            <div className="flex items-center gap-1.5 text-[11px]">
+                              {d.type === "arrivee" ? (
+                                <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
+                                  <LogIn className="size-3.5" /> Arrivée
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-amber-700 font-semibold">
+                                  <LogOut className="size-3.5" /> Départ
+                                </span>
+                              )}
+                              <span className="text-[#475C50]">
+                                à {new Date(d.horodatage).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 italic text-[11px]">Aucun mouvement ce jour</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {estLa ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => pointer.mutate({ employe_id: e.id, type: "depart" })}
+                                disabled={pointer.isPending}
+                                className="h-8 text-xs border-amber-300 text-amber-800 hover:bg-amber-50 rounded-[8px] font-bold gap-1"
+                              >
+                                <LogOut className="size-3 text-amber-600" /> Pointer Départ
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                onClick={() => pointer.mutate({ employe_id: e.id, type: "arrivee" })}
+                                disabled={pointer.isPending}
+                                className="h-8 text-xs bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] rounded-[8px] font-bold gap-1 shadow-sm"
+                              >
+                                <LogIn className="size-3" /> Pointer Arrivée
+                              </Button>
+                            )}
 
-                    <Badge
-                      variant={estLa ? "default" : "secondary"}
-                      className={estLa ? "bg-emerald-600 text-white text-[10px]" : "text-[10px]"}
-                    >
-                      {estLa ? "Présent sur place" : "Absent / Non pointé"}
-                    </Badge>
-                  </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEmployeProfil(e)}
+                              className="h-8 text-xs border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 rounded-[8px] font-semibold"
+                            >
+                              Voir
+                            </Button>
 
-                  <div className="p-2.5 rounded-[10px] bg-[#F7F9F7] border border-[#CFF1D2] text-xs space-y-1 my-2">
-                    <div className="flex justify-between items-center text-[11px]">
-                      <span className="text-muted-foreground">Statut aujourd'hui :</span>
-                      <strong className={estLa ? "text-emerald-700" : "text-[#475C50]"}>
-                        {d ? `${d.type === "arrivee" ? "Arrivé à" : "Départ à"} ${new Date(d.horodatage).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Aucun pointage ce jour"}
-                      </strong>
-                    </div>
-                  </div>
-
-                  {/* Actions conformes : Profil, Badge QR, Historique */}
-                  <div className="grid grid-cols-3 gap-1.5 pt-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEmployeProfil(e)}
-                      className="text-xs border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 rounded-[10px] px-1"
-                    >
-                      Profil
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setEmployeBadge(e);
-                        setModaleBadge(true);
-                      }}
-                      className="text-xs bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 rounded-[10px] px-1 font-bold gap-1"
-                    >
-                      <QrCode className="size-3" /> Badge
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEmployeHistorique(e)}
-                      className="text-xs border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 rounded-[10px] px-1"
-                    >
-                      Historique
-                    </Button>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEmployeBadge(e);
+                                setModaleBadge(true);
+                              }}
+                              className="h-8 text-xs border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 rounded-[8px] px-2"
+                              title="Badge QR"
+                            >
+                              <QrCode className="size-3.5" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         </TabsContent>
 
         {/* 2. PLANNINGS & GARDES */}
@@ -1018,79 +1028,26 @@ function PagePointage() {
         </DialogContent>
       </Dialog>
 
-      {/* MODALE PROFIL COLLABORATEUR */}
-      <Dialog open={!!employeProfil} onOpenChange={(open) => !open && setEmployeProfil(null)}>
-        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl p-6">
-          {employeProfil && (
-            <div className="space-y-4">
-              <DialogHeader>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2]/50 px-2 py-0.5 rounded-[6px]">
-                    {employeProfil.matricule || `BP-${employeProfil.id.slice(0, 4).toUpperCase()}`}
-                  </span>
-                  <Badge className="bg-emerald-600 text-white text-[10px]">
-                    {employeProfil.actif ? "Compte Actif" : "Inactif"}
-                  </Badge>
-                </div>
-                <DialogTitle className="text-base font-bold text-[#0F3B27] font-display mt-1">
-                  Profil Collaborateur : {employeProfil.nom_complet}
-                </DialogTitle>
-                <DialogDescription className="text-xs text-[#475C50]">
-                  Informations administratives et conformité déontologique BPD-2.
-                </DialogDescription>
-              </DialogHeader>
+      {/* GRAND MODALE PROFIL COLLABORATEUR & DOSSIER RH */}
+      <ModaleProfilCollaborateur
+        employe={employeProfil}
+        onFermer={() => setEmployeProfil(null)}
+        estPresent={employeProfil ? dernier(employeProfil.id)?.type === "arrivee" : false}
+        dernierPointage={employeProfil ? dernier(employeProfil.id) : null}
+        onPointer={(type) => {
+          if (employeProfil) {
+            pointer.mutate({ employe_id: employeProfil.id, type });
+          }
+        }}
+      />
 
-              <div className="flex items-center gap-3 p-3.5 bg-[#F7F9F7] rounded-[10px] border border-[#CFF1D2]">
-                <div className="size-16 rounded-[10px] overflow-hidden bg-[#0F3B27]/10 text-[#0F3B27] flex items-center justify-center font-bold text-xl border border-[#CFF1D2] shrink-0">
-                  {employeProfil.photo_url ? (
-                    <img src={employeProfil.photo_url} alt={employeProfil.nom_complet} className="size-full object-cover" />
-                  ) : (
-                    <span>{employeProfil.nom_complet.charAt(0)}</span>
-                  )}
-                </div>
-                <div className="text-xs space-y-0.5">
-                  <div className="font-bold text-sm text-[#0F3B27]">{employeProfil.nom_complet}</div>
-                  <div className="capitalize text-[#475C50] font-medium">{employeProfil.poste.replace("_", " ")}</div>
-                  <div className="text-muted-foreground">{employeProfil.telephone || "Téléphone non renseigné"}</div>
-                </div>
-              </div>
-
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between p-2 rounded-[8px] bg-white border border-[#CFF1D2]">
-                  <span className="text-muted-foreground">Obligation d'exercice (Art. 1.11) :</span>
-                  <strong className="text-[#0F3B27]">
-                    {["pharmacien_titulaire", "pharmacien_adjoint", "pharmacien_remplacant", "promoteur"].includes(employeProfil.poste)
-                      ? "Pharmacien Section B (Autorisé à dispenser)"
-                      : "Personnel auxiliaire sous supervision"}
-                  </strong>
-                </div>
-                <div className="flex justify-between p-2 rounded-[8px] bg-white border border-[#CFF1D2]">
-                  <span className="text-muted-foreground">Charte qualité BPD :</span>
-                  <strong className={employeProfil.charte_qualite_signee ? "text-emerald-700" : "text-amber-700"}>
-                    {employeProfil.charte_qualite_signee ? "✓ Signée et contresignée" : "En attente de signature"}
-                  </strong>
-                </div>
-              </div>
-
-              <DialogFooter className="pt-2 border-t border-[#CFF1D2]">
-                <Button variant="outline" className="text-xs rounded-[10px]" onClick={() => setEmployeProfil(null)}>
-                  Fermer
-                </Button>
-                <Button
-                  onClick={() => {
-                    setEmployeBadge(employeProfil);
-                    setModaleBadge(true);
-                    setEmployeProfil(null);
-                  }}
-                  className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] text-xs font-bold gap-1 rounded-[10px]"
-                >
-                  <QrCode className="size-3.5" /> Voir le Badge QR
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* MODALE HISTORIQUE DES PRÉSENCES GLOBAL */}
+      <ModaleHistoriquePresences
+        ouvert={modaleHistoriqueGlobal}
+        onFermer={() => setModaleHistoriqueGlobal(false)}
+        pointages={pointages}
+        employes={employes}
+      />
 
       {/* MODALE HISTORIQUE DES POINTAGES */}
       <Dialog open={!!employeHistorique} onOpenChange={(open) => !open && setEmployeHistorique(null)}>

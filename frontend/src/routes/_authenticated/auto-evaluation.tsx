@@ -124,10 +124,11 @@ function PageAutoEvaluation() {
     }
   }
 
+  const campagne = campagneData?.campagne;
   const evaluations = campagneData?.evaluations ?? [];
   const stats = campagneData?.statistiques;
   const chapitres = campagneData?.synthese_chapitres ?? [];
-  const scoreGlobal = stats?.score_global ?? 0;
+  const scoreGlobal = stats?.score_global ?? campagne?.score_global ?? 0;
 
   // FILTRAGE LOCAL
   const articlesFiltres = evaluations.filter((a: any) => {

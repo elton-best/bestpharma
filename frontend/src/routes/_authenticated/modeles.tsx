@@ -19,6 +19,7 @@ import {
   Layers,
   FolderDown,
   RefreshCw,
+  ArrowLeft,
 } from "lucide-react";
 
 import { api } from "@/lib/api-client";
@@ -29,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 import {
   Dialog,
   DialogContent,
@@ -188,10 +190,158 @@ ${m.contenu_modele}
     toast.success(`Trame du modèle ${m.code_ref} prête pour impression !`);
   };
 
+  const optionsSectionsModeles: OptionSection[] = [
+    {
+      valeur: "catalogue",
+      label: `Catalogue des Modèles (${modeles.length})`,
+      description: "Modèles types conformes au Guide BPD de l'ABMed",
+      badge: `${modeles.length}`,
+    },
+    {
+      valeur: "adoptions",
+      label: `Mes Adoptions (${modelesAdoptesCount})`,
+      description: "Modèles déjà intégrés et adaptés à votre officine",
+      badge: `${modelesAdoptesCount}/${totalModeles}`,
+    },
+    {
+      valeur: "mises-a-jour",
+      label: "Mises à Jour du Catalogue",
+      description: "Évolutions réglementaires ABMed et nouvelles versions",
+    },
+    {
+      valeur: "propres",
+      label: "Modèles de l'Officine",
+      description: "Trames personnalisées créées pour votre équipe",
+    },
+  ];
+
+  // VRAIE PAGE DE CONSULTATION & ADOPTION DU MODÈLE
+  if (modeleActif) {
+    const estAdopte = codesAdoptes.has(modeleActif.code_ref);
+
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
+          <div className="flex items-start sm:items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setModeleActif(null)}
+              className="border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 font-bold text-xs gap-1.5 rounded-[10px] shrink-0"
+            >
+              <ArrowLeft className="size-4" /> Retour
+            </Button>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2]/60 px-2.5 py-0.5 rounded-[6px]">
+                  {modeleActif.code_ref}
+                </span>
+                <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
+                  Processus {modeleActif.processus}
+                </Badge>
+                <Badge variant="outline" className="border-[#CFF1D2] text-[#0F3B27] text-[10px]">
+                  {modeleActif.type_document}
+                </Badge>
+                {estAdopte && (
+                  <Badge className="bg-emerald-600 text-white text-[10px]">
+                    ✓ Déjà adopté
+                  </Badge>
+                )}
+              </div>
+              <h1 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-[#0F3B27] mt-1">
+                {modeleActif.titre}
+              </h1>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              onClick={() => imprimerModele(modeleActif)}
+              className="border-[#CFF1D2] text-[#0F3B27] gap-1.5 text-xs font-semibold rounded-[10px]"
+            >
+              <Printer className="size-3.5" /> Imprimer / PDF
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                telechargerTexte(modeleActif.contenu_modele, `Trame_${modeleActif.code_ref}.txt`, "text/plain");
+                toast.success("Trame textuelle téléchargée !");
+              }}
+              className="border-[#CFF1D2] text-[#0F3B27] gap-1.5 text-xs font-semibold rounded-[10px]"
+            >
+              <Download className="size-3.5" /> Télécharger (.txt)
+            </Button>
+            <Button
+              disabled={instancier.isPending}
+              onClick={() => instancier.mutate(modeleActif.id)}
+              className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 rounded-[10px]"
+            >
+              <Sparkles className="size-4" />
+              {instancier.isPending ? "Adoption en cours…" : "Adopter ce Modèle dans la GED"}
+            </Button>
+          </div>
+        </div>
+
+        {/* CONTENU PRINCIPAL DU MODÈLE */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3 space-y-4">
+            <Card className="rounded-[10px] border border-[#CFF1D2] bg-white p-6 shadow-sm">
+              <div className="text-xs leading-relaxed text-[#0F3B27] whitespace-pre-wrap font-sans">
+                {modeleActif.contenu_modele}
+              </div>
+            </Card>
+          </div>
+
+          <div className="space-y-4">
+            <Card className="rounded-[10px] border border-[#CFF1D2] bg-white p-4 shadow-sm space-y-3">
+              <h3 className="font-bold text-xs text-[#0F3B27] uppercase tracking-wider">Informations Modèle</h3>
+              <div className="space-y-2 text-xs divide-y divide-[#CFF1D2]/50">
+                <div className="pt-2 flex justify-between">
+                  <span className="text-muted-foreground">Code Référence :</span>
+                  <strong className="font-mono text-[#0F3B27]">{modeleActif.code_ref}</strong>
+                </div>
+                <div className="pt-2 flex justify-between">
+                  <span className="text-muted-foreground">Processus :</span>
+                  <strong>{modeleActif.processus}</strong>
+                </div>
+                <div className="pt-2 flex justify-between">
+                  <span className="text-muted-foreground">Type :</span>
+                  <span className="capitalize">{modeleActif.type_document?.replace("_", " ")}</span>
+                </div>
+                <div className="pt-2 flex justify-between">
+                  <span className="text-muted-foreground">Conservation légale :</span>
+                  <strong>{modeleActif.duree_conservation_ans || 5} ans</strong>
+                </div>
+                {modeleActif.articles_guide && (
+                  <div className="pt-2">
+                    <span className="text-muted-foreground block mb-0.5">Articles Guide BPD :</span>
+                    <strong className="text-emerald-700">{modeleActif.articles_guide}</strong>
+                  </div>
+                )}
+                {modeleActif.objet && (
+                  <div className="pt-2">
+                    <span className="text-muted-foreground block mb-0.5">Objet :</span>
+                    <p className="text-[#475C50]">{modeleActif.objet}</p>
+                  </div>
+                )}
+                {modeleActif.domaine_application && (
+                  <div className="pt-2">
+                    <span className="text-muted-foreground block mb-0.5">Domaine d'application :</span>
+                    <p className="text-[#475C50]">{modeleActif.domaine_application}</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-6">
       {/* HEADER HERO */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-[#CFF1D2] shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
@@ -208,48 +358,45 @@ ${m.contenu_modele}
             variant="outline"
             size="sm"
             onClick={exporterCsvModeles}
-            className="h-10 text-xs border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/20 gap-1.5"
+            className="h-10 text-xs border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/20 gap-1.5 rounded-[10px]"
           >
             <Download className="size-4" /> Exporter Catalogue (CSV)
           </Button>
 
           {/* Jauge d'adoption rapide */}
-          <div className="rounded-2xl border border-[#CFF1D2] bg-[#F7F9F7] p-2.5 px-4 text-right">
+          <div className="rounded-[10px] border border-[#CFF1D2] bg-[#F7F9F7] p-2 px-3.5 text-right">
             <div className="text-[10px] font-bold text-[#475C50] uppercase tracking-wider">Taux d'Adoption BPD</div>
-            <div className="font-display text-xl font-black text-[#0F3B27]">{tauxAdoption}%</div>
+            <div className="font-display text-lg font-black text-[#0F3B27]">{tauxAdoption}%</div>
             <span className="text-[10px] text-emerald-800 font-semibold">{modelesAdoptesCount} sur {totalModeles} adoptés</span>
           </div>
         </div>
       </div>
 
-      {/* TABS CONFORMES AU CAHIER DES CHARGES (§7.2) */}
+      {/* SÉLECTEUR DÉROULANT DES SECTIONS MODÈLES */}
+      <div className="bg-white p-3.5 rounded-[10px] border border-[#CFF1D2] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-[10px] bg-[#0F3B27]/10 text-[#0F3B27]">
+            <BookOpen className="size-4" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-[#0F3B27] block">Module Catalogue des Modèles</span>
+            <span className="text-[11px] text-[#475C50]">Sélectionnez la section à afficher ou filtrez par mot-clé</span>
+          </div>
+        </div>
+        <div className="w-full md:w-96">
+          <SelecteurFiltrable
+            options={optionsSectionsModeles}
+            valeur={activeTab}
+            onChangement={setActiveTab}
+            placeholder="Choisir une section..."
+            recherchePlaceholder="Filtrer parmi les 4 sections..."
+            className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+          />
+        </div>
+      </div>
+
+      {/* TABS DE LA PAGE */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-[#F7F9F7] border border-[#CFF1D2] p-1 rounded-xl flex flex-wrap h-auto gap-1">
-          <TabsTrigger
-            value="catalogue"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Catalogue des 59 Modèles ({modeles.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="adoptions"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Mes Adoptions ({modelesAdoptesCount})
-          </TabsTrigger>
-          <TabsTrigger
-            value="mises-a-jour"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Mises à Jour du Catalogue
-          </TabsTrigger>
-          <TabsTrigger
-            value="propres"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Modèles de l'Officine
-          </TabsTrigger>
-        </TabsList>
 
         {/* 1. CATALOGUE COMPLET */}
         <TabsContent value="catalogue" className="space-y-4">
@@ -406,87 +553,7 @@ ${m.contenu_modele}
         </TabsContent>
       </Tabs>
 
-      {/* MODALE APERÇU ET ADOPTION D'UN MODÈLE */}
-      <Dialog open={!!modeleActif} onOpenChange={(open) => !open && setModeleActif(null)}>
-        <DialogContent className="max-w-2xl bg-white border border-[#CFF1D2] rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto">
-          {modeleActif && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2] px-2.5 py-0.5 rounded-md border border-[#0F3B27]/20">
-                    {modeleActif.code_ref}
-                  </span>
-                  <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
-                    Processus {modeleActif.processus}
-                  </Badge>
-                </div>
-                <DialogTitle className="text-lg font-bold text-[#0F3B27] font-display mt-2">
-                  {modeleActif.titre}
-                </DialogTitle>
-                {modeleActif.articles_guide && (
-                  <span className="text-xs text-emerald-800 font-semibold">
-                    Article(s) du Guide BPD associés : {modeleActif.articles_guide}
-                  </span>
-                )}
-              </DialogHeader>
 
-              <div className="space-y-4 pt-2 text-xs">
-                <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] whitespace-pre-wrap font-sans leading-relaxed text-[#0F3B27]">
-                  {modeleActif.contenu_modele}
-                </div>
-
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-[11px] flex items-center justify-between">
-                  <span>
-                    Durée légale de conservation obligatoire : <strong>{modeleActif.duree_conservation_ans} ans</strong>
-                  </span>
-                  <Badge variant="outline" className="border-emerald-300 text-emerald-800">
-                    Modèle ABMed v1.0
-                  </Badge>
-                </div>
-              </div>
-
-              <DialogFooter className="flex-wrap gap-2 sm:gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => imprimerModele(modeleActif)}
-                  className="border-[#CFF1D2] text-[#0F3B27] gap-1.5"
-                >
-                  <Printer className="size-4" /> Imprimer / PDF
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    telechargerTexte(modeleActif.contenu_modele, `Trame_${modeleActif.code_ref}.txt`, "text/plain");
-                    toast.success("Trame textuelle téléchargée !");
-                  }}
-                  className="border-[#CFF1D2] text-[#0F3B27] gap-1.5"
-                >
-                  <Download className="size-4" /> Télécharger (.txt)
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setModeleActif(null)}
-                  className="border-[#CFF1D2] text-[#475C50]"
-                >
-                  Fermer
-                </Button>
-                <Button
-                  type="button"
-                  disabled={instancier.isPending}
-                  onClick={() => instancier.mutate(modeleActif.id)}
-                  className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5"
-                >
-                  <Sparkles className="size-4" />
-                  {instancier.isPending ? "Adoption en cours…" : "Adopter ce Modèle dans la GED"}
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -59,7 +59,7 @@ export function ModaleSignatureCode({
   const [chargement, setChargement] = useState(false);
   const user = api.getUser();
   const nomSignataire = user?.name || user?.email || "Pharmacien / Responsable";
-  const roleSignataire = user?.role_code || "Pharmacien Titulaire";
+  const roleSignataire = (user as any)?.role_code || "Pharmacien Titulaire";
 
   async function handleValider(e: React.FormEvent) {
     e.preventDefault();

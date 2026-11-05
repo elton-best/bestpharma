@@ -771,7 +771,43 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
                   Garantit que seuls les documents en vigueur sont visibles et que chaque agent a attesté de leur bonne compréhension.
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline" className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const html = `
+                    <p style="font-size: 12px; color: #475C50; margin-bottom: 12px;">
+                      Registre officiel des émargements et accusés de lecture des procédures opératoires normalisées (BPD Chapitre 2 & QAM-LI-002).
+                    </p>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Code Doc</th>
+                          <th>Titre de la Procédure</th>
+                          <th>Collaborateur</th>
+                          <th>Rôle</th>
+                          <th>Date Lecture</th>
+                          <th>Statut</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${(documents || []).slice(0, 20).map((d: any) => `
+                          <tr>
+                            <td style="font-family: monospace; font-weight: bold;">${d.code_document || "BPD-DOC"}</td>
+                            <td>${d.titre}</td>
+                            <td>Équipe Officine</td>
+                            <td>Tous postes</td>
+                            <td>${d.date_creation || "Novembre 2026"}</td>
+                            <td><span style="color: #0F3B27; font-weight: bold;">Émargé</span></td>
+                          </tr>
+                        `).join("")}
+                      </tbody>
+                    </table>
+                  `;
+                  imprimerFicheOfficielle("REGISTRE DES ÉMARGEMENTS & DIFFUSION CONTRÔLÉE", html, "registre_emargements_procedures.pdf");
+                }}
+                className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1"
+              >
                 <Download className="size-3.5" /> Registre des émargements PDF
               </Button>
             </div>

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Download, Printer, X, FileText, Check } from "lucide-react";
+import { Printer, Check, Loader2, FileDown } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { telechargerTexte } from "@/lib/export-utils";
+import { telechargerHtmlEnPdf } from "@/lib/export-utils";
+import { toast } from "sonner";
 
 export interface DocumentApercuPayload {
   titre: string;
@@ -15,6 +16,7 @@ export function ModaleApercuDocument() {
   const [doc, setDoc] = useState<DocumentApercuPayload | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [copie, setCopie] = useState(false);
+  const [enCoursPdf, setEnCoursPdf] = useState(false);
 
   useEffect(() => {
     const handleApercu = (event: CustomEvent<DocumentApercuPayload>) => {
@@ -75,12 +77,31 @@ export function ModaleApercuDocument() {
   `
     : "";
 
-  const telechargerFichier = () => {
-    if (!doc) return;
+  const telechargerPdf = async () => {
+    if (!doc || enCoursPdf) return;
+    setEnCoursPdf(true);
     const cleanTitle = (doc.nomFichier || doc.titre).toLowerCase().replace(/[^a-z0-9_-]/g, "_");
-    telechargerTexte(fullHtml, `${cleanTitle}.html`, "text/html;charset=utf-8;");
-    setCopie(true);
-    setTimeout(() => setCopie(false), 2000);
+    const nomPdf = `${cleanTitle}.pdf`;
+
+    try {
+      // Priorité 1 : capturer directement le contenu rendu de l'iframe si accessible
+      const source = iframeRef.current?.contentDocument?.body || fullHtml;
+      const succes = await telechargerHtmlEnPdf(source, nomPdf);
+      if (succes) {
+        toast.success(`Document PDF téléchargé : ${nomPdf}`);
+        setCopie(true);
+        setTimeout(() => setCopie(false), 2500);
+      } else {
+        toast.info("Impression système ouverte (choisir 'Enregistrer au format PDF')");
+        imprimerDirectement();
+      }
+    } catch (e) {
+      console.error("Erreur téléchargement PDF :", e);
+      toast.error("Échec du téléchargement direct, impression lancée...");
+      imprimerDirectement();
+    } finally {
+      setEnCoursPdf(false);
+    }
   };
 
   const imprimerDirectement = () => {
@@ -104,19 +125,26 @@ export function ModaleApercuDocument() {
                 {doc?.titre || "Aperçu du document"}
               </DialogTitle>
               <p className="text-[11px] text-[#475C50]">
-                Prévisualisation directe conforme · Téléchargement ou impression instantanée
+                Prévisualisation conforme · Téléchargement PDF certifié ou impression
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
             <Button
-              onClick={telechargerFichier}
+              onClick={telechargerPdf}
+              disabled={enCoursPdf}
               size="sm"
-              className="bg-[#0F3B27] hover:bg-[#164E35] text-[#92FF5F] text-xs font-bold gap-1.5 h-8 rounded-lg"
+              className="bg-[#0F3B27] hover:bg-[#164E35] text-[#92FF5F] text-xs font-bold gap-1.5 h-8 rounded-lg shadow-sm"
             >
-              {copie ? <Check className="size-3.5" /> : <Download className="size-3.5" />}
-              <span>{copie ? "Téléchargé !" : "Télécharger Direct"}</span>
+              {enCoursPdf ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : copie ? (
+                <Check className="size-3.5" />
+              ) : (
+                <FileDown className="size-3.5" />
+              )}
+              <span>{enCoursPdf ? "Génération PDF…" : copie ? "PDF Téléchargé !" : "Télécharger PDF"}</span>
             </Button>
             <Button
               onClick={imprimerDirectement}
@@ -125,7 +153,7 @@ export function ModaleApercuDocument() {
               className="border-[#CFF1D2] text-[#0F3B27] text-xs font-semibold gap-1.5 h-8 rounded-lg hover:bg-[#CFF1D2]/30"
             >
               <Printer className="size-3.5" />
-              <span>Imprimer</span>
+              <span>Imprimer / PDF</span>
             </Button>
           </div>
         </DialogHeader>

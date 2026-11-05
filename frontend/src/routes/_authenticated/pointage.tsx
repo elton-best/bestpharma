@@ -804,10 +804,65 @@ function PagePointage() {
                 </CardDescription>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    telechargerCsv(
+                      (presenceData?.pointages || []).map((p) => ({
+                        horodatage: p.horodatage,
+                        collaborateur: p.employe_nom,
+                        poste: p.employe_poste,
+                        type: p.type === "arrivee" ? "Prise de poste" : "Fin de poste",
+                      })),
+                      `Export_Paie_Pointages_${new Date().toISOString().split("T")[0]}.csv`
+                    );
+                    toast.success("Export paie téléchargé en CSV !");
+                  }}
+                  className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1"
+                >
                   <Download className="size-3.5" /> Export Excel Paie
                 </Button>
-                <Button size="sm" variant="outline" className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const lignesHtml = (presenceData?.pointages || [])
+                      .map(
+                        (p) => `
+                      <tr>
+                        <td>${p.horodatage}</td>
+                        <td><strong>${p.employe_nom}</strong></td>
+                        <td>${p.employe_poste.replace("_", " ").toUpperCase()}</td>
+                        <td>${p.type === "arrivee" ? '<span style="color: #0F3B27; font-weight: bold;">Arrivée (Prise de poste)</span>' : '<span style="color: #b45309; font-weight: bold;">Départ (Fin de poste)</span>'}</td>
+                        <td>Horodatage certifié</td>
+                      </tr>`
+                      )
+                      .join("");
+
+                    const html = `
+                      <p style="font-size: 12px; color: #475C50; margin-bottom: 15px;">
+                        Registre d'émargement et feuille de présence officielle certifiée de l'équipe officinale (Article 1.11 du Guide BPD Bénin & Procédure POI-01).
+                      </p>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Date & Heure</th>
+                            <th>Collaborateur</th>
+                            <th>Fonction</th>
+                            <th>Mouvement</th>
+                            <th>Certification</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${lignesHtml || '<tr><td colspan="5" style="text-align: center; color: #666;">Aucun pointage enregistré aujourd\'hui</td></tr>'}
+                        </tbody>
+                      </table>
+                    `;
+                    imprimerFicheOfficielle("FEUILLE DE PRÉSENCE & ÉMARGEMENT OFFICIEL (ART. 1.11)", html, "feuille_presence_officine.pdf");
+                  }}
+                  className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1"
+                >
                   <Printer className="size-3.5" /> Feuille présence PDF
                 </Button>
               </div>

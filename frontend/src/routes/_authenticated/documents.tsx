@@ -55,6 +55,7 @@ import {
 } from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/documents")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Gestion Électronique des Documents (GED BPD) — BestPharma" },

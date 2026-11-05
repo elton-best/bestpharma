@@ -33,6 +33,7 @@ import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 import { ligneVide, normaliserMatieres, type MatierePremiere } from "@/lib/preparations-matieres";
 
 export const Route = createFileRoute("/_authenticated/preparations")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Préparations Magistrales — BestPharma" },

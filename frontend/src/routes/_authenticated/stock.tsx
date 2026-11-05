@@ -48,6 +48,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DechetsStock, InventairesStock, RappelsStock } from "@/components/modules/magasin-avance";
 
 export const Route = createFileRoute("/_authenticated/stock")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Magasin & Stocks — BestPharma" },

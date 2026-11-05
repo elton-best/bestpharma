@@ -56,6 +56,7 @@ import {
 } from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/locaux")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Locaux, Équipements & Hygiène — BestPharma" },

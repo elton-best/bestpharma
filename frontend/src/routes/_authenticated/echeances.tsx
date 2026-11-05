@@ -48,6 +48,7 @@ import {
 } from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/echeances")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Échéances Réglementaires — BestPharma" },

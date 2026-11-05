@@ -57,6 +57,7 @@ import {
 } from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/pointage")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Pointage & Présence Pharmacien — BestPharma" },

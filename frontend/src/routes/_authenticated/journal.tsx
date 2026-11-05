@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/journal")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Journal d'audit — BestPharma" },

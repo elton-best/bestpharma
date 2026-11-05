@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 
 export const Route = createFileRoute("/_authenticated/parametres")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Paramètres — BestPharma" },

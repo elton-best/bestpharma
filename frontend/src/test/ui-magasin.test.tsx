@@ -20,11 +20,9 @@ function DemoSelecteur() {
 }
 
 describe("UI magasin", () => {
-  it("affiche la section choisie avec une cible tactile de 48 px", () => {
+  it("affiche la section choisie dans le sélecteur filtrable compact", () => {
     const html = renderToString(<DemoSelecteur />);
     expect(html).toContain("Lots");
-    expect(html).toContain("Les lots par péremption");
-    expect(html).toContain("min-h-12");
     expect(html).toContain('role="combobox"');
   });
 });

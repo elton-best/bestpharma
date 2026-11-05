@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/dispensation")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Délivrance & Ordonnancier BPD — BestPharma" },

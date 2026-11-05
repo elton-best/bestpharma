@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 
 export const Route = createFileRoute("/_authenticated/comptabilite")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Comptabilité SYSCOHADA — BestPharma" },

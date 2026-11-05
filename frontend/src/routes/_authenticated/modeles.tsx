@@ -45,6 +45,7 @@ import {
 } from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/modeles")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Bibliothèque des 59 Modèles BPD — BestPharma" },

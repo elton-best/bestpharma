@@ -63,6 +63,7 @@ import { ModaleProfilCollaborateur } from "@/components/modules/modale-profil-co
 import { ModaleBadgeDoubleFace } from "@/components/modules/badge-double-face";
 
 export const Route = createFileRoute("/_authenticated/personnel")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Personnel & Équipe — BestPharma" },

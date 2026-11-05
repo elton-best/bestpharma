@@ -42,6 +42,7 @@ import {
 import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 
 export const Route = createFileRoute("/_authenticated/caisse")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Caisse POS Tactile & FeexPay — BestPharma" },

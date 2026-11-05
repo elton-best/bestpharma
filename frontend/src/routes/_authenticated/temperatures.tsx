@@ -64,6 +64,7 @@ import {
 } from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/temperatures")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Chaîne du Froid & Températures — BestPharma" },

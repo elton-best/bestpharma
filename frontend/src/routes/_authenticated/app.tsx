@@ -16,6 +16,7 @@ import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/app")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Accueil — BestPharma" },

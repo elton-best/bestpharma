@@ -41,6 +41,7 @@ import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/_authenticated/stupefiants")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Registre Stupéfiants Tab. B — BestPharma" },

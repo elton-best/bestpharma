@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/appareils")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Appareils connectés — BestPharma" },

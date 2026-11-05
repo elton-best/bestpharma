@@ -53,6 +53,7 @@ import {
 } from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/non-conformites")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Non-conformités & Plan CAPA — BestPharma" },

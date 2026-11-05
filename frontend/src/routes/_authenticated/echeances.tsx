@@ -210,11 +210,10 @@ function PageEcheances() {
               </div>
               <div>
                 <h3 className="font-bold text-red-900 flex items-center gap-2">
-                  <span>{retardsReglementaires.length} échéance(s) réglementaire(s) en retard critique !</span>
-                  <LienReglementaireBpd articles="BPD Section 9 & Art. 3.04" />
+                  <span>{retardsReglementaires.length} échéance(s) en retard critique !</span>
                 </h3>
                 <p className="text-xs text-red-800 mt-0.5">
-                  Conformément aux BPD ABMed, les obligations réglementaires ne peuvent être reportées. Elles doivent être régularisées avec justificatif ou faire l'objet d'une Non-Conformité tracée.
+                  Ces obligations nécessitent un traitement prioritaire. Veuillez régulariser les dossiers avec les justificatifs requis.
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {retardsReglementaires.slice(0, 3).map((r) => (

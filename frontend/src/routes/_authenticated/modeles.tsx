@@ -195,15 +195,11 @@ ${m.contenu_modele}
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
-              Bibliothèque des 59 Modèles BPD
+              Bibliothèque de Modèles Qualité
             </h1>
-            <LienReglementaireBpd articles="BPD-C02 & C03" />
-            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
-              Modèles Officiels ABMed / BestPharma
-            </Badge>
           </div>
           <p className="mt-1 text-xs text-[#475C50]">
-            Socle documentaire prêt à l'emploi. Adoptez les modèles en un clic pour les intégrer dans votre GED avec les informations de votre officine.
+            Modèles documentaires prêts à l'emploi. Intégrez-les directement dans votre gestion documentaire avec les informations de votre officine.
           </p>
         </div>
 

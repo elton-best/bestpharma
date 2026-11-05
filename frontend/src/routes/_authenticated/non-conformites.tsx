@@ -275,15 +275,11 @@ function PageNonConformites() {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
-              Non-conformités & CAPA (BPD1-F09)
+              Non-conformités & Actions Correctives (CAPA)
             </h1>
-            <LienReglementaireBpd articles="BPD-1 / Art. 1.09 & BPD-10" />
-            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
-              QAM-FI-001 / QAM-PL-004
-            </Badge>
           </div>
           <p className="mt-1 text-xs text-[#475C50]">
-            Tableau de maîtrise Kanban, déclaration automatique depuis les excursions ou réceptions, analyse des causes 5M & 5 Pourquoi, et vérification d'efficacité à froid.
+            Suivi des incidents qualité, déclaration d'écarts, analyse des causes et pilotage des actions correctives et préventives.
           </p>
         </div>
 

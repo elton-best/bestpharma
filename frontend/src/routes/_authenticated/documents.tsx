@@ -208,15 +208,11 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
-              Gestion Électronique des Documents (GED BPD)
+              Gestion Documentaire (GED)
             </h1>
-            <LienReglementaireBpd articles="BPD-3 / Art. 3.01 à 3.14" />
-            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
-              Codification PROCESSUS-TYPE-NUMÉRO
-            </Badge>
           </div>
           <p className="mt-1 text-xs text-[#475C50]">
-            Cycle de vie formel : Brouillon &rarr; Vérifié &rarr; Approuvé par le Titulaire &rarr; Diffusé &rarr; Retiré. Accusés de lecture et signatures par code personnel certifiés.
+            Cycle de vie documentaire : Brouillon &rarr; Vérifié &rarr; Approuvé &rarr; Diffusé &rarr; Archivé. Suivi des versions et signatures certifiées.
           </p>
         </div>
 

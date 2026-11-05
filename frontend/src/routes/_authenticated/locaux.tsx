@@ -39,6 +39,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 import {
   Dialog,
   DialogContent,
@@ -73,6 +74,10 @@ function PageLocaux() {
   const id = courante?.officine_id;
 
   const [activeTab, setActiveTab] = useState("equipements");
+
+  // DIALOG CARNET DE VIE & QR
+  const [equipementCarnet, setEquipementCarnet] = useState<any | null>(null);
+  const [equipementQr, setEquipementQr] = useState<any | null>(null);
 
   // DIALOG NOUVEL ÉQUIPEMENT
   const [modalEquipement, setModalEquipement] = useState(false);
@@ -339,22 +344,57 @@ function PageLocaux() {
     { rubrique: "Sanitaires & Vestiaires séparés", conforme: true, note: "Vestiaire dédié au personnel avec casiers individuels." },
   ];
 
+  const optionsSectionsLocaux: OptionSection[] = [
+    {
+      valeur: "equipements",
+      label: `Équipements & Carnet de vie (${equipements?.length ?? 0})`,
+      description: "Inventaire complet, carnet de vie individuel, étiquettes QR et périodicités",
+      badge: `${equipements?.length ?? 0}`,
+    },
+    {
+      valeur: "maintenance",
+      label: "Maintenance & Ordres de Travail",
+      description: "Plan annuel de maintenance, interventions curatives et prestataires",
+    },
+    {
+      valeur: "etalonnage",
+      label: "Étalonnage Métrologique",
+      description: "Certificats pour balances, thermomètres, hygromètres et sondes",
+    },
+    {
+      valeur: "nettoyage",
+      label: "Nettoyage & Bio-hygiène",
+      description: "Plan de bio-nettoyage quotidien, hebdomadaire et mensuel avec émargement",
+    },
+    {
+      valeur: "nuisibles",
+      label: "Nuisibles & Sécurité Incendie",
+      description: "Contrôle 3D (dératisation, désinsectisation) et registres de sécurité",
+    },
+    {
+      valeur: "conformite",
+      label: "Conformité des Locaux & Milieu",
+      description: "Zones réglementaires, séparation des flux, sécurité des stocks et intégrité",
+    },
+    {
+      valeur: "systeme",
+      label: "Système Informatisé & Sauvegardes",
+      description: "Dossier de validation système, sauvegardes 3-2-1, onduleurs et Plan de Reprise",
+    },
+  ];
+
   return (
     <div className="grid gap-6">
       {/* HEADER HERO */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-[#CFF1D2] shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
-              Locaux & Matériel (5M)
+              Locaux & Équipements
             </h1>
-            <LienReglementaireBpd articles="BPD-4 / Art. 4.01 à 4.14" />
-            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
-              GAR-EN-001 / GAR-PL-003
-            </Badge>
           </div>
           <p className="mt-1 text-xs text-[#475C50]">
-            Maîtrise du matériel et du milieu : inventaire et carnet de vie, plan de maintenance annuelle, étalonnages métrologiques, bio-nettoyage et dossier système informatisé.
+            Gestion des équipements, carnet de vie, maintenance préventive, étalonnages et plan d'hygiène.
           </p>
         </div>
 
@@ -400,13 +440,13 @@ function PageLocaux() {
                   );
                   toast.success("Registre des équipements exporté en CSV !");
                 }}
-                className="border-[#CFF1D2] text-[#0F3B27] font-bold text-xs gap-1.5 hover:bg-[#CFF1D2]/30"
+                className="border-[#CFF1D2] text-[#0F3B27] font-bold text-xs gap-1.5 hover:bg-[#CFF1D2]/30 rounded-[10px]"
               >
                 <Download className="size-4" /> Export CSV
               </Button>
               <Button
                 onClick={() => setModalEquipement(true)}
-                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm"
+                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm rounded-[10px]"
               >
                 <Plus className="size-4" /> Nouvel Équipement
               </Button>
@@ -415,7 +455,7 @@ function PageLocaux() {
           {activeTab === "nettoyage" && (
             <Button
               onClick={() => setModalNettoyage(true)}
-              className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm"
+              className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm rounded-[10px]"
             >
               <Sparkles className="size-4" /> Émarger Nettoyage
             </Button>
@@ -423,52 +463,31 @@ function PageLocaux() {
         </div>
       </div>
 
-      {/* TABS DE LA PAGE (7 ONGLETS CONFORMES AU CAHIER DES CHARGES) */}
+      {/* SÉLECTEUR DÉROULANT FILTRABLE DES SECTIONS (REMPLACE LES ONGLETS HORIZONTAUX) */}
+      <div className="bg-white p-3.5 rounded-[10px] border border-[#CFF1D2] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-[10px] bg-[#0F3B27]/10 text-[#0F3B27]">
+            <Layers className="size-4" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-[#0F3B27] block">Module Locaux & Matériel (5M)</span>
+            <span className="text-[11px] text-[#475C50]">Sélectionnez la section à afficher ou utilisez la recherche</span>
+          </div>
+        </div>
+        <div className="w-full md:w-96">
+          <SelecteurFiltrable
+            options={optionsSectionsLocaux}
+            valeur={activeTab}
+            onChangement={setActiveTab}
+            placeholder="Choisir une section..."
+            recherchePlaceholder="Filtrer parmi les 7 sections..."
+            className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+          />
+        </div>
+      </div>
+
+      {/* TABS DE LA PAGE */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-[#F7F9F7] border border-[#CFF1D2] p-1 rounded-xl flex flex-wrap h-auto gap-1">
-          <TabsTrigger
-            value="equipements"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Équipements ({equipements?.length ?? 0})
-          </TabsTrigger>
-          <TabsTrigger
-            value="maintenance"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Maintenance & Ordres
-          </TabsTrigger>
-          <TabsTrigger
-            value="etalonnage"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Étalonnage Métrologique
-          </TabsTrigger>
-          <TabsTrigger
-            value="nettoyage"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Nettoyage & Hygiène
-          </TabsTrigger>
-          <TabsTrigger
-            value="nuisibles"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Nuisibles & Sécurité
-          </TabsTrigger>
-          <TabsTrigger
-            value="conformite"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Conformité des Locaux
-          </TabsTrigger>
-          <TabsTrigger
-            value="systeme"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Système Informatisé & PRA
-          </TabsTrigger>
-        </TabsList>
 
         {/* 1. ÉQUIPEMENTS & CARNET DE VIE */}
         <TabsContent value="equipements" className="space-y-4">
@@ -477,9 +496,9 @@ function PageLocaux() {
               equipements.map((eq) => {
                 const estConforme = eq.statut === "conforme";
                 return (
-                  <Card key={eq.id} className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+                  <Card key={eq.id} className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
                     <div className="flex items-start justify-between">
-                      <div className="p-2.5 rounded-xl bg-[#0F3B27]/10 text-[#0F3B27]">
+                      <div className="p-2.5 rounded-[10px] bg-[#0F3B27]/10 text-[#0F3B27]">
                         <Wrench className="size-5" />
                       </div>
                       <Badge
@@ -502,7 +521,7 @@ function PageLocaux() {
                       </p>
                     </div>
 
-                    <div className="p-2.5 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] text-xs space-y-1">
+                    <div className="p-2.5 rounded-[10px] bg-[#F7F9F7] border border-[#CFF1D2] text-xs space-y-1">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Périodicité étalonnage :</span>
                         <strong>{eq.periodicite_etalonnage_mois} mois</strong>
@@ -516,10 +535,21 @@ function PageLocaux() {
                     </div>
 
                     <div className="flex gap-2 pt-1">
-                      <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEquipementCarnet(eq)}
+                        className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1 hover:bg-[#CFF1D2]/30 rounded-[10px]"
+                      >
                         <Eye className="size-3.5" /> Carnet de vie
                       </Button>
-                      <Button variant="outline" size="sm" className="h-8 px-2 text-[#475C50]" title="Code QR équipement">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEquipementQr(eq)}
+                        className="h-8 px-2 text-[#475C50] border-[#CFF1D2] hover:bg-[#CFF1D2]/30 rounded-[10px]"
+                        title="Code QR équipement"
+                      >
                         <QrCode className="size-4" />
                       </Button>
                     </div>
@@ -527,7 +557,7 @@ function PageLocaux() {
                 );
               })
             ) : (
-              <div className="col-span-3 text-center py-10 bg-white rounded-2xl border border-[#CFF1D2] text-xs text-muted-foreground">
+              <div className="col-span-3 text-center py-10 bg-white rounded-[10px] border border-[#CFF1D2] text-xs text-muted-foreground">
                 <Wrench className="size-8 mx-auto mb-2 opacity-50 text-[#0F3B27]" />
                 Aucun équipement enregistré pour le moment. Cliquez sur « Nouvel Équipement ».
               </div>
@@ -537,11 +567,11 @@ function PageLocaux() {
 
         {/* 2. MAINTENANCE & ORDRES DE TRAVAIL */}
         <TabsContent value="maintenance" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div>
                 <CardTitle className="text-base text-[#0F3B27] font-bold">
-                  Plan Annuel de Maintenance & Ordres de Travail (GAR-PL-003)
+                  Plan Annuel de Maintenance & Ordres de Travail
                 </CardTitle>
                 <CardDescription className="text-xs text-[#475C50]">
                   Interventions préventives et curatives, traçabilité des prestataires et bons de travail.
@@ -603,7 +633,7 @@ function PageLocaux() {
 
         {/* 3. ÉTALONNAGE MÉTROLOGIQUE */}
         <TabsContent value="etalonnage" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4">
             <CardHeader className="p-0 pb-3">
               <CardTitle className="text-base text-[#0F3B27] font-bold">
                 Registre Métrologique des Instruments de Mesure (LOC-03)
@@ -678,11 +708,11 @@ function PageLocaux() {
 
         {/* 4. NETTOYAGE & BIO-NETTOYAGE */}
         <TabsContent value="nettoyage" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div>
                 <CardTitle className="text-base text-[#0F3B27] font-bold">
-                  Plan de Bio-nettoyage & Registre d'Émargement (GAR-PL-004)
+                  Plan de Bio-nettoyage & Registre d'Émargement
                 </CardTitle>
                 <CardDescription className="text-xs text-[#475C50]">
                   Check-lists interactives par zone. Double émargement obligatoire : signature de l'agent + visa de l'encadrement.
@@ -754,7 +784,7 @@ function PageLocaux() {
         {/* 5. NUISIBLES & SÉCURITÉ */}
         <TabsContent value="nuisibles" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bug className="size-5 text-amber-600" />
@@ -789,7 +819,7 @@ function PageLocaux() {
               </Button>
             </Card>
 
-            <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+            <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Flame className="size-5 text-red-600" />
@@ -824,7 +854,7 @@ function PageLocaux() {
 
         {/* 6. CONFORMITÉ DES LOCAUX */}
         <TabsContent value="conformite" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div>
                 <CardTitle className="text-base text-[#0F3B27] font-bold">
@@ -860,7 +890,7 @@ function PageLocaux() {
 
         {/* 7. SYSTÈME INFORMATISÉ & PRA */}
         <TabsContent value="systeme" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-4">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <CardTitle className="text-base text-[#0F3B27] font-bold">
@@ -914,7 +944,7 @@ function PageLocaux() {
 
       {/* MODALE CRÉATION ÉQUIPEMENT */}
       <Dialog open={modalEquipement} onOpenChange={setModalEquipement}>
-        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-2xl shadow-xl">
+        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
               Ajouter un Équipement au Carnet de Vie
@@ -1020,13 +1050,13 @@ function PageLocaux() {
 
       {/* MODALE ÉMARGEMENT NETTOYAGE */}
       <Dialog open={modalNettoyage} onOpenChange={setModalNettoyage}>
-        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-2xl shadow-xl">
+        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
               Émarger une Opération de Bio-nettoyage
             </DialogTitle>
             <DialogDescription className="text-xs text-[#475C50]">
-              Enregistrement horodaté conforme au plan d'hygiène GAR-PL-004.
+              Enregistrement horodaté de l'intervention d'hygiène.
             </DialogDescription>
           </DialogHeader>
 
@@ -1097,6 +1127,217 @@ function PageLocaux() {
         }}
         articleBpd="BPD-4 / Art. 4.02"
       />
+
+      {/* MODALE CARNET DE VIE ÉQUIPEMENT */}
+      <Dialog open={!!equipementCarnet} onOpenChange={(open) => !open && setEquipementCarnet(null)}>
+        <DialogContent className="max-w-2xl bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl p-6">
+          {equipementCarnet && (
+            <div className="space-y-5">
+              <DialogHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2]/50 px-2.5 py-1 rounded-[6px]">
+                      {equipementCarnet.code_interne}
+                    </span>
+                    <Badge
+                      variant={equipementCarnet.statut === "conforme" ? "default" : "destructive"}
+                      className={equipementCarnet.statut === "conforme" ? "bg-emerald-600 text-white text-[10px]" : "text-[10px]"}
+                    >
+                      {equipementCarnet.statut === "conforme" ? "Conforme BPD" : "À réviser / Non conforme"}
+                    </Badge>
+                  </div>
+                  <span className="text-[11px] text-[#475C50] font-mono">BPD-4 / Art. 4.02</span>
+                </div>
+                <DialogTitle className="text-lg font-bold text-[#0F3B27] mt-1 font-display">
+                  Carnet de Vie & Suivi Métrologique : {equipementCarnet.designation}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-[#475C50]">
+                  Traçabilité réglementaire obligatoire du matériel critique en officine.
+                </DialogDescription>
+              </DialogHeader>
+
+              {/* Fiche technique */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-[#F7F9F7] p-3.5 rounded-[10px] border border-[#CFF1D2] text-xs">
+                <div>
+                  <span className="text-[11px] text-muted-foreground block">Catégorie</span>
+                  <strong className="text-[#0F3B27] capitalize">{equipementCarnet.categorie || "N/A"}</strong>
+                </div>
+                <div>
+                  <span className="text-[11px] text-muted-foreground block">Marque / Modèle</span>
+                  <strong className="text-[#0F3B27]">{equipementCarnet.marque_modele || "Non renseigné"}</strong>
+                </div>
+                <div>
+                  <span className="text-[11px] text-muted-foreground block">Emplacement</span>
+                  <strong className="text-[#0F3B27]">{equipementCarnet.emplacement || "Officine"}</strong>
+                </div>
+                <div>
+                  <span className="text-[11px] text-muted-foreground block">Périodicité contrôle</span>
+                  <strong className="text-emerald-800">{equipementCarnet.periodicite_etalonnage_mois} mois</strong>
+                </div>
+              </div>
+
+              {/* Métrologie & Étalonnage */}
+              <div className="p-4 rounded-[10px] border border-[#CFF1D2] bg-white space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#0F3B27] flex items-center gap-1.5">
+                    <ShieldCheck className="size-4 text-emerald-600" /> Étalonnage & Contrôle Métrologique
+                  </h4>
+                  <span className="text-[11px] text-muted-foreground">
+                    Prochain étalonnage : <strong className="text-[#0F3B27]">{equipementCarnet.date_prochain_etalonnage || "À planifier"}</strong>
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#475C50]">
+                  Les balances, thermomètres, enregistreurs de température et sondes doivent faire l'objet d'un contrôle ou étalonnage périodique raccordé aux étalons nationaux.
+                </p>
+              </div>
+
+              {/* Historique des interventions */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-[#0F3B27] flex items-center gap-1.5">
+                  <Wrench className="size-4 text-[#0F3B27]" /> Historique des Interventions & Maintenance
+                </h4>
+                <div className="border border-[#CFF1D2] rounded-[10px] overflow-hidden text-xs">
+                  <table className="w-full text-left">
+                    <thead className="bg-[#F7F9F7] text-[11px] text-[#475C50] font-semibold">
+                      <tr>
+                        <th className="p-2.5">Date</th>
+                        <th className="p-2.5">Type</th>
+                        <th className="p-2.5">Opérateur / Prestataire</th>
+                        <th className="p-2.5">Rapport / Constat</th>
+                        <th className="p-2.5">Statut</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#CFF1D2]">
+                      <tr className="hover:bg-slate-50">
+                        <td className="p-2.5 text-[11px]">Mise en service</td>
+                        <td className="p-2.5 font-semibold text-[#0F3B27]">Qualification initiale</td>
+                        <td className="p-2.5 text-muted-foreground">Pharmacien Titulaire</td>
+                        <td className="p-2.5 text-[11px]">Équipement neuf, conforme aux spécifications</td>
+                        <td className="p-2.5"><Badge className="bg-emerald-600 text-[10px]">Validé</Badge></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-[#CFF1D2]">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEquipementCarnet(null)}
+                  className="border-[#CFF1D2] text-[#475C50] text-xs rounded-[10px]"
+                >
+                  Fermer
+                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      imprimerFicheOfficielle(
+                        `Carnet de Vie - ${equipementCarnet.code_interne} : ${equipementCarnet.designation}`,
+                        `
+                          <div style="font-family: Arial, sans-serif; padding: 20px;">
+                            <h2 style="color: #0F3B27;">BestPharma - Carnet de Vie Matériel (5M)</h2>
+                            <p><strong>Code équipement :</strong> ${equipementCarnet.code_interne}</p>
+                            <p><strong>Désignation :</strong> ${equipementCarnet.designation}</p>
+                            <p><strong>Marque / Modèle :</strong> ${equipementCarnet.marque_modele || "N/A"}</p>
+                            <p><strong>Emplacement :</strong> ${equipementCarnet.emplacement || "Officine"}</p>
+                            <p><strong>Périodicité contrôle :</strong> ${equipementCarnet.periodicite_etalonnage_mois} mois</p>
+                            <p><strong>Prochaine date d'étalonnage :</strong> ${equipementCarnet.date_prochain_etalonnage || "N/A"}</p>
+                            <hr style="margin: 20px 0; border: 1px solid #CFF1D2;" />
+                            <h3>Exigence BPD-4 / Art. 4.02</h3>
+                            <p>Le carnet de vie récapitule l'historique de mise en service, de maintenance et d'étalonnage pour chaque matériel critique.</p>
+                          </div>
+                        `
+                      );
+                      toast.success("Impression du carnet de vie lancée !");
+                    }}
+                    className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 rounded-[10px]"
+                  >
+                    <Printer className="size-3.5" /> Imprimer Carnet de Vie
+                  </Button>
+                </div>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* MODALE QR CODE ÉQUIPEMENT */}
+      <Dialog open={!!equipementQr} onOpenChange={(open) => !open && setEquipementQr(null)}>
+        <DialogContent className="max-w-sm bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl text-center p-6">
+          {equipementQr && (
+            <div className="space-y-4">
+              <DialogHeader>
+                <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
+                  Étiquette QR Code Machine / Équipement
+                </DialogTitle>
+                <DialogDescription className="text-xs text-[#475C50]">
+                  À coller sur le châssis pour identification et carnet de vie instantané.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="p-5 bg-[#F7F9F7] rounded-[10px] border border-[#CFF1D2] flex flex-col items-center gap-3">
+                <div className="size-48 bg-white p-3 rounded-[10px] border border-[#CFF1D2] shadow-sm flex items-center justify-center">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                      `EQUIP-${equipementQr.code_interne}`
+                    )}`}
+                    alt={`QR Code ${equipementQr.code_interne}`}
+                    className="size-40 object-contain"
+                  />
+                </div>
+                <div>
+                  <div className="font-mono text-sm font-extrabold text-[#0F3B27]">
+                    {equipementQr.code_interne}
+                  </div>
+                  <div className="text-xs font-semibold text-[#0F3B27] mt-0.5">
+                    {equipementQr.designation}
+                  </div>
+                  <div className="text-[11px] text-[#475C50]">
+                    {equipementQr.emplacement || "Officine"} · {equipementQr.marque_modele || ""}
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-[#CFF1D2]">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEquipementQr(null)}
+                  className="border-[#CFF1D2] text-[#475C50] text-xs rounded-[10px]"
+                >
+                  Fermer
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    imprimerFicheOfficielle(
+                      `Étiquette QR Équipement - ${equipementQr.code_interne}`,
+                      `
+                        <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; max-width: 320px; margin: auto; border: 2px dashed #0F3B27; border-radius: 10px;">
+                          <h3 style="margin: 0; color: #0F3B27;">BestPharma</h3>
+                          <p style="margin: 4px 0; font-size: 11px; color: #475C50;">Équipement Officine Conforme BPD</p>
+                          <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                            `EQUIP-${equipementQr.code_interne}`
+                          )}" style="width: 180px; height: 180px; margin: 15px auto;" />
+                          <div style="font-family: monospace; font-size: 16px; font-weight: bold; color: #0F3B27;">${equipementQr.code_interne}</div>
+                          <div style="font-size: 12px; font-weight: bold; margin-top: 4px;">${equipementQr.designation}</div>
+                          <div style="font-size: 10px; color: #666; margin-top: 4px;">Emplacement : ${equipementQr.emplacement || "Officine"}</div>
+                        </div>
+                      `
+                    );
+                    toast.success("Impression de l'étiquette QR lancée !");
+                  }}
+                  className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 rounded-[10px]"
+                >
+                  <Printer className="size-3.5" /> Imprimer l'étiquette QR
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

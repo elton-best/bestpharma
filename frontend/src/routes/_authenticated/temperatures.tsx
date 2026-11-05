@@ -338,15 +338,11 @@ function PageTemperatures() {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
-              Chaîne du Froid (2–8 °C) & Températures
+              Chaîne du Froid & Températures
             </h1>
-            <LienReglementaireBpd articles="BPD-4 / Art. 4.18 & 5.20" />
-            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
-              GAC-EN-001 / GAC-EN-002
-            </Badge>
           </div>
           <p className="mt-1 text-xs text-[#475C50]">
-            Relevés bi-quotidiens obligatoires (Matin / Soir), détection immédiate d'excursion, protection automatique du stock et décision tracée du pharmacien.
+            Suivi des enceintes frigorifiques et de l'ambiance, détection des excursions thermiques et alertes en temps réel.
           </p>
         </div>
 

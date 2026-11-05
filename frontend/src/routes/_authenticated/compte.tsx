@@ -168,16 +168,16 @@ export function PageCompte() {
             </CardContent>
           </Card>
 
-          {/* Carte Conformité ABMed */}
+          {/* Carte Responsabilité Professionnelle */}
           <Card className="rounded-2xl border-[#CFE3D5] bg-[#EFF7F1]/50 p-4 shadow-xs">
             <div className="flex items-start gap-3">
               <div className="size-8 rounded-xl bg-[#023010] text-white flex items-center justify-center shrink-0">
                 <ShieldCheck className="size-4 text-[#18AA38]" />
               </div>
               <div>
-                <p className="text-xs font-bold text-[#023010]">Responsabilité Pharmaceutique</p>
+                <p className="text-xs font-bold text-[#023010]">Responsabilité Professionnelle</p>
                 <p className="text-[11px] text-[#5C6660] mt-0.5 leading-relaxed">
-                  Conformément à l'Art. 1.11 du Guide BPD, chaque dispensation réalisée sous votre session engage votre visa professionnel.
+                  Chaque acte ou dispensation validé sous votre session est tracé et engage votre signature professionnelle.
                 </p>
               </div>
             </div>

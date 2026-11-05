@@ -38,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -257,11 +258,11 @@ function PageAutoEvaluation() {
       </div>
 
       {/* BANNIÈRE COCKPIT QUALITÉ & SCORE GLOBAL BPD */}
-      <div className="rounded-3xl border-2 border-[#0F3B27]/20 bg-white p-6 shadow-sm">
+      <div className="rounded-[10px] border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             {/* Jauge / Badge radial de score */}
-            <div className="relative size-24 sm:size-28 shrink-0 flex items-center justify-center rounded-2xl bg-gradient-to-br from-[#0F3B27] to-[#164E35] text-white shadow-md border-2 border-[#92FF5F]/40">
+            <div className="relative size-24 sm:size-28 shrink-0 flex items-center justify-center rounded-[10px] bg-gradient-to-br from-[#0F3B27] to-[#164E35] text-white shadow-sm border border-[#92FF5F]/40">
               <div className="text-center">
                 <span className="font-display text-3xl sm:text-4xl font-black text-[#92FF5F] tracking-tight">
                   {scoreGlobal}%
@@ -277,7 +278,7 @@ function PageAutoEvaluation() {
                 <h2 className="font-display text-xl sm:text-2xl font-black text-[#0F3B27]">
                   Indice de Conformité Globale BPD
                 </h2>
-                <Badge className={scoreGlobal >= 80 ? "bg-[#0F3B27] text-[#92FF5F] border border-[#92FF5F]/50" : scoreGlobal >= 50 ? "bg-[#FF7036] text-white" : "bg-red-600 text-white"}>
+                <Badge className={scoreGlobal >= 80 ? "bg-[#0F3B27] text-[#92FF5F] border border-[#92FF5F]/50 rounded-[6px]" : scoreGlobal >= 50 ? "bg-[#FF7036] text-white rounded-[6px]" : "bg-red-600 text-white rounded-[6px]"}>
                   {scoreGlobal >= 80 ? "★ Niveau Conforme (Audit Validé)" : scoreGlobal >= 50 ? "Mise à niveau requise" : "Non Conforme"}
                 </Badge>
               </div>
@@ -290,22 +291,22 @@ function PageAutoEvaluation() {
 
           {/* 4 Cartes statistiques percutantes avec bordures nettes */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full lg:w-auto shrink-0">
-            <div className="p-3 rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 text-center">
+            <div className="p-3 rounded-[10px] border border-emerald-200 bg-emerald-50/60 text-center">
               <span className="text-emerald-800 text-[11px] font-bold block">Conformes</span>
               <p className="font-display font-black text-2xl text-emerald-700">{stats?.total_conformes ?? 0}</p>
               <span className="text-[10px] text-emerald-800 font-medium">100% conformité</span>
             </div>
-            <div className="p-3 rounded-2xl border-2 border-amber-200 bg-amber-50/50 text-center">
+            <div className="p-3 rounded-[10px] border border-amber-200 bg-amber-50/60 text-center">
               <span className="text-amber-800 text-[11px] font-bold block">Écarts min.</span>
               <p className="font-display font-black text-2xl text-amber-700">{stats?.total_ecarts_mineurs ?? 0}</p>
               <span className="text-[10px] text-amber-800 font-medium">0.5 pt pondéré</span>
             </div>
-            <div className="p-3 rounded-2xl border-2 border-red-200 bg-red-50/50 text-center">
+            <div className="p-3 rounded-[10px] border border-red-200 bg-red-50/60 text-center">
               <span className="text-red-800 text-[11px] font-bold block">Écarts maj.</span>
               <p className="font-display font-black text-2xl text-red-700">{stats?.total_ecarts_majeurs ?? 0}</p>
               <span className="text-[10px] text-red-800 font-medium">CAPA requise</span>
             </div>
-            <div className="p-3 rounded-2xl border-2 border-[#CFF1D2] bg-[#F7F9F7] text-center">
+            <div className="p-3 rounded-[10px] border border-slate-200 bg-[#F7F9F7] text-center">
               <span className="text-[#475C50] text-[11px] font-bold block">Non évalués</span>
               <p className="font-display font-black text-2xl text-[#0F3B27]">{stats?.total_non_evalues ?? 0}</p>
               <span className="text-[10px] text-[#475C50] font-medium">À coter</span>
@@ -315,7 +316,7 @@ function PageAutoEvaluation() {
       </div>
 
       {/* GRAPHIQUE RECHARTS : TAUX DE CONFORMITÉ PAR CHAPITRE DU GUIDE BPD (10 CHAPITRES) */}
-      <Card className="rounded-3xl border border-[#CFF1D2] bg-white p-5 sm:p-6 shadow-sm">
+      <Card className="rounded-[10px] border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
             <div className="flex items-center gap-2">
@@ -403,214 +404,273 @@ function PageAutoEvaluation() {
         </div>
       </Card>
 
-      {/* SYNTHÈSE DES 10 CHAPITRES DU GUIDE BPD (CARTES CLICABLES AVEC BARRE DE PROGRESSION) */}
-      <section className="grid gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-black text-[#0F3B27] uppercase tracking-wider flex items-center gap-2">
-            <Award className="size-4 text-[#0F3B27]" /> Les 10 Chapitres du Guide BPD (Cliquer pour filtrer)
-          </h2>
-          {chapitreFiltre !== null && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setChapitreFiltre(null)}
-              className="text-xs h-7 text-[#0F3B27] hover:bg-[#CFF1D2]/30"
-            >
-              Afficher tous les chapitres
-            </Button>
-          )}
+      {/* SÉLECTEUR DÉROULANT FILTRABLE DES 10 CHAPITRES & RECHERCHE */}
+      <div className="rounded-[10px] border border-slate-200 bg-white p-4 shadow-sm space-y-3">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
+          <div className="flex-1 max-w-xl">
+            <SelecteurFiltrable
+              id="selecteur-chapitres-bpd"
+              etiquette="Chapitre du Guide BPD ABMed"
+              placeholder="Filtrer par chapitre (Ch. 1 à 10)…"
+              placeholderRecherche="Rechercher un chapitre (management, personnel, locaux, stockage, dispensation…)"
+              valeur={chapitreFiltre === null ? "tous" : String(chapitreFiltre)}
+              onChange={(val) => setChapitreFiltre(val === "tous" ? null : parseInt(val, 10))}
+              options={[
+                {
+                  valeur: "tous",
+                  libelle: `Tous les 10 chapitres (${campagne?.total_articles ?? 267} articles)`,
+                  description: "Afficher l'ensemble de la grille d'évaluation officielle du Guide BPD ABMed.",
+                  icone: <Award className="size-4 text-[#0F3B27]" />,
+                  motsCles: ["tous", "complet", "grille", "global", "267"],
+                },
+                ...chapitres.map((ch: any) => ({
+                  valeur: String(ch.numero),
+                  libelle: `Ch. ${ch.numero} : ${ch.titre}`,
+                  description: `${ch.score_chapitre}% de conformité · ${ch.conformes}/${ch.total_articles} conformes (${ch.processus})`,
+                  icone: <CheckSquare className="size-4 text-[#0F3B27]" />,
+                  motsCles: [String(ch.numero), ch.titre.toLowerCase(), ch.processus.toLowerCase()],
+                })),
+              ]}
+            />
+          </div>
+
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+            <Input
+              placeholder="Rechercher article (ex: 1.11, 4.18), mot-clé..."
+              className="pl-9 h-11 text-xs rounded-[8px] border-slate-200"
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
+            />
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-          {chapitres.map((ch: any) => {
-            const actif = chapitreFiltre === ch.numero;
+        {/* Bannière de focus chapitre si filtré */}
+        {chapitreFiltre !== null && (
+          (() => {
+            const chCourant = chapitres.find((c: any) => c.numero === chapitreFiltre);
+            if (!chCourant) return null;
             return (
-              <button
-                key={ch.numero}
-                type="button"
-                onClick={() => setChapitreFiltre(actif ? null : ch.numero)}
-                className={`p-3 rounded-2xl border-2 text-left transition-all text-xs flex flex-col justify-between ${
-                  actif
-                    ? "border-[#0F3B27] bg-[#CFF1D2]/25 shadow-md ring-2 ring-[#92FF5F]"
-                    : "border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-sm"
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-[11px] font-mono text-[#0F3B27]">Ch. {ch.numero}</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-[8px] bg-[#F7F9F7] border border-[#CFF1D2] text-xs">
+                <div className="flex items-center gap-3">
+                  <Badge className="bg-[#0F3B27] text-[#92FF5F] font-mono text-xs rounded-[6px]">
+                    Ch. {chCourant.numero}
+                  </Badge>
+                  <div>
+                    <span className="font-bold text-[#0F3B27]">{chCourant.titre}</span>
+                    <span className="text-[#475C50] ml-2 font-mono">({chCourant.processus})</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#475C50] font-medium">Score :</span>
                     <Badge
                       variant="outline"
-                      className={`text-[10px] px-1.5 py-0 font-bold ${
-                        ch.score_chapitre >= 80
+                      className={`text-xs font-bold rounded-[6px] ${
+                        chCourant.score_chapitre >= 80
                           ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                          : ch.score_chapitre >= 50
+                          : chCourant.score_chapitre >= 50
                           ? "border-amber-300 bg-amber-50 text-amber-800"
                           : "border-red-300 bg-red-50 text-red-800"
                       }`}
                     >
-                      {ch.score_chapitre}%
+                      {chCourant.score_chapitre}% ({chCourant.conformes}/{chCourant.total_articles} conf.)
                     </Badge>
                   </div>
-                  <p className="font-bold text-[#0F3B27] text-xs mt-1.5 line-clamp-2 leading-snug">{ch.titre}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setChapitreFiltre(null)}
+                    className="h-7 text-xs text-[#475C50] hover:text-[#0F3B27] hover:bg-white"
+                  >
+                    Effacer le filtre
+                  </Button>
                 </div>
-                <div className="mt-2.5 pt-2 border-t border-[#CFF1D2]/60">
-                  <div className="w-full h-1.5 rounded-full bg-[#E5ECE7] overflow-hidden mb-1.5">
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        ch.score_chapitre >= 80 ? "bg-[#0F3B27]" : ch.score_chapitre >= 50 ? "bg-[#FF7036]" : "bg-red-600"
-                      }`}
-                      style={{ width: `${ch.score_chapitre}%` }}
-                    />
-                  </div>
-                  <div className="text-[10px] text-[#475C50] flex justify-between font-medium">
-                    <span>{ch.conformes} / {ch.total_articles} conf.</span>
-                    <span className="font-mono text-[#0F3B27]">{ch.processus}</span>
-                  </div>
-                </div>
-              </button>
+              </div>
             );
-          })}
-        </div>
-      </section>
-
-      {/* FILTRES & RECHERCHE */}
-      <div className="flex flex-col sm:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher par article (ex: 1.11, 4.18, 5.20) ou mot-clé..."
-            className="pl-9 h-9 text-xs"
-            value={recherche}
-            onChange={(e) => setRecherche(e.target.value)}
-          />
-        </div>
-        {chapitreFiltre !== null && (
-          <Button variant="ghost" size="sm" onClick={() => setChapitreFiltre(null)} className="text-xs h-9">
-            Réinitialiser le filtre (Ch. {chapitreFiltre})
-          </Button>
+          })()
         )}
       </div>
 
-      {/* LISTE DES ARTICLES ET MATRICE DE COTATION */}
-      <Card>
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+      {/* TABLEAU ERGONOMIQUE DE LA GRILLE D'ÉVALUATION */}
+      <Card className="rounded-[10px] border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <CardHeader className="pb-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <CardTitle className="text-base">
+            <CardTitle className="text-base text-slate-900 font-bold">
               Grille d'évaluation des articles ({articlesFiltres.length} affichés)
             </CardTitle>
-            <CardDescription className="text-xs">
-              Cliquez directement sur l'une des cotations pour mettre à jour la conformité et le score en direct.
+            <CardDescription className="text-xs text-slate-500">
+              Tableau réglementaire d'inspection ABMed : cotation 1-clic et rattachement des plans CAPA.
             </CardDescription>
           </div>
-          <Badge variant="secondary" className="font-mono text-xs">ABMed QAM-FI-003</Badge>
+          <Badge variant="secondary" className="font-mono text-xs w-fit rounded-[6px]">ABMed QAM-FI-003</Badge>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {articlesFiltres.map((art: any) => {
-              const estConforme = art.cotation === "conforme";
-              const estMineur = art.cotation === "ecart_mineur";
-              const estMajeur = art.cotation === "ecart_majeur";
-              const estNA = art.cotation === "non_applicable";
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-[#F7F9F7] text-[#0F3B27] border-b border-slate-200 font-bold">
+                <tr>
+                  <th className="py-3 px-3.5 w-28">Réf. Article</th>
+                  <th className="py-3 px-3.5 min-w-[280px]">Exigence réglementaire BPD & Preuve attendue</th>
+                  <th className="py-3 px-3.5 w-36">Statut actuel</th>
+                  <th className="py-3 px-3.5 text-center min-w-[340px]">Cotation en 1 clic</th>
+                  <th className="py-3 px-3.5 text-right w-28">Action CAPA</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {articlesFiltres.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-slate-500">
+                      Aucun article ne correspond à votre filtre.
+                    </td>
+                  </tr>
+                ) : (
+                  articlesFiltres.map((art: any) => {
+                    const estConforme = art.cotation === "conforme";
+                    const estMineur = art.cotation === "ecart_mineur";
+                    const estMajeur = art.cotation === "ecart_majeur";
+                    const estNA = art.cotation === "non_applicable";
 
-              return (
-                <div
-                  key={art.id}
-                  className={`p-4 rounded-2xl border-2 transition-all text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm ${
-                    estConforme
-                      ? "bg-emerald-50/30 border-emerald-300"
-                      : estMineur
-                      ? "bg-amber-50/30 border-amber-300"
-                      : estMajeur
-                      ? "bg-red-50/30 border-red-300"
-                      : "bg-white border-[#CFF1D2]"
-                  }`}
-                >
-                  <div className="space-y-1.5 max-w-2xl">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-[#0F3B27] text-[#92FF5F]">
-                        Art. {art.article_numero}
-                      </span>
-                      <span className="text-[11px] text-[#475C50] font-medium">
-                        Ch. {art.chapitre_numero} : {art.chapitre_titre} ({art.processus})
-                      </span>
-                      {art.non_conformite && (
-                        <span className="inline-flex items-center gap-1 font-mono text-[10px] text-red-700 font-bold bg-red-100 border border-red-200 px-2 py-0.5 rounded-full">
-                          <FileWarning className="size-3" /> CAPA : {art.non_conformite.numero_nc || "En cours"}
-                        </span>
-                      )}
-                    </div>
-                    <p className="font-bold text-[#0F3B27] text-xs leading-relaxed">
-                      {art.article_libelle}
-                    </p>
-                    {art.preuve && (
-                      <p className="text-[11px] text-emerald-800 font-medium italic">Preuve requise : {art.preuve}</p>
-                    )}
-                  </div>
-
-                  {/* BOUTONS DE COTATION DIRECTE */}
-                  <div className="flex flex-wrap items-center gap-1.5 shrink-0 w-full sm:w-auto justify-end">
-                    <button
-                      type="button"
-                      onClick={() => coterArticle(art.id, "conforme")}
-                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all ${
-                        estConforme
-                          ? "bg-emerald-700 text-white border-emerald-700 shadow-sm"
-                          : "bg-white text-[#475C50] border-[#CFF1D2] hover:border-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"
-                      }`}
-                    >
-                      Conforme (1 pt)
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => coterArticle(art.id, "ecart_mineur")}
-                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all ${
-                        estMineur
-                          ? "bg-amber-600 text-white border-amber-600 shadow-sm"
-                          : "bg-white text-[#475C50] border-[#CFF1D2] hover:border-amber-500 hover:text-amber-700 hover:bg-amber-50"
-                      }`}
-                    >
-                      Écart mineur (0.5 pt)
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => coterArticle(art.id, "ecart_majeur")}
-                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all ${
-                        estMajeur
-                          ? "bg-red-600 text-white border-red-600 shadow-sm"
-                          : "bg-white text-[#475C50] border-[#CFF1D2] hover:border-red-500 hover:text-red-700 hover:bg-red-50"
-                      }`}
-                    >
-                      Écart majeur (0 pt)
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => coterArticle(art.id, "non_applicable")}
-                      className={`px-2.5 py-1.5 rounded-xl text-[11px] font-medium border transition-all ${
-                        estNA
-                          ? "bg-slate-700 text-white border-slate-700"
-                          : "bg-white text-[#475C50] border-[#CFF1D2] hover:bg-slate-100"
-                      }`}
-                    >
-                      N/A
-                    </button>
-
-                    {(estMineur || estMajeur) && !art.non_conformite && (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="h-8 text-[11px] px-2.5 ml-1 rounded-xl font-bold"
-                        onClick={() => setDialogCapa(art)}
+                    return (
+                      <tr
+                        key={art.id}
+                        className={`hover:bg-slate-50/70 transition-colors ${
+                          estConforme
+                            ? "bg-emerald-50/15"
+                            : estMineur
+                            ? "bg-amber-50/20"
+                            : estMajeur
+                            ? "bg-red-50/20"
+                            : "bg-white"
+                        }`}
                       >
-                        Créer CAPA
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                        <td className="py-3 px-3.5 align-top">
+                          <span className="font-mono font-bold text-xs px-2 py-0.5 rounded-[6px] bg-[#0F3B27] text-[#92FF5F] inline-block">
+                            Art. {art.article_numero}
+                          </span>
+                          <div className="text-[10px] text-slate-500 font-mono mt-1">
+                            Ch. {art.chapitre_numero} · {art.processus}
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-3.5 align-top space-y-1">
+                          <p className="font-bold text-[#0F3B27] text-xs leading-relaxed">
+                            {art.article_libelle}
+                          </p>
+                          {art.preuve && (
+                            <p className="text-[11px] text-emerald-800 font-medium italic">
+                              Preuve attendue : {art.preuve}
+                            </p>
+                          )}
+                        </td>
+
+                        <td className="py-3 px-3.5 align-top">
+                          {estConforme ? (
+                            <Badge className="bg-emerald-600 text-white text-[10px] rounded-[6px]">
+                              Conforme (1 pt)
+                            </Badge>
+                          ) : estMineur ? (
+                            <Badge className="bg-amber-500 text-white text-[10px] rounded-[6px]">
+                              Écart mineur (0.5 pt)
+                            </Badge>
+                          ) : estMajeur ? (
+                            <Badge className="bg-red-600 text-white text-[10px] rounded-[6px]">
+                              Écart majeur (0 pt)
+                            </Badge>
+                          ) : estNA ? (
+                            <Badge variant="outline" className="text-[10px] rounded-[6px] text-slate-600 border-slate-300">
+                              Non applicable
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px] rounded-[6px] border-amber-300 bg-amber-50 text-amber-800">
+                              À coter
+                            </Badge>
+                          )}
+
+                          {art.non_conformite && (
+                            <div className="mt-1.5">
+                              <span className="inline-flex items-center gap-1 font-mono text-[10px] text-red-700 font-bold bg-red-100 border border-red-200 px-1.5 py-0.5 rounded-[4px]">
+                                <FileWarning className="size-3" /> CAPA : {art.non_conformite.numero_nc || "En cours"}
+                              </span>
+                            </div>
+                          )}
+                        </td>
+
+                        <td className="py-3 px-3.5 align-top">
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => coterArticle(art.id, "conforme")}
+                              className={`px-2.5 py-1.5 rounded-[6px] text-[11px] font-bold border transition-all ${
+                                estConforme
+                                  ? "bg-emerald-700 text-white border-emerald-700 shadow-sm"
+                                  : "bg-white text-slate-700 border-slate-200 hover:border-emerald-600 hover:text-emerald-700 hover:bg-emerald-50/50"
+                              }`}
+                            >
+                              Conforme
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => coterArticle(art.id, "ecart_mineur")}
+                              className={`px-2.5 py-1.5 rounded-[6px] text-[11px] font-bold border transition-all ${
+                                estMineur
+                                  ? "bg-amber-600 text-white border-amber-600 shadow-sm"
+                                  : "bg-white text-slate-700 border-slate-200 hover:border-amber-600 hover:text-amber-700 hover:bg-amber-50/50"
+                              }`}
+                            >
+                              Écart min.
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => coterArticle(art.id, "ecart_majeur")}
+                              className={`px-2.5 py-1.5 rounded-[6px] text-[11px] font-bold border transition-all ${
+                                estMajeur
+                                  ? "bg-red-600 text-white border-red-600 shadow-sm"
+                                  : "bg-white text-slate-700 border-slate-200 hover:border-red-600 hover:text-red-700 hover:bg-red-50/50"
+                              }`}
+                            >
+                              Écart maj.
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => coterArticle(art.id, "non_applicable")}
+                              className={`px-2 py-1.5 rounded-[6px] text-[11px] font-medium border transition-all ${
+                                estNA
+                                  ? "bg-slate-700 text-white border-slate-700"
+                                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                              }`}
+                            >
+                              N/A
+                            </button>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-3.5 align-top text-right">
+                          {(estMineur || estMajeur) && !art.non_conformite ? (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-7 text-[10px] px-2 rounded-[6px] font-bold"
+                              onClick={() => setDialogCapa(art)}
+                            >
+                              Créer CAPA
+                            </Button>
+                          ) : art.non_conformite ? (
+                            <span className="text-[10px] text-emerald-700 font-semibold">CAPA liée</span>
+                          ) : (
+                            <span className="text-[10px] text-slate-400">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>

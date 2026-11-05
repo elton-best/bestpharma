@@ -440,7 +440,7 @@ function PageStupefiantsTabB() {
       <div style="margin-bottom: 24px; padding: 16px; border: 2px solid #b91c1c; border-radius: 8px; background: #fef2f2;">
         <h2 style="margin: 0 0 6px 0; color: #991b1b;">DÉCLARATION OFFICIELLE DE VOL OU PERTE DE SUBSTANCES DU TABLEAU B</h2>
         <p style="margin: 0; font-size: 13px; color: #7f1d1d;">
-          Réf. BPD-3 / Art. 7.18 · Déclaration conjointe Forces de l'Ordre et Agence Béninoise du Médicament (ABMed)
+          Déclaration officielle conjointe Forces de l'Ordre et Autorités Sanitaires
         </p>
       </div>
 
@@ -470,14 +470,15 @@ function PageStupefiantsTabB() {
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-display text-2xl font-black tracking-tight text-[#0F3B27]">Registre Stupéfiants — Tab. B</h1>
-            <Badge className="bg-[#0F3B27] text-[#92FF5F]">GAD-EN-010 · 10 ans</Badge>
-            <Badge variant="outline" className="border-purple-300 text-purple-700 bg-purple-50">Art. 7.15 à 7.20 · STU</Badge>
+            <h1 className="font-display text-2xl font-black tracking-tight text-[#0F3B27]">Registre des Stupéfiants (Tableau B)</h1>
+            <Badge className="bg-[#0F3B27] text-[#92FF5F]">Conservation légale 10 ans</Badge>
           </div>
-          <p className="mt-1 text-sm text-[#475C50] max-w-2xl">Chaque entrée/sortie numérotée sans trou, signée et verrouillée. Balance permanente. Tout écart, vol ou destruction suit un circuit documenté. Dérivés du sang : registre distinct 40 ans (BPD3-F11).</p>
+          <p className="mt-1 text-sm text-[#475C50] max-w-2xl">
+            Suivi des entrées et sorties, balance permanente en temps réel. Chaque opération est numérotée, signée et verrouillée.
+          </p>
           <div className="mt-2 flex flex-wrap gap-2 text-xs font-bold">
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#0F3B27] text-white px-3 py-1"><Lock className="w-3 h-3" /> Immuable après visa (INT-02)</span>
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#CFF1D2] bg-white px-3 py-1 text-[#0F3B27]">Numéro d'ordre sans trou — serveur</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#0F3B27] text-white px-3 py-1"><Lock className="w-3 h-3" /> Registre inaltérable</span>
+            <span className="inline-flex items-center gap-1 rounded-full border border-[#CFF1D2] bg-white px-3 py-1 text-[#0F3B27]">Numérotation continue</span>
             <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 border border-purple-200 px-3 py-1 text-purple-800">Armoire fermée à clé</span>
           </div>
         </div>

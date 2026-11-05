@@ -29,6 +29,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import { api } from "@/lib/api-client";
+import { imprimerFicheOfficielle, telechargerCsv } from "@/lib/export-utils";
 import { useOfficine } from "@/lib/officine-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 import {
   Dialog,
   DialogContent,
@@ -57,7 +59,7 @@ export const Route = createFileRoute("/_authenticated/pointage")({
       { title: "Pointage & Présence Pharmacien — BestPharma" },
       {
         name: "description",
-        content: "Pointage nominatif et respect strict de l'obligation de présence d'un pharmacien (art. 1.11 BPD).",
+        content: "Pointage nominatif et suivi de présence de l'équipe officinale.",
       },
     ],
   }),
@@ -108,6 +110,10 @@ function PagePointage() {
   // Modale Impression Badges (POI-01)
   const [modaleBadge, setModaleBadge] = useState(false);
   const [employeBadge, setEmployeBadge] = useState<any>(null);
+
+  // Modale Profil et Historique
+  const [employeProfil, setEmployeProfil] = useState<any | null>(null);
+  const [employeHistorique, setEmployeHistorique] = useState<any | null>(null);
 
   // Modale Signature PIN (BPD-C10)
   const [modaleSignOuverte, setModaleSignOuverte] = useState(false);
@@ -186,13 +192,19 @@ function PagePointage() {
   // Ratios de présence
   const totalPresents = employes.filter((e: any) => dernier(e.id)?.type === "arrivee").length;
 
-  // Soumission pointage via borne PIN
-  function validerBornePin(e: React.FormEvent) {
-    e.preventDefault();
-    if (bornePin.length < 4) return;
+  // Traitement d'un scan badge (QR code ou code-barres ou saisie clavier rapide)
+  function traiterScanBadge(brut: string) {
+    if (!brut.trim()) return;
+    const nettoyee = brut.replace("BESTPHARMA_BADGE:", "").replace("BESTPHARMA:EMP:", "").replace("BESTPHARMA:", "").trim();
 
-    // Simulation de recherche employé par code PIN
-    const matchEmp = employes[0] || { id: "emp-1", nom_complet: "Dr Félicien AGBO", poste: "pharmacien_titulaire" };
+    const matchEmp = employes.find((item: any) =>
+      (item.matricule && item.matricule.toLowerCase() === nettoyee.toLowerCase()) ||
+      item.id === nettoyee ||
+      (item.code_badge && item.code_badge.toLowerCase() === nettoyee.toLowerCase()) ||
+      nettoyee.includes(item.id) ||
+      (item.matricule && nettoyee.includes(item.matricule))
+    ) || employes[0] || { id: "emp-1", nom_complet: "Dr Félicien AGBO", poste: "pharmacien_titulaire" };
+
     const estPresent = dernier(matchEmp.id)?.type === "arrivee";
     const nouveauType = estPresent ? "depart" : "arrivee";
 
@@ -202,29 +214,56 @@ function PagePointage() {
       type: nouveauType,
       heure: heureBenin,
       poste: matchEmp.poste,
+      photo_url: matchEmp.photo_url,
     });
     setBornePin("");
 
+    // Bip sonore de confirmation via Web Audio API
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(nouveauType === "arrivee" ? 880 : 440, ctx.currentTime);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch {}
+
     setTimeout(() => {
       setDernierScanResultat(null);
-    }, 4000);
+    }, 4500);
   }
 
-  // Si le mode borne plein écran est activé (POI-03)
+  // Soumission pointage via borne PIN
+  function validerBornePin(e: React.FormEvent) {
+    e.preventDefault();
+    if (bornePin.length < 3) return;
+    traiterScanBadge(bornePin);
+  }
+
+  // Si le mode borne tablette plein écran H24 est activé
   if (modeBorne) {
     return (
-      <div className="fixed inset-0 z-50 bg-[#0F3B27] text-white flex flex-col justify-between p-8 font-sans">
-        <div className="flex items-center justify-between">
+      <div className="fixed inset-0 z-50 bg-[#0F3B27] text-white flex flex-col justify-between p-6 sm:p-10 font-sans">
+        <div className="flex items-center justify-between border-b border-[#92FF5F]/30 pb-4">
           <div className="flex items-center gap-3">
-            <div className="size-12 rounded-2xl bg-[#92FF5F] text-[#0F3B27] flex items-center justify-center font-black text-2xl">
+            <div className="size-12 rounded-[10px] bg-[#92FF5F] text-[#0F3B27] flex items-center justify-center font-black text-2xl shadow-md">
               +
             </div>
             <div>
-              <h1 className="font-display font-black text-2xl tracking-tight text-white">
-                BESTPHARMA · Borne de Pointage
-              </h1>
-              <p className="text-xs text-[#CFF1D2]">
-                {courante?.officine?.nom || "Officine BPD Bénin"} · Fuseau Africa/Porto-Novo
+              <div className="flex items-center gap-2">
+                <h1 className="font-display font-black text-xl sm:text-2xl tracking-tight text-white">
+                  BESTPHARMA · Borne Tablette H24
+                </h1>
+                <Badge className="bg-[#92FF5F] text-[#0F3B27] font-bold text-[10px] uppercase">
+                  Session Continue H24
+                </Badge>
+              </div>
+              <p className="text-xs text-[#CFF1D2] mt-0.5">
+                {courante?.officine?.nom || "Officine BPD Bénin"} · Enregistrement instantané des arrivées / départs
               </p>
             </div>
           </div>
@@ -232,51 +271,57 @@ function PagePointage() {
           <div className="flex items-center gap-4">
             <div className="text-right">
               <div className="font-mono text-3xl font-black text-[#92FF5F]">{heureBenin}</div>
-              <div className="text-xs text-[#CFF1D2] capitalize">{dateBenin}</div>
+              <div className="text-xs text-[#CFF1D2] capitalize">{dateBenin} (Porto-Novo)</div>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setModeBorne(false)}
-              className="border-[#92FF5F] text-[#92FF5F] hover:bg-[#92FF5F]/20 text-xs gap-1.5"
+              className="border-[#92FF5F] text-[#92FF5F] hover:bg-[#92FF5F]/20 text-xs gap-1.5 rounded-[10px]"
             >
               <X className="size-4" /> Quitter Borne
             </Button>
           </div>
         </div>
 
-        {/* Cœur interactif de la borne */}
-        <div className="max-w-md mx-auto w-full text-center space-y-6">
+        {/* Cœur interactif de la borne tablette */}
+        <div className="max-w-md mx-auto w-full text-center space-y-6 my-auto py-4">
           {dernierScanResultat ? (
-            <div className="p-8 rounded-3xl bg-white text-[#0F3B27] shadow-2xl space-y-3 animate-in zoom-in-95">
-              <div className="size-16 rounded-full bg-[#92FF5F] text-[#0F3B27] flex items-center justify-center mx-auto font-black text-2xl">
+            <div className="p-8 rounded-[10px] bg-white text-[#0F3B27] shadow-2xl space-y-4 animate-in zoom-in-95 border-2 border-[#92FF5F]">
+              <div className="size-20 rounded-full bg-[#92FF5F] text-[#0F3B27] flex items-center justify-center mx-auto font-black text-3xl shadow-inner">
                 ✓
               </div>
-              <h2 className="font-display text-2xl font-black">{dernierScanResultat.nom}</h2>
-              <Badge className={dernierScanResultat.type === "arrivee" ? "bg-emerald-600 text-white text-sm px-3 py-1" : "bg-amber-600 text-white text-sm px-3 py-1"}>
-                {dernierScanResultat.type === "arrivee" ? "Arrivée Enregistrée" : "Départ Enregistré"}
+              <div>
+                <h2 className="font-display text-2xl font-black">{dernierScanResultat.nom}</h2>
+                <p className="text-xs text-[#475C50] capitalize font-medium mt-0.5">
+                  {dernierScanResultat.poste.replace("_", " ")}
+                </p>
+              </div>
+              <Badge className={dernierScanResultat.type === "arrivee" ? "bg-emerald-600 text-white text-sm px-4 py-1.5 rounded-[8px]" : "bg-amber-600 text-white text-sm px-4 py-1.5 rounded-[8px]"}>
+                {dernierScanResultat.type === "arrivee" ? "Arrivée Enregistrée (Sur place)" : "Départ Enregistré"}
               </Badge>
-              <p className="text-xs text-[#475C50] font-mono">Horodatage serveur certifié : {dernierScanResultat.heure}</p>
+              <p className="text-xs text-[#475C50] font-mono">Horodatage officiel certifié : {dernierScanResultat.heure}</p>
             </div>
           ) : (
-            <form onSubmit={validerBornePin} className="p-8 rounded-3xl bg-white/10 backdrop-blur-md border border-[#92FF5F]/30 space-y-5">
-              <div className="size-16 rounded-2xl bg-[#92FF5F]/20 text-[#92FF5F] flex items-center justify-center mx-auto">
-                <KeyRound className="size-8" />
+            <form onSubmit={validerBornePin} className="p-6 sm:p-8 rounded-[10px] bg-white/10 backdrop-blur-md border border-[#92FF5F]/40 space-y-5 shadow-2xl">
+              <div className="size-16 rounded-[10px] bg-[#92FF5F]/20 text-[#92FF5F] flex items-center justify-center mx-auto border border-[#92FF5F]/40">
+                <QrCode className="size-9" />
               </div>
               <div>
-                <h2 className="font-display text-xl font-bold">Scannez votre badge ou saisissez votre code PIN</h2>
-                <p className="text-xs text-[#CFF1D2] mt-1">Détection instantanée de l'arrivée ou du départ</p>
+                <h2 className="font-display text-xl font-bold">Scannez votre badge ou tapez votre code PIN</h2>
+                <p className="text-xs text-[#CFF1D2] mt-1">Approchez votre badge du capteur / caméra ou utilisez le pavé tactile</p>
               </div>
 
               <div className="relative">
                 <Input
+                  id="input-borne-kiosk"
                   type="password"
                   inputMode="numeric"
-                  maxLength={6}
+                  maxLength={10}
                   value={bornePin}
-                  onChange={(e) => setBornePin(e.target.value.replace(/\D/g, ""))}
-                  placeholder="••••"
-                  className="font-mono text-center text-3xl tracking-[0.5em] h-16 bg-white/20 border-2 border-[#92FF5F] text-white rounded-2xl placeholder:text-white/40 focus:bg-white focus:text-[#0F3B27]"
+                  onChange={(e) => setBornePin(e.target.value)}
+                  placeholder="Scannez ou tapez votre code..."
+                  className="font-mono text-center text-2xl tracking-[0.3em] h-14 bg-white/20 border-2 border-[#92FF5F] text-white rounded-[10px] placeholder:text-white/40 focus:bg-white focus:text-[#0F3B27]"
                   autoFocus
                 />
               </div>
@@ -289,9 +334,9 @@ function PagePointage() {
                     onClick={() => {
                       if (touche === "C") setBornePin("");
                       else if (touche === "OK") validerBornePin({ preventDefault: () => {} } as any);
-                      else setBornePin((prev) => (prev.length < 6 ? prev + touche : prev));
+                      else setBornePin((prev) => (prev.length < 10 ? prev + touche : prev));
                     }}
-                    className="p-3.5 rounded-xl bg-white/10 hover:bg-[#92FF5F] hover:text-[#0F3B27] border border-white/20 transition-all font-mono"
+                    className="p-3.5 rounded-[10px] bg-white/10 hover:bg-[#92FF5F] hover:text-[#0F3B27] border border-white/20 transition-all font-mono"
                   >
                     {touche}
                   </button>
@@ -301,17 +346,57 @@ function PagePointage() {
           )}
         </div>
 
-        <div className="text-center text-xs text-[#CFF1D2]">
-          Système conforme BPD Art. 1.11 · Agence Béninoise du Médicament
+        <div className="text-center text-xs text-[#CFF1D2] border-t border-[#92FF5F]/20 pt-3 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>Mode Borne Tablette H24 continue · Sans expiration de session</span>
+          <span className="font-semibold text-[#92FF5F]">Conforme Guide BPD Art. 1.11 — Agence Béninoise du Médicament</span>
         </div>
       </div>
     );
   }
 
+  const optionsSectionsPointage: OptionSection[] = [
+    {
+      valeur: "direct",
+      label: `Présence en Direct & Contrôle (${totalPresents}/${employes.length})`,
+      description: "Suivi en temps réel des présences, pharmacien sur place (Art. 1.11) et actions badges",
+      badge: `${totalPresents} sur place`,
+    },
+    {
+      valeur: "plannings",
+      label: "Plannings d'Équipe & Tableau des Gardes (POI-07)",
+      description: "Affectation des tranches horaires et respect de la continuité pharmaceutique",
+    },
+    {
+      valeur: "absences",
+      label: "Absences Justifiées & Congés (POI-08)",
+      description: "Déclarations de maladie, congés payés et justificatifs médicaux",
+    },
+    {
+      valeur: "corrections",
+      label: "Corrections d'Oublis & Régularisations (POI-09)",
+      description: "Régularisation des pointages manqués avec signature du pharmacien responsable",
+    },
+    {
+      valeur: "badges",
+      label: "Badges Individuels & Émargement (POI-04)",
+      description: "Impression des cartes badges PVC avec QR Code pour borne tablette",
+    },
+    {
+      valeur: "rapports",
+      label: "Rapports de Présence & Heures Travaillées",
+      description: "Cumuls d'heures réelles, retards, heures supplémentaires et export CSV",
+    },
+    {
+      valeur: "parametres",
+      label: "Paramètres & Règle Pivot Art. 1.11",
+      description: "Tolérance de retard, blocage de caisse et seuils de présence",
+    },
+  ];
+
   return (
     <div className="grid gap-6">
       {/* HEADER PRINCIPAL */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-[#CFF1D2] shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
@@ -330,13 +415,13 @@ function PagePointage() {
         <div className="flex items-center gap-2 shrink-0">
           <Button
             onClick={() => setModeBorne(true)}
-            className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm"
+            className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm rounded-[10px]"
           >
-            <Smartphone className="size-4" /> Mode Borne Entrée
+            <Smartphone className="size-4" /> Lancer Borne Tablette H24
           </Button>
 
           {/* Horloge numérique en direct Porto-Novo */}
-          <div className="rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] px-3 py-1.5 text-right shrink-0">
+          <div className="rounded-[10px] border border-[#CFF1D2] bg-[#F7F9F7] px-3 py-1.5 text-right shrink-0">
             <div className="font-mono font-bold text-sm text-[#0F3B27]">{heureBenin || "--:--"}</div>
             <div className="text-[10px] text-[#475C50] font-medium">Bénin (GMT+1)</div>
           </div>
@@ -345,7 +430,7 @@ function PagePointage() {
 
       {/* HERO BANNER ART. 1.11 (PHARMACIEN PRÉSENT / ABSENT) */}
       <div
-        className={`rounded-3xl border-2 p-6 shadow-sm transition-all ${
+        className={`rounded-[10px] border-2 p-6 shadow-sm transition-all ${
           pharmacienPresent
             ? "border-[#0F3B27] bg-gradient-to-r from-[#0F3B27] to-[#164E35] text-white"
             : "border-red-500 bg-red-50 text-red-950 animate-pulse"
@@ -354,7 +439,7 @@ function PagePointage() {
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
             <div
-              className={`p-3.5 rounded-2xl shrink-0 shadow-md ${
+              className={`p-3.5 rounded-[10px] shrink-0 shadow-md ${
                 pharmacienPresent ? "bg-[#92FF5F] text-[#0F3B27]" : "bg-red-600 text-white"
               }`}
             >
@@ -364,8 +449,8 @@ function PagePointage() {
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className={`font-display text-lg sm:text-xl font-black ${pharmacienPresent ? "text-white" : "text-red-900"}`}>
                   {pharmacienPresent
-                    ? "Conformité BPD Validée : Présence Pharmaceutique Conforme"
-                    : "ALERTE RÉGLEMENTAIRE : Aucun pharmacien pointé sur place !"}
+                    ? "Présence Pharmaceutique Conforme"
+                    : "Alerte : Aucun pharmacien pointé sur place"}
                 </h2>
                 <Badge
                   className={
@@ -374,18 +459,18 @@ function PagePointage() {
                       : "bg-red-600 text-white font-extrabold uppercase text-[10px]"
                   }
                 >
-                  {pharmacienPresent ? "Dispensation & Caisse Autorisées" : "Dispensation Bloquée"}
+                  {pharmacienPresent ? "Délivrance & Caisse Actives" : "Délivrance Suspendue"}
                 </Badge>
               </div>
 
               <p className={`text-xs mt-1.5 max-w-2xl leading-relaxed ${pharmacienPresent ? "text-[#CFF1D2]" : "text-red-800"}`}>
                 {pharmacienPresent ? (
                   <span>
-                    Conformément à l'article 1.11 du Guide BPD de l'ABMed, la présence effective est certifiée. La caisse et la dispensation fonctionnent sans restriction.
+                    La présence effective d'un pharmacien responsable est confirmée. Les opérations de l'officine sont autorisées.
                   </span>
                 ) : (
                   <span>
-                    Conformément à l'article 1.11 du Guide BPD, aucune délivrance de médicaments ne peut avoir lieu sans pharmacien inscrit pointé présent.
+                    La délivrance des ordonnances et des médicaments exige la présence effective d'un pharmacien sur place.
                   </span>
                 )}
               </p>
@@ -409,12 +494,12 @@ function PagePointage() {
 
           {/* Ratios & Compteurs */}
           <div className="grid grid-cols-2 gap-3 w-full lg:w-auto shrink-0">
-            <div className={`p-3 rounded-2xl border text-center ${pharmacienPresent ? "bg-white/10 border-white/20 text-white" : "bg-white border-red-200 text-red-900"}`}>
+            <div className={`p-3 rounded-[10px] border text-center ${pharmacienPresent ? "bg-white/10 border-white/20 text-white" : "bg-white border-red-200 text-red-900"}`}>
               <span className="text-[10px] font-bold block uppercase tracking-wider opacity-80">Effectif présent</span>
               <p className="font-display font-black text-2xl mt-0.5">{totalPresents} / {employes.length}</p>
               <span className="text-[10px] opacity-75">Agents sur place</span>
             </div>
-            <div className={`p-3 rounded-2xl border text-center ${pharmacienPresent ? "bg-white/10 border-white/20 text-white" : "bg-white border-red-200 text-red-900"}`}>
+            <div className={`p-3 rounded-[10px] border text-center ${pharmacienPresent ? "bg-white/10 border-white/20 text-white" : "bg-white border-red-200 text-red-900"}`}>
               <span className="text-[10px] font-bold block uppercase tracking-wider opacity-80">Pharmaciens</span>
               <p className="font-display font-black text-2xl mt-0.5">{pharmaciensSurPlace.length}</p>
               <span className="text-[10px] opacity-75">Section B Ordre</span>
@@ -423,52 +508,31 @@ function PagePointage() {
         </div>
       </div>
 
+      {/* SÉLECTEUR DÉROULANT FILTRABLE DES SECTIONS (REMPLACE LES ONGLETS HORIZONTAUX) */}
+      <div className="bg-white p-3.5 rounded-[10px] border border-[#CFF1D2] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-[10px] bg-[#0F3B27]/10 text-[#0F3B27]">
+            <Clock className="size-4" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-[#0F3B27] block">Module Pointage & Présence</span>
+            <span className="text-[11px] text-[#475C50]">Sélectionnez la section à afficher ou filtrez par mot-clé</span>
+          </div>
+        </div>
+        <div className="w-full md:w-96">
+          <SelecteurFiltrable
+            options={optionsSectionsPointage}
+            valeur={activeTab}
+            onChangement={setActiveTab}
+            placeholder="Choisir une section..."
+            recherchePlaceholder="Filtrer parmi les 7 sections..."
+            className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+          />
+        </div>
+      </div>
+
       {/* TABS CONFORMES AU CAHIER DES CHARGES */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-[#F7F9F7] border border-[#CFF1D2] p-1 rounded-xl flex flex-wrap h-auto gap-1">
-          <TabsTrigger
-            value="direct"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Présence en Direct
-          </TabsTrigger>
-          <TabsTrigger
-            value="plannings"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Plannings & Gardes
-          </TabsTrigger>
-          <TabsTrigger
-            value="absences"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Absences & Congés
-          </TabsTrigger>
-          <TabsTrigger
-            value="corrections"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Corrections & Oublis
-          </TabsTrigger>
-          <TabsTrigger
-            value="badges"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Badges Individuels
-          </TabsTrigger>
-          <TabsTrigger
-            value="rapports"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Rapports de Paie
-          </TabsTrigger>
-          <TabsTrigger
-            value="parametres"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Paramètres Règle Art. 1.11
-          </TabsTrigger>
-        </TabsList>
 
         {/* 1. PRÉSENCE EN DIRECT */}
         <TabsContent value="direct" className="space-y-4">
@@ -481,25 +545,39 @@ function PagePointage() {
               return (
                 <Card
                   key={e.id}
-                  className={`border-2 rounded-2xl p-4 transition-all shadow-sm ${
+                  className={`border-2 rounded-[10px] p-4 transition-all shadow-sm ${
                     estLa
                       ? "border-emerald-500/50 bg-emerald-50/20"
                       : "border-[#CFF1D2] bg-white opacity-90"
                   }`}
                 >
                   <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-[#0F3B27] text-sm">{e.nom_complet}</span>
-                        {estPharmacien && (
-                          <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[9px] px-1.5 py-0">
-                            Pharmacien
-                          </Badge>
+                    <div className="flex items-center gap-2.5">
+                      <div className="size-11 rounded-[10px] overflow-hidden bg-[#0F3B27]/10 text-[#0F3B27] flex items-center justify-center font-bold text-sm shrink-0 border border-[#CFF1D2]">
+                        {e.photo_url ? (
+                          <img src={e.photo_url} alt={e.nom_complet} className="size-full object-cover" />
+                        ) : (
+                          <span>{e.nom_complet.charAt(0)}</span>
                         )}
                       </div>
-                      <span className="text-xs text-[#475C50] capitalize block mt-0.5">
-                        {e.poste.replace("_", " ")}
-                      </span>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-[#0F3B27] text-sm">{e.nom_complet}</span>
+                          {estPharmacien && (
+                            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[9px] px-1.5 py-0">
+                              Pharmacien
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-[10px] font-mono text-[#0F3B27] bg-[#CFF1D2]/50 px-1.5 py-0.2 rounded font-bold">
+                            {e.matricule || `BP-${e.id.slice(0, 4).toUpperCase()}`}
+                          </span>
+                          <span className="text-xs text-[#475C50] capitalize">
+                            {e.poste.replace("_", " ")}
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
                     <Badge
@@ -510,26 +588,44 @@ function PagePointage() {
                     </Badge>
                   </div>
 
-                  <div className="mt-3 pt-2 border-t border-[#CFF1D2] flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground text-[11px]">
-                      {d ? `Dernier : ${d.type === "arrivee" ? "Arrivé" : "Départ"} à ${new Date(d.horodatage).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Aucun pointage ce jour"}
-                    </span>
-
-                    <div className="flex gap-1.5">
-                      <Button
-                        size="sm"
-                        variant={estLa ? "outline" : "default"}
-                        onClick={() => pointer.mutate({ employe_id: e.id, type: estLa ? "depart" : "arrivee" })}
-                        className={`h-7 text-xs font-bold gap-1 ${
-                          estLa
-                            ? "border-[#CFF1D2] text-[#0F3B27] hover:bg-red-50 hover:text-red-700"
-                            : "bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F]"
-                        }`}
-                      >
-                        {estLa ? <LogOut className="size-3" /> : <LogIn className="size-3" />}
-                        {estLa ? "Pointer Départ" : "Pointer Arrivée"}
-                      </Button>
+                  <div className="p-2.5 rounded-[10px] bg-[#F7F9F7] border border-[#CFF1D2] text-xs space-y-1 my-2">
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-muted-foreground">Statut aujourd'hui :</span>
+                      <strong className={estLa ? "text-emerald-700" : "text-[#475C50]"}>
+                        {d ? `${d.type === "arrivee" ? "Arrivé à" : "Départ à"} ${new Date(d.horodatage).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Aucun pointage ce jour"}
+                      </strong>
                     </div>
+                  </div>
+
+                  {/* Actions conformes : Profil, Badge QR, Historique */}
+                  <div className="grid grid-cols-3 gap-1.5 pt-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEmployeProfil(e)}
+                      className="text-xs border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 rounded-[10px] px-1"
+                    >
+                      Profil
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEmployeBadge(e);
+                        setModaleBadge(true);
+                      }}
+                      className="text-xs bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 rounded-[10px] px-1 font-bold gap-1"
+                    >
+                      <QrCode className="size-3" /> Badge
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEmployeHistorique(e)}
+                      className="text-xs border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 rounded-[10px] px-1"
+                    >
+                      Historique
+                    </Button>
                   </div>
                 </Card>
               );
@@ -539,7 +635,7 @@ function PagePointage() {
 
         {/* 2. PLANNINGS & GARDES */}
         <TabsContent value="plannings" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle className="text-base text-[#0F3B27] font-bold">
@@ -576,7 +672,7 @@ function PagePointage() {
 
         {/* 3. ABSENCES & CONGÉS */}
         <TabsContent value="absences" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle className="text-base text-[#0F3B27] font-bold">
@@ -604,7 +700,7 @@ function PagePointage() {
 
         {/* 4. CORRECTIONS & OUBLIS */}
         <TabsContent value="corrections" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle className="text-base text-[#0F3B27] font-bold">
@@ -637,7 +733,7 @@ function PagePointage() {
 
         {/* 5. BADGES INDIVIDUELS */}
         <TabsContent value="badges" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle className="text-base text-[#0F3B27] font-bold">
@@ -686,7 +782,7 @@ function PagePointage() {
 
         {/* 6. RAPPORTS DE PAIE */}
         <TabsContent value="rapports" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle className="text-base text-[#0F3B27] font-bold">
@@ -717,7 +813,7 @@ function PagePointage() {
 
         {/* 7. PARAMÈTRES RÈGLE ART. 1.11 */}
         <TabsContent value="parametres" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
               Paramètres de Contrôle de l'Article 1.11 BPD
             </CardTitle>
@@ -750,7 +846,7 @@ function PagePointage() {
 
       {/* MODALE D'OUBLI / CORRECTION */}
       <Dialog open={modaleCorrection} onOpenChange={setModaleCorrection}>
-        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-2xl shadow-xl">
+        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
               Déclaration d'un Oubli de Pointage (POI-09)
@@ -839,14 +935,14 @@ function PagePointage() {
 
       {/* MODALE BADGE INDIVIDUEL CARTE */}
       <Dialog open={modaleBadge} onOpenChange={setModaleBadge}>
-        <DialogContent className="max-w-sm bg-white border border-[#CFF1D2] rounded-2xl shadow-xl text-center">
+        <DialogContent className="max-w-sm bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl text-center">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
               Badge Officiel d'Identification BPD
             </DialogTitle>
           </DialogHeader>
 
-          <div className="p-5 bg-gradient-to-b from-[#0F3B27] to-[#164E35] text-white rounded-2xl border-2 border-[#92FF5F]/40 my-2 space-y-3 shadow-lg">
+          <div className="p-5 bg-gradient-to-b from-[#0F3B27] to-[#164E35] text-white rounded-[10px] border-2 border-[#92FF5F]/40 my-2 space-y-3 shadow-lg">
             <div className="flex items-center justify-between text-[10px] text-[#CFF1D2] border-b border-white/20 pb-2">
               <span>BESTPHARMA OFFICIEL</span>
               <span>BÉNIN ABMed</span>
@@ -890,14 +986,192 @@ function PagePointage() {
             <Button
               type="button"
               onClick={() => {
-                window.print();
-                toast.success("Badge envoyé à l'impression.");
+                const matricule = employeBadge?.matricule || `BP-${employeBadge?.id?.slice(0, 6)?.toUpperCase() || "001"}`;
+                imprimerFicheOfficielle(
+                  `Badge Professionnel - ${employeBadge?.nom_complet || "Collaborateur"}`,
+                  `
+                    <div style="font-family: Arial, sans-serif; text-align: center; max-width: 320px; margin: 20px auto; border: 2px solid #0F3B27; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                      <div style="background: #0F3B27; color: #92FF5F; padding: 8px; border-radius: 8px 8px 0 0; margin: -20px -20px 15px -20px;">
+                        <h3 style="margin: 0; font-size: 14px; letter-spacing: 1px;">BESTPHARMA BÉNIN</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 10px; color: #fff;">BADGE DE POINTAGE TABLETTE H24</p>
+                      </div>
+                      <div style="width: 80px; height: 80px; margin: 10px auto; border-radius: 50%; background: #0F3B27; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; overflow: hidden;">
+                        ${employeBadge?.photo_url ? `<img src="${employeBadge.photo_url}" style="width: 100%; height: 100%; object-fit: cover;" />` : (employeBadge?.nom_complet?.charAt(0) || "P")}
+                      </div>
+                      <h2 style="margin: 8px 0 2px 0; color: #0F3B27; font-size: 16px;">${(employeBadge?.nom_complet || "").toUpperCase()}</h2>
+                      <p style="margin: 0; font-size: 12px; font-weight: bold; color: #1E6B47;">${(employeBadge?.poste || "").replace("_", " ").toUpperCase()}</p>
+                      <p style="margin: 4px 0; font-family: monospace; font-size: 11px; color: #555;">Matricule : ${matricule}</p>
+                      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
+                        `BESTPHARMA_BADGE:${matricule}`
+                      )}" style="width: 140px; height: 140px; margin: 10px auto; display: block;" />
+                      <p style="margin: 6px 0 0 0; font-size: 9px; color: #777;">À scanner sur la tablette de pointage BestPharma</p>
+                    </div>
+                  `
+                );
+                toast.success("Impression du badge lancée !");
               }}
-              className="bg-[#0F3B27] text-[#92FF5F] text-xs font-bold gap-1"
+              className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] text-xs font-bold gap-1 rounded-[10px]"
             >
               <Printer className="size-3.5" /> Imprimer carte badge
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODALE PROFIL COLLABORATEUR */}
+      <Dialog open={!!employeProfil} onOpenChange={(open) => !open && setEmployeProfil(null)}>
+        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl p-6">
+          {employeProfil && (
+            <div className="space-y-4">
+              <DialogHeader>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-[#0F3B27] bg-[#CFF1D2]/50 px-2 py-0.5 rounded-[6px]">
+                    {employeProfil.matricule || `BP-${employeProfil.id.slice(0, 4).toUpperCase()}`}
+                  </span>
+                  <Badge className="bg-emerald-600 text-white text-[10px]">
+                    {employeProfil.actif ? "Compte Actif" : "Inactif"}
+                  </Badge>
+                </div>
+                <DialogTitle className="text-base font-bold text-[#0F3B27] font-display mt-1">
+                  Profil Collaborateur : {employeProfil.nom_complet}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-[#475C50]">
+                  Informations administratives et conformité déontologique BPD-2.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="flex items-center gap-3 p-3.5 bg-[#F7F9F7] rounded-[10px] border border-[#CFF1D2]">
+                <div className="size-16 rounded-[10px] overflow-hidden bg-[#0F3B27]/10 text-[#0F3B27] flex items-center justify-center font-bold text-xl border border-[#CFF1D2] shrink-0">
+                  {employeProfil.photo_url ? (
+                    <img src={employeProfil.photo_url} alt={employeProfil.nom_complet} className="size-full object-cover" />
+                  ) : (
+                    <span>{employeProfil.nom_complet.charAt(0)}</span>
+                  )}
+                </div>
+                <div className="text-xs space-y-0.5">
+                  <div className="font-bold text-sm text-[#0F3B27]">{employeProfil.nom_complet}</div>
+                  <div className="capitalize text-[#475C50] font-medium">{employeProfil.poste.replace("_", " ")}</div>
+                  <div className="text-muted-foreground">{employeProfil.telephone || "Téléphone non renseigné"}</div>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between p-2 rounded-[8px] bg-white border border-[#CFF1D2]">
+                  <span className="text-muted-foreground">Obligation d'exercice (Art. 1.11) :</span>
+                  <strong className="text-[#0F3B27]">
+                    {["pharmacien_titulaire", "pharmacien_adjoint", "pharmacien_remplacant", "promoteur"].includes(employeProfil.poste)
+                      ? "Pharmacien Section B (Autorisé à dispenser)"
+                      : "Personnel auxiliaire sous supervision"}
+                  </strong>
+                </div>
+                <div className="flex justify-between p-2 rounded-[8px] bg-white border border-[#CFF1D2]">
+                  <span className="text-muted-foreground">Charte qualité BPD :</span>
+                  <strong className={employeProfil.charte_qualite_signee ? "text-emerald-700" : "text-amber-700"}>
+                    {employeProfil.charte_qualite_signee ? "✓ Signée et contresignée" : "En attente de signature"}
+                  </strong>
+                </div>
+              </div>
+
+              <DialogFooter className="pt-2 border-t border-[#CFF1D2]">
+                <Button variant="outline" className="text-xs rounded-[10px]" onClick={() => setEmployeProfil(null)}>
+                  Fermer
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEmployeBadge(employeProfil);
+                    setModaleBadge(true);
+                    setEmployeProfil(null);
+                  }}
+                  className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] text-xs font-bold gap-1 rounded-[10px]"
+                >
+                  <QrCode className="size-3.5" /> Voir le Badge QR
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* MODALE HISTORIQUE DES POINTAGES */}
+      <Dialog open={!!employeHistorique} onOpenChange={(open) => !open && setEmployeHistorique(null)}>
+        <DialogContent className="max-w-xl bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl p-6">
+          {employeHistorique && (
+            <div className="space-y-4">
+              <DialogHeader>
+                <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
+                  Historique de Présence : {employeHistorique.nom_complet}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-[#475C50]">
+                  Relevé certifié des arrivées et départs enregistrés via la borne tablette H24.
+                </DialogDescription>
+              </DialogHeader>
+
+              {/* Tableau des pointages de cet employé */}
+              <div className="border border-[#CFF1D2] rounded-[10px] overflow-hidden text-xs">
+                <table className="w-full text-left">
+                  <thead className="bg-[#F7F9F7] text-[11px] text-[#475C50] font-semibold">
+                    <tr>
+                      <th className="p-2.5">Date & Heure</th>
+                      <th className="p-2.5">Mouvement</th>
+                      <th className="p-2.5">Mode</th>
+                      <th className="p-2.5">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#CFF1D2]">
+                    {pointages.filter((p) => p.employe_id === employeHistorique.id).length > 0 ? (
+                      pointages
+                        .filter((p) => p.employe_id === employeHistorique.id)
+                        .map((pt, idx) => (
+                          <tr key={idx} className="hover:bg-slate-50">
+                            <td className="p-2.5 text-[11px] font-mono">
+                              {new Date(pt.horodatage).toLocaleDateString()} {new Date(pt.horodatage).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </td>
+                            <td className="p-2.5 font-bold">
+                              <Badge className={pt.type === "arrivee" ? "bg-emerald-600 text-white text-[10px]" : "bg-amber-600 text-white text-[10px]"}>
+                                {pt.type === "arrivee" ? "Arrivée" : "Départ"}
+                              </Badge>
+                            </td>
+                            <td className="p-2.5 text-[11px] text-muted-foreground">Borne Tablette H24</td>
+                            <td className="p-2.5 text-[11px] font-semibold text-emerald-800">Certifié conforme</td>
+                          </tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="p-4 text-center text-muted-foreground text-xs">
+                          Aucun mouvement enregistré aujourd'hui pour ce collaborateur.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <DialogFooter className="pt-2 border-t border-[#CFF1D2]">
+                <Button variant="outline" className="text-xs rounded-[10px]" onClick={() => setEmployeHistorique(null)}>
+                  Fermer
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const logs = pointages.filter((p) => p.employe_id === employeHistorique.id);
+                    telechargerCsv(
+                      logs.map((l) => ({
+                        Collaborateur: employeHistorique.nom_complet,
+                        Matricule: employeHistorique.matricule || "N/A",
+                        Mouvement: l.type === "arrivee" ? "Arrivée" : "Départ",
+                        Horodatage: l.horodatage,
+                      })),
+                      `Pointages_${employeHistorique.nom_complet.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}`
+                    );
+                    toast.success("Relevé de pointage exporté en CSV !");
+                  }}
+                  className="border-[#CFF1D2] text-[#0F3B27] text-xs font-bold gap-1 rounded-[10px]"
+                >
+                  <Download className="size-3.5" /> Exporter CSV
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

@@ -1264,10 +1264,10 @@ function PageStockMagasin() {
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
-                    BPD-5 · TRAÇABILITÉ FEFO · STO-03
+                    Traçabilité FEFO
                   </span>
                   <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                    Priorité Péremption Strict (Art. 5.8 BPD)
+                    Priorité Péremption Première
                   </span>
                 </div>
                 <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
@@ -2227,10 +2227,10 @@ function PageStockMagasin() {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
-                  BPD-5 · CONTRÔLE PHYSIQUE · STO-12
+                  Contrôle Physique des Stocks
                 </span>
                 <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                  Campagnes de Comptage & Rapprochement (Art. 5.7 BPD)
+                  Campagnes de Comptage & Rapprochement
                 </span>
               </div>
               <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
@@ -2242,7 +2242,7 @@ function PageStockMagasin() {
               </p>
               <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
-                  <ClipboardList className="w-3.5 h-3.5" /> Inventaire Conforme BPD
+                  <ClipboardList className="w-3.5 h-3.5" /> Inventaire Conforme
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
                   Justification Obligatoire des Écarts
@@ -2262,7 +2262,7 @@ function PageStockMagasin() {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
-                  BPD-5 / CSP ART. 11 · VEILLE SANITAIRE · STO-11
+                  Veille Sanitaire & Expirations
                 </span>
                 <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
                   Retrait Systématique avant Expiration
@@ -2356,10 +2356,10 @@ function PageStockMagasin() {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
-                  ABMed / CSP · SÉCURITÉ SANITAIRE · STO-14
+                  Sécurité Sanitaire
                 </span>
                 <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                  Rappels Sanitaires & Isolement (Art. 5.14 BPD)
+                  Rappels Sanitaires & Isolement
                 </span>
               </div>
               <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
@@ -2391,10 +2391,10 @@ function PageStockMagasin() {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
-                  ENV-01 / BPD-5 · FILIÈRE ÉCOLOGIQUE · STO-17
+                  Filière Écologique & Rebuts
                 </span>
                 <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                  Destruction Sécurisée & Rebuts (Art. 5.15 BPD)
+                  Destruction Sécurisée & Rebuts
                 </span>
               </div>
               <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
@@ -2409,7 +2409,7 @@ function PageStockMagasin() {
                   <Trash2 className="w-3.5 h-3.5" /> Bordereau Contradictoire
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
-                  Conservation 5 Ans (BPD-5 F14)
+                  Conservation Sécurisée 5 Ans
                 </span>
               </div>
             </div>

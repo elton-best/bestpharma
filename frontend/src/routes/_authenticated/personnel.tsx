@@ -44,6 +44,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 import {
   Dialog,
   DialogContent,
@@ -62,11 +63,11 @@ import {
 export const Route = createFileRoute("/_authenticated/personnel")({
   head: () => ({
     meta: [
-      { title: "Personnel, Compétences & Ordre (BPD-2) — BestPharma" },
+      { title: "Personnel & Équipe — BestPharma" },
       {
         name: "description",
         content:
-          "Dossiers RH du personnel, inscription à l'Ordre des pharmaciens (Section B), fiches de poste, habilitations et plan de formation BPD.",
+          "Dossiers RH du personnel, inscription à l'Ordre des pharmaciens, fiches de poste, habilitations et plan de formation.",
       },
     ],
   }),
@@ -80,6 +81,7 @@ interface Employe {
   telephone?: string | null;
   matricule?: string | null;
   code_badge?: string | null;
+  photo_url?: string | null;
   date_embauche?: string | null;
   date_visite_medicale?: string | null;
   charte_qualite_signee: boolean;
@@ -96,11 +98,15 @@ function PagePersonnel() {
   const [filtreRole, setFiltreRole] = useState<string>("tous");
   const [recherche, setRecherche] = useState("");
 
+  // Modale Badge QR
+  const [employeBadge, setEmployeBadge] = useState<Employe | null>(null);
+
   // Modale Nouvel Employé
   const [modalEmploye, setModalEmploye] = useState(false);
   const [nomEmploye, setNomEmploye] = useState("");
   const [posteEmploye, setPosteEmploye] = useState("dispensateur");
   const [telEmploye, setTelEmploye] = useState("");
+  const [photoEmploye, setPhotoEmploye] = useState("");
   const [enCours, setEnCours] = useState(false);
 
   // Modale Signature PIN
@@ -141,6 +147,7 @@ function PagePersonnel() {
         nom_complet: nomEmploye.trim(),
         poste: posteEmploye,
         telephone: telEmploye.trim() || null,
+        photo_url: photoEmploye.trim() || null,
         actif: true,
       });
 
@@ -148,6 +155,7 @@ function PagePersonnel() {
       setModalEmploye(false);
       setNomEmploye("");
       setTelEmploye("");
+      setPhotoEmploye("");
       qc.invalidateQueries({ queryKey: ["employes-complets"] });
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de la création");
@@ -233,33 +241,78 @@ function PagePersonnel() {
     );
   };
 
-  // Liste des pièces obligatoires du dossier personnel (PER-01)
+  // Liste des pièces obligatoires du dossier personnel
   const piecesObligatoires = [
     { nom: "Diplôme d'État de Docteur en Pharmacie / Brevet", obligatoire: true },
-    { nom: "Attestation d'inscription à l'Ordre (Section B en cours)", obligatoire: true },
+    { nom: "Attestation d'inscription à l'Ordre (en cours)", obligatoire: true },
     { nom: "Certificat médical d'aptitude physique et mentale", obligatoire: true },
     { nom: "Extrait de casier judiciaire (bulletin n° 3 < 3 mois)", obligatoire: true },
     { nom: "Contrat de travail signé et visé", obligatoire: true },
-    { nom: "Fiche de poste contresignée (GAR-FI-001)", obligatoire: true },
-    { nom: "Charte de déontologie et engagement qualité signés", obligatoire: true },
+    { nom: "Fiche de poste signée", obligatoire: true },
+    { nom: "Charte de déontologie et engagement signés", obligatoire: true },
+  ];
+
+  const optionsSectionsPersonnel: OptionSection[] = [
+    {
+      valeur: "equipe",
+      label: `Équipe & Badges QR (${employes.length})`,
+      description: "Liste des collaborateurs, dossiers individuels, statuts et génération de badges",
+      badge: `${employes.length}`,
+    },
+    {
+      valeur: "dossier",
+      label: "Dossier Individuel & Pièces",
+      description: "Diplômes, contrats, attestations et certificats médicaux",
+    },
+    {
+      valeur: "ordre",
+      label: "Ordre des Pharmaciens (Section B)",
+      description: "Tableau de l'Ordre ONPB, attestations d'inscription et conformité déontologique",
+    },
+    {
+      valeur: "postes",
+      label: "Postes & Habilitations",
+      description: "Fiches de fonction détaillées, délégations de signatures et habilitations",
+    },
+    {
+      valeur: "organigramme",
+      label: "Organigramme Hiérarchique",
+      description: "Lignes de responsabilité, suppléances et encadrement pharmaceutique",
+    },
+    {
+      valeur: "formations",
+      label: "Plan de Formation Continue",
+      description: "Cycles annuels de formation, mise à niveau et évaluations",
+    },
+    {
+      valeur: "entretiens",
+      label: "Entretiens Individuels Annuels",
+      description: "Bilans de compétences, objectifs qualité et satisfaction du personnel",
+    },
+    {
+      valeur: "conges",
+      label: "Congés & Planning Remplacements",
+      description: "Continuité de service pharmaceutique et registre des absences",
+    },
+    {
+      valeur: "hygiene",
+      label: "Intégration & Suivi Médical",
+      description: "Livret d'accueil, charte d'hygiène et visites médicales périodiques",
+    },
   ];
 
   return (
     <div className="grid gap-6">
       {/* HEADER HERO */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-[#CFF1D2] shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight text-[#0F3B27]">
-              Personnel, Compétences & Ordre (BPD-2)
+              Personnel & Équipe Officinale
             </h1>
-            <LienReglementaireBpd articles="BPD-2 / Art. 2.01 à 2.20" />
-            <Badge className="bg-[#0F3B27] text-[#92FF5F] text-[10px]">
-              GAR-DO-001 / GAR-PL-001
-            </Badge>
           </div>
           <p className="mt-1 text-xs text-[#475C50]">
-            Gestion des dossiers individuels, contrôle d'exercice à l'Ordre Section B, fiches de poste, habilitations aux actes et plan de formation continue.
+            Gestion des collaborateurs, fiches de poste, contrats, habilitations et plan de formation continue.
           </p>
         </div>
 
@@ -273,82 +326,49 @@ function PagePersonnel() {
           />
           <Button
             onClick={() => setModalEmploye(true)}
-            className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm"
+            className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm rounded-[10px]"
           >
             <UserPlus className="size-4" /> Nouveau Collaborateur
           </Button>
         </div>
       </div>
 
-      {/* TABS DE LA PAGE (9 ONGLETS CONFORMES AU CAHIER DES CHARGES) */}
+      {/* SÉLECTEUR DÉROULANT FILTRABLE DES SECTIONS (REMPLACE LES ONGLETS HORIZONTAUX) */}
+      <div className="bg-white p-3.5 rounded-[10px] border border-[#CFF1D2] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-[10px] bg-[#0F3B27]/10 text-[#0F3B27]">
+            <Users className="size-4" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-[#0F3B27] block">Module Personnel & Habilitations</span>
+            <span className="text-[11px] text-[#475C50]">Sélectionnez la section RH à afficher ou filtrez par mot-clé</span>
+          </div>
+        </div>
+        <div className="w-full md:w-96">
+          <SelecteurFiltrable
+            options={optionsSectionsPersonnel}
+            valeur={activeTab}
+            onChangement={setActiveTab}
+            placeholder="Choisir une section RH..."
+            recherchePlaceholder="Filtrer parmi les 9 sections..."
+            className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+          />
+        </div>
+      </div>
+
+      {/* TABS DE LA PAGE */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-[#F7F9F7] border border-[#CFF1D2] p-1 rounded-xl flex flex-wrap h-auto gap-1">
-          <TabsTrigger
-            value="equipe"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Équipe ({employes.length})
-          </TabsTrigger>
-          <TabsTrigger
-            value="dossier"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Dossier Individuel
-          </TabsTrigger>
-          <TabsTrigger
-            value="ordre"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Ordre Section B
-          </TabsTrigger>
-          <TabsTrigger
-            value="postes"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Postes & Habilitations
-          </TabsTrigger>
-          <TabsTrigger
-            value="organigramme"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Organigramme
-          </TabsTrigger>
-          <TabsTrigger
-            value="formations"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Formations & Compétences
-          </TabsTrigger>
-          <TabsTrigger
-            value="entretiens"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Entretiens Annuels
-          </TabsTrigger>
-          <TabsTrigger
-            value="conges"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Congés & Contrats
-          </TabsTrigger>
-          <TabsTrigger
-            value="hygiene"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Intégration & Hygiène
-          </TabsTrigger>
-        </TabsList>
 
         {/* 1. ÉQUIPE */}
         <TabsContent value="equipe" className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-[#CFF1D2]">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-[10px] border border-[#CFF1D2]">
             <div className="relative flex-1">
               <Search className="size-4 absolute left-3 top-2.5 text-muted-foreground" />
               <Input
                 placeholder="Rechercher par nom, rôle ou poste..."
                 value={recherche}
                 onChange={(e) => setRecherche(e.target.value)}
-                className="pl-9 h-9 text-xs rounded-xl border-[#CFF1D2]"
+                className="pl-9 h-9 text-xs rounded-[10px] border-[#CFF1D2]"
               />
             </div>
 
@@ -357,7 +377,7 @@ function PagePersonnel() {
               <select
                 value={filtreRole}
                 onChange={(e) => setFiltreRole(e.target.value)}
-                className="h-9 rounded-xl border border-[#CFF1D2] bg-white text-xs px-2.5 font-medium"
+                className="h-9 rounded-[10px] border border-[#CFF1D2] bg-white text-xs px-2.5 font-medium"
               >
                 <option value="tous">Tous les postes</option>
                 <option value="pharmacien_titulaire">Pharmacien Titulaire</option>
@@ -376,17 +396,30 @@ function PagePersonnel() {
               const ordreInfo = ordres[e.id];
 
               return (
-                <Card key={e.id} className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+                <Card
+                  key={e.id}
+                  onClick={() => setEmployeDossier(e)}
+                  className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3 cursor-pointer hover:border-[#0F3B27] hover:shadow-md transition-all"
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="size-10 rounded-xl bg-[#0F3B27]/10 text-[#0F3B27] flex items-center justify-center font-bold text-sm">
-                        {e.nom_complet.charAt(0)}
+                      <div className="size-11 rounded-[10px] overflow-hidden bg-[#0F3B27]/10 text-[#0F3B27] flex items-center justify-center font-bold text-sm shrink-0 border border-[#CFF1D2]">
+                        {e.photo_url ? (
+                          <img src={e.photo_url} alt={e.nom_complet} className="size-full object-cover" />
+                        ) : (
+                          <span>{e.nom_complet.charAt(0)}</span>
+                        )}
                       </div>
                       <div>
                         <h3 className="font-bold text-[#0F3B27] text-sm leading-tight">{e.nom_complet}</h3>
-                        <span className="text-[11px] text-[#475C50] capitalize block mt-0.5">
-                          {e.poste.replace("_", " ")}
-                        </span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-[10px] font-mono text-[#0F3B27] bg-[#CFF1D2]/50 px-1.5 py-0.2 rounded font-bold">
+                            {e.matricule || `BP-${e.id.slice(0, 4).toUpperCase()}`}
+                          </span>
+                          <span className="text-[11px] text-[#475C50] capitalize">
+                            {e.poste.replace("_", " ")}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -398,7 +431,7 @@ function PagePersonnel() {
                     </Badge>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] text-xs space-y-1">
+                  <div className="p-2.5 rounded-[10px] bg-[#F7F9F7] border border-[#CFF1D2] text-xs space-y-1">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Téléphone :</span>
                       <span>{e.telephone || "—"}</span>
@@ -417,20 +450,29 @@ function PagePersonnel() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-1">
+                  <div className="flex gap-2 pt-1" onClick={(evt) => evt.stopPropagation()}>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setEmployeDossier(e)}
-                      className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1"
+                      className="flex-1 text-xs border-[#CFF1D2] text-[#0F3B27] gap-1 hover:bg-[#CFF1D2]/30 rounded-[10px]"
                     >
                       <FileText className="size-3.5" /> Dossier
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => setEmployeBadge(e)}
+                      className="flex-1 text-xs bg-[#0F3B27] text-[#92FF5F] hover:bg-[#0F3B27]/90 gap-1 rounded-[10px] font-bold"
+                      title="Générer Badge avec QR"
+                    >
+                      <QrCode className="size-3.5" /> Badge QR
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => basculer.mutate(e)}
-                      className="h-8 px-2 text-[#475C50] hover:text-red-700"
+                      className="h-8 px-2 text-[#475C50] hover:text-red-700 border-[#CFF1D2] rounded-[10px]"
                       title={e.actif ? "Désactiver compte" : "Réactiver compte"}
                     >
                       {e.actif ? <UserX className="size-4" /> : <UserCheck className="size-4" />}
@@ -444,14 +486,14 @@ function PagePersonnel() {
 
         {/* 2. DOSSIER INDIVIDUEL (PER-01) */}
         <TabsContent value="dossier" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-4">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-4">
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle className="text-base text-[#0F3B27] font-bold">
-                  Contrôle des Pièces Obligatoires du Dossier Personnel (GAR-LI-001)
+                  Contrôle des Pièces du Dossier Personnel
                 </CardTitle>
                 <CardDescription className="text-xs text-[#475C50]">
-                  Conservation sécurisée pendant la durée du contrat + 5 ans. Tout document manquant est signalé en inspection.
+                  Conservation sécurisée pendant la durée d'activité. Tout document manquant est signalé pour régularisation.
                 </CardDescription>
               </div>
               <Button
@@ -485,7 +527,7 @@ function PagePersonnel() {
 
         {/* 3. ORDRE SECTION B (PER-02) */}
         <TabsContent value="ordre" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
               Registre d'Exercice & Inscription à l'Ordre National des Pharmaciens (Section B)
             </CardTitle>
@@ -523,7 +565,7 @@ function PagePersonnel() {
 
         {/* 4. POSTES & HABILITATIONS (PER-03 & PER-04) */}
         <TabsContent value="postes" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
               Fiches de Poste & Matrice d'Habilitations aux Actes de Dispensation
             </CardTitle>
@@ -557,14 +599,14 @@ function PagePersonnel() {
 
         {/* 5. ORGANIGRAMME (PER-05) */}
         <TabsContent value="organigramme" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3 text-center">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3 text-center">
             <div className="flex justify-between items-center text-left">
               <div>
                 <CardTitle className="text-base text-[#0F3B27] font-bold">
-                  Organigramme Hiérarchique Nominatif Officiel (GAR-DO-001)
+                  Organigramme Hiérarchique de l'Équipe
                 </CardTitle>
                 <CardDescription className="text-xs text-[#475C50]">
-                  Généré automatiquement à partir des dossiers. À afficher visiblement dans l'officine pour l'inspection.
+                  Généré automatiquement à partir des dossiers du personnel.
                 </CardDescription>
               </div>
               <Button
@@ -611,7 +653,7 @@ function PagePersonnel() {
                       </tbody>
                     </table>
                   `;
-                  imprimerFicheOfficielle("ORGANIGRAMME OFFICIEL DE L'OFFICINE (BPD-2)", html);
+                  imprimerFicheOfficielle("ORGANIGRAMME DE L'OFFICINE", html);
                 }}
                 className="bg-[#0F3B27] text-[#92FF5F] text-xs font-bold gap-1"
               >
@@ -619,7 +661,7 @@ function PagePersonnel() {
               </Button>
             </div>
 
-            <div className="p-6 bg-[#F7F9F7] rounded-2xl border border-[#CFF1D2] space-y-4 my-2">
+            <div className="p-6 bg-[#F7F9F7] rounded-[10px] border border-[#CFF1D2] space-y-4 my-2">
               <div className="inline-block p-3 rounded-xl bg-[#0F3B27] text-white text-xs font-bold shadow-md">
                 Pharmacien Titulaire & Directeur Technique
                 <span className="block text-[11px] text-[#92FF5F] font-normal">Dr Félicien AGBO</span>
@@ -645,27 +687,27 @@ function PagePersonnel() {
           </Card>
         </TabsContent>
 
-        {/* 6. FORMATIONS & COMPÉTENCES (PER-07) */}
+        {/* 6. FORMATIONS & COMPÉTENCES */}
         <TabsContent value="formations" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
-              Plan Annuel de Formation & Matrice des Compétences (GAR-PL-001)
+              Plan Annuel de Formation & Compétences
             </CardTitle>
             <CardDescription className="text-xs text-[#475C50]">
-              Sessions obligatoires : chaîne du froid, traçabilité des stupéfiants, hygiène et délivrance ordonnances.
+              Sessions : chaîne du froid, traçabilité des stupéfiants, hygiène et délivrance ordonnances.
             </CardDescription>
 
             <div className="space-y-2 pt-2 text-xs">
               <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] flex justify-between items-center">
                 <div>
-                  <span className="font-bold text-[#0F3B27]">Session BPD-4 : Maîtrise de la chaîne du froid 2–8 °C</span>
+                  <span className="font-bold text-[#0F3B27]">Maîtrise de la chaîne du froid 2–8 °C</span>
                   <p className="text-muted-foreground text-[11px]">Émargement électronique complet · 6 collaborateurs formés</p>
                 </div>
                 <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Validée</Badge>
               </div>
               <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] flex justify-between items-center">
                 <div>
-                  <span className="font-bold text-[#0F3B27]">Session BPD-5 : Sécurisation de l'ordonnancier et stupéfiants</span>
+                  <span className="font-bold text-[#0F3B27]">Sécurisation de l'ordonnancier et stupéfiants</span>
                   <p className="text-muted-foreground text-[11px]">Prévue pour le 25/11/2026</p>
                 </div>
                 <Badge variant="outline" className="text-[10px]">Planifiée</Badge>
@@ -674,30 +716,30 @@ function PagePersonnel() {
           </Card>
         </TabsContent>
 
-        {/* 7. ENTRETIENS ANNUELS (PER-10) */}
+        {/* 7. ENTRETIENS ANNUELS */}
         <TabsContent value="entretiens" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
-              Entretiens Annuels Individuels d'Évaluation (GAR-FI-002)
+              Entretiens Annuels d'Évaluation
             </CardTitle>
             <CardDescription className="text-xs text-[#475C50]">
-              Bilan des compétences acquises, objectifs qualité et signature conjointe.
+              Bilan des compétences acquises, objectifs qualité et satisfaction de l'équipe.
             </CardDescription>
 
             <div className="p-4 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] text-xs">
-              Campagne d'entretiens annuels 2026 planifiée pour Décembre 2026. Trame standard prête à l'emploi.
+              Campagne d'entretiens annuels planifiée pour Décembre. Trame standard prête à l'emploi.
             </div>
           </Card>
         </TabsContent>
 
-        {/* 8. CONGÉS & CONTRATS (PER-13 & PER-14) */}
+        {/* 8. CONGÉS & CONTRATS */}
         <TabsContent value="conges" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
-              Contrats de Travail & Tableau des Congés (GAR-PL-002)
+              Contrats de Travail & Tableau des Congés
             </CardTitle>
             <CardDescription className="text-xs text-[#475C50]">
-              Gestion des périodes d'essai, fins de CDD et continuité de présence pharmaceutique.
+              Gestion des périodes d'essai, fins de contrat et continuité de présence pharmaceutique.
             </CardDescription>
 
             <div className="p-4 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] text-xs">
@@ -706,14 +748,14 @@ function PagePersonnel() {
           </Card>
         </TabsContent>
 
-        {/* 9. INTÉGRATION & HYGIÈNE (PER-11 & PER-12) */}
+        {/* 9. INTÉGRATION & HYGIÈNE */}
         <TabsContent value="hygiene" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
+          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
-              Parcours d'Intégration BPD & Suivi Médical (GAR-FI-003)
+              Parcours d'Intégration & Suivi Médical
             </CardTitle>
             <CardDescription className="text-xs text-[#475C50]">
-              Livret d'accueil BPD, formation initiale à l'hygiène et visites médicales périodiques du travail.
+              Livret d'accueil, charte d'hygiène et visites médicales périodiques du travail.
             </CardDescription>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 text-xs">
@@ -741,7 +783,7 @@ function PagePersonnel() {
 
       {/* MODALE CRÉATION COLLABORATEUR */}
       <Dialog open={modalEmploye} onOpenChange={setModalEmploye}>
-        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-2xl shadow-xl">
+        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
               Nouveau Collaborateur de l'Officine
@@ -785,8 +827,21 @@ function PagePersonnel() {
                 placeholder="+229 97 00 00 00"
                 value={telEmploye}
                 onChange={(e) => setTelEmploye(e.target.value)}
-                className="h-8 text-xs rounded-xl border-[#CFF1D2]"
+                className="h-8 text-xs rounded-[10px] border-[#CFF1D2]"
               />
+            </div>
+
+            <div>
+              <Label className="font-semibold text-[#0F3B27]">Photo / Avatar Collaborateur</Label>
+              <Input
+                placeholder="URL photo (ex: https://...) ou laisser vide"
+                value={photoEmploye}
+                onChange={(e) => setPhotoEmploye(e.target.value)}
+                className="h-8 text-xs rounded-[10px] border-[#CFF1D2]"
+              />
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Cette photo apparaîtra sur le badge PVC officiel et la borne tablette de pointage.
+              </p>
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0 pt-2">
@@ -794,14 +849,14 @@ function PagePersonnel() {
                 type="button"
                 variant="outline"
                 onClick={() => setModalEmploye(false)}
-                className="border-[#CFF1D2] text-[#475C50]"
+                className="border-[#CFF1D2] text-[#475C50] rounded-[10px]"
               >
                 Annuler
               </Button>
               <Button
                 type="submit"
                 disabled={enCours || !nomEmploye.trim()}
-                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs"
+                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs rounded-[10px]"
               >
                 {enCours ? "Création…" : "Enregistrer Collaborateur"}
               </Button>
@@ -823,13 +878,13 @@ function PagePersonnel() {
 
       {/* MODALE DOSSIER INDIVIDUEL ET TÉLÉVERSEMENT PIÈCES (GAR-LI-001) */}
       <Dialog open={!!employeDossier} onOpenChange={(open) => !open && setEmployeDossier(null)}>
-        <DialogContent className="max-w-lg bg-white border border-[#CFF1D2] rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
               Dossier Individuel : {employeDossier?.nom_complet}
             </DialogTitle>
             <DialogDescription className="text-xs text-[#475C50]">
-              Poste : {employeDossier?.poste} · Matricule : {employeDossier?.matricule || "N/A"} · Conservation légale GAR-LI-001.
+              Poste : {employeDossier?.poste} · Matricule : {employeDossier?.matricule || "N/A"} · Conservation sécurisée.
             </DialogDescription>
           </DialogHeader>
 
@@ -848,7 +903,7 @@ function PagePersonnel() {
             {piecesObligatoires.map((p, idx) => (
               <div
                 key={idx}
-                className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] flex items-center justify-between text-xs gap-2"
+                className="p-3 rounded-[10px] border border-[#CFF1D2] bg-[#F7F9F7] flex items-center justify-between text-xs gap-2"
               >
                 <div>
                   <p className="font-semibold text-[#0F3B27]">{p.nom}</p>
@@ -862,7 +917,7 @@ function PagePersonnel() {
                     setPieceCible(p.nom);
                     pieceInputRef.current?.click();
                   }}
-                  className="h-7 text-[11px] border-[#CFF1D2] text-[#0F3B27] gap-1 shrink-0"
+                  className="h-7 text-[11px] border-[#CFF1D2] text-[#0F3B27] gap-1 shrink-0 rounded-[10px]"
                 >
                   <Upload className="size-3" />
                   {televersementEnCours && pieceCible === p.nom ? "Envoi…" : "Déposer pièce"}
@@ -872,8 +927,125 @@ function PagePersonnel() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEmployeDossier(null)}>Fermer</Button>
+            <Button variant="outline" className="rounded-[10px]" onClick={() => setEmployeDossier(null)}>Fermer</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODALE GÉNÉRATION DE BADGE AVEC CODE QR (SCANNER TABLETTE H24) */}
+      <Dialog open={!!employeBadge} onOpenChange={(open) => !open && setEmployeBadge(null)}>
+        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl p-6">
+          {employeBadge && (
+            <div className="space-y-4">
+              <DialogHeader>
+                <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
+                  Badge Professionnel Sécurisé & Code QR
+                </DialogTitle>
+                <DialogDescription className="text-xs text-[#475C50]">
+                  Badge officiel d'identification et de pointage pour la borne tablette H24 de l'officine.
+                </DialogDescription>
+              </DialogHeader>
+
+              {/* CARTE BADGE FORMAT PVC */}
+              <div
+                id="carte-badge-pvc"
+                className="bg-white rounded-[10px] border-2 border-[#0F3B27] p-5 shadow-md flex flex-col items-center text-center relative overflow-hidden"
+              >
+                {/* Bandeau supérieur Pharmacie */}
+                <div className="w-full bg-[#0F3B27] text-[#92FF5F] py-2 px-3 rounded-t-[8px] -mt-5 mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Award className="size-4 text-[#92FF5F]" />
+                    <span className="font-extrabold text-xs tracking-wider uppercase">BestPharma Bénin</span>
+                  </div>
+                  <span className="text-[10px] bg-[#92FF5F] text-[#0F3B27] font-bold px-1.5 py-0.2 rounded font-mono">
+                    BPD-ABMed
+                  </span>
+                </div>
+
+                {/* Photo & Nom */}
+                <div className="size-24 rounded-full overflow-hidden border-2 border-[#0F3B27] bg-[#F7F9F7] flex items-center justify-center shadow-sm mb-3">
+                  {employeBadge.photo_url ? (
+                    <img src={employeBadge.photo_url} alt={employeBadge.nom_complet} className="size-full object-cover" />
+                  ) : (
+                    <div className="size-full bg-gradient-to-tr from-[#0F3B27] to-[#1E6B47] text-white flex items-center justify-center font-bold text-3xl font-display">
+                      {employeBadge.nom_complet.charAt(0)}
+                    </div>
+                  )}
+                </div>
+
+                <h3 className="font-display font-extrabold text-base text-[#0F3B27] leading-tight">
+                  {employeBadge.nom_complet.toUpperCase()}
+                </h3>
+                <span className="text-xs font-bold text-[#1E6B47] uppercase tracking-wide mt-0.5">
+                  {employeBadge.poste.replace("_", " ")}
+                </span>
+                <span className="text-[11px] font-mono text-muted-foreground mt-0.5">
+                  Matricule : <strong className="text-[#0F3B27]">{employeBadge.matricule || `BP-${employeBadge.id.slice(0, 6).toUpperCase()}`}</strong>
+                </span>
+
+                {/* QR Code de pointage instantané */}
+                <div className="my-3 p-2.5 bg-[#F7F9F7] rounded-[10px] border border-[#CFF1D2] flex flex-col items-center">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
+                      `BESTPHARMA_BADGE:${employeBadge.matricule || employeBadge.id}`
+                    )}`}
+                    alt="Badge QR"
+                    className="size-32 object-contain bg-white p-1 rounded-[6px] border border-[#CFF1D2]"
+                  />
+                  <span className="text-[10px] font-mono font-bold text-[#0F3B27] mt-1.5 tracking-wider">
+                    SCAN TABLETTE H24
+                  </span>
+                </div>
+
+                <div className="text-[10px] text-[#475C50] border-t border-[#CFF1D2] pt-2 w-full flex justify-between items-center">
+                  <span>Valide : Année 2026</span>
+                  <span className="font-semibold text-emerald-800">Ordre / ABMed Conforme</span>
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-[#CFF1D2]">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEmployeBadge(null)}
+                  className="border-[#CFF1D2] text-[#475C50] text-xs rounded-[10px]"
+                >
+                  Fermer
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const matricule = employeBadge.matricule || `BP-${employeBadge.id.slice(0, 6).toUpperCase()}`;
+                    imprimerFicheOfficielle(
+                      `Badge Professionnel - ${employeBadge.nom_complet}`,
+                      `
+                        <div style="font-family: Arial, sans-serif; text-align: center; max-width: 320px; margin: 20px auto; border: 2px solid #0F3B27; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                          <div style="background: #0F3B27; color: #92FF5F; padding: 8px; border-radius: 8px 8px 0 0; margin: -20px -20px 15px -20px;">
+                            <h3 style="margin: 0; font-size: 14px; letter-spacing: 1px;">BESTPHARMA BÉNIN</h3>
+                            <p style="margin: 2px 0 0 0; font-size: 10px; color: #fff;">BADGE PROFESSIONNEL OFFICIEL</p>
+                          </div>
+                          <div style="width: 80px; height: 80px; margin: 10px auto; border-radius: 50%; background: #0F3B27; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; overflow: hidden;">
+                            ${employeBadge.photo_url ? `<img src="${employeBadge.photo_url}" style="width: 100%; height: 100%; object-fit: cover;" />` : employeBadge.nom_complet.charAt(0)}
+                          </div>
+                          <h2 style="margin: 8px 0 2px 0; color: #0F3B27; font-size: 16px;">${employeBadge.nom_complet.toUpperCase()}</h2>
+                          <p style="margin: 0; font-size: 12px; font-weight: bold; color: #1E6B47;">${employeBadge.poste.replace("_", " ").toUpperCase()}</p>
+                          <p style="margin: 4px 0; font-family: monospace; font-size: 11px; color: #555;">Matricule : ${matricule}</p>
+                          <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
+                            `BESTPHARMA_BADGE:${matricule}`
+                          )}" style="width: 140px; height: 140px; margin: 10px auto; display: block;" />
+                          <p style="margin: 6px 0 0 0; font-size: 9px; color: #777;">À scanner sur la tablette de pointage BestPharma</p>
+                        </div>
+                      `
+                    );
+                    toast.success("Impression du badge lancée !");
+                  }}
+                  className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 rounded-[10px]"
+                >
+                  <Printer className="size-3.5" /> Imprimer le Badge PVC
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -22,6 +22,7 @@ import {
   UserX,
 } from "lucide-react";
 import { imprimerFicheOfficielle } from "@/lib/export-utils";
+import { BadgeDoubleFace, imprimerBadgeDoubleFace } from "@/components/modules/badge-double-face";
 
 interface ModaleProfilCollaborateurProps {
   employe: any | null;
@@ -50,34 +51,12 @@ export function ModaleProfilCollaborateur({
   ].includes(employe.poste);
 
   const imprimerBadge = () => {
-    const html = `
-      <div style="font-family: sans-serif; text-align: center; max-width: 350px; margin: 0 auto; border: 2px solid #0F3B27; border-radius: 12px; padding: 20px; background: #fff;">
-        <div style="font-size: 16px; font-weight: 900; color: #0F3B27; margin-bottom: 4px;">BESTPHARMA</div>
-        <div style="font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 16px;">Badge Professionnel Officiel</div>
-        <div style="width: 80px; height: 80px; border-radius: 12px; overflow: hidden; margin: 0 auto 12px auto; background: #F7F9F7; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; color: #0F3B27;">
-          ${
-            employe.photo_url
-              ? `<img src="${employe.photo_url}" style="width: 100%; height: 100%; object-fit: cover;" />`
-              : employe.nom_complet.charAt(0)
-          }
-        </div>
-        <div style="font-size: 16px; font-weight: bold; color: #0F3B27;">${employe.nom_complet}</div>
-        <div style="font-size: 12px; color: #475C50; margin-top: 2px; text-transform: capitalize;">${employe.poste.replace("_", " ")}</div>
-        <div style="font-family: monospace; font-size: 11px; font-weight: bold; margin-top: 6px; background: #EBF3EC; display: inline-block; padding: 2px 8px; border-radius: 4px; color: #0F3B27;">
-          ${employe.matricule || `BP-${employe.id.slice(0, 6).toUpperCase()}`}
-        </div>
-        <div style="margin: 16px 0;">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=BESTPHARMA_BADGE:${employe.matricule || employe.id}" style="width: 120px; height: 120px; margin: 0 auto;" />
-        </div>
-        <div style="font-size: 9px; color: #777;">Scannez ce QR Code sur la borne d'entrée pour enregistrer votre pointage.</div>
-      </div>
-    `;
-    imprimerFicheOfficielle(`Badge - ${employe.nom_complet}`, html);
+    imprimerBadgeDoubleFace(employe);
   };
 
   return (
     <Dialog open={!!employe} onOpenChange={(open) => !open && onFermer()}>
-      <DialogContent className="max-w-2xl bg-white border border-[#CFF1D2] rounded-2xl shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto bg-white border border-[#CFF1D2] rounded-2xl shadow-2xl p-0">
         {/* EN-TÊTE DU PROFIL */}
         <div className="bg-gradient-to-r from-[#0F3B27] to-[#1A5C3D] text-white p-6 relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
@@ -243,27 +222,8 @@ export function ModaleProfilCollaborateur({
           )}
 
           {onglet === "badge" && (
-            <div className="flex flex-col items-center justify-center p-4 space-y-4 text-center">
-              <div className="p-4 bg-white rounded-2xl border-2 border-[#0F3B27] shadow-md">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=BESTPHARMA_BADGE:${employe.matricule || employe.id}`}
-                  alt="Badge QR Code"
-                  className="size-40 mx-auto"
-                />
-                <div className="font-mono text-xs font-bold text-[#0F3B27] mt-2">
-                  {employe.matricule || `BP-${employe.id.slice(0, 6).toUpperCase()}`}
-                </div>
-              </div>
-              <p className="text-xs text-[#475C50] max-w-sm">
-                Ce badge permet au collaborateur de pointer instantanément à la borne tablette ou de scanner ses interventions.
-              </p>
-              <Button
-                onClick={imprimerBadge}
-                size="sm"
-                className="bg-[#0F3B27] hover:bg-[#164E35] text-[#92FF5F] text-xs font-bold gap-1.5 rounded-xl"
-              >
-                <Printer className="size-3.5" /> Imprimer le Badge PVC
-              </Button>
+            <div className="py-2">
+              <BadgeDoubleFace employe={employe} />
             </div>
           )}
 

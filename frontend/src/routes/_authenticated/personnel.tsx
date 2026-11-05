@@ -60,6 +60,7 @@ import {
   SignatureData,
 } from "@/components/modules/bpd-communs";
 import { ModaleProfilCollaborateur } from "@/components/modules/modale-profil-collaborateur";
+import { ModaleBadgeDoubleFace } from "@/components/modules/badge-double-face";
 
 export const Route = createFileRoute("/_authenticated/personnel")({
   head: () => ({
@@ -964,121 +965,12 @@ function PagePersonnel() {
       </Dialog>
 
       {/* MODALE GÉNÉRATION DE BADGE AVEC CODE QR (SCANNER TABLETTE H24) */}
-      <Dialog open={!!employeBadge} onOpenChange={(open) => !open && setEmployeBadge(null)}>
-        <DialogContent className="max-w-md bg-white border border-[#CFF1D2] rounded-[10px] shadow-xl p-6">
-          {employeBadge && (
-            <div className="space-y-4">
-              <DialogHeader>
-                <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
-                  Badge Professionnel Sécurisé & Code QR
-                </DialogTitle>
-                <DialogDescription className="text-xs text-[#475C50]">
-                  Badge officiel d'identification et de pointage pour la borne tablette H24 de l'officine.
-                </DialogDescription>
-              </DialogHeader>
-
-              {/* CARTE BADGE FORMAT PVC */}
-              <div
-                id="carte-badge-pvc"
-                className="bg-white rounded-[10px] border-2 border-[#0F3B27] p-5 shadow-md flex flex-col items-center text-center relative overflow-hidden"
-              >
-                {/* Bandeau supérieur Pharmacie */}
-                <div className="w-full bg-[#0F3B27] text-[#92FF5F] py-2 px-3 rounded-t-[8px] -mt-5 mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Award className="size-4 text-[#92FF5F]" />
-                    <span className="font-extrabold text-xs tracking-wider uppercase">BestPharma Bénin</span>
-                  </div>
-                  <span className="text-[10px] bg-[#92FF5F] text-[#0F3B27] font-bold px-1.5 py-0.2 rounded font-mono">
-                    BPD-ABMed
-                  </span>
-                </div>
-
-                {/* Photo & Nom */}
-                <div className="size-24 rounded-full overflow-hidden border-2 border-[#0F3B27] bg-[#F7F9F7] flex items-center justify-center shadow-sm mb-3">
-                  {employeBadge.photo_url ? (
-                    <img src={employeBadge.photo_url} alt={employeBadge.nom_complet} className="size-full object-cover" />
-                  ) : (
-                    <div className="size-full bg-gradient-to-tr from-[#0F3B27] to-[#1E6B47] text-white flex items-center justify-center font-bold text-3xl font-display">
-                      {employeBadge.nom_complet.charAt(0)}
-                    </div>
-                  )}
-                </div>
-
-                <h3 className="font-display font-extrabold text-base text-[#0F3B27] leading-tight">
-                  {employeBadge.nom_complet.toUpperCase()}
-                </h3>
-                <span className="text-xs font-bold text-[#1E6B47] uppercase tracking-wide mt-0.5">
-                  {employeBadge.poste.replace("_", " ")}
-                </span>
-                <span className="text-[11px] font-mono text-muted-foreground mt-0.5">
-                  Matricule : <strong className="text-[#0F3B27]">{employeBadge.matricule || `BP-${employeBadge.id.slice(0, 6).toUpperCase()}`}</strong>
-                </span>
-
-                {/* QR Code de pointage instantané */}
-                <div className="my-3 p-2.5 bg-[#F7F9F7] rounded-[10px] border border-[#CFF1D2] flex flex-col items-center">
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
-                      `BESTPHARMA_BADGE:${employeBadge.matricule || employeBadge.id}`
-                    )}`}
-                    alt="Badge QR"
-                    className="size-32 object-contain bg-white p-1 rounded-[6px] border border-[#CFF1D2]"
-                  />
-                  <span className="text-[10px] font-mono font-bold text-[#0F3B27] mt-1.5 tracking-wider">
-                    SCAN TABLETTE H24
-                  </span>
-                </div>
-
-                <div className="text-[10px] text-[#475C50] border-t border-[#CFF1D2] pt-2 w-full flex justify-between items-center">
-                  <span>Valide : Année 2026</span>
-                  <span className="font-semibold text-emerald-800">Ordre / ABMed Conforme</span>
-                </div>
-              </div>
-
-              <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-[#CFF1D2]">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setEmployeBadge(null)}
-                  className="border-[#CFF1D2] text-[#475C50] text-xs rounded-[10px]"
-                >
-                  Fermer
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    const matricule = employeBadge.matricule || `BP-${employeBadge.id.slice(0, 6).toUpperCase()}`;
-                    imprimerFicheOfficielle(
-                      `Badge Professionnel - ${employeBadge.nom_complet}`,
-                      `
-                        <div style="font-family: Arial, sans-serif; text-align: center; max-width: 320px; margin: 20px auto; border: 2px solid #0F3B27; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                          <div style="background: #0F3B27; color: #92FF5F; padding: 8px; border-radius: 8px 8px 0 0; margin: -20px -20px 15px -20px;">
-                            <h3 style="margin: 0; font-size: 14px; letter-spacing: 1px;">BESTPHARMA BÉNIN</h3>
-                            <p style="margin: 2px 0 0 0; font-size: 10px; color: #fff;">BADGE PROFESSIONNEL OFFICIEL</p>
-                          </div>
-                          <div style="width: 80px; height: 80px; margin: 10px auto; border-radius: 50%; background: #0F3B27; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; overflow: hidden;">
-                            ${employeBadge.photo_url ? `<img src="${employeBadge.photo_url}" style="width: 100%; height: 100%; object-fit: cover;" />` : employeBadge.nom_complet.charAt(0)}
-                          </div>
-                          <h2 style="margin: 8px 0 2px 0; color: #0F3B27; font-size: 16px;">${employeBadge.nom_complet.toUpperCase()}</h2>
-                          <p style="margin: 0; font-size: 12px; font-weight: bold; color: #1E6B47;">${employeBadge.poste.replace("_", " ").toUpperCase()}</p>
-                          <p style="margin: 4px 0; font-family: monospace; font-size: 11px; color: #555;">Matricule : ${matricule}</p>
-                          <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
-                            `BESTPHARMA_BADGE:${matricule}`
-                          )}" style="width: 140px; height: 140px; margin: 10px auto; display: block;" />
-                          <p style="margin: 6px 0 0 0; font-size: 9px; color: #777;">À scanner sur la tablette de pointage BestPharma</p>
-                        </div>
-                      `
-                    );
-                    toast.success("Impression du badge lancée !");
-                  }}
-                  className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 rounded-[10px]"
-                >
-                  <Printer className="size-3.5" /> Imprimer le Badge PVC
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* MODALE GÉNÉRATION DE BADGE DOUBLE FACE (RECTO / VERSO) */}
+      <ModaleBadgeDoubleFace
+        employe={employeBadge}
+        ouvert={!!employeBadge}
+        onFermer={() => setEmployeBadge(null)}
+      />
 
       {/* GRAND MODALE PROFIL COLLABORATEUR (DOSSIER, BADGE, INFORMATIONS) */}
       <ModaleProfilCollaborateur

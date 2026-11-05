@@ -1432,42 +1432,43 @@ function PageStockMagasin() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-[#CFF1D2]/40">
-                {[
-                  { id: "tous", label: "Tous les lots", count: countsLots.tous },
-                  { id: "fefo", label: "Priorité FEFO (Sortie immédiate)", count: countsLots.fefo, highlight: true },
-                  { id: "thermolabile", label: "Thermolabiles 2–8 °C", count: countsLots.thermolabile },
-                  { id: "critique_1m", label: "Critique < 30j", count: countsLots.critique_1m, alert: countsLots.critique_1m > 0 },
-                  { id: "alerte_3m", label: "Alerte 3 mois", count: countsLots.alerte_3m, warning: countsLots.alerte_3m > 0 },
-                  { id: "attention_6m", label: "Attention 6 mois", count: countsLots.attention_6m },
-                  { id: "quarantaine", label: "Quarantaine & Bloqués", count: countsLots.quarantaine, warning: countsLots.quarantaine > 0 },
-                  { id: "perime", label: "Périmés interdits", count: countsLots.perime, alert: countsLots.perime > 0 },
-                ].map((ss) => (
-                  <button
-                    key={ss.id}
-                    onClick={() => setSousSectionLot(ss.id)}
-                    className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
-                      sousSectionLot === ss.id
-                        ? "bg-[#0F3B27] text-[#92FF5F] shadow-sm"
-                        : "bg-[#F7F9F7] text-[#475C50] hover:bg-[#CFF1D2]/30 border border-[#CFF1D2]/60"
-                    }`}
-                  >
-                    <span>{ss.label}</span>
-                    <span
-                      className={`rounded-full px-1.5 py-0.2 text-[10px] font-black ${
-                        ss.alert
-                          ? "bg-red-500 text-white"
-                          : ss.warning
-                          ? "bg-amber-500 text-white"
-                          : sousSectionLot === ss.id
-                          ? "bg-[#92FF5F] text-[#0F3B27]"
-                          : "bg-white text-[#475C50]"
-                      }`}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#CFF1D2]/40">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-[#0F3B27] whitespace-nowrap">Filtre des lots :</span>
+                  <div className="w-full sm:w-80">
+                    <SelecteurFiltrable
+                      options={[
+                        { valeur: "tous", label: "Tous les lots", badge: `${countsLots.tous}`, description: "Ensemble des lots enregistrés en magasin" },
+                        { valeur: "fefo", label: "Priorité FEFO (Sortie immédiate)", badge: `${countsLots.fefo}`, description: "Lots vendables ordonnés par date de péremption la plus proche" },
+                        { valeur: "thermolabile", label: "Thermolabiles 2–8 °C (Chaîne du froid)", badge: `${countsLots.thermolabile}`, description: "Produits sous chaîne de froid continue" },
+                        { valeur: "critique_1m", label: "Critique < 30 jours (Retrait imminent)", badge: `${countsLots.critique_1m}`, description: "Lots proches de la date limite d'utilisation" },
+                        { valeur: "alerte_3m", label: "Alerte 3 mois (Surveillance renforcée)", badge: `${countsLots.alerte_3m}`, description: "Péremption comprise entre 30 et 90 jours" },
+                        { valeur: "attention_6m", label: "Attention 6 mois", badge: `${countsLots.attention_6m}`, description: "Péremption comprise entre 90 et 180 jours" },
+                        { valeur: "quarantaine", label: "Quarantaine & Bloqués", badge: `${countsLots.quarantaine}`, description: "Lots sous séquestre ou en attente de libération" },
+                        { valeur: "perime", label: "Périmés interdits à la délivrance", badge: `${countsLots.perime}`, description: "Lots retirés du circuit de vente (DLUO échue)" },
+                      ]}
+                      valeur={sousSectionLot}
+                      onChangement={setSousSectionLot}
+                      placeholder="Filtrer les lots..."
+                      recherchePlaceholder="Rechercher une catégorie de lot..."
+                      className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-xs text-[#475C50] flex items-center gap-2">
+                  <span>Affichés : <strong className="text-[#0F3B27]">{lotsAffiches.length}</strong> lot{lotsAffiches.length > 1 ? "s" : ""}</span>
+                  {sousSectionLot !== "tous" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSousSectionLot("tous")}
+                      className="h-6 text-[11px] text-[#0F3B27] hover:bg-[#CFF1D2]/30 px-2 rounded-[6px]"
                     >
-                      {ss.count}
-                    </span>
-                  </button>
-                ))}
+                      Réinitialiser
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1477,7 +1478,7 @@ function PageStockMagasin() {
                 {isLoading ? (
                   <div className="col-span-full p-12 text-center text-[#475C50] font-bold">Chargement des lots du magasin...</div>
                 ) : lotsAffiches.length === 0 ? (
-                  <div className="col-span-full p-12 text-center text-sm text-[#475C50] rounded-2xl border border-dashed border-[#CFF1D2] bg-[#F7F9F7]">
+                  <div className="col-span-full p-12 text-center text-sm text-[#475C50] rounded-[10px] border border-dashed border-[#CFF1D2] bg-[#F7F9F7]">
                     Aucun lot ne correspond aux filtres sélectionnés. Réceptionnez une livraison ou ajustez la sous-section.
                   </div>
                 ) : (
@@ -1490,7 +1491,7 @@ function PageStockMagasin() {
                     return (
                       <div
                         key={lot.id}
-                        className={`rounded-2xl border-2 p-4 bg-white shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3 ${
+                        className={`rounded-[10px] border-2 p-4 bg-white shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-3 ${
                           estPerime
                             ? "border-red-400 bg-red-50/15"
                             : estQuarantaine

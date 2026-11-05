@@ -605,6 +605,29 @@ function PageStockMagasin() {
 
   return (
     <div className="space-y-6">
+      {/* SÉLECTEUR DÉROULANT FILTRABLE DES 11 SECTIONS DU STOCK */}
+      <div className="bg-white p-3.5 rounded-[10px] border border-[#CFF1D2] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-[10px] bg-[#0F3B27]/10 text-[#0F3B27]">
+            <Boxes className="size-4" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-[#0F3B27] block">Module Gestion des Stocks & Magasin (BPD-5)</span>
+            <span className="text-[11px] text-[#475C50]">Sélectionnez une section ou utilisez la recherche instantanée</span>
+          </div>
+        </div>
+        <div className="w-full md:w-96">
+          <SelecteurFiltrable
+            options={SECTIONS}
+            valeur={tab}
+            onChangement={setTab}
+            placeholder="Choisir une section..."
+            recherchePlaceholder="Filtrer parmi les 11 sections de stock..."
+            className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+          />
+        </div>
+      </div>
+
       {/* VUE D'ENSEMBLE STO-01 : EXCLUSIVEMENT AFFICHÉE DANS L'ONGLET VUE D'ENSEMBLE */}
       {tab === "vue-ensemble" && (
         <div className="space-y-6">
@@ -1038,31 +1061,30 @@ function PageStockMagasin() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-[#CFF1D2]/40">
-                {[
-                  { id: "tous", label: "Tous les produits", count: countsProduits.tous },
-                  { id: "rupture", label: "Ruptures & Sous seuil", count: countsProduits.rupture, alert: countsProduits.rupture > 0 },
-                  { id: "thermolabile", label: "Thermolabiles ❄️", count: countsProduits.thermolabile },
-                  { id: "stupefiant", label: "Stupéfiants 🔒", count: countsProduits.stupefiant },
-                  { id: "taxable", label: "B Taxable (18%)", count: countsProduits.taxable },
-                ].map((ss) => (
-                  <button
-                    key={ss.id}
-                    onClick={() => setSousSectionProduit(ss.id)}
-                    className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
-                      sousSectionProduit === ss.id
-                        ? "bg-[#0F3B27] text-[#92FF5F] shadow-sm"
-                        : "bg-[#F7F9F7] text-[#475C50] hover:bg-[#CFF1D2]/30 border border-[#CFF1D2]/60"
-                    }`}
-                  >
-                    <span>{ss.label}</span>
-                    <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-black ${
-                      ss.alert ? "bg-red-500 text-white" : sousSectionProduit === ss.id ? "bg-[#92FF5F] text-[#0F3B27]" : "bg-white text-[#475C50]"
-                    }`}>
-                      {ss.count}
-                    </span>
-                  </button>
-                ))}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#CFF1D2]/40">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-[#0F3B27] whitespace-nowrap">Filtre des produits :</span>
+                  <div className="w-full sm:w-80">
+                    <SelecteurFiltrable
+                      options={[
+                        { valeur: "tous", label: "Tous les produits", badge: `${countsProduits.tous}`, description: "Catalogue complet de l'officine" },
+                        { valeur: "rupture", label: "Ruptures & Sous seuil", badge: `${countsProduits.rupture}`, description: "Articles sous le seuil d'alerte de sécurité" },
+                        { valeur: "thermolabile", label: "Thermolabiles 2–8 °C ❄️", badge: `${countsProduits.thermolabile}`, description: "Chaîne du froid continue en réfrigérateur" },
+                        { valeur: "stupefiant", label: "Stupéfiants & Tableaux 🔒", badge: `${countsProduits.stupefiant}`, description: "Substances vénéneuses sous armoire sécurisée" },
+                        { valeur: "taxable", label: "Groupe B Taxable (18%)", badge: `${countsProduits.taxable}`, description: "Produits de parapharmacie et cosmétiques taxables" },
+                      ]}
+                      valeur={sousSectionProduit}
+                      onChangement={setSousSectionProduit}
+                      placeholder="Filtrer les produits..."
+                      recherchePlaceholder="Rechercher une catégorie..."
+                      className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+                    />
+                  </div>
+                </div>
+
+                <div className="text-xs text-[#475C50] flex items-center gap-2">
+                  <span>Affichés : <strong className="text-[#0F3B27]">{produitsAffiches.length}</strong> produit{produitsAffiches.length > 1 ? "s" : ""}</span>
+                </div>
               </div>
             </div>
 

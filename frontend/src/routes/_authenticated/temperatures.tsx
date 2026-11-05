@@ -47,6 +47,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 import {
   Dialog,
   DialogContent,
@@ -331,6 +332,48 @@ function PageTemperatures() {
     { date: "05/11", matin: 4.5, soir: 4.7, min: 3.9, max: 5.1 },
   ];
 
+  const optionsSectionsTemperatures: OptionSection[] = [
+    {
+      valeur: "tournee",
+      libelle: "Tournée du jour (Relevés quotidiens)",
+      description: "Contrôle matinal et vespéral des zones de stockage et frigos",
+      badge: "Matin / Soir",
+      icone: <Clock className="size-4 text-emerald-700" />,
+    },
+    {
+      valeur: "zones",
+      libelle: "Zones & Enceintes réfrigérées (6 zones)",
+      description: "Surveillance thermique des zones ambiantes (15–25 °C) et frigos (2–8 °C)",
+      badge: "6 zones BPD",
+      icone: <Thermometer className="size-4 text-emerald-700" />,
+    },
+    {
+      valeur: "courbes",
+      libelle: "Courbes & Tendances graphiques",
+      description: "Historique et dynamique des températures sur 30 jours",
+      icone: <Activity className="size-4 text-emerald-700" />,
+    },
+    {
+      valeur: "excursions",
+      libelle: "Excursions & Alertes de rupture",
+      description: "Registre officiel des incidents thermiques et actions CAPA",
+      badge: stats?.historique_30j?.total_excursions > 0 ? `${stats.historique_30j.total_excursions} alerte(s)` : "0 anomalie",
+      icone: <AlertTriangle className="size-4 text-red-600" />,
+    },
+    {
+      valeur: "rapports",
+      libelle: "Rapports Mensuels GAC officiels",
+      description: "Génération et impression des registres GAC-EN-001 et GAC-EN-002",
+      icone: <FileText className="size-4 text-emerald-700" />,
+    },
+    {
+      valeur: "capteurs",
+      libelle: "Capteurs, Sondes IoT & Étalonnages",
+      description: "Parc métrologique, suivi des piles et certificats de conformité",
+      icone: <Radio className="size-4 text-emerald-700" />,
+    },
+  ];
+
   return (
     <div className="grid gap-6">
       {/* HEADER HERO */}
@@ -363,51 +406,31 @@ function PageTemperatures() {
         </div>
       </div>
 
-      {/* TABS DE LA PAGE (6 ONGLETS CONFORMES AU CAHIER DES CHARGES) */}
+      {/* SÉLECTEUR DÉROULANT FILTRABLE DES SECTIONS (REMPLACE LES ONGLETS EN BANDE) */}
+      <div className="bg-white p-3.5 rounded-[10px] border border-[#CFF1D2] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-[10px] bg-[#0F3B27]/10 text-[#0F3B27]">
+            <Thermometer className="size-4" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-[#0F3B27] block">Module Contrôle des Températures & Chaîne du Froid</span>
+            <span className="text-[11px] text-[#475C50]">Sélectionnez la section à afficher ou utilisez la recherche instantanée</span>
+          </div>
+        </div>
+        <div className="w-full md:w-96">
+          <SelecteurFiltrable
+            options={optionsSectionsTemperatures}
+            valeur={activeTab}
+            onChangement={setActiveTab}
+            placeholder="Choisir une section..."
+            recherchePlaceholder="Filtrer parmi les 6 sections..."
+            className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+          />
+        </div>
+      </div>
+
+      {/* TABS DE LA PAGE */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-[#F7F9F7] border border-[#CFF1D2] p-1 rounded-xl flex flex-wrap h-auto gap-1">
-          <TabsTrigger
-            value="tournee"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Tournée du jour
-          </TabsTrigger>
-          <TabsTrigger
-            value="zones"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Zones & Enceintes
-          </TabsTrigger>
-          <TabsTrigger
-            value="courbes"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Courbes & Historique
-          </TabsTrigger>
-          <TabsTrigger
-            value="excursions"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg flex items-center gap-1.5"
-          >
-            Excursions & Alertes
-            {stats?.historique_30j?.total_excursions > 0 && (
-              <Badge variant="destructive" className="size-4 p-0 text-[10px] flex items-center justify-center rounded-full">
-                {stats.historique_30j.total_excursions}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger
-            value="rapports"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Rapports Mensuels
-          </TabsTrigger>
-          <TabsTrigger
-            value="capteurs"
-            className="data-[state=active]:bg-[#0F3B27] data-[state=active]:text-[#92FF5F] text-xs font-semibold rounded-lg"
-          >
-            Capteurs & Sondes IoT
-          </TabsTrigger>
-        </TabsList>
 
         {/* 1. TOURNÉE DU JOUR */}
         <TabsContent value="tournee" className="space-y-4">

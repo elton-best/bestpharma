@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 
 export const Route = createFileRoute("/_authenticated/comptabilite")({
   head: () => ({
@@ -221,32 +222,31 @@ function PageComptabilite() {
         </div>
       </div>
 
-      {/* Onglets de navigation comptable */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <Button
-          variant={onglet === "journal" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setOnglet("journal")}
-          className={onglet === "journal" ? "bg-emerald-600 text-white text-xs" : "text-xs"}
-        >
-          Journal des Ventes ({ecritures.length})
-        </Button>
-        <Button
-          variant={onglet === "balance" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setOnglet("balance")}
-          className={onglet === "balance" ? "bg-emerald-600 text-white text-xs" : "text-xs"}
-        >
-          Balance des Comptes ({balance.length})
-        </Button>
-        <Button
-          variant={onglet === "clotures" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setOnglet("clotures")}
-          className={onglet === "clotures" ? "bg-emerald-600 text-white text-xs" : "text-xs"}
-        >
-          Rapports Clôtures (Tickets Z)
-        </Button>
+      {/* SÉLECTEUR DÉROULANT FILTRABLE DES VUES COMPTABLES */}
+      <div className="bg-white p-3.5 rounded-[10px] border border-[#CFF1D2] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-[10px] bg-[#0F3B27]/10 text-[#0F3B27]">
+            <BookOpenCheck className="size-4" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-[#0F3B27] block">Plan Comptable Officine SYSCOHADA</span>
+            <span className="text-[11px] text-[#475C50]">Sélectionnez le registre comptable à afficher</span>
+          </div>
+        </div>
+        <div className="w-full md:w-96">
+          <SelecteurFiltrable
+            options={[
+              { valeur: "journal", label: "Journal des Ventes (VT)", badge: `${ecritures.length}`, description: "Écritures chronologiques des recettes de caisse" },
+              { valeur: "balance", label: "Balance des Comptes", badge: `${balance.length}`, description: "Soldes débiteurs et créditeurs des comptes 5311/5121" },
+              { valeur: "clotures", label: "Rapports Clôtures (Tickets Z)", badge: `${clotures.length}`, description: "Historique des sessions et réconciliation de caisse" },
+            ]}
+            valeur={onglet}
+            onChangement={(v) => setOnglet(v as "journal" | "balance" | "clotures")}
+            placeholder="Choisir un registre..."
+            recherchePlaceholder="Filtrer parmi les registres..."
+            className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+          />
+        </div>
       </div>
 
       {/* Contenu : Journal des ventes */}

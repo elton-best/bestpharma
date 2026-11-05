@@ -231,7 +231,8 @@ function ZoneDepot({
 
 function PagePreparationsLabo() {
   const queryClient = useQueryClient();
-  const { courante: officine } = useOfficine();
+  const { courante } = useOfficine();
+  const officine = (courante?.officine || {}) as any;
   const [tab, setTab] = useState("registre");
   const [dialogOuvert, setDialogOuvert] = useState(false);
   const [nomPreparation, setNomPreparation] = useState("");

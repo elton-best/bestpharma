@@ -36,6 +36,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 import { EnTete, Vide, dateFr, joursRestants, QUALITE } from "@/components/modules/commun";
 import { telechargerCsv } from "@/lib/export-utils";
@@ -130,6 +131,48 @@ function PageEcheances() {
     return j >= 0 && j <= 30;
   });
   const faites = echeances.filter((e) => e.fait);
+
+  const optionsOngletsEcheances: OptionSection[] = [
+    {
+      valeur: "a_venir_retard",
+      libelle: "À venir & En retard",
+      description: "Obligations actives ordonnées par échéance et criticité",
+      badge: enRetard.length > 0 ? `${enRetard.length} en retard` : `${nonFaites.length}`,
+      icone: <Clock className="size-4 text-emerald-700" />,
+      motsCles: ["retard", "urgent", "proche", "alerte", "venir"],
+    },
+    {
+      valeur: "calendrier",
+      libelle: "Calendrier & Planning",
+      description: "Vue calendaire mensuelle et hebdomadaire de l'officine",
+      badge: `${echeances.length}`,
+      icone: <CalendarIcon className="size-4 text-emerald-700" />,
+      motsCles: ["mois", "semaine", "planning", "agenda", "calendrier"],
+    },
+    {
+      valeur: "categories",
+      libelle: "Par catégorie d'obligation",
+      description: "Filtrage structuré : Licence, Ordre, Équipements, Locaux, Qualité...",
+      badge: `${CATEGORIES.length} domaines`,
+      icone: <Layers className="size-4 text-emerald-700" />,
+      motsCles: ["licence", "ordre", "locaux", "qualite", "equipement", "fiscal", "categorie"],
+    },
+    {
+      valeur: "regles",
+      libelle: "Règles de rappel automatiques",
+      description: "Paramétrage des notifications préventives et alertes d'échéance",
+      icone: <Bell className="size-4 text-emerald-700" />,
+      motsCles: ["rappel", "notification", "alerte", "regle"],
+    },
+    {
+      valeur: "historique",
+      libelle: "Historique des régularisations",
+      description: "Registre d'archivage des obligations accomplies et certifiées",
+      badge: `${faites.length}`,
+      icone: <CheckCircle2 className="size-4 text-emerald-700" />,
+      motsCles: ["archives", "fait", "cloture", "regularise", "historique"],
+    },
+  ];
 
   const telechargerIcal = () => {
     if (!id) return;
@@ -298,30 +341,31 @@ function PageEcheances() {
         </Card>
       </div>
 
-      {/* 5 ONGLETS CONFORMES AU CAHIER DES CHARGES (§9.2) */}
+      {/* SÉLECTEUR DÉROULANT FILTRABLE DES VUES (REMPLACE LES ONGLETS EN BANDE) */}
+      <div className="bg-white p-3.5 rounded-[10px] border border-[#CFF1D2] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-[10px] bg-[#0F3B27]/10 text-[#0F3B27]">
+            <CalendarCheck2 className="size-4" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-[#0F3B27] block">Module Échéances & Obligations Légales</span>
+            <span className="text-[11px] text-[#475C50]">Sélectionnez la vue souhaitée ou utilisez le filtre instantané</span>
+          </div>
+        </div>
+        <div className="w-full md:w-96">
+          <SelecteurFiltrable
+            options={optionsOngletsEcheances}
+            valeur={ongletActif}
+            onChangement={setOngletActif}
+            placeholder="Choisir une vue..."
+            recherchePlaceholder="Filtrer parmi les 5 vues..."
+            className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+          />
+        </div>
+      </div>
+
+      {/* VUES DE LA PAGE */}
       <Tabs value={ongletActif} onValueChange={setOngletActif} className="space-y-4">
-        <TabsList className="bg-muted/70 p-1 rounded-xl flex flex-wrap h-auto gap-1">
-          <TabsTrigger value="calendrier" className="gap-2 rounded-lg py-2 data-[state=checked]:bg-white data-[state=checked]:text-[#0F3B27] data-[state=checked]:shadow-sm">
-            <CalendarIcon className="size-4" /> Calendrier
-          </TabsTrigger>
-          <TabsTrigger value="a_venir_retard" className="gap-2 rounded-lg py-2 data-[state=checked]:bg-white data-[state=checked]:text-[#0F3B27] data-[state=checked]:shadow-sm">
-            <Clock className="size-4" /> À venir & en retard
-            {enRetard.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-red-600 text-white">
-                {enRetard.length}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="categories" className="gap-2 rounded-lg py-2 data-[state=checked]:bg-white data-[state=checked]:text-[#0F3B27] data-[state=checked]:shadow-sm">
-            <Layers className="size-4" /> Par catégorie
-          </TabsTrigger>
-          <TabsTrigger value="regles" className="gap-2 rounded-lg py-2 data-[state=checked]:bg-white data-[state=checked]:text-[#0F3B27] data-[state=checked]:shadow-sm">
-            <Bell className="size-4" /> Règles de rappel
-          </TabsTrigger>
-          <TabsTrigger value="historique" className="gap-2 rounded-lg py-2 data-[state=checked]:bg-white data-[state=checked]:text-[#0F3B27] data-[state=checked]:shadow-sm">
-            <CheckCircle2 className="size-4" /> Historique ({faites.length})
-          </TabsTrigger>
-        </TabsList>
 
         {/* ========================================================================= */}
         {/* ONGLET 1 : CALENDRIER (Mois / Semaine / Liste) */}
@@ -876,41 +920,45 @@ function VueParCategorie({
     ? echeances
     : echeances.filter((e) => e.categorie === catFiltre);
 
+  const optionsCategoriesEcheances: OptionSection[] = [
+    {
+      valeur: "toutes",
+      libelle: `Toutes les catégories (${echeances.length})`,
+      description: "Ensemble des obligations légales, réglementaires et internes",
+      badge: `${echeances.length}`,
+    },
+    ...CATEGORIES.map((c) => {
+      const count = echeances.filter((e) => e.categorie === c.valeur).length;
+      const retardCount = echeances.filter((e) => e.categorie === c.valeur && !e.fait && joursRestants(e.date_echeance) < 0).length;
+      return {
+        valeur: c.valeur,
+        libelle: c.libelle,
+        description: `Obligations et contrôles périodiques : ${c.libelle}`,
+        badge: retardCount > 0 ? `${count} (${retardCount} en retard)` : `${count}`,
+      };
+    }),
+  ];
+
   return (
     <div className="space-y-4">
-      {/* SÉLECTEUR DE CATÉGORIES EN GRILLE DE CARTES */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-        <Button
-          variant={catFiltre === "toutes" ? "default" : "outline"}
-          className={`h-auto py-2.5 px-3 flex flex-col items-center justify-center text-xs gap-1 ${
-            catFiltre === "toutes" ? "bg-[#0F3B27] text-white" : "border-[#CFF1D2]"
-          }`}
-          onClick={() => setCatFiltre("toutes")}
-        >
-          <span className="font-bold">Toutes</span>
-          <span className="text-[10px] opacity-80">{echeances.length} totale(s)</span>
-        </Button>
-
-        {CATEGORIES.slice(0, 5).map((c) => {
-          const count = echeances.filter((e) => e.categorie === c.valeur).length;
-          const retardCount = echeances.filter((e) => e.categorie === c.valeur && !e.fait && joursRestants(e.date_echeance) < 0).length;
-
-          return (
-            <Button
-              key={c.valeur}
-              variant={catFiltre === c.valeur ? "default" : "outline"}
-              className={`h-auto py-2.5 px-3 flex flex-col items-center justify-center text-xs gap-1 text-center ${
-                catFiltre === c.valeur ? "bg-[#0F3B27] text-white" : "border-[#CFF1D2]"
-              }`}
-              onClick={() => setCatFiltre(c.valeur)}
-            >
-              <span className="font-bold truncate max-w-full">{c.libelle.split(" ")[0]}</span>
-              <span className="text-[10px] flex items-center gap-1">
-                {count} {retardCount > 0 && <span className="text-red-500 font-bold">({retardCount}!)</span>}
-              </span>
-            </Button>
-          );
-        })}
+      {/* SÉLECTEUR DÉROULANT FILTRABLE DES CATÉGORIES (REMPLACE LES BOUTONS EN BANDE) */}
+      <div className="bg-white p-3.5 rounded-[10px] border border-[#CFF1D2] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-[#0F3B27] whitespace-nowrap">Filtrer par catégorie :</span>
+          <div className="w-full sm:w-80">
+            <SelecteurFiltrable
+              options={optionsCategoriesEcheances}
+              valeur={catFiltre}
+              onChangement={setCatFiltre}
+              placeholder="Choisir une catégorie..."
+              recherchePlaceholder="Rechercher parmi les 7 catégories..."
+              className="w-full bg-[#F7F9F7] border-[#CFF1D2] rounded-[10px] text-xs font-semibold"
+            />
+          </div>
+        </div>
+        <div className="text-xs text-[#475C50]">
+          Obligations affichées : <strong className="text-[#0F3B27]">{filtrees.length}</strong> sur {echeances.length}
+        </div>
       </div>
 
       <div className="space-y-2.5">

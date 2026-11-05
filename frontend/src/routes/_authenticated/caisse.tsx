@@ -25,6 +25,7 @@ import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
 import { formatDateHeure, nombre } from "@/lib/format";
+import { imprimerFicheOfficielle } from "@/lib/export-utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -215,6 +216,54 @@ function PageCaissePos() {
 
   const supprimerDuPanier = (produitId: string) => {
     setPanier(panier.filter((l) => l.produit.id !== produitId));
+  };
+
+  const imprimerTicketVente = () => {
+    if (!derniereVente) return;
+    const lignesHtml = (derniereVente.lignes || [])
+      .map(
+        (l: any) => `
+      <tr>
+        <td style="padding: 4px 0;">${l.quantite} × ${l.produit?.nom_commercial || "Article"}</td>
+        <td style="text-align: right; font-family: monospace; padding: 4px 0;">${nombre(l.total_ligne)} F</td>
+      </tr>`
+      )
+      .join("");
+
+    const html = `
+      <div style="max-width: 360px; margin: 10px auto; border: 1px dashed #0F3B27; border-radius: 6px; padding: 15px; font-family: monospace; font-size: 12px; background: #fff;">
+        <div style="text-align: center; border-bottom: 1px dashed #0F3B27; padding-bottom: 8px; margin-bottom: 8px;">
+          <div style="font-weight: 900; font-size: 15px; color: #0F3B27;">BESTPHARMA OFFICINE</div>
+          <div style="font-size: 10px; color: #555;">RÉPUBLIQUE DU BÉNIN</div>
+          <div style="font-size: 10px; color: #555;">IFU : ${derniereVente.facture_emecef?.ifu_officine || "N/A"}</div>
+          <div style="font-size: 10px; color: #555;">NIM : ${derniereVente.facture_emecef?.nim_machine || "N/A"}</div>
+        </div>
+        <div style="font-size: 11px; margin-bottom: 8px;">
+          <div>Ticket : <strong>${derniereVente.numero_ticket}</strong></div>
+          <div>Facture DGI : <strong>${derniereVente.facture_emecef?.numero_facture_dgi || "N/A"}</strong></div>
+          <div>Date : ${formatDateHeure(derniereVente.created_at)}</div>
+          <div>Client : <strong>${derniereVente.client_nom}</strong></div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 11px;">
+          <tbody style="border-bottom: 1px dashed #ddd;">
+            ${lignesHtml}
+          </tbody>
+        </table>
+        <div style="font-size: 13px; font-weight: bold; color: #0F3B27; display: flex; justify-content: space-between; margin-top: 6px;">
+          <span>TOTAL TTC</span>
+          <span>${nombre(derniereVente.montant_net_ttc)} FCFA</span>
+        </div>
+        <div style="font-size: 10px; color: #555; margin-top: 4px; display: flex; justify-content: space-between;">
+          <span>Règlement : ${derniereVente.mode_reglement}</span>
+          <span>Reçu : ${nombre(derniereVente.montant_recu ?? 0)} F</span>
+        </div>
+        <div style="margin-top: 10px; border-top: 1px dotted #ccc; padding-top: 6px; text-align: center; font-size: 9px; color: #777;">
+          Code MECeF : ${derniereVente.facture_emecef?.code_mecef || "N/A"}<br>
+          Merci de votre confiance et prompt rétablissement !
+        </div>
+      </div>
+    `;
+    imprimerFicheOfficielle(`Ticket ${derniereVente.numero_ticket}`, html);
   };
 
   const handleEncaisser = (e: React.FormEvent) => {
@@ -613,8 +662,8 @@ function PageCaissePos() {
                 Le ticket et la facture sont conservés dix ans, avec la trace de l'agent qui a encaissé.
               </p>
               <div className="flex flex-col-reverse gap-2 sm:flex-row">
-                <Button type="button" variant="outline" onClick={() => window.print()} className="h-12 gap-2 rounded-xl sm:h-11">
-                  <Printer className="h-4 w-4" /> Imprimer
+                <Button type="button" variant="outline" onClick={imprimerTicketVente} className="h-12 gap-2 rounded-xl sm:h-11 font-bold border-[#0F3B27] text-[#0F3B27]">
+                  <Printer className="h-4 w-4" /> Imprimer Ticket
                 </Button>
                 <Button
                   type="button"

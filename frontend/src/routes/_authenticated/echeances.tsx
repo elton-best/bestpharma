@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -38,6 +38,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Champ, ColonneFiche, ModaleFiche } from "@/components/modules/modale";
 import { EnTete, Vide, dateFr, joursRestants, QUALITE } from "@/components/modules/commun";
+import { telechargerCsv } from "@/lib/export-utils";
 import {
   ModaleSignatureCode,
   BoutonCreerNC,
@@ -136,6 +137,39 @@ function PageEcheances() {
     toast.success("Téléchargement du fichier iCal (.ics) en cours…");
   };
 
+  const exporterCsvEcheances = () => {
+    if (!echeances.length) {
+      toast.info("Aucune échéance à exporter.");
+      return;
+    }
+    telechargerCsv(
+      echeances.map((e) => ({
+        titre: e.titre,
+        categorie: e.categorie,
+        date_echeance: e.date_echeance,
+        jours_restants: joursRestants(e.date_echeance),
+        statut: e.fait ? "Régularisée" : joursRestants(e.date_echeance) < 0 ? "En retard critique" : "À venir",
+        reglementaire: e.reglementaire !== false ? "Oui (Strict BPD)" : "Non (Interne)",
+        periodicite: e.periodicite || "Unique",
+        responsable: e.responsable || "Pharmacien Titulaire",
+        preuve_titre: e.preuve_titre || "—",
+      })),
+      `Echeancier_Reglementaire_BestPharma_${new Date().toISOString().split("T")[0]}.csv`,
+      [
+        { cle: "titre", entete: "Titre de l'échéance" },
+        { cle: "categorie", entete: "Catégorie" },
+        { cle: "date_echeance", entete: "Date butoir" },
+        { cle: "jours_restants", entete: "Jours restants" },
+        { cle: "statut", entete: "Statut" },
+        { cle: "reglementaire", entete: "Réglementaire (BPD)" },
+        { cle: "periodicite", entete: "Périodicité" },
+        { cle: "responsable", entete: "Responsable" },
+        { cle: "preuve_titre", entete: "Preuve / Justificatif" },
+      ]
+    );
+    toast.success("Échéancier réglementaire exporté en CSV");
+  };
+
   return (
     <div className="grid gap-6">
       <EnTete
@@ -143,6 +177,15 @@ function PageEcheances() {
         description="BPD Section 9 · Calendrier unifié des licences ABMed, inscriptions à l'Ordre, étalonnages et obligations légales de l'officine."
         action={
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exporterCsvEcheances}
+              className="gap-1.5 border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/20"
+              title="Exporter toutes les échéances en tableau CSV"
+            >
+              <Download className="size-4" /> Export CSV
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -1074,7 +1117,44 @@ function ModaleCloturePreuve({
   isPending: boolean;
 }) {
   const [nomPreuve, setNomPreuve] = useState(`Certificat_${echeance.titre.substring(0, 20).replace(/\s+/g, "_")}_2026.pdf`);
+  const [fichierUploade, setFichierUploade] = useState<{ url: string; nom: string; taille: number } | null>(null);
+  const [televersement, setTeleversement] = useState(false);
   const [recreer, setRecreer] = useState(echeance.periodicite && echeance.periodicite !== "unique");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadFichier = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setTeleversement(true);
+    try {
+      const urlUpload = echeance.officine_id ? `/officines/${echeance.officine_id}/upload` : "/upload";
+      const res = await api.uploadFile<{ url: string; original_name: string; size: number }>(
+        urlUpload,
+        file,
+        { dossier: "preuves_echeances" }
+      );
+      setFichierUploade({
+        url: res.url,
+        nom: res.original_name || file.name,
+        taille: res.size || file.size,
+      });
+      setNomPreuve(res.original_name || file.name);
+      toast.success(`Justificatif "${res.original_name || file.name}" téléversé avec succès !`);
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors du téléversement du justificatif.");
+    } finally {
+      setTeleversement(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const validerCloture = () => {
+    const preuveFinale = fichierUploade
+      ? `${nomPreuve} [${fichierUploade.url}]`
+      : nomPreuve;
+    onValider(preuveFinale, !!recreer);
+  };
 
   return (
     <Dialog open={ouvert} onOpenChange={onFermer}>
@@ -1094,15 +1174,64 @@ function ModaleCloturePreuve({
             <p className="text-muted-foreground mt-0.5">Date butoir : {dateFr(echeance.date_echeance)}</p>
           </div>
 
+          {/* ZONE DE TÉLÉVERSEMENT FICHIER REEL */}
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold">Téléverser le justificatif / document officiel</Label>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleUploadFichier}
+              accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx"
+              className="hidden"
+            />
+            
+            {fichierUploade ? (
+              <div className="p-3 rounded-xl border border-emerald-300 bg-emerald-50/70 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
+                  <div className="truncate">
+                    <p className="font-bold text-emerald-950 truncate">{fichierUploade.nom}</p>
+                    <p className="text-[11px] text-emerald-800">
+                      {(fichierUploade.taille / 1024).toFixed(1)} Ko · Fichier conservé
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  type="button"
+                  className="h-7 text-xs text-emerald-900 hover:text-emerald-950"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={televersement}
+                >
+                  Remplacer
+                </Button>
+              </div>
+            ) : (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="cursor-pointer border-2 border-dashed border-[#CFF1D2] hover:border-[#0F3B27] rounded-xl p-4 text-center bg-[#F7FBF8] transition-colors"
+              >
+                <UploadCloud className="size-6 text-[#0F3B27] mx-auto mb-1.5" />
+                <p className="text-xs font-bold text-[#0F3B27]">
+                  {televersement ? "Téléversement en cours…" : "Choisir un document (PDF, Scan, Image)"}
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Attestation Ordre, certificat métrologie, contrat d'intervention (max 30 Mo)
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Nom de la pièce justificative téléversée</Label>
+            <Label className="text-xs font-semibold">Libellé / Référence de la pièce</Label>
             <Input
               value={nomPreuve}
               onChange={(e) => setNomPreuve(e.target.value)}
               placeholder="Ex. Attestation_Ordre_2026.pdf"
               className="h-10 text-xs"
             />
-            <p className="text-[11px] text-muted-foreground">Attestation, certificat d'étalonnage, rapport 3D ou bon d'intervention.</p>
+            <p className="text-[11px] text-muted-foreground">Numéro ou référence pour le registre légal d'audit.</p>
           </div>
 
           {echeance.periodicite && echeance.periodicite !== "unique" && (
@@ -1120,8 +1249,8 @@ function ModaleCloturePreuve({
           <Button variant="outline" onClick={onFermer}>Annuler</Button>
           <Button
             className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold gap-1.5"
-            onClick={() => onValider(nomPreuve, !!recreer)}
-            disabled={isPending || !nomPreuve.trim()}
+            onClick={validerCloture}
+            disabled={isPending || televersement || !nomPreuve.trim()}
           >
             <CheckCircle2 className="size-4" /> Confirmer la régularisation
           </Button>

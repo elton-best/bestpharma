@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -15,10 +15,13 @@ import {
   TestTube,
   Calendar,
   X,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { useOfficine } from "@/lib/officine-context";
+import { telechargerCsv, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -103,18 +106,132 @@ const SECTIONS_PREPARATIONS = [
   },
 ];
 
-function ZoneDepot({ label }: { label: string }) {
+function ZoneDepot({
+  label,
+  dossier = "preparations_certificats",
+  accept = ".jpg,.jpeg,.png,.webp,.pdf",
+  valeurUrl,
+  valeurNom,
+  onUploadSuccess,
+}: {
+  label: string;
+  dossier?: string;
+  accept?: string;
+  valeurUrl?: string;
+  valeurNom?: string;
+  onUploadSuccess?: (file: { url: string; original_name: string; size: number }) => void;
+}) {
+  const [televersement, setTeleversement] = useState(false);
+  const [fichierActuel, setFichierActuel] = useState<{ url: string; nom: string; taille?: number } | null>(
+    valeurUrl ? { url: valeurUrl, nom: valeurNom || "Certificat joint" } : null
+  );
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const traiterFichier = async (file: File | undefined) => {
+    if (!file) return;
+    setTeleversement(true);
+    try {
+      const res = await api.uploadFile<{ url: string; original_name: string; size: number }>(
+        "/upload",
+        file,
+        { dossier }
+      );
+      const info = {
+        url: res.url,
+        nom: res.original_name || file.name,
+        taille: res.size || file.size,
+      };
+      setFichierActuel(info);
+      onUploadSuccess?.(res);
+      toast.success(`Fichier "${info.nom}" téléversé et archivé au cahier !`);
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors du téléversement.");
+    } finally {
+      setTeleversement(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
-    <div className="rounded-2xl border-2 border-dashed border-[#CFF1D2] bg-[#F7F9F7] p-4 text-center">
-      <Upload className="mx-auto w-5 h-5 text-[#475C50]" />
-      <p className="mt-1.5 text-xs font-bold text-[#0F3B27]">{label}</p>
-      <p className="text-[11px] text-[#475C50]">JPG, PNG, PDF ou CSV — 10 Mo maximum, chiffré et conservé avec la préparation.</p>
+    <div
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        traiterFichier(e.dataTransfer.files?.[0]);
+      }}
+      className={`rounded-2xl border-2 border-dashed p-4 text-center transition-all ${
+        dragOver ? "border-[#0F3B27] bg-[#CFF1D2]/30" : "border-[#CFF1D2] bg-[#F7F9F7]"
+      }`}
+    >
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept={accept}
+        className="hidden"
+        onChange={(e) => traiterFichier(e.target.files?.[0])}
+      />
+
+      {fichierActuel ? (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-2.5 rounded-xl bg-white border border-[#CFF1D2]">
+          <div className="flex items-center gap-2 overflow-hidden text-left">
+            <CheckCircle2 className="size-5 text-emerald-600 shrink-0" />
+            <div className="truncate">
+              <p className="text-xs font-bold text-[#0F3B27] truncate">{fichierActuel.nom}</p>
+              <p className="text-[11px] text-[#475C50]">
+                {fichierActuel.taille ? `${(fichierActuel.taille / 1024).toFixed(1)} Ko · ` : ""}
+                <a
+                  href={fichierActuel.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline hover:text-[#0F3B27]"
+                >
+                  Consulter la pièce
+                </a>
+              </p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={televersement}
+            className="text-xs text-[#0F3B27] h-8 shrink-0"
+          >
+            Remplacer
+          </Button>
+        </div>
+      ) : (
+        <>
+          <Upload className={`mx-auto w-5 h-5 ${dragOver ? "text-[#0F3B27]" : "text-[#475C50]"}`} />
+          <p className="mt-1.5 text-xs font-bold text-[#0F3B27]">{label}</p>
+          <p className="text-[11px] text-[#475C50]">
+            {televersement
+              ? "Archivage sécurisé et hachage en cours…"
+              : "Glisser-déposer ou choisir un fichier — JPG, PNG ou PDF (max 30 Mo), conservation 10 ans"}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={televersement}
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-2 inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-xl border border-[#CFF1D2] bg-white px-3 py-1.5 text-xs font-bold text-[#0F3B27] hover:bg-[#CFF1D2]/30"
+          >
+            <ScanLine className="w-3.5 h-3.5" />
+            {televersement ? "Téléversement…" : "Choisir le document"}
+          </Button>
+        </>
+      )}
     </div>
   );
 }
 
 function PagePreparationsLabo() {
   const queryClient = useQueryClient();
+  const { officine } = useOfficine();
   const [tab, setTab] = useState("registre");
   const [dialogOuvert, setDialogOuvert] = useState(false);
   const [nomPreparation, setNomPreparation] = useState("");
@@ -191,6 +308,129 @@ function PagePreparationsLabo() {
     });
   };
 
+  const dernierePrep = preparations[0];
+
+  const imprimerEtiquettePreparation = (p?: PreparationItem) => {
+    const cible = p || dernierePrep;
+    if (!cible) {
+      toast.error("Aucune préparation enregistrée pour générer l’étiquette.");
+      return;
+    }
+    const html = `
+      <div style="max-width: 440px; border: 2px solid #0F3B27; border-radius: 8px; padding: 16px; font-family: -apple-system, BlinkMacSystemFont, monospace; font-size: 13px; margin: 20px auto; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        <div style="font-weight: 900; font-size: 16px; color: #0F3B27; text-align: center;">${officine?.nom || "PHARMACIE DE L’ÉTOILE"}</div>
+        <div style="font-size: 11px; text-align: center; color: #475C50; margin-top: 2px;">${officine?.adresse || "Av. Steinmetz, Cotonou"} — Tél. ${officine?.telephone || "+229 21 31 10 20"}</div>
+        <hr style="border: 0; border-top: 2px solid #0F3B27; margin: 12px 0;">
+        <div style="font-weight: bold; font-size: 15px; margin-bottom: 4px; color: #111;">${cible.nom_preparation} — ${cible.quantite_produite}</div>
+        <div style="color: #0F3B27; font-weight: bold; font-size: 12px; margin-bottom: 8px;">N° D'ORDRE : ${cible.numero_preparation} (${cible.type_preparation === "magistrale" ? "Magistrale" : "Officinale"})</div>
+        ${cible.patient_nom ? `<div style="font-size: 12px; margin-bottom: 4px;">Patient : <strong>${cible.patient_nom}</strong></div>` : ""}
+        ${cible.prescripteur_nom ? `<div style="font-size: 11px; color: #555; margin-bottom: 6px;">Prescrit par Dr <strong>${cible.prescripteur_nom}</strong></div>` : ""}
+        <div style="background: #F7F9F7; border: 1px dashed #CFF1D2; padding: 10px; border-radius: 6px; margin: 8px 0; font-size: 12px; line-height: 1.4;">
+          <strong>Posologie & Voie d'administration :</strong><br>
+          Usage externe / Selon ordonnance. Ne pas avaler. Tenir hors de la vue et de la portée des enfants.
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #333; margin-top: 8px; border-top: 1px solid #eee; padding-top: 6px;">
+          <span>Fabriqué le : <strong>${cible.date_fabrication}</strong></span>
+          <span>Date Limite (DLU) : <strong style="color: #0F3B27;">${cible.date_limite_utilisation}</strong></span>
+        </div>
+        <div style="font-size: 10px; color: #666; margin-top: 6px;">Conservation : ${cible.conditionnement} — Température &lt; 25 °C à l'abri de l'humidité.</div>
+        <div style="margin-top: 12px; font-size: 9px; color: #666; text-align: center; border-top: 1px dotted #ccc; padding-top: 6px;">
+          Étiquette conforme Bonnes Pratiques de Dispensation ABMed (BPD7-F15) · BestPharma
+        </div>
+      </div>
+    `;
+    imprimerFicheOfficielle(`Étiquette ${cible.numero_preparation}`, html);
+  };
+
+  const exporterCahierPreparationsPdf = () => {
+    if (preparations.length === 0) {
+      toast.error("Le cahier de préparation est vide pour l'instant.");
+      return;
+    }
+    const lignesHtml = preparations
+      .map(
+        (p) => `
+      <tr>
+        <td style="font-family: monospace; font-weight: bold;">${p.numero_preparation}</td>
+        <td>${p.date_fabrication}</td>
+        <td><strong>${p.nom_preparation}</strong><br><span style="font-size: 10px; color: #666;">${p.formule_detaillee}</span></td>
+        <td>${p.type_preparation === "magistrale" ? "Magistrale" : "Officinale"} (${p.quantite_produite})</td>
+        <td>${p.patient_nom || "Officine"}<br><span style="font-size: 10px; color: #666;">${p.prescripteur_nom || ""}</span></td>
+        <td style="font-family: monospace;">${p.date_limite_utilisation}</td>
+        <td>${p.pharmacien_visa?.name ? `<span style="color: #0F3B27; font-weight: bold;">Visa : ${p.pharmacien_visa.name}</span>` : `<span style="color: #b45309;">En attente visa</span>`}</td>
+      </tr>`
+      )
+      .join("");
+
+    const html = `
+      <p style="font-size: 12px; color: #475C50; margin-bottom: 15px;">
+        Cahier officiel des préparations magistrales et officinales de l'officine conformément au Chapitre 6 des Bonnes Pratiques de Dispensation (BPD ABMed) et à la procédure POI-03. Registre coté et paraphé à conservation légale obligatoire de 10 ans.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>N° PREP</th>
+            <th>Date Fab.</th>
+            <th>Nom & Formule</th>
+            <th>Type & Quantité</th>
+            <th>Patient / Prescripteur</th>
+            <th>Date Limite</th>
+            <th>Visa Libération</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${lignesHtml}
+        </tbody>
+      </table>
+    `;
+    imprimerFicheOfficielle("CAHIER OFFICIEL DES PRÉPARATIONS (BPD CHAPITRE 6)", html);
+  };
+
+  const exporterRegistrePreparationsCsv = (filtreRecents?: boolean) => {
+    if (preparations.length === 0) {
+      toast.error("Aucune préparation à exporter.");
+      return;
+    }
+    const source = filtreRecents ? preparations.slice(0, 30) : preparations;
+    const colonnes = [
+      { cle: "numero_preparation", label: "N° Préparation" },
+      { cle: "date_fabrication", label: "Date Fabrication" },
+      { cle: "nom_preparation", label: "Nom Préparation" },
+      { cle: "type_preparation", label: "Type (Magistrale/Officinale)" },
+      { cle: "quantite_produite", label: "Quantité Produite" },
+      { cle: "conditionnement", label: "Conditionnement" },
+      { cle: "patient_nom", label: "Patient" },
+      { cle: "prescripteur_nom", label: "Prescripteur" },
+      { cle: "date_limite_utilisation", label: "Date Limite d'Utilisation" },
+      { cle: "visa_statut", label: "Statut Libération" },
+      { cle: "pharmacien", label: "Pharmacien Libérateur" },
+    ];
+    const donnees = source.map((p) => ({
+      numero_preparation: p.numero_preparation,
+      date_fabrication: p.date_fabrication,
+      nom_preparation: p.nom_preparation,
+      type_preparation: p.type_preparation,
+      quantite_produite: p.quantite_produite,
+      conditionnement: p.conditionnement,
+      patient_nom: p.patient_nom || "N/A",
+      prescripteur_nom: p.prescripteur_nom || "N/A",
+      date_limite_utilisation: p.date_limite_utilisation,
+      visa_statut: p.pharmacien_visa ? "Libérée" : "En attente",
+      pharmacien: p.pharmacien_visa?.name || "Non visé",
+    }));
+
+    telechargerCsv(
+      donnees,
+      filtreRecents ? "bestpharma_extraits_preparations_recentes.csv" : "bestpharma_cahier_preparations_bpd.csv",
+      colonnes
+    );
+    toast.success(
+      filtreRecents
+        ? "Extrait récent des préparations téléchargé (CSV) !"
+        : "Cahier complet des préparations téléchargé (CSV) !"
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -207,7 +447,14 @@ function PagePreparationsLabo() {
             <span className="rounded-full bg-[#CFF1D2] px-3 py-1 text-[#0F3B27]">{magistrales.length} magistrales</span>
           </div>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => exporterRegistrePreparationsCsv(false)}
+            className="gap-2 border-[#CFF1D2] text-[#0F3B27] font-bold hover:bg-[#CFF1D2]/30"
+          >
+            <Download className="w-4 h-4" /> Exporter Cahier (CSV)
+          </Button>
           <Button onClick={() => setDialogOuvert(true)} className="gap-2 bg-[#0F3B27] hover:bg-[#164E35] text-white font-bold"><Plus className="w-4 h-4" /> Inscrire une préparation</Button>
           <Badge variant="outline" className="justify-center border-amber-300 bg-amber-50 text-amber-800 text-xs">{enAttente.length} en attente de libération</Badge>
         </div>
@@ -350,16 +597,19 @@ function PagePreparationsLabo() {
         <div className="space-y-4">
           <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white font-display font-black flex items-center gap-2"><Printer className="w-5 h-5 text-[#92FF5F]" /> Étiquette de conditionnement (BPD7-F15)</CardTitle><CardDescription className="text-[#CFF1D2]">Posologie, numéro d’ordre PREP-2026-XXXX, nom et adresse du pharmacien, date limite d’utilisation et conditions de conservation.</CardDescription></CardHeader><CardContent className="text-xs text-[#CFF1D2]">Impression sur imprimante thermique ; le QR code de traçabilité est optionnel.</CardContent></Card>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="border-[#CFF1D2] bg-white"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Aperçu de l’étiquette</CardTitle></CardHeader><CardContent>
+            <Card className="border-[#CFF1D2] bg-white"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Aperçu de l’étiquette {dernierePrep ? `(${dernierePrep.numero_preparation})` : ""}</CardTitle></CardHeader><CardContent>
               <div className="rounded-xl border-2 border-[#0F3B27] bg-white p-4 font-mono text-xs leading-tight">
-                <div className="font-black text-[#0F3B27] text-sm">PHARMACIE DE L’ÉTOILE</div>
-                <div className="text-[10px] text-[#475C50]">Av. Steinmetz, Cotonou — Tél. +229 21 31 10 20</div>
-                <div className="mt-2 font-bold">Pâte à l’eau — 100 g — PREP-2026-0005</div>
-                <div className="text-[11px]">Posologie : 2 applications par jour sur les lésions — À utiliser jusqu’au 12/12/2026 — Conserver à moins de 25 °C</div>
-                <div className="mt-2 flex items-center gap-2"><ScanLine className="w-8 h-8" /><span className="text-[10px] text-[#475C50]">QR code : traçabilité des lots de matières premières</span></div>
+                <div className="font-black text-[#0F3B27] text-sm">{officine?.nom || "PHARMACIE DE L’ÉTOILE"}</div>
+                <div className="text-[10px] text-[#475C50]">{officine?.adresse || "Av. Steinmetz, Cotonou"} — Tél. {officine?.telephone || "+229 21 31 10 20"}</div>
+                <div className="mt-2 font-bold">{dernierePrep?.nom_preparation || "Pâte à l’eau"} — {dernierePrep?.quantite_produite || "100 g"} — {dernierePrep?.numero_preparation || "PREP-2026-0005"}</div>
+                <div className="text-[11px]">Posologie : 2 applications par jour sur les lésions — À utiliser jusqu’au {dernierePrep?.date_limite_utilisation || "12/12/2026"} — Conserver à moins de 25 °C</div>
+                <div className="mt-2 flex items-center gap-2"><ScanLine className="w-8 h-8 text-[#0F3B27]" /><span className="text-[10px] text-[#475C50]">QR code : traçabilité des lots ({dernierePrep?.numero_preparation || "PREP-2026-0005"})</span></div>
               </div>
             </CardContent></Card>
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Impression</CardTitle></CardHeader><CardContent className="space-y-2"><Button variant="outline" className="w-full font-bold border-[#CFF1D2]"><Printer className="w-4 h-4 mr-1" /> Imprimer l’étiquette</Button><Button variant="outline" className="w-full font-bold border-[#CFF1D2]"><Download className="w-4 h-4 mr-1" /> Télécharger en PDF</Button></CardContent></Card>
+            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Impression</CardTitle></CardHeader><CardContent className="space-y-2">
+              <Button onClick={() => imprimerEtiquettePreparation()} variant="outline" className="w-full font-bold border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30"><Printer className="w-4 h-4 mr-1" /> Imprimer l’étiquette</Button>
+              <Button onClick={() => imprimerEtiquettePreparation()} variant="outline" className="w-full font-bold border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30"><Download className="w-4 h-4 mr-1" /> Télécharger en PDF</Button>
+            </CardContent></Card>
           </div>
         </div>
       )}
@@ -367,9 +617,9 @@ function PagePreparationsLabo() {
       {tab === "rapports" && (
         <div className="space-y-4">
           <Card className="border-[#0F3B27] bg-[#F7F9F7]"><CardHeader><CardTitle className="text-sm font-black text-[#0F3B27] flex items-center gap-2"><FileText className="w-4 h-4" /> Rapports et exports — conservation dix ans</CardTitle></CardHeader><CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Button variant="outline" className="font-bold border-[#CFF1D2] gap-1"><Download className="w-4 h-4" /> Cahier complet en PDF</Button>
-            <Button variant="outline" className="font-bold border-[#CFF1D2] gap-1"><FileText className="w-4 h-4" /> Registre en Excel</Button>
-            <Button variant="outline" className="font-bold border-[#CFF1D2] gap-1"><Calendar className="w-4 h-4" /> Extraits par période</Button>
+            <Button onClick={() => exporterCahierPreparationsPdf()} variant="outline" className="font-bold border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 gap-1"><Download className="w-4 h-4" /> Cahier complet en PDF</Button>
+            <Button onClick={() => exporterRegistrePreparationsCsv(false)} variant="outline" className="font-bold border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 gap-1"><FileText className="w-4 h-4" /> Registre en Excel</Button>
+            <Button onClick={() => exporterRegistrePreparationsCsv(true)} variant="outline" className="font-bold border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30 gap-1"><Calendar className="w-4 h-4" /> Extraits par période</Button>
           </CardContent></Card>
           <Card className="border-[#CFF1D2]"><CardContent className="pt-6 text-xs text-[#475C50]">Chaque document porte son code, sa version et sa date d’édition. Les modèles sont gérés par la responsable qualité, avec un circuit d’approbation.</CardContent></Card>
         </div>

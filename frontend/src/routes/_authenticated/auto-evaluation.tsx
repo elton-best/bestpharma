@@ -16,6 +16,7 @@ import {
   ArrowRight,
   ShieldAlert,
   FileWarning,
+  Download,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -32,6 +33,7 @@ import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
 import { useOfficine } from "@/lib/officine-context";
+import { telechargerCsv, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -140,6 +142,88 @@ function PageAutoEvaluation() {
     return true;
   });
 
+  const exporterCsvAutoEvaluation = () => {
+    if (!evaluations.length) {
+      toast.info("Aucune donnée d'évaluation disponible.");
+      return;
+    }
+    telechargerCsv(
+      evaluations.map((a: any) => ({
+        article: a.article_numero,
+        chapitre: `Chapitre ${a.chapitre_numero} - ${a.chapitre_titre}`,
+        libelle: a.article_libelle,
+        cotation: a.cotation ? a.cotation.toUpperCase() : "NON_COTE",
+        commentaire: a.commentaire || "",
+      })),
+      `Grille_AutoEvaluation_BPD_BestPharma_${new Date().toISOString().split("T")[0]}.csv`,
+      [
+        { cle: "article", entete: "Article BPD" },
+        { cle: "chapitre", entete: "Chapitre" },
+        { cle: "libelle", entete: "Exigence réglementaire" },
+        { cle: "cotation", entete: "Cotation" },
+        { cle: "commentaire", entete: "Observations & Preuves" },
+      ]
+    );
+    toast.success("Grille d'auto-évaluation BPD exportée en CSV");
+  };
+
+  const imprimerRapportOfficielBpd = () => {
+    const lignesChapitres = chapitres
+      .map(
+        (c: any) => `
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Chapitre ${c.numero} : ${c.titre}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${c.total_articles}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; text-align: center; color: #0F3B27; font-weight: bold;">${c.taux_conformite ?? 0} %</td>
+        </tr>`
+      )
+      .join("");
+
+    const html = `
+      <div style="margin-bottom: 24px; padding: 16px; border: 2px solid #0F3B27; border-radius: 8px; background: #F7FBF8;">
+        <h2 style="margin: 0 0 8px 0; color: #0F3B27;">RAPPORT ANNUEL D'AUTO-INSPECTION QUALITÉ BPD</h2>
+        <p style="margin: 0; font-size: 13px; color: #475C50;">
+          Établissement : <strong>${courante?.officine?.nom || "Officine BestPharma"}</strong> · Licence : <strong>${courante?.officine?.numero_licence || "En cours"}</strong> · Ville : <strong>${courante?.officine?.ville || "Cotonou"}</strong>
+        </p>
+        <p style="margin: 4px 0 0 0; font-size: 13px; color: #475C50;">
+          Date de l'audit : <strong>${formatDate(new Date())}</strong> · Référentiel : <strong>Guide BPD ABMed (267 Articles)</strong>
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 20px; margin-bottom: 24px;">
+        <div style="flex: 1; padding: 16px; border: 1px solid #CFF1D2; border-radius: 8px; text-align: center; background: #ffffff;">
+          <div style="font-size: 12px; color: #475C50; text-transform: uppercase;">Score Global de Conformité</div>
+          <div style="font-size: 36px; font-weight: 900; color: #0F3B27; margin-top: 4px;">${scoreGlobal}%</div>
+        </div>
+        <div style="flex: 1; padding: 16px; border: 1px solid #CFF1D2; border-radius: 8px; text-align: center; background: #ffffff;">
+          <div style="font-size: 12px; color: #475C50; text-transform: uppercase;">Articles Audités</div>
+          <div style="font-size: 36px; font-weight: 900; color: #0F3B27; margin-top: 4px;">${evaluations.length} / 267</div>
+        </div>
+      </div>
+
+      <h3 style="color: #0F3B27; border-bottom: 2px solid #0F3B27; padding-bottom: 6px;">SYNTHÈSE CHAPITRE PAR CHAPITRE</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px;">
+        <thead>
+          <tr style="background: #0F3B27; color: white;">
+            <th style="padding: 8px; border: 1px solid #0F3B27; text-align: left;">Chapitre du Guide BPD</th>
+            <th style="padding: 8px; border: 1px solid #0F3B27; text-align: center; width: 100px;">Articles</th>
+            <th style="padding: 8px; border: 1px solid #0F3B27; text-align: center; width: 140px;">Conformité</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${lignesChapitres}
+        </tbody>
+      </table>
+
+      <div style="margin-top: 30px; padding: 16px; border: 1px solid #f59e0b; background: #fffbeb; border-radius: 8px; font-size: 12px; color: #92400e;">
+        <strong>Engagement Réglementaire :</strong> Les éventuels écarts identifiés font l'objet d'un plan d'actions correctives et préventives (CAPA) suivi conformément aux Bonnes Pratiques de Dispensation de l'Agence Béninoise du Médicament.
+      </div>
+    `;
+
+    imprimerFicheOfficielle("Rapport d'Auto-Inspection Qualité BPD — BestPharma", html);
+    toast.success("Rapport officiel prêt pour impression !");
+  };
+
   return (
     <div className="grid gap-6">
       {/* HEADER & SCORE DE CONFORMITÉ GLOBAL */}
@@ -158,7 +242,14 @@ function PageAutoEvaluation() {
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={exporterCsvAutoEvaluation}
+            variant="outline"
+            className="gap-2 text-xs h-9 border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/20"
+          >
+            <Download className="size-3.5" /> Exporter Grille (CSV)
+          </Button>
           <Button onClick={() => setDialogRapport(true)} variant="outline" className="gap-2 text-xs h-9">
             <Printer className="size-3.5" /> Rapport Officiel ABMed
           </Button>
@@ -605,8 +696,8 @@ function PageAutoEvaluation() {
                 <Button variant="outline" onClick={() => setDialogRapport(false)} className="h-12 rounded-xl sm:h-11">
                   Fermer
                 </Button>
-                <Button onClick={() => window.print()} className="h-12 gap-2 rounded-xl bg-[#0F3B27] font-bold text-white sm:h-11">
-                  <Printer className="size-4" /> Imprimer le rapport
+                <Button onClick={imprimerRapportOfficielBpd} className="h-12 gap-2 rounded-xl bg-[#0F3B27] font-bold text-[#92FF5F] sm:h-11">
+                  <Printer className="size-4" /> Imprimer le rapport officiel (PDF)
                 </Button>
               </div>
             </div>

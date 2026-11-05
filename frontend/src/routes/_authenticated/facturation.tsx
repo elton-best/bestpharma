@@ -11,10 +11,13 @@ import {
   Building,
   Printer,
   FileText,
+  Download,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
 import { formatDateHeure, nombre } from "@/lib/format";
+import { telechargerCsv, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,6 +92,92 @@ function PageFacturation() {
       f.vente?.client_nom.toLowerCase().includes(recherche.toLowerCase()) ||
       (f.vente?.numero_ticket && f.vente.numero_ticket.toLowerCase().includes(recherche.toLowerCase()))
   );
+
+  const imprimerFactureDgi = (f: FactureItem) => {
+    const html = `
+      <div style="max-width: 420px; margin: 20px auto; border: 2px dashed #0F3B27; border-radius: 8px; padding: 18px; font-family: monospace; font-size: 13px; background: #fff;">
+        <div style="text-align: center; border-bottom: 2px dashed #0F3B27; padding-bottom: 12px; margin-bottom: 12px;">
+          <div style="font-weight: 900; font-size: 16px; color: #0F3B27;">BESTPHARMA OFFICINE</div>
+          <div style="font-size: 11px; color: #555;">RÉPUBLIQUE DU BÉNIN · DGI e-MECeF</div>
+          <div style="font-size: 12px; font-weight: bold; margin-top: 4px;">IFU : ${f.ifu_officine}</div>
+          <div style="font-size: 11px; color: #555;">Machine NIM : ${f.nim_machine}</div>
+        </div>
+        <div style="margin-bottom: 10px; font-size: 12px;">
+          <div>Date : <strong>${f.date_certification}</strong></div>
+          <div>Facture N° : <strong>${f.numero_facture_dgi}</strong></div>
+          <div>Ticket Vente : ${f.vente?.numero_ticket || "N/A"}</div>
+          <div>Client : <strong>${f.vente?.client_nom || "Client au comptoir"}</strong></div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px;">
+          <tr style="border-bottom: 1px solid #ddd; background: #F7F9F7;">
+            <th style="padding: 6px; text-align: left;">Désignation</th>
+            <th style="padding: 6px; text-align: right;">Total TTC</th>
+          </tr>
+          <tr>
+            <td style="padding: 6px;">Vente produits pharmaceutiques</td>
+            <td style="padding: 6px; text-align: right; font-weight: bold;">${nombre(f.vente?.total_ttc ?? 0)} FCFA</td>
+          </tr>
+        </table>
+        <div style="border-top: 1px dashed #0F3B27; padding-top: 8px; margin-top: 8px; font-size: 12px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Total HT (Groupe A - 0%) :</span>
+            <strong>${nombre(f.vente?.total_ht ?? f.vente?.total_ttc ?? 0)} FCFA</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Total TVA (0%) :</span>
+            <span>0 FCFA</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; color: #0F3B27; margin-top: 4px;">
+            <span>TOTAL PAYÉ :</span>
+            <span>${nombre(f.vente?.total_ttc ?? 0)} FCFA</span>
+          </div>
+        </div>
+        <div style="margin-top: 14px; padding: 10px; background: #F7F9F7; border-radius: 6px; font-size: 11px; word-break: break-all;">
+          <div><strong>CODE MECeF / DGI :</strong></div>
+          <div style="font-size: 13px; font-weight: bold; color: #0F3B27; letter-spacing: 1px;">${f.code_mecef}</div>
+          <div style="margin-top: 4px; font-size: 10px; color: #555;">Signature DGI : ${f.signature_dgi}</div>
+          <div style="margin-top: 2px; font-size: 10px; color: #555;">Compteurs : Type ${f.compteur_type} · Total ${f.compteur_total}</div>
+        </div>
+        <div style="text-align: center; margin-top: 12px; font-size: 10px; color: #666;">
+          Facture certifiée e-MECeF conforme aux normes DGI Bénin
+        </div>
+      </div>
+    `;
+    imprimerFicheOfficielle(`Facture DGI ${f.numero_facture_dgi}`, html);
+  };
+
+  const exporterRegistreDgiCsv = () => {
+    if (factures.length === 0) {
+      toast.error("Aucune facture à exporter.");
+      return;
+    }
+    telechargerCsv(
+      factures.map((f) => ({
+        numero_dgi: f.numero_facture_dgi,
+        date: f.date_certification,
+        code_mecef: f.code_mecef,
+        nim: f.nim_machine,
+        ifu: f.ifu_officine,
+        ticket: f.vente?.numero_ticket || "N/A",
+        client: f.vente?.client_nom || "Client comptoir",
+        total_ttc: f.vente?.total_ttc || 0,
+        statut: f.statut,
+      })),
+      `bestpharma_registre_dgi_${new Date().toISOString().split("T")[0]}`,
+      [
+        { cle: "numero_dgi", label: "N° Facture DGI" },
+        { cle: "date", label: "Date Certification" },
+        { cle: "code_mecef", label: "Code MECeF" },
+        { cle: "nim", label: "NIM Machine" },
+        { cle: "ifu", label: "IFU Officine" },
+        { cle: "ticket", label: "N° Ticket" },
+        { cle: "client", label: "Client" },
+        { cle: "total_ttc", label: "Total TTC (FCFA)" },
+        { cle: "statut", label: "Statut Fiscale" },
+      ]
+    );
+    toast.success("Registre des factures DGI exporté en CSV !");
+  };
 
   return (
     <div className="space-y-6">
@@ -166,14 +255,24 @@ function PageFacturation() {
                 Toutes les ventes validées génèrent automatiquement une facture fiscale avec NIM et Code MECeF.
               </CardDescription>
             </div>
-            <div className="relative w-72">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Rechercher par N° DGI, Code MECeF, Client..."
-                value={recherche}
-                onChange={(e) => setRecherche(e.target.value)}
-                className="pl-9 h-9 text-xs"
-              />
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exporterRegistreDgiCsv}
+                className="h-9 gap-1.5 border-slate-200 text-xs font-bold text-[#0F3B27] hover:bg-[#CFF1D2]/30"
+              >
+                <Download className="h-3.5 w-3.5" /> Exporter Registre (CSV)
+              </Button>
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Rechercher par N° DGI, Code, Client..."
+                  value={recherche}
+                  onChange={(e) => setRecherche(e.target.value)}
+                  className="pl-9 h-9 text-xs"
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -256,8 +355,13 @@ function PageFacturation() {
                 Facture conservée dix ans et rattachée à la vente d'origine, sans modification possible.
               </p>
               <div className="flex flex-col-reverse gap-2 sm:flex-row">
-                <Button type="button" variant="outline" onClick={() => window.print()} className="h-12 gap-2 rounded-xl sm:h-11">
-                  <Printer className="h-4 w-4" /> Imprimer
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => factureSelectionnee && imprimerFactureDgi(factureSelectionnee)}
+                  className="h-12 gap-2 rounded-xl sm:h-11 border-[#0F3B27] text-[#0F3B27] font-bold"
+                >
+                  <Printer className="h-4 w-4" /> Imprimer Ticket Fiscal
                 </Button>
                 <Button
                   type="button"

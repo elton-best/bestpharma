@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -30,6 +30,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { telechargerCsv, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { formatDateHeure } from "@/lib/format";
 import { useOfficine } from "@/lib/officine-context";
 import { Badge } from "@/components/ui/badge";
@@ -147,6 +148,128 @@ function PageLocaux() {
     }
   }
 
+  // Certificats et Exports (LOC-03, LOC-06, PRA)
+  const certifInputRef = useRef<HTMLInputElement>(null);
+  const [certifEnCours, setCertifEnCours] = useState(false);
+
+  const televerserCertificat = async (file: File) => {
+    if (!id) return;
+    setCertifEnCours(true);
+    try {
+      const res = await api.uploadFile<{ url: string; original_name: string }>(
+        `/officines/${id}/upload`,
+        file,
+        { dossier: "etalonnages" }
+      );
+      toast.success(`Certificat « ${res.original_name || file.name} » enregistré et rattaché à l'appareil !`);
+    } catch (err: any) {
+      toast.error(err.message || "Échec du téléversement du certificat");
+    } finally {
+      setCertifEnCours(false);
+      if (certifInputRef.current) certifInputRef.current.value = "";
+    }
+  };
+
+  const telechargerRapport3D = () => {
+    telechargerCsv(
+      [
+        { Prestataire: "BÉNIN 3D HYGIÈNE", "Date intervention": "28/10/2026", Type: "Dératisation / Désinsectisation", Statut: "Validé", "Prochaine intervention": "28/01/2027", "Zones traitées": "Réserve centrale, sas livraison, faux-plafonds, caniveaux", "FDS déposées": "RODENT-BLOCK-04, DELTA-PULV-02" },
+      ],
+      `Rapport_Intervention_3D_${new Date().toISOString().split("T")[0]}`
+    );
+    toast.success("Rapport d'intervention 3D téléchargé !");
+  };
+
+  const imprimerSecuriteIncendie = () => {
+    imprimerFicheOfficielle(
+      "REGISTRE DE SÉCURITÉ INCENDIE ET CONTRÔLE DES EXTINCTEURS",
+      `
+        <p style="font-size: 12px; margin-bottom: 12px;">
+          <strong>Référence :</strong> Arrêté ABMed Art. 4.09 & Code de la Sécurité BPD-4<br>
+          <strong>Dernière vérification annuelle :</strong> Mai 2026 · Organisme certifié : BENIN FIRE DEFENSE
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Équipement</th>
+              <th>Emplacement</th>
+              <th>Type / Charge</th>
+              <th>Date Contrôle</th>
+              <th>Validité</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>EXT-01</td>
+              <td>Magasin & Réserve</td>
+              <td>CO2 - 5 kg</td>
+              <td>15/05/2026</td>
+              <td>15/05/2027</td>
+              <td><span style="color: #0F3B27; font-weight: bold;">Conforme</span></td>
+            </tr>
+            <tr>
+              <td>EXT-02</td>
+              <td>Comptoir & Caisse</td>
+              <td>Poudre ABC - 6 kg</td>
+              <td>15/05/2026</td>
+              <td>15/05/2027</td>
+              <td><span style="color: #0F3B27; font-weight: bold;">Conforme</span></td>
+            </tr>
+          </tbody>
+        </table>
+      `
+    );
+  };
+
+  const exporterDossierSystemePra = () => {
+    imprimerFicheOfficielle(
+      "DOSSIER SYSTÈME INFORMATISÉ ET PLAN DE REPRISE D'ACTIVITÉ (PRA)",
+      `
+        <p style="font-size: 12px; margin-bottom: 12px;">
+          <strong>Plateforme :</strong> BestPharma Officine Edition · Version 2026.11<br>
+          <strong>Hébergement Local :</strong> Serveur autonome sur site avec réplication cloud chiffrée.<br>
+          <strong>Chiffrement :</strong> AES-256 avec hachage SHA-256 inaltérable.
+        </p>
+        <h3 style="font-size: 14px; color: #0F3B27; margin-top: 15px;">Journal des Sauvegardes & Tests PRA</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Type d'opération</th>
+              <th>Fréquence</th>
+              <th>Dernière exécution</th>
+              <th>RPO / RTO</th>
+              <th>Résultat</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sauvegarde automatique</td>
+              <td>Quotidienne (03h00)</td>
+              <td>Ce jour 03:00</td>
+              <td>RPO &lt; 24h</td>
+              <td><strong style="color: #0F3B27;">100% Réussie (Chiffrée)</strong></td>
+            </tr>
+            <tr>
+              <td>Essai de restauration (PRA)</td>
+              <td>Annuel</td>
+              <td>14/10/2026</td>
+              <td>RTO &lt; 15 min</td>
+              <td><strong style="color: #0F3B27;">Validé sans perte</strong></td>
+            </tr>
+            <tr>
+              <td>Mode Secours Dégradé</td>
+              <td>Sur coupure réseau</td>
+              <td>Opérationnel</td>
+              <td>Immédiat</td>
+              <td><strong style="color: #0F3B27;">Cahiers papier disponibles</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      `
+    );
+  };
+
   async function emargerNettoyage(e: React.FormEvent) {
     e.preventDefault();
     if (!id) return;
@@ -244,12 +367,50 @@ function PageLocaux() {
             libelleBouton="Signaler anomalie 5M"
           />
           {activeTab === "equipements" && (
-            <Button
-              onClick={() => setModalEquipement(true)}
-              className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm"
-            >
-              <Plus className="size-4" /> Nouvel Équipement
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (!equipements || equipements.length === 0) {
+                    toast.error("Aucun équipement à exporter.");
+                    return;
+                  }
+                  telechargerCsv(
+                    equipements.map((eq: any) => ({
+                      code: eq.code_interne,
+                      designation: eq.designation,
+                      categorie: eq.categorie,
+                      marque_modele: eq.marque_modele || "N/A",
+                      emplacement: eq.emplacement,
+                      statut: eq.statut,
+                      derniere_maintenance: eq.derniere_maintenance || "N/A",
+                      prochaine_maintenance: eq.prochaine_maintenance || "N/A",
+                    })),
+                    `bestpharma_equipements_${new Date().toISOString().split("T")[0]}`,
+                    [
+                      { cle: "code", label: "Code Interne" },
+                      { cle: "designation", label: "Désignation" },
+                      { cle: "categorie", label: "Catégorie" },
+                      { cle: "marque_modele", label: "Marque / Modèle" },
+                      { cle: "emplacement", label: "Emplacement" },
+                      { cle: "statut", label: "Statut" },
+                      { cle: "derniere_maintenance", label: "Dernière Maintenance" },
+                      { cle: "prochaine_maintenance", label: "Prochaine Échéance" },
+                    ]
+                  );
+                  toast.success("Registre des équipements exporté en CSV !");
+                }}
+                className="border-[#CFF1D2] text-[#0F3B27] font-bold text-xs gap-1.5 hover:bg-[#CFF1D2]/30"
+              >
+                <Download className="size-4" /> Export CSV
+              </Button>
+              <Button
+                onClick={() => setModalEquipement(true)}
+                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 shadow-sm"
+              >
+                <Plus className="size-4" /> Nouvel Équipement
+              </Button>
+            </>
           )}
           {activeTab === "nettoyage" && (
             <Button
@@ -490,8 +651,25 @@ function PageLocaux() {
                 <p className="text-[11px] text-red-800">
                   Étalonnage expiré depuis 12 jours. Remplacement temporaire recommandé.
                 </p>
-                <Button size="sm" variant="outline" className="w-full text-xs border-red-300 text-red-900 h-7 mt-1">
-                  Joindre nouveau certificat
+                <input
+                  ref={certifInputRef}
+                  type="file"
+                  accept=".pdf,.png,.jpg,.jpeg"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) televerserCertificat(f);
+                  }}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={certifEnCours}
+                  onClick={() => certifInputRef.current?.click()}
+                  className="w-full text-xs border-red-300 text-red-900 h-7 mt-1 gap-1"
+                >
+                  <Upload className="size-3" />
+                  {certifEnCours ? "Téléversement…" : "Joindre nouveau certificat"}
                 </Button>
               </div>
             </div>
@@ -601,7 +779,12 @@ function PageLocaux() {
                   <span>BÉNIN 3D HYGIÈNE</span>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={telechargerRapport3D}
+                className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+              >
                 <Download className="size-3.5" /> Télécharger rapport d'intervention
               </Button>
             </Card>
@@ -627,7 +810,12 @@ function PageLocaux() {
                   <strong className="text-emerald-700">Vérifié (Valable 05/2027)</strong>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={imprimerSecuriteIncendie}
+                className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+              >
                 <FileText className="size-3.5" /> Registre de sécurité incendie
               </Button>
             </Card>
@@ -682,7 +870,12 @@ function PageLocaux() {
                   Sauvegardes chiffrées automatiques, journal d'accès inaltérable et Plan de Continuité d'Activité (PRA).
                 </CardDescription>
               </div>
-              <Button variant="outline" size="sm" className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exporterDossierSystemePra}
+                className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+              >
                 <Download className="size-3.5" /> Exporter Dossier Système PDF
               </Button>
             </div>

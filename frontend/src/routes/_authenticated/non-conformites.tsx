@@ -21,10 +21,13 @@ import {
   UserCheck,
   FileText,
   Lock,
+  Download,
+  Printer,
 } from "lucide-react";
 
 import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
+import { telechargerCsv, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -158,6 +161,113 @@ function PageNonConformites() {
   const compteEnCours = ncs.filter((n) => n.statut === "en_cours").length;
   const compteCloturees = ncs.filter((n) => n.statut === "cloturee").length;
 
+  const exporterCsvNc = () => {
+    if (!ncs.length) {
+      toast.info("Aucune non-conformité enregistrée à exporter.");
+      return;
+    }
+    telechargerCsv(
+      ncs.map((n) => ({
+        numero: n.numero_nc || "NC",
+        titre: n.titre,
+        gravite: n.gravite.toUpperCase(),
+        statut: n.statut,
+        source: n.source,
+        processus: n.processus,
+        date: n.created_at ? new Date(n.created_at).toLocaleDateString("fr-FR") : "",
+        description: n.description || "",
+        action_corrective: n.action_corrective || "",
+        responsable: n.responsable_action || "Titulaire",
+      })),
+      `Registre_NonConformites_BestPharma_${new Date().toISOString().split("T")[0]}.csv`,
+      [
+        { cle: "numero", entete: "Numéro NC" },
+        { cle: "titre", entete: "Titre de la Non-Conformité" },
+        { cle: "gravite", entete: "Gravité" },
+        { cle: "statut", entete: "Statut" },
+        { cle: "source", entete: "Source" },
+        { cle: "processus", entete: "Processus" },
+        { cle: "date", entete: "Date constat" },
+        { cle: "description", entete: "Description" },
+        { cle: "action_corrective", entete: "Plan CAPA" },
+        { cle: "responsable", entete: "Responsable" },
+      ]
+    );
+    toast.success("Registre des Non-Conformités exporté en CSV");
+  };
+
+  const imprimerFicheNc = (nc: any) => {
+    const html = `
+      <div style="margin-bottom: 24px; padding: 16px; border: 2px solid #0F3B27; border-radius: 8px; background: #F7FBF8;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; color: #0F3B27;">FICHE D'ENREGISTREMENT DE NON-CONFORMITÉ</h2>
+          <span style="font-family: monospace; font-size: 16px; font-weight: bold; background: #0F3B27; color: #92FF5F; padding: 4px 10px; border-radius: 4px;">
+            ${nc.numero_nc || "NC-001"}
+          </span>
+        </div>
+        <p style="margin: 8px 0 0 0; font-size: 13px; color: #475C50;">
+          Conformité Guide BPD ABMed · Procédure QAM-FI-001 / Plan CAPA QAM-PL-004
+        </p>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px;">
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; width: 25%; font-weight: bold;">Titre :</td>
+          <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; color: #0F3B27;">${nc.titre}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Gravité :</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${nc.gravite ? nc.gravite.toUpperCase() : "MAJEURE"}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Processus & Source :</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">Processus ${nc.processus || "QAM"} · Source : ${nc.source || "Interne"}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold;">Statut actuel :</td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${nc.statut ? nc.statut.toUpperCase() : "OUVERTE"}</td>
+        </tr>
+      </table>
+
+      <div style="margin-bottom: 16px;">
+        <h4 style="color: #0F3B27; margin: 0 0 6px 0;">1. Description de la Non-Conformité constatée</h4>
+        <div style="padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: #fafafa;">
+          ${nc.description || "Aucune description détaillée."}
+        </div>
+      </div>
+
+      ${nc.action_immediate ? `
+      <div style="margin-bottom: 16px;">
+        <h4 style="color: #0F3B27; margin: 0 0 6px 0;">2. Action immédiate / Traitement conservatoire</h4>
+        <div style="padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: #fafafa;">
+          ${nc.action_immediate}
+        </div>
+      </div>` : ""}
+
+      ${nc.analyse_causes_5m ? `
+      <div style="margin-bottom: 16px;">
+        <h4 style="color: #0F3B27; margin: 0 0 6px 0;">3. Analyse des causes racines (Méthode 5M / 5 Pourquoi)</h4>
+        <div style="padding: 12px; border: 1px solid #bfdbfe; border-radius: 6px; font-size: 13px; background: #eff6ff; color: #1e40af;">
+          ${nc.analyse_causes_5m}
+        </div>
+      </div>` : ""}
+
+      ${nc.action_preventive ? `
+      <div style="margin-bottom: 16px;">
+        <h4 style="color: #0F3B27; margin: 0 0 6px 0;">4. Plan d'actions CAPA & Vérification d'efficacité</h4>
+        <div style="padding: 12px; border: 1px solid #bbf7d0; border-radius: 6px; font-size: 13px; background: #f0fdf4; color: #166534;">
+          ${nc.action_preventive}
+          <div style="margin-top: 6px; font-size: 12px; color: #15803d;">
+            Responsable désigné : <strong>${nc.responsable_action || "Pharmacien Titulaire"}</strong>
+          </div>
+        </div>
+      </div>` : ""}
+    `;
+
+    imprimerFicheOfficielle(`Fiche Non-Conformité ${nc.numero_nc || ""}`, html);
+    toast.success("Fiche NC prête pour impression !");
+  };
+
   return (
     <div className="grid gap-6">
       {/* HEADER HERO */}
@@ -177,7 +287,15 @@ function PageNonConformites() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exporterCsvNc}
+            className="h-10 text-xs border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/20 gap-1.5"
+          >
+            <Download className="size-4" /> Exporter Registre (CSV)
+          </Button>
           <BoutonCreerNC
             sourceDefaut="interne"
             processusDefaut="QAM"
@@ -364,7 +482,12 @@ function PageNonConformites() {
                   <Badge variant="outline" className="text-[10px] capitalize">
                     {n.statut.replace("_", " ")}
                   </Badge>
-                  <Button size="sm" variant="outline" className="h-7 text-xs border-[#CFF1D2] text-[#0F3B27]">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setNcActive(n)}
+                    className="h-7 text-xs border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/20"
+                  >
                     Détail &rarr;
                   </Button>
                 </div>
@@ -537,6 +660,14 @@ function PageNonConformites() {
               </div>
 
               <DialogFooter className="gap-2 sm:gap-0 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => imprimerFicheNc(ncActive)}
+                  className="border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+                >
+                  <Printer className="size-4" /> Imprimer Fiche NC
+                </Button>
                 <Button
                   type="button"
                   variant="outline"

@@ -23,6 +23,7 @@ import {
 
 import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
+import { telechargerCsv, telechargerTexte, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -135,6 +136,58 @@ function PageModeles() {
     return matchProcessus && matchSearch;
   });
 
+  const exporterCsvModeles = () => {
+    if (!modeles.length) {
+      toast.info("Aucun modèle à exporter.");
+      return;
+    }
+    telechargerCsv(
+      modeles.map((m) => ({
+        code: m.code_ref,
+        processus: m.processus,
+        titre: m.titre,
+        type: m.type_document,
+        articles: m.articles_guide || "—",
+        duree_conservation: `${m.duree_conservation_ans || 5} ans`,
+        adopte: codesAdoptes.has(m.code_ref) ? "OUI" : "NON",
+      })),
+      `Catalogue_59_Modeles_BPD_BestPharma_${new Date().toISOString().split("T")[0]}.csv`,
+      [
+        { cle: "code", entete: "Code Référence" },
+        { cle: "processus", entete: "Processus BPD" },
+        { cle: "titre", entete: "Titre du Modèle" },
+        { cle: "type", entete: "Type de document" },
+        { cle: "articles", entete: "Articles Guide BPD" },
+        { cle: "duree_conservation", entete: "Conservation légale" },
+        { cle: "adopte", entete: "Adopté dans l'officine" },
+      ]
+    );
+    toast.success("Catalogue des 59 modèles BPD exporté en CSV");
+  };
+
+  const imprimerModele = (m: any) => {
+    const html = `
+      <div style="margin-bottom: 20px; padding: 16px; border: 2px solid #0F3B27; border-radius: 8px; background: #F7FBF8;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="margin: 0; color: #0F3B27;">${m.titre}</h2>
+          <span style="font-family: monospace; font-size: 16px; font-weight: bold; background: #0F3B27; color: #92FF5F; padding: 4px 10px; border-radius: 4px;">
+            ${m.code_ref}
+          </span>
+        </div>
+        <p style="margin: 8px 0 0 0; font-size: 12px; color: #475C50;">
+          Processus ${m.processus} · Articles Guide BPD : ${m.articles_guide || "Conformité générale"} · Conservation légale : ${m.duree_conservation_ans || 5} ans
+        </p>
+      </div>
+
+      <div style="padding: 16px; border: 1px solid #CFF1D2; border-radius: 8px; background: #ffffff; white-space: pre-wrap; font-family: sans-serif; font-size: 13px; line-height: 1.7; color: #0F3B27;">
+${m.contenu_modele}
+      </div>
+    `;
+
+    imprimerFicheOfficielle(`Modèle BPD ${m.code_ref} — ${m.titre}`, html);
+    toast.success(`Trame du modèle ${m.code_ref} prête pour impression !`);
+  };
+
   return (
     <div className="grid gap-6">
       {/* HEADER HERO */}
@@ -154,11 +207,22 @@ function PageModeles() {
           </p>
         </div>
 
-        {/* Jauge d'adoption rapide */}
-        <div className="rounded-2xl border border-[#CFF1D2] bg-[#F7F9F7] p-3 text-right shrink-0">
-          <div className="text-[10px] font-bold text-[#475C50] uppercase tracking-wider">Taux d'Adoption BPD</div>
-          <div className="font-display text-xl font-black text-[#0F3B27]">{tauxAdoption}%</div>
-          <span className="text-[10px] text-emerald-800 font-semibold">{modelesAdoptesCount} sur {totalModeles} adoptés</span>
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exporterCsvModeles}
+            className="h-10 text-xs border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/20 gap-1.5"
+          >
+            <Download className="size-4" /> Exporter Catalogue (CSV)
+          </Button>
+
+          {/* Jauge d'adoption rapide */}
+          <div className="rounded-2xl border border-[#CFF1D2] bg-[#F7F9F7] p-2.5 px-4 text-right">
+            <div className="text-[10px] font-bold text-[#475C50] uppercase tracking-wider">Taux d'Adoption BPD</div>
+            <div className="font-display text-xl font-black text-[#0F3B27]">{tauxAdoption}%</div>
+            <span className="text-[10px] text-emerald-800 font-semibold">{modelesAdoptesCount} sur {totalModeles} adoptés</span>
+          </div>
         </div>
       </div>
 
@@ -385,7 +449,26 @@ function PageModeles() {
                 </div>
               </div>
 
-              <DialogFooter className="gap-2 sm:gap-0 pt-2">
+              <DialogFooter className="flex-wrap gap-2 sm:gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => imprimerModele(modeleActif)}
+                  className="border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+                >
+                  <Printer className="size-4" /> Imprimer / PDF
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    telechargerTexte(modeleActif.contenu_modele, `Trame_${modeleActif.code_ref}.txt`, "text/plain");
+                    toast.success("Trame textuelle téléchargée !");
+                  }}
+                  className="border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+                >
+                  <Download className="size-4" /> Télécharger (.txt)
+                </Button>
                 <Button
                   type="button"
                   variant="outline"

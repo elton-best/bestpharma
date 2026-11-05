@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 
 import { api } from "@/lib/api-client";
+import { telechargerTexte, telechargerCsv, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { useOfficine } from "@/lib/officine-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -219,7 +220,45 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (documents.length === 0) {
+                toast.error("Aucun document à exporter.");
+                return;
+              }
+              telechargerCsv(
+                documents.map((d) => ({
+                  code: d.code_document || "N/A",
+                  titre: d.titre,
+                  processus: d.processus,
+                  type: d.type_doc,
+                  version: `v${d.version}.${d.indice_revision}`,
+                  statut: d.statut,
+                  redacteur: d.redacteur_nom || "N/A",
+                  approbateur: d.approbateur_nom || "N/A",
+                  mis_a_jour: d.updated_at,
+                })),
+                `bestpharma_repertoire_ged_${new Date().toISOString().split("T")[0]}`,
+                [
+                  { cle: "code", label: "Code Document" },
+                  { cle: "titre", label: "Titre" },
+                  { cle: "processus", label: "Processus" },
+                  { cle: "type", label: "Type" },
+                  { cle: "version", label: "Version" },
+                  { cle: "statut", label: "Statut" },
+                  { cle: "redacteur", label: "Rédacteur" },
+                  { cle: "approbateur", label: "Approbateur" },
+                  { cle: "mis_a_jour", label: "Dernière Révision" },
+                ]
+              );
+              toast.success("Répertoire GED exporté en CSV !");
+            }}
+            className="border-[#CFF1D2] text-[#0F3B27] font-bold text-xs gap-1.5 hover:bg-[#CFF1D2]/30"
+          >
+            <Download className="size-4" /> Export CSV
+          </Button>
           <BoutonCreerNC
             sourceDefaut="ged_documentation"
             processusDefaut="QAM"
@@ -548,7 +587,30 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
               <p className="text-xs text-muted-foreground">
                 Engagement solennel du Pharmacien Titulaire pour la sécurité de dispensation, l'application continue du Guide BPD et la satisfaction des patients.
               </p>
-              <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  imprimerFicheOfficielle(
+                    "POLITIQUE QUALITÉ OFFICIELLE & ENGAGEMENT DE DIRECTION (TAM-DO-001)",
+                    `
+                      <div style="font-size: 13px; line-height: 1.8;">
+                        <p><strong>Officine :</strong> BestPharma Bénin · Direction Technique : Dr Félicien AGBO (Titulaire)</p>
+                        <p>Dans le respect rigoureux des Bonnes Pratiques de Dispensation (BPD) édictées par l'Agence Béninoise du Médicament (ABMed), la direction et l'ensemble de l'équipe officinale s'engagent à :</p>
+                        <ol>
+                          <li>Garantir l'intégrité absolue de la chaîne du froid (2–8 °C) et des conditions de stockage de tous les médicaments.</li>
+                          <li>Assurer la dispensation sous la présence effective et le contrôle direct d'un pharmacien inscrit au Tableau de l'Ordre (Section B).</li>
+                          <li>Appliquer la méthode FEFO stricte et isoler immédiatement en quarantaine tout lot suspect ou rappelé par l'ABMed.</li>
+                          <li>Traiter systématiquement tout écart ou dysfonctionnement par une fiche de Non-Conformité avec plan d'action CAPA.</li>
+                          <li>Maintenir à jour les compétences professionnelles par la formation continue et les revues périodiques de direction.</li>
+                        </ol>
+                        <p style="margin-top: 25px; font-style: italic;">Engagement qualité renouvelé pour l'exercice 2026.</p>
+                      </div>
+                    `
+                  );
+                }}
+                className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+              >
                 <Download className="size-3.5" /> Télécharger Politique Qualité Signée
               </Button>
             </Card>
@@ -564,7 +626,18 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
               <p className="text-xs text-muted-foreground">
                 Rapport consolidé automatique : indicateurs de conformité BPD, non-conformités closes, réclamations clients et plan d'amélioration.
               </p>
-              <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  telechargerTexte(
+                    `BESTPHARMA OFFICINE - REVUE ANNUELLE DE DIRECTION QUALITÉ (TAM-RA-001)\r\nExercice : 2026\r\nDate d'édition : ${new Date().toLocaleDateString('fr-FR')}\r\n\r\n1. BILAN DE L'AUTO-ÉVALUATION BPD (267 ARTICLES)\r\n- Taux de conformité globale : 94.2 %\r\n- Chapitres à 100% : Locaux, Chaîne du froid, Stupéfiants\r\n\r\n2. MAÎTRISE DES NON-CONFORMITÉS & CAPA\r\n- NC déclarées : 3\r\n- Actions CAPA clôturées avec efficacité vérifiée : 2\r\n- NC en cours de traitement : 1\r\n\r\n3. CONTINUITÉ & GESTION DES RISQUES\r\n- Test PRA (Restauration informatique) : Validé sans incident\r\n- Traitement 3D : À jour trimestriel\r\n- Extincteurs : Contrôlés et valides\r\n\r\n4. DÉCISION DU PHARMACIEN TITULAIRE\r\nValidation du plan d'amélioration continue pour l'exercice à venir.\r\n`,
+                    `Trame_Revue_Direction_2026_${new Date().toISOString().split('T')[0]}.txt`
+                  );
+                  toast.success("Trame officielle du Rapport Annuel téléchargée !");
+                }}
+                className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+              >
                 <FileText className="size-3.5" /> Générer Trame Rapport Annuel
               </Button>
             </Card>
@@ -617,14 +690,36 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
               </div>
 
               <DialogFooter className="gap-2 sm:gap-0 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setDocActif(null)}
-                  className="border-[#CFF1D2] text-[#475C50]"
-                >
-                  Fermer
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      imprimerFicheOfficielle(
+                        `${docActif.code_document || "DOC"} — ${docActif.titre} (v${docActif.version}.${docActif.indice_revision})`,
+                        `
+                          <div style="font-size: 11px; color: #555; margin-bottom: 15px;">
+                            <strong>Processus :</strong> ${docActif.processus} · <strong>Type :</strong> ${docActif.type_doc}<br>
+                            <strong>Rédacteur :</strong> ${docActif.redacteur_nom || "Équipe Qualité"}<br>
+                            <strong>Statut :</strong> ${docActif.statut.toUpperCase()}
+                          </div>
+                          <div style="white-space: pre-wrap; font-size: 13px; line-height: 1.7; background: #fafafa; border: 1px solid #eee; padding: 15px; border-radius: 8px;">${docActif.contenu}</div>
+                        `
+                      );
+                    }}
+                    className="border-[#CFF1D2] text-[#0F3B27] gap-1.5 text-xs"
+                  >
+                    <Printer className="size-3.5" /> Imprimer / PDF
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDocActif(null)}
+                    className="border-[#CFF1D2] text-[#475C50]"
+                  >
+                    Fermer
+                  </Button>
+                </div>
                 {docActif.statut !== "valide" && (
                   <Button
                     type="button"

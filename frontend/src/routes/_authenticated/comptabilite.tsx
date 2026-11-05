@@ -12,10 +12,13 @@ import {
   CheckCircle2,
   DollarSign,
   TrendingUp,
+  Printer,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
 import { formatDate, nombre } from "@/lib/format";
+import { telechargerCsv, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -98,6 +101,88 @@ function PageComptabilite() {
       e.libelle_ecriture.toLowerCase().includes(recherche.toLowerCase())
   );
 
+  const exporterJournalCsv = () => {
+    if (ecritures.length === 0) {
+      toast.error("Aucune écriture comptable à exporter.");
+      return;
+    }
+    telechargerCsv(
+      ecritures.map((e) => ({
+        date: e.date_piece,
+        journal: e.journal_code,
+        piece: e.numero_piece,
+        compte: e.numero_compte,
+        libelle_compte: e.libelle_compte,
+        libelle_ecriture: e.libelle_ecriture,
+        debit: e.debit,
+        credit: e.credit,
+      })),
+      `bestpharma_journal_ventes_${new Date().toISOString().split("T")[0]}`,
+      [
+        { cle: "date", label: "Date Pièce" },
+        { cle: "journal", label: "Code Journal" },
+        { cle: "piece", label: "N° Pièce" },
+        { cle: "compte", label: "N° Compte" },
+        { cle: "libelle_compte", label: "Intitulé Compte" },
+        { cle: "libelle_ecriture", label: "Libellé Écriture" },
+        { cle: "debit", label: "Débit (FCFA)" },
+        { cle: "credit", label: "Crédit (FCFA)" },
+      ]
+    );
+    toast.success("Journal des ventes exporté en CSV !");
+  };
+
+  const imprimerJournalComptable = () => {
+    if (ecritures.length === 0) {
+      toast.error("Aucune écriture comptable disponible pour l'impression.");
+      return;
+    }
+    const totalDebit = ecritures.reduce((acc, e) => acc + Number(e.debit), 0);
+    const totalCredit = ecritures.reduce((acc, e) => acc + Number(e.credit), 0);
+    const lignesHtml = ecritures
+      .map(
+        (e) => `
+      <tr>
+        <td>${e.date_piece}</td>
+        <td style="font-family: monospace;">${e.numero_piece}</td>
+        <td style="font-family: monospace; font-weight: bold; color: #0F3B27;">${e.numero_compte}</td>
+        <td>${e.libelle_compte}</td>
+        <td>${e.libelle_ecriture}</td>
+        <td style="text-align: right; font-family: monospace;">${Number(e.debit) > 0 ? nombre(e.debit) + " F" : "—"}</td>
+        <td style="text-align: right; font-family: monospace;">${Number(e.credit) > 0 ? nombre(e.credit) + " F" : "—"}</td>
+      </tr>`
+      )
+      .join("");
+
+    const html = `
+      <p style="font-size: 12px; color: #475C50; margin-bottom: 15px;">
+        Journal officiel des ventes de l'officine (Code Journal : VT) établi conformément aux règles du Plan Comptable SYSCOHADA Révisé (Bénin / OHADA). Écritures équilibrées en partie double.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>N° Pièce</th>
+            <th>Compte</th>
+            <th>Intitulé Compte</th>
+            <th>Libellé</th>
+            <th style="text-align: right;">Débit (FCFA)</th>
+            <th style="text-align: right;">Crédit (FCFA)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${lignesHtml}
+          <tr style="background: #F7F9F7; font-weight: bold;">
+            <td colspan="5" style="text-align: right;">TOTAUX GÉNÉRAUX ÉQUILIBRÉS :</td>
+            <td style="text-align: right; color: #0F3B27;">${nombre(totalDebit)} FCFA</td>
+            <td style="text-align: right; color: #0F3B27;">${nombre(totalCredit)} FCFA</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    imprimerFicheOfficielle("JOURNAL DES VENTES — SYSCOHADA RÉVISÉ", html);
+  };
+
   return (
     <div className="space-y-6">
       {/* En-tête */}
@@ -116,14 +201,22 @@ function PageComptabilite() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.print()}
-            className="gap-1.5 text-xs"
+            onClick={exporterJournalCsv}
+            className="gap-1.5 text-xs font-bold border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/30"
           >
-            <Download className="w-4 h-4" /> Exporter le Journal (PDF/Excel)
+            <Download className="w-4 h-4" /> Exporter Journal (CSV)
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={imprimerJournalComptable}
+            className="gap-1.5 text-xs font-bold border-[#0F3B27] text-[#0F3B27] hover:bg-[#CFF1D2]/30"
+          >
+            <Printer className="w-4 h-4" /> Imprimer Grand Livre
           </Button>
         </div>
       </div>

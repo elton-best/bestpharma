@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Download } from "lucide-react";
+import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
+import { telechargerCsv } from "@/lib/export-utils";
 import { fr } from "@/lib/i18n/fr";
 import { resumeJournal, type LigneJournal } from "@/components/modules/administration";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -124,10 +126,40 @@ function PageJournal() {
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">{fr.journal.sousTitre}</p>
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-[#CFF1D2] bg-[#F7FBF8] px-3 py-2 text-xs text-[#0F3B27]">
-          <ShieldCheck className="size-4" />
-          {data?.total ?? 0} opération{(data?.total ?? 0) > 1 ? "s" : ""} conservée
-          {(data?.total ?? 0) > 1 ? "s" : ""} dix ans
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (lignes.length === 0) {
+                toast.error("Aucune opération à exporter.");
+                return;
+              }
+              telechargerCsv(
+                lignes.map((l) => ({
+                  Date: l.server_timestamp,
+                  Action: LIBELLE_ACTION[l.action] ?? l.action,
+                  Objet:
+                    l.table_libelle ??
+                    TABLES.find((t) => t.valeur === l.table_name)?.libelle ??
+                    l.table_name,
+                  Utilisateur: l.user_email ?? "N/A",
+                  IP: l.ip_address ?? "N/A",
+                  Détail: resumeJournal(l) || "",
+                })),
+                `bestpharma_journal_audit_${new Date().toISOString().split("T")[0]}`
+              );
+              toast.success("Journal d'audit exporté en CSV !");
+            }}
+            className="border-[#CFF1D2] text-[#0F3B27] font-bold text-xs gap-1.5 hover:bg-[#CFF1D2]/30"
+          >
+            <Download className="size-3.5" /> Export CSV
+          </Button>
+          <div className="flex items-center gap-2 rounded-xl border border-[#CFF1D2] bg-[#F7FBF8] px-3 py-2 text-xs text-[#0F3B27]">
+            <ShieldCheck className="size-4" />
+            {data?.total ?? 0} opération{(data?.total ?? 0) > 1 ? "s" : ""} conservée
+            {(data?.total ?? 0) > 1 ? "s" : ""} dix ans
+          </div>
         </div>
       </div>
 

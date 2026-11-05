@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ import {
   Briefcase,
   GraduationCap,
   Download,
+  Upload,
   Printer,
   Plus,
   Network,
@@ -33,6 +34,7 @@ import {
 } from "lucide-react";
 
 import { api } from "@/lib/api-client";
+import { telechargerCsv, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { useOfficine } from "@/lib/officine-context";
 import { fr } from "@/lib/i18n/fr";
 import { formatDate } from "@/lib/format";
@@ -165,6 +167,71 @@ function PagePersonnel() {
       return matchRole && matchQuery;
     });
   }, [employes, filtreRole, recherche]);
+
+  // Modale Dossier Collaborateur & Pièces
+  const [employeDossier, setEmployeDossier] = useState<EmployeComplet | null>(null);
+  const pieceInputRef = useRef<HTMLInputElement>(null);
+  const [pieceCible, setPieceCible] = useState<string>("");
+  const [televersementEnCours, setTeleversementEnCours] = useState(false);
+
+  const televerserPieceDossier = async (file: File) => {
+    if (!id || !employeDossier) return;
+    setTeleversementEnCours(true);
+    try {
+      const res = await api.uploadFile<{ url: string; original_name: string }>(
+        `/officines/${id}/upload`,
+        file,
+        { dossier: "personnel", employe_id: employeDossier.id }
+      );
+      toast.success(`Pièce « ${pieceCible || file.name} » téléversée avec succès dans le dossier de ${employeDossier.nom_complet} !`);
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors du téléversement");
+    } finally {
+      setTeleversementEnCours(false);
+      if (pieceInputRef.current) pieceInputRef.current.value = "";
+    }
+  };
+
+  const exporterDossierEquipe = () => {
+    telechargerCsv(
+      employes.map((e) => ({
+        Matricule: e.matricule || "N/A",
+        Nom: e.nom_complet,
+        Poste: libellePoste(e.poste),
+        Téléphone: e.telephone || "",
+        Embauche: e.date_embauche || "",
+        "Visite médicale": e.date_visite_medicale || "Non renseignée",
+        "Charte BPD": e.charte_qualite_signee ? "Signée" : "En attente",
+        Statut: e.actif ? "Actif" : "Inactif",
+      })),
+      `Dossier_Personnel_BestPharma_${new Date().toISOString().split("T")[0]}`
+    );
+    toast.success("Registre complet du personnel téléchargé au format CSV !");
+  };
+
+  const imprimerAttestationOrdre = () => {
+    imprimerFicheOfficielle(
+      "ORDRE NATIONAL DES PHARMACIENS DU BÉNIN — SECTION B (OFFICINES)",
+      `
+        <div style="text-align: center; margin-bottom: 25px;">
+          <h2 style="font-size: 16px; margin: 0; color: #0F3B27;">ATTESTATION D'INSCRIPTION AU TABLEAU DE L'ORDRE</h2>
+          <p style="font-size: 12px; color: #666; margin-top: 5px;">Exercice Professionnel en Pharmacie d'Officine</p>
+        </div>
+        <p style="font-size: 12px; line-height: 1.8;">
+          Le Conseil National de l'Ordre National des Pharmaciens du Bénin certifie que :<br>
+          <strong>Docteur Félicien AGBO</strong><br>
+          est régulièrement inscrit au Tableau de l'Ordre sous le numéro : <strong>ONPB-2014-B-089</strong>.<br>
+          <strong>Qualité :</strong> Pharmacien Titulaire d'Officine (Section B)<br>
+          <strong>Officine :</strong> BestPharma Bénin<br>
+          <strong>Validité pour l'exercice :</strong> Année 2026 (Jusqu'au 31/12/2026).<br>
+          <strong>Situation ordinale :</strong> Cotisations ordinales et obligations déontologiques strictement à jour.
+        </p>
+        <div style="margin-top: 30px; font-size: 11px; color: #555;">
+          Délivré pour servir et valoir ce que de droit auprès de l'Agence Béninoise du Médicament (ABMed) et des autorités sanitaires.
+        </div>
+      `
+    );
+  };
 
   // Liste des pièces obligatoires du dossier personnel (PER-01)
   const piecesObligatoires = [
@@ -351,7 +418,12 @@ function PagePersonnel() {
                   </div>
 
                   <div className="flex gap-2 pt-1">
-                    <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEmployeDossier(e)}
+                      className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1"
+                    >
                       <FileText className="size-3.5" /> Dossier
                     </Button>
                     <Button
@@ -382,8 +454,13 @@ function PagePersonnel() {
                   Conservation sécurisée pendant la durée du contrat + 5 ans. Tout document manquant est signalé en inspection.
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline" className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1">
-                <Download className="size-3.5" /> Exporter Dossier Complet ZIP
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={exporterDossierEquipe}
+                className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1"
+              >
+                <Download className="size-3.5" /> Exporter Dossier Complet CSV
               </Button>
             </div>
 
@@ -431,7 +508,12 @@ function PagePersonnel() {
                   </p>
                 </div>
 
-                <Button size="sm" variant="outline" className="border-emerald-400 text-emerald-900 text-xs shrink-0 gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={imprimerAttestationOrdre}
+                  className="border-emerald-400 text-emerald-900 text-xs shrink-0 gap-1"
+                >
                   <Download className="size-3.5" /> Attestation Ordre PDF
                 </Button>
               </div>
@@ -488,8 +570,48 @@ function PagePersonnel() {
               <Button
                 size="sm"
                 onClick={() => {
-                  window.print();
-                  toast.success("Impression de l'organigramme lancée.");
+                  const html = `
+                    <p style="font-size: 12px; margin-bottom: 20px;">
+                      Organigramme hiérarchique et fonctionnel de l'officine conforme au Chapitre 2 des Bonnes Pratiques de Dispensation (Ressources Humaines & Qualification).
+                    </p>
+                    <div style="border: 2px solid #0F3B27; border-radius: 8px; padding: 15px; margin: 15px 0; text-align: center; background: #F7F9F7;">
+                      <div style="font-weight: 900; font-size: 15px; color: #0F3B27;">DIRECTION TECHNIQUE & PHARMACIEN TITULAIRE</div>
+                      <div style="font-size: 13px; font-weight: bold; margin-top: 4px;">Dr Félicien AGBO</div>
+                      <div style="font-size: 11px; color: #555;">Inscrit à l'Ordre National des Pharmaciens du Bénin — Section B</div>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                      <thead>
+                        <tr>
+                          <th>Pôle & Fonction</th>
+                          <th>Missions BPD Principales</th>
+                          <th>Responsables & Titulaires</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><strong>Pôle Dispensation & Conseil</strong></td>
+                          <td>Délivrance sous contrôle pharmaceutique, analyse des ordonnances, conseils d'hygiène et posologie.</td>
+                          <td>Pharmaciens Adjoints & Dispensateurs Diplômés</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Pôle Magasin, Stock & Chaîne du Froid</strong></td>
+                          <td>Réception, FEFO, quarantaine, surveillance bi-quotidienne des températures (2–8 °C et 15–25 °C).</td>
+                          <td>Magasinier en chef sous supervision Pharmacien</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Pôle Assurance Qualité & BPD</strong></td>
+                          <td>Gestion documentaire (GED), suivi des non-conformités (CAPA), réclamations et auto-évaluation ABMed.</td>
+                          <td>Référent Qualité / Pharmacien Adjoint</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Pôle Hygiène, Entretien & Sécurité</strong></td>
+                          <td>Nettoyage selon plan GLO-EN-001, lutte anti-nuisibles, contrôle des extincteurs et sécurité incendie.</td>
+                          <td>Agents d'entretien qualifiés</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  `;
+                  imprimerFicheOfficielle("ORGANIGRAMME OFFICIEL DE L'OFFICINE (BPD-2)", html);
                 }}
                 className="bg-[#0F3B27] text-[#92FF5F] text-xs font-bold gap-1"
               >
@@ -698,6 +820,62 @@ function PagePersonnel() {
         }}
         articleBpd="BPD-2 / Art. 2.01"
       />
+
+      {/* MODALE DOSSIER INDIVIDUEL ET TÉLÉVERSEMENT PIÈCES (GAR-LI-001) */}
+      <Dialog open={!!employeDossier} onOpenChange={(open) => !open && setEmployeDossier(null)}>
+        <DialogContent className="max-w-lg bg-white border border-[#CFF1D2] rounded-2xl shadow-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-[#0F3B27] font-display">
+              Dossier Individuel : {employeDossier?.nom_complet}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-[#475C50]">
+              Poste : {employeDossier?.poste} · Matricule : {employeDossier?.matricule || "N/A"} · Conservation légale GAR-LI-001.
+            </DialogDescription>
+          </DialogHeader>
+
+          <input
+            ref={pieceInputRef}
+            type="file"
+            accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) televerserPieceDossier(f);
+            }}
+          />
+
+          <div className="space-y-2.5 py-2">
+            {piecesObligatoires.map((p, idx) => (
+              <div
+                key={idx}
+                className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] flex items-center justify-between text-xs gap-2"
+              >
+                <div>
+                  <p className="font-semibold text-[#0F3B27]">{p.nom}</p>
+                  <p className="text-[10px] text-muted-foreground">Obligatoire pour inspection ABMed</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={televersementEnCours}
+                  onClick={() => {
+                    setPieceCible(p.nom);
+                    pieceInputRef.current?.click();
+                  }}
+                  className="h-7 text-[11px] border-[#CFF1D2] text-[#0F3B27] gap-1 shrink-0"
+                >
+                  <Upload className="size-3" />
+                  {televersementEnCours && pieceCible === p.nom ? "Envoi…" : "Déposer pièce"}
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmployeDossier(null)}>Fermer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

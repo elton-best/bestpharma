@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\StockLotController;
 use App\Http\Controllers\Api\StupefiantController;
 use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\EcheanceController;
+use App\Http\Controllers\Api\UploadController;
 use App\Http\Controllers\Api\VenteCaisseController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,11 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 
 // Routes protégées par token Sanctum
 Route::middleware('auth:sanctum')->group(function () {
+    // Téléversement de fichiers et pièces jointes (BPD)
+    Route::post('/upload', [UploadController::class, 'upload']);
+    Route::post('/officines/{officineId}/upload', [UploadController::class, 'upload']);
+    Route::post('/officines/{officineId}/temperatures/csv', [UploadController::class, 'uploadCsvTemperatures']);
+
     // Authentification, MFA TOTP et appareils (E0-S3)
     Route::post('/auth/verify-mfa', [AuthController::class, 'verifyMfa']);
     Route::get('/auth/mfa', [AuthController::class, 'etatMfa']);

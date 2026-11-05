@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -22,11 +22,15 @@ import {
   ScanLine,
   BookOpen,
   Files,
+  Download,
+  Printer,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
 import { formatDate, nombre } from "@/lib/format";
+import { useOfficine } from "@/lib/officine-context";
+import { telechargerCsv, telechargerTexte, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -140,12 +144,125 @@ const SECTIONS_STUPEIANTS = [
   },
 ];
 
-function ZoneDepot({ label }: { label: string }) {
+function ZoneDepot({
+  label,
+  dossier = "stupefiants_justificatifs",
+  accept = ".jpg,.jpeg,.png,.webp,.pdf",
+  valeurUrl,
+  valeurNom,
+  onUploadSuccess,
+}: {
+  label: string;
+  dossier?: string;
+  accept?: string;
+  valeurUrl?: string;
+  valeurNom?: string;
+  onUploadSuccess?: (file: { url: string; original_name: string; size: number }) => void;
+}) {
+  const [televersement, setTeleversement] = useState(false);
+  const [fichierActuel, setFichierActuel] = useState<{ url: string; nom: string; taille?: number } | null>(
+    valeurUrl ? { url: valeurUrl, nom: valeurNom || "Justificatif joint" } : null
+  );
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const traiterFichier = async (file: File | undefined) => {
+    if (!file) return;
+    setTeleversement(true);
+    try {
+      const res = await api.uploadFile<{ url: string; original_name: string; size: number }>(
+        "/upload",
+        file,
+        { dossier }
+      );
+      const info = {
+        url: res.url,
+        nom: res.original_name || file.name,
+        taille: res.size || file.size,
+      };
+      setFichierActuel(info);
+      onUploadSuccess?.(res);
+      toast.success(`Justificatif "${info.nom}" scanné et rattaché avec succès !`);
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors du téléversement du justificatif.");
+    } finally {
+      setTeleversement(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
-    <div className="rounded-2xl border-2 border-dashed border-[#CFF1D2] bg-[#F7F9F7] p-6 text-center">
-      <Upload className="mx-auto w-6 h-6 text-[#475C50]" />
-      <p className="mt-2 text-xs font-bold text-[#0F3B27]">{label}</p>
-      <p className="text-[11px] text-[#475C50]">Glisser-déposer, caméra ou sélecteur — JPG/PNG/PDF 10 Mo, SHA-256 + chiffrage</p>
+    <div
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        traiterFichier(e.dataTransfer.files?.[0]);
+      }}
+      className={`rounded-2xl border-2 border-dashed p-5 text-center transition-all ${
+        dragOver ? "border-[#0F3B27] bg-[#CFF1D2]/30" : "border-[#CFF1D2] bg-[#F7F9F7]"
+      }`}
+    >
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept={accept}
+        className="hidden"
+        onChange={(e) => traiterFichier(e.target.files?.[0])}
+      />
+
+      {fichierActuel ? (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 rounded-xl bg-white border border-[#CFF1D2]">
+          <div className="flex items-center gap-2 overflow-hidden text-left">
+            <CheckCircle2 className="size-5 text-emerald-600 shrink-0" />
+            <div className="truncate">
+              <p className="text-xs font-bold text-[#0F3B27] truncate">{fichierActuel.nom}</p>
+              <p className="text-[11px] text-[#475C50]">
+                {fichierActuel.taille ? `${(fichierActuel.taille / 1024).toFixed(1)} Ko · ` : ""}
+                <a
+                  href={fichierActuel.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline hover:text-[#0F3B27]"
+                >
+                  Consulter la pièce
+                </a>
+              </p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={televersement}
+            className="text-xs text-[#0F3B27] h-8 shrink-0"
+          >
+            Remplacer
+          </Button>
+        </div>
+      ) : (
+        <>
+          <Upload className={`mx-auto w-6 h-6 ${dragOver ? "text-[#0F3B27]" : "text-[#475C50]"}`} />
+          <p className="mt-2 text-xs font-bold text-[#0F3B27]">{label}</p>
+          <p className="text-[11px] text-[#475C50]">
+            {televersement
+              ? "Chiffrage SHA-256 et téléversement en cours…"
+              : "Glisser-déposer, caméra ou sélecteur — JPG, PNG ou PDF (max 30 Mo), archivage légal 10 ans"}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={televersement}
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-2.5 inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-xl border border-[#CFF1D2] bg-white px-3 py-1.5 text-xs font-bold text-[#0F3B27] hover:bg-[#CFF1D2]/30"
+          >
+            <ScanLine className="w-3.5 h-3.5" />
+            {televersement ? "Téléversement…" : "Choisir / Scanner la pièce"}
+          </Button>
+        </>
+      )}
     </div>
   );
 }
@@ -238,6 +355,114 @@ function PageStupefiantsTabB() {
       produit_id: produitId, type_mouvement: typeMouvement, quantite: parseInt(quantite, 10),
       reference_piece: referencePiece, patient_nom: patientNom || null, prescripteur_nom: prescripteurNom || null, observations: observations || null,
     });
+  };
+
+  const exporterRegistrePdf = () => {
+    const mouvementsList: Mouvement[] = (donnees?.data as any)?.data || [];
+    const lignes = mouvementsList.map((m: any) => `
+      <tr>
+        <td style="padding: 6px; border: 1px solid #ddd; font-family: monospace;">${m.numero_ordre || "—"}</td>
+        <td style="padding: 6px; border: 1px solid #ddd;">${formatDate(m.date_mouvement)}</td>
+        <td style="padding: 6px; border: 1px solid #ddd; font-weight: bold;">${m.produit?.nom_commercial || "Stupéfiant"}</td>
+        <td style="padding: 6px; border: 1px solid #ddd;">${m.type_mouvement?.replace("_", " ")}</td>
+        <td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold;">${m.entree_sortie === "entree" ? `+${m.quantite}` : `-${m.quantite}`}</td>
+        <td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; color: #0F3B27;">${m.solde_apres ?? m.stock_nouveau ?? "—"}</td>
+        <td style="padding: 6px; border: 1px solid #ddd;">${m.reference_piece || "—"}</td>
+        <td style="padding: 6px; border: 1px solid #ddd;">${m.patient_nom ? `${m.patient_nom} (Dr ${m.prescripteur_nom || ""})` : "—"}</td>
+        <td style="padding: 6px; border: 1px solid #ddd;">${m.pharmacien_visa?.name || "En attente"}</td>
+      </tr>
+    `).join("");
+
+    const html = `
+      <div style="margin-bottom: 20px; padding: 14px; border: 2px solid #0F3B27; border-radius: 8px; background: #F7FBF8;">
+        <h2 style="margin: 0 0 6px 0; color: #0F3B27;">REGISTRE SPÉCIAL DES SUBSTANCES VÉNÉNEUSES (TABLEAU B) — GAD-EN-010</h2>
+        <p style="margin: 0; font-size: 12px; color: #475C50;">
+          Conformité BPD-3 (Art. 7.15 à 7.20) · Registre inaltérable coté et paraphé · Durée légale de conservation : 10 ans
+        </p>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+        <thead>
+          <tr style="background: #0F3B27; color: white;">
+            <th style="padding: 6px; border: 1px solid #0F3B27;">N° Ordre</th>
+            <th style="padding: 6px; border: 1px solid #0F3B27;">Date</th>
+            <th style="padding: 6px; border: 1px solid #0F3B27;">Médicament</th>
+            <th style="padding: 6px; border: 1px solid #0F3B27;">Type</th>
+            <th style="padding: 6px; border: 1px solid #0F3B27;">Qte</th>
+            <th style="padding: 6px; border: 1px solid #0F3B27;">Solde</th>
+            <th style="padding: 6px; border: 1px solid #0F3B27;">Réf. Pièce / BL</th>
+            <th style="padding: 6px; border: 1px solid #0F3B27;">Patient / Prescripteur</th>
+            <th style="padding: 6px; border: 1px solid #0F3B27;">Visa Pharmacien</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${lignes || '<tr><td colspan="9" style="text-align: center; padding: 12px;">Aucun mouvement enregistré</td></tr>'}
+        </tbody>
+      </table>
+    `;
+
+    imprimerFicheOfficielle("Registre Officiel des Stupéfiants Tableau B (GAD-EN-010)", html);
+    toast.success("Registre officiel GAD-EN-010 prêt pour impression !");
+  };
+
+  const exporterBalanceCsv = () => {
+    const balances = (donnees as any)?.balance_produits || [];
+    if (!balances.length) {
+      toast.info("Aucune balance de stupéfiants disponible.");
+      return;
+    }
+    telechargerCsv(
+      balances.map((b: any) => ({
+        dci: b.dci || "",
+        nom: b.nom_commercial,
+        forme: b.forme || "",
+        dosage: b.dosage || "",
+        solde: b.solde,
+        seuil_min: b.seuil_min,
+        alerte: b.solde <= b.seuil_min ? "ALERTE STOCK BAS" : "CONFORME",
+      })),
+      `Balance_Stupefiants_BestPharma_${new Date().toISOString().split("T")[0]}.csv`,
+      [
+        { cle: "dci", entete: "DCI" },
+        { cle: "nom", entete: "Spécialité commerciale" },
+        { cle: "forme", entete: "Forme" },
+        { cle: "dosage", entete: "Dosage" },
+        { cle: "solde", entete: "Solde physique à date" },
+        { cle: "seuil_min", entete: "Seuil minimum" },
+        { cle: "alerte", entete: "Statut conformité" },
+      ]
+    );
+    toast.success("Balance des stupéfiants exportée en CSV");
+  };
+
+  const imprimerModeleLettreVol = () => {
+    const html = `
+      <div style="margin-bottom: 24px; padding: 16px; border: 2px solid #b91c1c; border-radius: 8px; background: #fef2f2;">
+        <h2 style="margin: 0 0 6px 0; color: #991b1b;">DÉCLARATION OFFICIELLE DE VOL OU PERTE DE SUBSTANCES DU TABLEAU B</h2>
+        <p style="margin: 0; font-size: 13px; color: #7f1d1d;">
+          Réf. BPD-3 / Art. 7.18 · Déclaration conjointe Forces de l'Ordre et Agence Béninoise du Médicament (ABMed)
+        </p>
+      </div>
+
+      <div style="font-size: 13px; line-height: 1.8; color: #1f2937;">
+        <p><strong>Destinataires :</strong></p>
+        <ul>
+          <li>Monsieur le Commissaire de Police / Commandant de Brigade de Gendarmerie</li>
+          <li>Monsieur le Directeur Général de l'Agence Béninoise du Médicament (ABMed)</li>
+          <li>Monsieur le Président de l'Ordre National des Pharmaciens du Bénin</li>
+        </ul>
+
+        <p><strong>Objet :</strong> Déclaration circonstanciée de vol / disparition de substances vénéneuses du Tableau B (Stupéfiants).</p>
+
+        <p>Je soussigné(e), Pharmacien Titulaire de l'officine BestPharma, déclare formellement la disparition ou le vol de stupéfiants constatée le <strong>${new Date().toLocaleDateString('fr-FR')}</strong> lors du contrôle réglementaire de l'armoire sécurisée.</p>
+
+        <p><strong>Circonstances :</strong> Constat contradictoire d'effraction ou anomalie d'inventaire dans l'armoire fermée à clé.</p>
+        <p>Déclaration de plainte officielle et inventaire quantitatif des substances rattachés au présent procès-verbal.</p>
+      </div>
+    `;
+
+    imprimerFicheOfficielle("Déclaration Officielle de Vol / Perte de Stupéfiants — BestPharma", html);
+    toast.success("Modèle officiel de lettre de vol/perte prêt pour impression !");
   };
 
   return (
@@ -397,9 +622,9 @@ function PageStupefiantsTabB() {
           </div>
           <div className="flex gap-2">
             <Button onClick={()=> setDialogVolOuvert(true)} variant="outline" className="border-red-300 text-red-800 font-bold"><ShieldAlert className="w-4 h-4 mr-1" /> Déclarer vol/perte</Button>
-            <Button onClick={()=> toast.info("Modèle lettre : en cours — génération PDF")} variant="outline" className="border-[#CFF1D2] font-bold"><FileText className="w-4 h-4 mr-1" /> Modèle lettre</Button>
+            <Button onClick={imprimerModeleLettreVol} variant="outline" className="border-[#CFF1D2] font-bold text-[#0F3B27]"><FileText className="w-4 h-4 mr-1" /> Modèle lettre officielle</Button>
           </div>
-          <ZoneDepot label="Récépissé de déclaration, courrier autorité — rattacher à la ligne" />
+          <ZoneDepot label="Récépissé de déclaration, courrier autorité — rattacher à la ligne" dossier="stupefiants_vols" />
         </div>
       )}
 
@@ -407,9 +632,9 @@ function PageStupefiantsTabB() {
         <div className="space-y-4">
           <Card className="border-red-300 bg-red-50/50"><CardHeader><CardTitle className="text-sm font-black text-red-800">Destruction & retours (STU-11/12)</CardTitle><CardDescription className="text-red-700">Autorisation, constitution lot, prestataire qualifié, PV contradictoire, certificat — sortie registre correspondante. Retours de particuliers placés en armoire en attente.</CardDescription></CardHeader><CardContent className="flex gap-2">
             <Button onClick={()=> setDialogDestructionOuvert(true)} className="bg-[#0F3B27] text-white font-bold gap-1"><Trash2 className="w-4 h-4" /> Demander destruction</Button>
-            <Button variant="outline" className="border-[#CFF1D2] font-bold">Constituer lot à détruire</Button>
+            <Button onClick={()=> setDialogDestructionOuvert(true)} variant="outline" className="border-[#CFF1D2] font-bold text-[#0F3B27]">Constituer lot à détruire</Button>
           </CardContent></Card>
-          <ZoneDepot label="Autorisation, PV signé, certificat d'incinération — coffre-fort numérique 10 ans" />
+          <ZoneDepot label="Autorisation, PV signé, certificat d'incinération — coffre-fort numérique 10 ans" dossier="stupefiants_destructions" />
         </div>
       )}
 
@@ -417,8 +642,8 @@ function PageStupefiantsTabB() {
         <div className="space-y-4">
           <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white font-display font-black flex items-center gap-2"><Eye className="w-5 h-5 text-[#92FF5F]" /> Mode inspecteur & rapports (STU-14)</CardTitle><CardDescription className="text-[#CFF1D2]">Extraits par période/produit/lot, balance, écarts — PDF/Excel filigrane + signature — consultation lecture seule journalisée</CardDescription></CardHeader><CardContent className="text-xs text-[#CFF1D2]">Dérivés du sang : registre distinct 40 ans verrouillé (BPD3-F11). Toute lecture nominative journalisée (RG-D01).</CardContent></Card>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Export registre</CardTitle></CardHeader><CardContent><Button variant="outline" className="w-full font-bold border-[#CFF1D2]"><FileSpreadsheet className="w-4 h-4 mr-1" /> PDF GAD-EN-010</Button></CardContent></Card>
-            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Balance à date</CardTitle></CardHeader><CardContent><Button variant="outline" className="w-full font-bold border-[#CFF1D2]"><Scale className="w-4 h-4 mr-1" /> Extraire balance</Button></CardContent></Card>
+            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Export registre</CardTitle></CardHeader><CardContent><Button onClick={exporterRegistrePdf} variant="outline" className="w-full font-bold border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/20"><FileSpreadsheet className="w-4 h-4 mr-1" /> PDF GAD-EN-010</Button></CardContent></Card>
+            <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Balance à date</CardTitle></CardHeader><CardContent><Button onClick={exporterBalanceCsv} variant="outline" className="w-full font-bold border-[#CFF1D2] text-[#0F3B27] hover:bg-[#CFF1D2]/20"><Scale className="w-4 h-4 mr-1" /> Extraire balance (CSV)</Button></CardContent></Card>
             <Card className="border-[#CFF1D2]"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Recherche</CardTitle></CardHeader><CardContent className="text-xs text-[#475C50]">Par produit, lot, n° ordre, prescripteur, période — patient réservé pharmacien (STU-15)</CardContent></Card>
           </div>
         </div>

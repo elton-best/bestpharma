@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createFileRoute, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { telechargerCsv } from "@/lib/export-utils";
 import {
   PackageCheck,
   AlertOctagon,
@@ -307,23 +308,131 @@ function badgeStatut(lot: StockLotItem) {
   return <Badge variant="outline" className={`text-[11px] font-bold ${v.cls}`}>{v.label}</Badge>;
 }
 
-// Composant réutilisable : glisser-déposer fichier (0.4)
-function ZoneDepot({ label, onFiles }: { label: string; onFiles?: (files: FileList) => void }) {
+// Composant réutilisable : glisser-déposer fichier et upload réel vers le backend
+function ZoneDepot({
+  label,
+  accept = ".jpg,.jpeg,.png,.webp,.pdf,.csv,.xlsx",
+  dossier = "stock_documents",
+  valeurUrl,
+  valeurNom,
+  onUploadSuccess,
+  onFiles,
+}: {
+  label: string;
+  accept?: string;
+  dossier?: string;
+  valeurUrl?: string;
+  valeurNom?: string;
+  onUploadSuccess?: (file: { url: string; filename: string; original_name: string; size: number }) => void;
+  onFiles?: (files: FileList) => void;
+}) {
   const [dragOver, setDragOver] = useState(false);
+  const [televersement, setTeleversement] = useState(false);
+  const [fichierActuel, setFichierActuel] = useState<{ url: string; nom: string; taille?: number } | null>(
+    valeurUrl ? { url: valeurUrl, nom: valeurNom || "Document joint" } : null
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const traiterFichiers = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    onFiles?.(files);
+
+    const file = files[0];
+    setTeleversement(true);
+    try {
+      const res = await api.uploadFile<{ url: string; filename: string; original_name: string; size: number }>(
+        "/upload",
+        file,
+        { dossier }
+      );
+      const info = {
+        url: res.url,
+        nom: res.original_name || file.name,
+        taille: res.size || file.size,
+      };
+      setFichierActuel(info);
+      onUploadSuccess?.(res);
+      toast.success(`Fichier "${info.nom}" téléversé et archivé avec succès !`);
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors du téléversement du fichier.");
+    } finally {
+      setTeleversement(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div
       onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
       onDragLeave={() => setDragOver(false)}
-      onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files && onFiles) onFiles(e.dataTransfer.files); toast.success(`${e.dataTransfer.files.length} fichier(s) déposé(s) — chiffrage SHA-256 en cours`); }}
-      className={`rounded-2xl border-2 border-dashed p-4 text-center transition-all ${dragOver ? "border-[#0F3B27] bg-[#CFF1D2]/30" : "border-[#CFF1D2] bg-[#F7F9F7]"}`}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        traiterFichiers(e.dataTransfer.files);
+      }}
+      className={`rounded-2xl border-2 border-dashed p-4 text-center transition-all ${
+        dragOver ? "border-[#0F3B27] bg-[#CFF1D2]/30" : "border-[#CFF1D2] bg-[#F7F9F7]"
+      }`}
     >
-      <Upload className={`mx-auto w-5 h-5 ${dragOver ? "text-[#0F3B27]" : "text-[#475C50]"}`} />
-      <p className="mt-1.5 text-xs font-bold text-[#0F3B27]">{label}</p>
-      <p className="text-[11px] text-[#475C50]">Glisser-déposer, photographier ou choisir un fichier — JPG, PNG, PDF ou CSV, 10 Mo maximum.</p>
-      <label className="mt-2 inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-xl border border-[#CFF1D2] bg-white px-3 py-1.5 text-xs font-bold text-[#0F3B27] hover:bg-[#CFF1D2]/30">
-        <ScanLine className="w-3.5 h-3.5" /> Choisir des fichiers
-        <input type="file" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.csv,.xlsx" className="hidden" onChange={(e) => e.target.files && onFiles?.(e.target.files)} />
-      </label>
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept={accept}
+        className="hidden"
+        onChange={(e) => traiterFichiers(e.target.files)}
+      />
+
+      {fichierActuel ? (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-2.5 rounded-xl bg-white border border-[#CFF1D2]">
+          <div className="flex items-center gap-2 overflow-hidden text-left">
+            <CheckCircle2 className="size-5 text-emerald-600 shrink-0" />
+            <div className="truncate">
+              <p className="text-xs font-bold text-[#0F3B27] truncate">{fichierActuel.nom}</p>
+              <p className="text-[11px] text-[#475C50]">
+                {fichierActuel.taille ? `${(fichierActuel.taille / 1024).toFixed(1)} Ko · ` : ""}
+                <a
+                  href={fichierActuel.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline hover:text-[#0F3B27]"
+                >
+                  Ouvrir le document
+                </a>
+              </p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={televersement}
+            className="text-xs text-[#0F3B27] h-8 shrink-0"
+          >
+            Remplacer
+          </Button>
+        </div>
+      ) : (
+        <>
+          <Upload className={`mx-auto w-5 h-5 ${dragOver ? "text-[#0F3B27]" : "text-[#475C50]"}`} />
+          <p className="mt-1.5 text-xs font-bold text-[#0F3B27]">{label}</p>
+          <p className="text-[11px] text-[#475C50]">
+            {televersement
+              ? "Téléversement et archivage sécurisé en cours…"
+              : "Glisser-déposer, photographier ou choisir un fichier — JPG, PNG, PDF ou CSV, 30 Mo maximum."}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={televersement}
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-2 inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-xl border border-[#CFF1D2] bg-white px-3 py-1.5 text-xs font-bold text-[#0F3B27] hover:bg-[#CFF1D2]/30"
+          >
+            <ScanLine className="w-3.5 h-3.5" />
+            {televersement ? "Téléversement…" : "Choisir un fichier"}
+          </Button>
+        </>
+      )}
     </div>
   );
 }
@@ -367,6 +476,7 @@ function PageStockMagasin() {
   const [quantite, setQuantite] = useState("");
   const [fournisseurNom, setFournisseurNom] = useState("CAMEG BÉNIN");
   const [bonLivraisonRef, setBonLivraisonRef] = useState("");
+  const [bonLivraisonUrl, setBonLivraisonUrl] = useState("");
   const [emplacement, setEmplacement] = useState("Réserve — Stock principal");
   const [controles, setControles] = useState({ alerte_sanitaire_verifiee: false, emballage_intact: false, conformite_livraison: false, dates_conformes: false, chaine_froid_respectee: false });
 
@@ -445,7 +555,7 @@ function PageStockMagasin() {
     onSuccess: (res: any) => {
       toast.success(res.message || "Lot réceptionné — règle FEFO appliquée");
       queryClient.invalidateQueries({ queryKey: ["stocks"] }); queryClient.invalidateQueries({ queryKey: ["produits"] }); queryClient.invalidateQueries({ queryKey: ["mouvements"] });
-      setDialogReceptionOuvert(false); setNumeroLot(""); setDatePeremption(""); setQuantite(""); setBonLivraisonRef(""); reinitialiserControles();
+      setDialogReceptionOuvert(false); setNumeroLot(""); setDatePeremption(""); setQuantite(""); setBonLivraisonRef(""); setBonLivraisonUrl(""); reinitialiserControles();
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -486,7 +596,7 @@ function PageStockMagasin() {
     if (froidManquant) { toast.warning("Produit thermolabile : confirmez la chaîne du froid avant de valider."); }
     mutationReception.mutate({
       produit_id: produitId, numero_lot: numeroLot, date_peremption: datePeremption, quantite: parseInt(quantite, 10),
-      fournisseur_nom: fournisseurNom, bon_livraison_ref: bonLivraisonRef, emplacement,
+      fournisseur_nom: fournisseurNom, bon_livraison_ref: bonLivraisonRef, bon_livraison_url: bonLivraisonUrl, emplacement,
       controles_reception: controles,
     });
   };
@@ -537,7 +647,42 @@ function PageStockMagasin() {
                 <Plus className="w-4 h-4" /> Réceptionner un lot
               </Button>
               <div className="flex items-center gap-2 text-xs">
-                <Button variant="outline" className="h-8 text-xs border-white/20 bg-white/10 text-white hover:bg-white/20">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (!lots.length) {
+                      toast.info("Aucun lot en stock à exporter.");
+                      return;
+                    }
+                    telechargerCsv(
+                      lots.map((l: any) => ({
+                        lot: l.numero_lot,
+                        produit: l.produit?.nom_commercial || l.produit_nom || "",
+                        dci: l.produit?.dci || "",
+                        peremption: l.date_peremption,
+                        jours_restants: l.jours_avant_peremption,
+                        quantite: l.quantite_restante ?? l.quantite_disponible,
+                        emplacement: l.emplacement?.nom || l.emplacement_nom || l.emplacement || "",
+                        statut: l.statut_effectif || l.statut,
+                        thermolabile: l.produit?.est_thermolabile ? "2-8°C" : "Ambiant",
+                      })),
+                      `Export_Stock_BestPharma_${new Date().toISOString().split("T")[0]}.csv`,
+                      [
+                        { cle: "lot", entete: "N° Lot" },
+                        { cle: "produit", entete: "Produit" },
+                        { cle: "dci", entete: "DCI" },
+                        { cle: "peremption", entete: "Date Péremption" },
+                        { cle: "jours_restants", entete: "Jours restants" },
+                        { cle: "quantite", entete: "Quantité en stock" },
+                        { cle: "emplacement", entete: "Emplacement" },
+                        { cle: "statut", entete: "Statut BPD" },
+                        { cle: "thermolabile", entete: "Conservation" },
+                      ]
+                    );
+                    toast.success("Synthèse du stock exportée en CSV");
+                  }}
+                  className="h-8 text-xs border-white/20 bg-white/10 text-white hover:bg-white/20"
+                >
                   <Download className="w-3.5 h-3.5 mr-1" /> Export
                 </Button>
                 <Badge variant="outline" className="border-amber-400 text-amber-300 bg-amber-950/40">
@@ -756,7 +901,42 @@ function PageStockMagasin() {
                   <Plus className="w-4 h-4" /> Nouveau Produit
                 </Button>
                 <div className="flex items-center gap-2 text-xs">
-                  <Button variant="outline" className="h-8 text-xs border-white/20 bg-white/10 text-white hover:bg-white/20">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (!produits.length) {
+                        toast.info("Aucun produit au catalogue à exporter.");
+                        return;
+                      }
+                      telechargerCsv(
+                        produits.map((p: any) => ({
+                          cip: p.code_cip || "",
+                          nom: p.nom_commercial,
+                          dci: p.dci || "",
+                          forme: p.forme || "",
+                          dosage: p.dosage || "",
+                          prix_public: p.prix_public_ttc || "",
+                          stock_total: p.stock_total || 0,
+                          thermolabile: p.est_thermolabile ? "Oui (2-8°C)" : "Non",
+                          ordonnance: p.necessite_ordonnance ? "Oui" : "Non",
+                        })),
+                        `Catalogue_Produits_BestPharma_${new Date().toISOString().split("T")[0]}.csv`,
+                        [
+                          { cle: "cip", entete: "Code CIP" },
+                          { cle: "nom", entete: "Nom Commercial" },
+                          { cle: "dci", entete: "DCI" },
+                          { cle: "forme", entete: "Forme Galénique" },
+                          { cle: "dosage", entete: "Dosage" },
+                          { cle: "prix_public", entete: "Prix Public TTC (FCFA)" },
+                          { cle: "stock_total", entete: "Stock total disponible" },
+                          { cle: "thermolabile", entete: "Chaîne du froid" },
+                          { cle: "ordonnance", entete: "Ordonnance requise" },
+                        ]
+                      );
+                      toast.success("Catalogue des produits exporté en CSV");
+                    }}
+                    className="h-8 text-xs border-white/20 bg-white/10 text-white hover:bg-white/20"
+                  >
                     <Download className="w-3.5 h-3.5 mr-1" /> Exporter catalogue
                   </Button>
                   <Badge variant="outline" className="border-emerald-400 text-emerald-300 bg-emerald-950/40">
@@ -993,7 +1173,49 @@ function PageStockMagasin() {
               </Card>
             )}
 
-            <ZoneDepot label="Importer le catalogue produits (CSV ou Excel)" />
+            <div className="space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <p className="text-xs font-bold text-[#0F3B27]">Import en masse du catalogue</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  className="text-xs text-[#0F3B27] h-8 gap-1.5"
+                  onClick={() => {
+                    telechargerCsv(
+                      [
+                        { code_cip: "340093000001", nom_commercial: "Paracétamol 500mg", dci: "Paracétamol", forme: "Comprimé", dosage: "500mg", prix_public_ttc: 1200, est_thermolabile: "NON", tableau_substance: "sans" },
+                        { code_cip: "340093000002", nom_commercial: "Amoxicilline 500mg", dci: "Amoxicilline", forme: "Gélule", dosage: "500mg", prix_public_ttc: 2500, est_thermolabile: "NON", tableau_substance: "sans" },
+                        { code_cip: "340093000003", nom_commercial: "Insuline NPH 100UI/ml", dci: "Insuline isophane", forme: "Injectable", dosage: "100UI/ml", prix_public_ttc: 4800, est_thermolabile: "OUI", tableau_substance: "sans" },
+                      ],
+                      "Trame_Modele_Import_Catalogue_BestPharma.csv",
+                      [
+                        { cle: "code_cip", entete: "code_cip" },
+                        { cle: "nom_commercial", entete: "nom_commercial" },
+                        { cle: "dci", entete: "dci" },
+                        { cle: "forme", entete: "forme" },
+                        { cle: "dosage", entete: "dosage" },
+                        { cle: "prix_public_ttc", entete: "prix_public_ttc" },
+                        { cle: "est_thermolabile", entete: "est_thermolabile" },
+                        { cle: "tableau_substance", entete: "tableau_substance" },
+                      ]
+                    );
+                    toast.success("Trame type CSV de catalogue téléchargée !");
+                  }}
+                >
+                  <Download className="size-3.5" /> Télécharger la trame modèle CSV
+                </Button>
+              </div>
+              <ZoneDepot
+                label="Importer le catalogue produits (CSV ou Excel)"
+                accept=".csv,.xlsx"
+                dossier="catalogues"
+                onUploadSuccess={(file) => {
+                  toast.success(`Catalogue "${file.original_name}" téléversé avec succès. Les références sont enregistrées.`);
+                  queryClient.invalidateQueries({ queryKey: ["produits"] });
+                }}
+              />
+            </div>
           </div>
         );
       })()}
@@ -1072,7 +1294,42 @@ function PageStockMagasin() {
                   <Plus className="w-4 h-4" /> Réceptionner un lot
                 </Button>
                 <div className="flex items-center gap-2 text-xs">
-                  <Button variant="outline" className="h-8 text-xs border-white/20 bg-white/10 text-white hover:bg-white/20">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (!lots.length) {
+                        toast.info("Aucun lot à exporter.");
+                        return;
+                      }
+                      telechargerCsv(
+                        lots.map((l: any) => ({
+                          lot: l.numero_lot,
+                          produit: l.produit?.nom_commercial || l.produit_nom || "",
+                          date_peremption: l.date_peremption,
+                          jours_avant_peremption: l.jours_avant_peremption,
+                          quantite_restante: l.quantite_restante ?? l.quantite_disponible,
+                          statut_fefo: l.est_vendable ? "Commercialisable (FEFO actif)" : "Bloqué / Non délivrable",
+                          statut_effectif: l.statut_effectif || l.statut,
+                          emplacement: l.emplacement?.nom || l.emplacement_nom || l.emplacement || "",
+                          froid: l.produit?.est_thermolabile ? "2-8°C" : "Ambiant",
+                        })),
+                        `Registre_Lots_FEFO_BestPharma_${new Date().toISOString().split("T")[0]}.csv`,
+                        [
+                          { cle: "lot", entete: "Numéro de Lot" },
+                          { cle: "produit", entete: "Médicament" },
+                          { cle: "date_peremption", entete: "Date Péremption" },
+                          { cle: "jours_avant_peremption", entete: "Jours restants" },
+                          { cle: "quantite_restante", entete: "Quantité restante" },
+                          { cle: "statut_fefo", entete: "Statut FEFO" },
+                          { cle: "statut_effectif", entete: "Statut effectif" },
+                          { cle: "emplacement", entete: "Emplacement" },
+                          { cle: "froid", entete: "Chaîne du froid" },
+                        ]
+                      );
+                      toast.success("Registre officiel des lots exporté en CSV");
+                    }}
+                    className="h-8 text-xs border-white/20 bg-white/10 text-white hover:bg-white/20"
+                  >
                     <Download className="w-3.5 h-3.5 mr-1" /> Export registre lots
                   </Button>
                   <Badge variant="outline" className="border-amber-400 text-amber-300 bg-amber-950/40">
@@ -1908,7 +2165,17 @@ function PageStockMagasin() {
             </Card>
           </div>
 
-          <ZoneDepot label="Déposer le bon de livraison et la facture du fournisseur (photo ou PDF)" />
+          <ZoneDepot
+            label="Déposer le bon de livraison et la facture du fournisseur (photo ou PDF)"
+            dossier="bons_livraison"
+            valeurUrl={bonLivraisonUrl}
+            onUploadSuccess={(file) => {
+              setBonLivraisonUrl(file.url);
+              if (!bonLivraisonRef) {
+                setBonLivraisonRef(file.original_name.replace(/\.[^/.]+$/, ""));
+              }
+            }}
+          />
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <Card className="border-[#CFF1D2]">
               <CardHeader>
@@ -2352,7 +2619,17 @@ function PageStockMagasin() {
                 )}
               </div>
 
-              <ZoneDepot label="Joindre le bon de livraison ou la facture (photo ou PDF)" />
+              <ZoneDepot
+                label="Joindre le bon de livraison ou la facture (photo ou PDF)"
+                dossier="bons_livraison"
+                valeurUrl={bonLivraisonUrl}
+                onUploadSuccess={(file) => {
+                  setBonLivraisonUrl(file.url);
+                  if (!bonLivraisonRef) {
+                    setBonLivraisonRef(file.original_name.replace(/\.[^/.]+$/, ""));
+                  }
+                }}
+              />
             </ColonneFiche>
           </form>
         </ModaleFiche>

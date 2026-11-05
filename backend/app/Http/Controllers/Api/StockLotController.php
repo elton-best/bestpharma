@@ -152,6 +152,8 @@ class StockLotController extends Controller
             'prix_achat_unitaire' => 'nullable|numeric|min:0',
             'fournisseur_nom' => 'required|string|max:200',
             'bon_livraison_ref' => 'required|string|max:100',
+            'bon_livraison_url' => 'nullable|string',
+            'pieces_jointes' => 'nullable|array',
             'controles_reception' => 'nullable|array',
             'controles_reception.alerte_sanitaire_verifiee' => 'boolean',
             'controles_reception.emballage_intact' => 'boolean',
@@ -212,6 +214,9 @@ class StockLotController extends Controller
                 'statut' => $statutDetail === 'commercialisable' ? 'en_stock' : 'quarantaine',
                 'statut_detail' => $statutDetail,
                 'controles_reception' => $controles,
+                'pieces_jointes' => !empty($validated['bon_livraison_url'])
+                    ? array_merge($validated['pieces_jointes'] ?? [], [['type' => 'bon_livraison', 'url' => $validated['bon_livraison_url']]])
+                    : ($validated['pieces_jointes'] ?? null),
                 'date_changement_statut' => now(),
                 'dernier_modificateur_id' => $user->id,
             ]);

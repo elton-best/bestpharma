@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -39,6 +39,7 @@ import {
 import { toast } from "sonner";
 
 import { api } from "@/lib/api-client";
+import { telechargerCsv, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { useOfficine } from "@/lib/officine-context";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -105,6 +106,95 @@ function PageTemperatures() {
   // Modale QR Code
   const [modaleQrOuverte, setModaleQrOuverte] = useState(false);
   const [zoneQrSelectionnee, setZoneQrSelectionnee] = useState<string>("refrigeree_2_8");
+
+  // Téléversement CSV et Rapports GAC
+  const csvInputRef = useRef<HTMLInputElement>(null);
+  const [envoiCsv, setEnvoiCsv] = useState(false);
+
+  const traiterImportCsv = async (file: File) => {
+    if (!id) return;
+    setEnvoiCsv(true);
+    try {
+      const res = await api.uploadFile<{ message: string; imported_count: number }>(
+        `/officines/${id}/temperatures/csv`,
+        file,
+        { zone: "refrigeree_2_8" }
+      );
+      toast.success(res.message || "Importation CSV réussie !");
+      queryClient.invalidateQueries({ queryKey: ["temperatures-releves"] });
+      queryClient.invalidateQueries({ queryKey: ["temperatures-stats"] });
+    } catch (err: any) {
+      toast.error(err.message || "Échec de l'importation du fichier CSV");
+    } finally {
+      setEnvoiCsv(false);
+      if (csvInputRef.current) csvInputRef.current.value = "";
+    }
+  };
+
+  const telechargerRapportGac = (type: "GAC-EN-001" | "GAC-EN-002") => {
+    const zoneFiltre = type === "GAC-EN-002" ? "refrigeree_2_8" : "magasin_reserve";
+    const relevesZone = releves.filter((r: any) => r.zone === zoneFiltre);
+    telechargerCsv(
+      relevesZone.map((r: any) => ({
+        Date: r.date_releve,
+        Heure: r.heure_releve,
+        Zone: r.zone,
+        "Température (°C)": r.temperature,
+        "Min (°C)": r.temp_min ?? "",
+        "Max (°C)": r.temp_max ?? "",
+        "Humidité (%)": r.humidite ?? "",
+        Statut: r.statut_conformite,
+        Moment: r.moment,
+        Notes: r.notes ?? "",
+      })),
+      `Registre_${type}_${new Date().toISOString().split("T")[0]}`
+    );
+    toast.success(`Export CSV du registre ${type} téléchargé !`);
+  };
+
+  const imprimerRapportGac = (type: "GAC-EN-001" | "GAC-EN-002") => {
+    const zoneFiltre = type === "GAC-EN-002" ? "refrigeree_2_8" : "magasin_reserve";
+    const relevesZone = releves.filter((r: any) => r.zone === zoneFiltre).slice(0, 31);
+    const rows = relevesZone.map((r: any) => `
+      <tr>
+        <td>${r.date_releve}</td>
+        <td>${r.heure_releve || "-"}</td>
+        <td style="text-transform: capitalize;">${r.moment || "-"}</td>
+        <td><strong>${Number(r.temperature).toFixed(1)} °C</strong></td>
+        <td>${r.temp_min ? Number(r.temp_min).toFixed(1) + " °C" : "-"}</td>
+        <td>${r.temp_max ? Number(r.temp_max).toFixed(1) + " °C" : "-"}</td>
+        <td><span style="color: ${r.statut_conformite === 'conforme' ? '#0F3B27' : '#c00'}; font-weight: bold;">${r.statut_conformite}</span></td>
+        <td>${r.notes || "-"}</td>
+      </tr>
+    `).join("");
+
+    imprimerFicheOfficielle(
+      `REGISTRE OFFICIEL DE CONTRÔLE DES TEMPÉRATURES (${type})`,
+      `
+        <p style="font-size: 12px; margin-bottom: 12px;">
+          <strong>Zone de contrôle :</strong> ${type === "GAC-EN-002" ? "Enceinte réfrigérée à vaccins et produits thermolabiles (2.0 °C à 8.0 °C)" : "Magasin central de stockage et réserve d'officine (15.0 °C à 25.0 °C)"}<br>
+          <strong>Réglementation :</strong> Conformité stricte Arrêté ABMed Art. 4.18 & BPD-4 · Conservation légale : 5 ans.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Heure</th>
+              <th>Tournée</th>
+              <th>Température</th>
+              <th>Min</th>
+              <th>Max</th>
+              <th>Statut BPD</th>
+              <th>Observations</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows || '<tr><td colspan="8" style="text-align: center; color: #888;">Aucun relevé archivé pour le moment.</td></tr>'}
+          </tbody>
+        </table>
+      `
+    );
+  };
 
   // STATS & TEMPS RÉEL
   const { data: stats, refetch: refetchStats } = useQuery({
@@ -525,7 +615,24 @@ function PageTemperatures() {
                 <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
                   7 derniers jours
                 </Badge>
-                <Button variant="outline" size="sm" className="text-xs border-[#CFF1D2] h-7 gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    telechargerCsv(
+                      donneesCourbe.map((d: any) => ({
+                        Date: d.date,
+                        "Matin (°C)": d.matin ?? "",
+                        "Soir (°C)": d.soir ?? "",
+                        "Seuil Min (°C)": 2,
+                        "Seuil Max (°C)": 8,
+                      })),
+                      `Courbe_Temperature_Refrigeree_${new Date().toISOString().split("T")[0]}`
+                    );
+                    toast.success("Données de la courbe exportées en CSV !");
+                  }}
+                  className="text-xs border-[#CFF1D2] h-7 gap-1 text-[#0F3B27] hover:bg-[#CFF1D2]/30"
+                >
                   <Download className="size-3.5" /> Exporter courbe
                 </Button>
               </div>
@@ -620,10 +727,20 @@ function PageTemperatures() {
                 Relevés bi-quotidiens de température et hygrométrie du magasin de stockage et du hall public. Signé mensuellement par le pharmacien titulaire.
               </p>
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
-                  <Download className="size-3.5" /> Télécharger PDF signé
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => telechargerRapportGac("GAC-EN-001")}
+                  className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+                >
+                  <Download className="size-3.5" /> Télécharger CSV/Excel
                 </Button>
-                <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => imprimerRapportGac("GAC-EN-001")}
+                  className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+                >
                   <Printer className="size-3.5" /> Imprimer registre
                 </Button>
               </div>
@@ -641,10 +758,20 @@ function PageTemperatures() {
                 Suivi strict de la chaîne du froid, historique des excursions, interventions de maintenance et visas du pharmacien.
               </p>
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
-                  <Download className="size-3.5" /> Télécharger PDF signé
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => telechargerRapportGac("GAC-EN-002")}
+                  className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+                >
+                  <Download className="size-3.5" /> Télécharger CSV/Excel
                 </Button>
-                <Button variant="outline" size="sm" className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => imprimerRapportGac("GAC-EN-002")}
+                  className="w-full text-xs border-[#CFF1D2] text-[#0F3B27] gap-1.5"
+                >
                   <Printer className="size-3.5" /> Imprimer registre
                 </Button>
               </div>
@@ -664,16 +791,46 @@ function PageTemperatures() {
               </CardDescription>
             </div>
 
-            <div className="border-2 border-dashed border-[#CFF1D2] rounded-2xl p-6 text-center hover:bg-[#F7F9F7] transition-colors cursor-pointer">
+            <input
+              ref={csvInputRef}
+              type="file"
+              accept=".csv,.txt"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) traiterImportCsv(f);
+              }}
+            />
+
+            <div
+              onClick={() => csvInputRef.current?.click()}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const f = e.dataTransfer.files?.[0];
+                if (f) traiterImportCsv(f);
+              }}
+              className="border-2 border-dashed border-[#CFF1D2] rounded-2xl p-6 text-center hover:bg-[#F7F9F7] transition-colors cursor-pointer"
+            >
               <Upload className="size-8 text-[#0F3B27] mx-auto mb-2 opacity-60" />
               <div className="text-xs font-bold text-[#0F3B27]">
-                Déposez ici le fichier CSV exporté de votre enregistreur USB
+                {envoiCsv ? "Importation et analyse du fichier en cours…" : "Déposez ici le fichier CSV exporté de votre enregistreur USB"}
               </div>
               <p className="text-[11px] text-muted-foreground mt-1">
-                Formats acceptés : CSV, TXT (Elitech, Testo, LogTag). Détection automatique des horodatages.
+                Formats acceptés : CSV, TXT (Elitech, Testo, LogTag). Détection automatique des horodatages et excursions.
               </p>
-              <Button size="sm" variant="outline" className="mt-3 text-xs border-[#CFF1D2] text-[#0F3B27]">
-                Parcourir les fichiers
+              <Button
+                size="sm"
+                variant="outline"
+                type="button"
+                disabled={envoiCsv}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  csvInputRef.current?.click();
+                }}
+                className="mt-3 text-xs border-[#CFF1D2] text-[#0F3B27]"
+              >
+                {envoiCsv ? "Traitement…" : "Parcourir les fichiers"}
               </Button>
             </div>
           </Card>

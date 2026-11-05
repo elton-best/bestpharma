@@ -141,6 +141,32 @@ class ApiClient {
     return res.json();
   }
 
+  async uploadFile<T = any>(url: string, file: File, extraFields?: Record<string, string>): Promise<T> {
+    const formatted = this.formatUrl(url);
+    const formData = new FormData();
+    formData.append("file", file);
+    if (extraFields) {
+      Object.entries(extraFields).forEach(([k, v]) => formData.append(k, v));
+    }
+    const token = this.getToken();
+    const headers: HeadersInit = {
+      Accept: "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    const res = await fetch(formatted, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: res.statusText }));
+      throw new Error(err.message || "Erreur lors du téléversement");
+    }
+    return res.json();
+  }
+
   logout() {
     this.setToken(null);
     this.setUser(null);

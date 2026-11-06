@@ -1,0 +1,2925 @@
+{
+  "schema": "begpharma.corpus.sources.v1",
+  "statut": "pret_pour_import_sources_non_approuvees",
+  "inventaire_sha256": "7aa190d152b136eec1017172fc00c4711442b09aed7189a1c43fc66a61e7a8ac",
+  "regle": "Un fichier source donne une fiche brouillon identifiée SRC, jamais une approbation. Les codes repérés peuvent être des références à d’autres documents : aucune attribution automatique.",
+  "documents_inventories": [
+    {
+      "ligne_excel": 3,
+      "code": "OKPE/PRO/GIM/001",
+      "titre": "Procédure de Gestion des Informations documentées et des Modifications du SMQ",
+      "processus_source": "GIM",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "1.MAITRISE DOCUMENTAIRE/PRO- Procédure de gestion des informations documentées et des modifications.docx",
+          "score_nom": 0.871
+        },
+        {
+          "chemin": "1.MAITRISE DOCUMENTAIRE/FOR-Fiche de Gestion des Modifications du SMQ.docx",
+          "score_nom": 0.553
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 4,
+      "code": "OKPE/FOR/GIM/001",
+      "titre": "Inventaire documentaire",
+      "processus_source": "GIM",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "En cours",
+      "relecture_source": "",
+      "statut_final_source": "",
+      "candidats": [
+        {
+          "chemin": "1.MAITRISE DOCUMENTAIRE/Inventaire documentaire  PHARMACIE OKPE OLUWA.xlsx",
+          "score_nom": 0.529
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/FOR &ENR Inventaire des équipements.xlsx",
+          "score_nom": 0.503
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 5,
+      "code": "OKPE/FOR/GIM/002",
+      "titre": "Fiche de Gestion des Modifications du SMQ",
+      "processus_source": "GIM",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "1.MAITRISE DOCUMENTAIRE/FOR-Fiche de Gestion des Modifications du SMQ.docx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 6,
+      "code": "OKPE/FOR/GIM/003",
+      "titre": "Fiche de Mise en Application d'un Document Qualité",
+      "processus_source": "GIM",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "1.MAITRISE DOCUMENTAIRE/FOR-Fiche Mise en Application d'un Document Qualité.docx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 7,
+      "code": "OKPE/FOR/GIM/004",
+      "titre": "Fiche de Mise en Application d'une Note de Service",
+      "processus_source": "GIM",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "1.MAITRISE DOCUMENTAIRE/FOR-Fiche Mise en Application d'un Document Qualité.docx",
+          "score_nom": 0.552
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/FOR-Fiche de Mise en service d'Equipement.doc",
+          "score_nom": 0.528
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 8,
+      "code": "OKPE/ENR/GIM/001",
+      "titre": "Registre de courriers",
+      "processus_source": "GIM",
+      "type": "ENR",
+      "version_source": "V01",
+      "etat_source": "A établir",
+      "relecture_source": "",
+      "statut_final_source": "",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 9,
+      "code": "OKPE/PRO/GAP/001",
+      "titre": "Procédure de Gestion des Approvisionnements",
+      "processus_source": "GAP",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "4. PROCEDURES OPERATIONNELLES/PRO-Gestion des Approvisionnements.docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/FOR & ENR-Gestion des Congés.xlsx",
+          "score_nom": 0.453
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 10,
+      "code": "OKPE/MOP/GAP/001",
+      "titre": "Opérations d'Approvisionnement et de Réapprovisionnement",
+      "processus_source": "GAP",
+      "type": "MOP",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 11,
+      "code": "OKPE/FOR/GAP/001",
+      "titre": "Suivi des Commandes Grossistes",
+      "processus_source": "GAP",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 12,
+      "code": "OKPE/FOR/GAP/002",
+      "titre": "Anomalies du Processus des Commandes Grossistes",
+      "processus_source": "GAP",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 13,
+      "code": "OKPE/ENR/GAP/001",
+      "titre": "Fichier d’Identification des Fournisseurs Parapharmaceutiques",
+      "processus_source": "GAP",
+      "type": "ENR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 14,
+      "code": "OKPE/FOR/GAP/003",
+      "titre": "Suivi des Commandes de DM et Parapharmaceutiques",
+      "processus_source": "GAP",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 15,
+      "code": "OKPE/FOR/GAP/004",
+      "titre": "Vérification de la Conformité des Commandes Parapharmaceutiques",
+      "processus_source": "GAP",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 16,
+      "code": "OKPE/FOR/GAP/005",
+      "titre": "Suivi des Modifications du Fichier Articles",
+      "processus_source": "GAP",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 17,
+      "code": "OKPE/PRO/GSS/001",
+      "titre": "Procédure de Gestion de Stock et de la Sécurité des produits",
+      "processus_source": "GSS",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "4. PROCEDURES OPERATIONNELLES/PRO- Gestion de Stock et Sécurité des Produits.docx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 18,
+      "code": "OKPE/MOP/GSS/001",
+      "titre": "Inventaire journalier et hebdomadaire de stock",
+      "processus_source": "GSS",
+      "type": "MOP",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 19,
+      "code": "OKPE/MOP/GSS/002",
+      "titre": "Inventaires Généraux de stock",
+      "processus_source": "GSS",
+      "type": "MOP",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 20,
+      "code": "OKPE/FOR/GSS/001",
+      "titre": "PV D'Inventaires Journaliers",
+      "processus_source": "GSS",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 21,
+      "code": "OKPE/FOR/GSS/002",
+      "titre": "Inventaire Journalier et Aléatoire du Stock",
+      "processus_source": "GSS",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 22,
+      "code": "OKPE/FOR/GSS/003",
+      "titre": "PV D'Inventaire Hebdomadaire",
+      "processus_source": "GSS",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 23,
+      "code": "OKPE/FOR/GSS/004",
+      "titre": "Liste des produits avec écarts",
+      "processus_source": "GSS",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 24,
+      "code": "OKPE/FOR/GSS/005",
+      "titre": "Detection Hebdomadaire de Périmés",
+      "processus_source": "GSS",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 25,
+      "code": "OKPE/FOR/GSS/006",
+      "titre": "Déclaration des périmés",
+      "processus_source": "GSS",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 26,
+      "code": "OKPE/FOR/GSS/007",
+      "titre": "Fiche de Relevé des Températures du Magasin",
+      "processus_source": "GSS",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 27,
+      "code": "OKPE/FOR/GSS/008",
+      "titre": "Revue Hebdomadaire des Données de Thermosurveillance",
+      "processus_source": "GSS",
+      "type": "FOR",
+      "version_source": "",
+      "etat_source": "",
+      "relecture_source": "",
+      "statut_final_source": "",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 28,
+      "code": "OKPE/PRO/DIC/001",
+      "titre": "Procédure de Dispensation et Conseils",
+      "processus_source": "DIC",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "4. PROCEDURES OPERATIONNELLES/PRO-Dispensation et Conseils.docx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 29,
+      "code": "OKPE/MOP/DIC/001",
+      "titre": "Gestion du comptoir et vente",
+      "processus_source": "DIC",
+      "type": "MOP",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 30,
+      "code": "OKPE/MOP/DIC/002",
+      "titre": "Dispensation des Médicaments sous Surveillance Renforcée de l'ABMed",
+      "processus_source": "DIC",
+      "type": "MOP",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 31,
+      "code": "OKPE/MOP/DIC/003",
+      "titre": "Gestion des Avoirs Clients",
+      "processus_source": "DIC",
+      "type": "MOP",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 32,
+      "code": "OKPE/MOP/DIC/004",
+      "titre": "Gestion des Fiches Assurance",
+      "processus_source": "DIC",
+      "type": "MOP",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 33,
+      "code": "OKPE/FOR/DIC/001",
+      "titre": "Suivi des Demandes Clients non Satisfaites",
+      "processus_source": "DIC",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 34,
+      "code": "OKPE/FOR/DIC/002",
+      "titre": "Comptabilité des Stupéfiants et Médicaments sous Surveillance Renforcée",
+      "processus_source": "DIC",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 35,
+      "code": "OKPE/FOR/DIC/003",
+      "titre": "Actes Pharmaceutiques Non-exécutés par un Pharmacien",
+      "processus_source": "DIC",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 36,
+      "code": "OKPE/FOR/DIC/004",
+      "titre": "Collecte de Médicaments Non Utilisés",
+      "processus_source": "DIC",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 37,
+      "code": "OKPE/FOR/DIC/005",
+      "titre": "Fiche d'Annulation de Vente",
+      "processus_source": "DIC",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Auxiliaire de vente_Caisse.docx",
+          "score_nom": 0.452
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 38,
+      "code": "OKPE/PRO/CTR/001",
+      "titre": "Gestion de la Caisse et Traitement des Recettes",
+      "processus_source": "CTR",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "4. PROCEDURES OPERATIONNELLES/PRO-Gestion de la Caisse et Traitement des Recettes.docx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 39,
+      "code": "OKPE/MOP/CTR/001",
+      "titre": "Opérations de Caisse",
+      "processus_source": "CTR",
+      "type": "MOP",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 40,
+      "code": "OKPE/MOP/CTR/002",
+      "titre": "Gestion des Fonds",
+      "processus_source": "CTR",
+      "type": "MOP",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/FOR & ENR-Gestion des Congés.xlsx",
+          "score_nom": 0.55
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 41,
+      "code": "OKPE/FOR/CTR/001",
+      "titre": "Journal de Caisse et des Recettes",
+      "processus_source": "CTR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "4. PROCEDURES OPERATIONNELLES/PRO-Gestion de la Caisse et Traitement des Recettes.docx",
+          "score_nom": 0.504
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 42,
+      "code": "OKPE/FOR/CTR/002",
+      "titre": "Guide de Déclaration de Recettes",
+      "processus_source": "CTR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 43,
+      "code": "OKPE/FOR/CTR/003",
+      "titre": "Registre des Inventaires de Fonds (Procès-verbaux)",
+      "processus_source": "CTR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 44,
+      "code": "OKPE/FOR/CTR/004",
+      "titre": "Déclaration des Anomalies de Caisse",
+      "processus_source": "CTR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 45,
+      "code": "OKPE/FOR/CTR/005",
+      "titre": "Traçabilité des Opérations sur le Grand Fonds",
+      "processus_source": "CTR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 46,
+      "code": "OKPE/FOR/CTR/006",
+      "titre": "Traitement des recettes",
+      "processus_source": "CTR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "4. PROCEDURES OPERATIONNELLES/PRO-Gestion de la Caisse et Traitement des Recettes.docx",
+          "score_nom": 0.598
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 47,
+      "code": "OKPE/FOR/CTR/007",
+      "titre": "Tableau de Vérification des Reçus Manuels de vente",
+      "processus_source": "CTR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 48,
+      "code": "OKPE/FOR/CTR/008",
+      "titre": "Tableau de Bord de la Caisse",
+      "processus_source": "CTR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 49,
+      "code": "OKPE/FOR/CTR/009",
+      "titre": "Tableau de Suivi Bancaire",
+      "processus_source": "CTR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Tableau de Suivi des Améliorations du SMQ.xlsx",
+          "score_nom": 0.492
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 50,
+      "code": "OKPE/FOR/CTR/010",
+      "titre": "Transmission des Pièces Comptables au Cabinet Comptable",
+      "processus_source": "CTR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 51,
+      "code": "OKPE/PRO/GRH/001",
+      "titre": "Procédure de Gestion des Ressources Humaines",
+      "processus_source": "GRH",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/PRO- Gestion des Ressources Humaines.docx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 52,
+      "code": "OKPE/FOR/GRH/001",
+      "titre": "Fiche de demande d'absence",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Formulaire de demande d'absence V1.0.docx",
+          "score_nom": 0.569
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 53,
+      "code": "OKPE/FOR/GRH/002",
+      "titre": "Fiche de poste Pharmacien Titulaire",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Pharmacien Assistant.docx",
+          "score_nom": 0.682
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste (canevas).docx",
+          "score_nom": 0.467
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 54,
+      "code": "OKPE/FOR/GRH/003",
+      "titre": "Fiche de poste Pharmacien Assistant",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Pharmacien Assistant.docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Assistant de Gestion.docx",
+          "score_nom": 0.64
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste (canevas).docx",
+          "score_nom": 0.502
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 55,
+      "code": "OKPE/FOR/GRH/004",
+      "titre": "Fiche de poste Assistant de Gestion",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Assistant de Gestion.docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Pharmacien Assistant.docx",
+          "score_nom": 0.64
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste (canevas).docx",
+          "score_nom": 0.483
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 56,
+      "code": "OKPE/FOR/GRH/005",
+      "titre": "Fiche de poste Charge d'Approvisionnement",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Chargé d'Approvisionnement.docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste (canevas).docx",
+          "score_nom": 0.482
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Pharmacien Assistant.docx",
+          "score_nom": 0.475
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 57,
+      "code": "OKPE/FOR/GRH/006",
+      "titre": "Fiche de poste Auxiliaire de vente/Caisse",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Auxiliaire de vente_Caisse.docx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 58,
+      "code": "OKPE/FOR/GRH/007",
+      "titre": "Plan de Formation",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/FOR & ENR  Plan de Formation.xlsx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 59,
+      "code": "OKPE/FOR/GRH/008",
+      "titre": "Gestion des congés",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/FOR & ENR-Gestion des Congés.xlsx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "4. PROCEDURES OPERATIONNELLES/PRO-Gestion des Approvisionnements.docx",
+          "score_nom": 0.453
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 60,
+      "code": "OKPE/FOR/GRH/009",
+      "titre": "Fiche d'Evaluation du Personnel Cadre",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation du Personnel (Cadre).docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation du Personnel (Non-cadre).docx",
+          "score_nom": 0.864
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Personnel.docx",
+          "score_nom": 0.55
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 61,
+      "code": "OKPE/FOR/GRH/010",
+      "titre": "Fiche d'Evaluation du Personnel Non-Cadre",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation du Personnel (Non-cadre).docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation du Personnel (Cadre).docx",
+          "score_nom": 0.864
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Personnel.docx",
+          "score_nom": 0.493
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 62,
+      "code": "OKPE/FOR/GRH/011",
+      "titre": "Rapport d’Evaluation des Performances",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "En cours",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Rapport d'Evaluation des Performances.docx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 63,
+      "code": "OKPE/FOR/GRH/012",
+      "titre": "Liste des Elements Constitutifs du Dossier du Personnel",
+      "processus_source": "GRH",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Les Eléments Constitutifs du Dossier du Personnel.docx",
+          "score_nom": 0.858
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 64,
+      "code": "OKPE/PRO/GRO/001",
+      "titre": "Procédure de Gestion des Risques et Opportunités",
+      "processus_source": "GRO",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Procédure de Gestion des Risques et Opportunités.docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Plan de Maîtrise des Risques et Opportunités.xlsx",
+          "score_nom": 0.539
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/Tableau de maîtrise des risques et opportunités.xlsx",
+          "score_nom": 0.538
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 65,
+      "code": "OKPE/FOR/GRO/001",
+      "titre": "Plan de Maîtrise des Risques et Opportunités",
+      "processus_source": "GRO",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Plan de Maîtrise des Risques et Opportunités.xlsx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/Tableau de maîtrise des risques et opportunités.xlsx",
+          "score_nom": 0.736
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Procédure de Gestion des Risques et Opportunités.docx",
+          "score_nom": 0.539
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 66,
+      "code": "OKPE/ENR/GRO/001",
+      "titre": "Plan de Continuité d'Activités",
+      "processus_source": "GRO",
+      "type": "ENR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Plan de continuité_Pharmacie.xlsx",
+          "score_nom": 0.635
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/Plan de continuité_Pharmacie.xlsx",
+          "score_nom": 0.635
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 67,
+      "code": "OKPE/PRO/OAI/001",
+      "titre": "Procédure d'Organisation des Auto Inspections",
+      "processus_source": "OAI",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Procédure d'Organisation des Auto-inspections.docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Plan d'Auto-inspections.docx",
+          "score_nom": 0.617
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 68,
+      "code": "OKPE/FOR/OAI/001",
+      "titre": "Plan d'Auto-inspection",
+      "processus_source": "OAI",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Plan d'Auto-inspections.docx",
+          "score_nom": 0.714
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Rapport D'Auto-inspection.doc",
+          "score_nom": 0.631
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/Fiche de deroulement de l'auto inspection.docx",
+          "score_nom": 0.526
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 69,
+      "code": "OKPE/FOR/OAI/002",
+      "titre": "Fiche d'Evaluation des Inspecteurs",
+      "processus_source": "OAI",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Fiche d'Evaluation des Inspecteurs Internes.docx",
+          "score_nom": 0.8
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation des Prestataires Externes.docx",
+          "score_nom": 0.547
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation du Personnel (Cadre).docx",
+          "score_nom": 0.535
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 70,
+      "code": "OKPE/FOR/OAI/003",
+      "titre": "Rapport d'Auto-inspection",
+      "processus_source": "OAI",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Rapport D'Auto-inspection.doc",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/Fiche de deroulement de l'auto inspection.docx",
+          "score_nom": 0.525
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Plan d'Auto-inspections.docx",
+          "score_nom": 0.458
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 71,
+      "code": "OKPE/FOR/OAI/004",
+      "titre": "Plan d'Actions du SMQ",
+      "processus_source": "OAI",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR &ENR-Plan d'Actions du SMQ.xlsx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 72,
+      "code": "OKPE/PRO/TPR/001",
+      "titre": "Procédure de Traitement des Plaintes et Réclamations",
+      "processus_source": "TPR",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Traitement des Plaintes et Réclamations.docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Traitement des Réclamations Prestataires.doc",
+          "score_nom": 0.579
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/Affiche Gestion Plaintes Et Réclamations.docx",
+          "score_nom": 0.546
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 73,
+      "code": "OKPE/FOR/TPR/001",
+      "titre": "Plaintes et Réclamations Clients",
+      "processus_source": "TPR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Traitement des Plaintes et Réclamations.docx",
+          "score_nom": 0.585
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/Affiche Gestion Plaintes Et Réclamations.docx",
+          "score_nom": 0.506
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 74,
+      "code": "OKPE/FOR/TPR/002",
+      "titre": "Traitement des Réclamations Prestataires",
+      "processus_source": "TPR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Traitement des Réclamations Prestataires.doc",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Traitement des Plaintes et Réclamations.docx",
+          "score_nom": 0.579
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 75,
+      "code": "OKPE/FOR/TPR/003",
+      "titre": "Tableau de Suivi des Actions d'Amélioration du SMQ",
+      "processus_source": "TPR",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Tableau de Suivi des Améliorations du SMQ.xlsx",
+          "score_nom": 0.666
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 76,
+      "code": "OKPE/PRO/GNA/001",
+      "titre": "Procédure de Gestion des Non conformités et d'Actions d'Améliorations",
+      "processus_source": "GNA",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Procédures de Gestion des Non-conformités et Actions d'amélioration.docx",
+          "score_nom": 0.812
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Fiche de Non-conformités & d'Actions d'Amélioration.doc",
+          "score_nom": 0.629
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 77,
+      "code": "OKPE/FOR/GNA/001",
+      "titre": "Fiche de Non-conformités & d'Actions d'amélioration",
+      "processus_source": "GNA",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Fiche de Non-conformités & d'Actions d'Amélioration.doc",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Procédures de Gestion des Non-conformités et Actions d'amélioration.docx",
+          "score_nom": 0.764
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 78,
+      "code": "OKPE/PRO/GEE/001",
+      "titre": "Procédure de Gestion des Equipements et Entretien des locaux",
+      "processus_source": "GEE",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/PRO- Gestion des Equipements et Entretien des Locaux.docx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 79,
+      "code": "OKPE/ENR/GEE/001",
+      "titre": "Inventaire des Equipements",
+      "processus_source": "GEE",
+      "type": "ENR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/FOR &ENR Inventaire des équipements.xlsx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 80,
+      "code": "OKPE/FOR/GEE/001",
+      "titre": "Plan de Maintenance et d'Etalonnage",
+      "processus_source": "GEE",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/FOR &ENR Plan de Maintenance et d'étalonnage des équipements.xlsx",
+          "score_nom": 0.781
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 81,
+      "code": "OKPE/FOR/GEE/002",
+      "titre": "Registre de Maintenance et Tests",
+      "processus_source": "GEE",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Registre de Maintenance & Tests 2025.xlsx",
+          "score_nom": 0.823
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Registre de Maintenance & Tests 2026.xlsx",
+          "score_nom": 0.823
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 82,
+      "code": "OKPE/FOR/GEE/003",
+      "titre": "Fiche de Retrait d'Equipement",
+      "processus_source": "GEE",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/FICHE de Retrait d'Equipement.doc",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/FOR-Fiche de Mise en service d'Equipement.doc",
+          "score_nom": 0.543
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 83,
+      "code": "OKPE/FOR/GEE/004",
+      "titre": "Plan d’Entretien et de Nettoyage",
+      "processus_source": "GEE",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/FOR & ENR-Plan de Nettoyage et d'Entretien ..xlsx",
+          "score_nom": 0.812
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 84,
+      "code": "OKPE/PRO/GPE/001",
+      "titre": "Procédure de Gestion des Prestataires",
+      "processus_source": "GPE",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/PRO- Gestion des Prestataires.docx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 85,
+      "code": "OKPE/FOR/GPE/001",
+      "titre": "Fiche d'Evaluation des Prestataires Externes",
+      "processus_source": "GPE",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation des Prestataires Externes.docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Des Prestataires Externes.docx",
+          "score_nom": 0.722
+        },
+        {
+          "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Fiche d'Evaluation des Inspecteurs Internes.docx",
+          "score_nom": 0.507
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 86,
+      "code": "OKPE/FOR/GPE/002",
+      "titre": "Tableau de Passage des Délégués Médicaux",
+      "processus_source": "GPE",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [],
+      "decision": "aucun_candidat_par_le_nom",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 87,
+      "code": "OKPE/ENR/GPE/001",
+      "titre": "Liste des Prestaires de la Pharmacie Okpè Oluwa",
+      "processus_source": "GPE",
+      "type": "ENR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "Document en cours et autres/Quelques plans de la pharmacie OKPE OLUWA.xlsx",
+          "score_nom": 0.573
+        },
+        {
+          "chemin": "1.MAITRISE DOCUMENTAIRE/Inventaire documentaire  PHARMACIE OKPE OLUWA.xlsx",
+          "score_nom": 0.547
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 88,
+      "code": "OKPE/PRO/OFO/001",
+      "titre": "Procédure de Gestion d'Ouverture et Fermeture de l’Officine",
+      "processus_source": "OFO",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/PRO- Ouverture et Fermeture de l’officine et Gestion des Gardes.docx",
+          "score_nom": 0.759
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 89,
+      "code": "OKPE/PRO/ESP/001",
+      "titre": "Procédure de Gestion des Evaluations de la Satisfaction des PIP",
+      "processus_source": "ESP",
+      "type": "PRO",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Rapport de Satisfaction des PIP.docx",
+          "score_nom": 0.49
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/PRO- Evaluation de la Satisfation des PIP.docx",
+          "score_nom": 0.469
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 90,
+      "code": "OKPE/FOR/ESP/001",
+      "titre": "Fiche de Satisfaction du Personnel",
+      "processus_source": "ESP",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Personnel.docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Clients.docx",
+          "score_nom": 0.625
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation du Personnel (Cadre).docx",
+          "score_nom": 0.55
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 91,
+      "code": "OKPE/FOR/ESP/002",
+      "titre": "Fiche de Satisfaction des Prestataires Externes",
+      "processus_source": "ESP",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Des Prestataires Externes.docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation des Prestataires Externes.docx",
+          "score_nom": 0.722
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Personnel.docx",
+          "score_nom": 0.538
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 92,
+      "code": "OKPE/FOR/ESP/003",
+      "titre": "Fiche de Satisfaction des Clients",
+      "processus_source": "ESP",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Clients.docx",
+          "score_nom": 1.0
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Personnel.docx",
+          "score_nom": 0.608
+        },
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Des Prestataires Externes.docx",
+          "score_nom": 0.534
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    },
+    {
+      "ligne_excel": 93,
+      "code": "OKPE/FOR/ESP/004",
+      "titre": "Rapport de Satisfaction des PIP",
+      "processus_source": "ESP",
+      "type": "FOR",
+      "version_source": "V01",
+      "etat_source": "Terminé",
+      "relecture_source": "Terminé",
+      "statut_final_source": "Validé",
+      "candidats": [
+        {
+          "chemin": "2.RESSOURCES ET COLLABORATION/Rapport de Satisfaction des PIP.docx",
+          "score_nom": 1.0
+        }
+      ],
+      "decision": "a_verifier",
+      "fichier_confirme": null
+    }
+  ],
+  "fichiers": [
+    {
+      "chemin": "1.MAITRISE DOCUMENTAIRE/FOR-Fiche Mise en Application d'un Document Qualité.docx",
+      "sha256": "47ca5548f3851b8bc120fb802a151fb8c99bc4bb4bb8ef29acde8bc3c8da5df4",
+      "cle_source": "c065dcf736af1df81ef97c940e4d92380ffb6ea9674078b2643766c66dd09d33",
+      "octets": 75863,
+      "titre_source": "FOR-Fiche Mise en Application d'un Document Qualité",
+      "codes_reperes": [
+        "OKPE/ENR/GIM/003",
+        "OKPE/FOR/GIM/00"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GIM/003",
+        "OKPE/FOR/GIM/00"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "1.MAITRISE DOCUMENTAIRE/FOR-Fiche de Gestion des Modifications du SMQ.docx",
+      "sha256": "279cd12f27614aed1e6cf52de29eb6a316cd1cf8e8945c24f9fb81d1854f0e8f",
+      "cle_source": "36a90989f3de080f40c6b2044cc429bb7757ee7e4fe583c550cf1ee3b13c218e",
+      "octets": 75270,
+      "titre_source": "FOR-Fiche de Gestion des Modifications du SMQ",
+      "codes_reperes": [
+        "OKPE/ENR/GIM/002"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GIM/002"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "1.MAITRISE DOCUMENTAIRE/Inventaire documentaire  PHARMACIE OKPE OLUWA.xlsx",
+      "sha256": "7aa190d152b136eec1017172fc00c4711442b09aed7189a1c43fc66a61e7a8ac",
+      "cle_source": "d7414b3515eb4f570f1bade48cfdcc90db670a9b3606f414418ebc403ff3076d",
+      "octets": 59243,
+      "titre_source": "Inventaire documentaire  PHARMACIE OKPE OLUWA",
+      "codes_reperes": [
+        "OKPE/ENR/GAP/001",
+        "OKPE/ENR/GEE/001",
+        "OKPE/ENR/GIM/001",
+        "OKPE/ENR/GPE/001",
+        "OKPE/ENR/GRO/001",
+        "OKPE/FOR/CTR/001",
+        "OKPE/FOR/CTR/002",
+        "OKPE/FOR/CTR/003",
+        "OKPE/FOR/CTR/004",
+        "OKPE/FOR/CTR/005",
+        "OKPE/FOR/CTR/006",
+        "OKPE/FOR/CTR/007",
+        "OKPE/FOR/CTR/008",
+        "OKPE/FOR/CTR/009",
+        "OKPE/FOR/CTR/010",
+        "OKPE/FOR/DIC/001",
+        "OKPE/FOR/DIC/002",
+        "OKPE/FOR/DIC/003",
+        "OKPE/FOR/DIC/004",
+        "OKPE/FOR/DIC/005",
+        "OKPE/FOR/ESP/001",
+        "OKPE/FOR/ESP/002",
+        "OKPE/FOR/ESP/003",
+        "OKPE/FOR/ESP/004",
+        "OKPE/FOR/GAP/001",
+        "OKPE/FOR/GAP/002",
+        "OKPE/FOR/GAP/003",
+        "OKPE/FOR/GAP/004",
+        "OKPE/FOR/GAP/005",
+        "OKPE/FOR/GEE/001",
+        "OKPE/FOR/GEE/002",
+        "OKPE/FOR/GEE/003",
+        "OKPE/FOR/GEE/004",
+        "OKPE/FOR/GIM/001",
+        "OKPE/FOR/GIM/002",
+        "OKPE/FOR/GIM/003",
+        "OKPE/FOR/GIM/004",
+        "OKPE/FOR/GNA/001",
+        "OKPE/FOR/GPE/001",
+        "OKPE/FOR/GPE/002",
+        "OKPE/FOR/GRH/001",
+        "OKPE/FOR/GRH/002",
+        "OKPE/FOR/GRH/003",
+        "OKPE/FOR/GRH/004",
+        "OKPE/FOR/GRH/005",
+        "OKPE/FOR/GRH/006",
+        "OKPE/FOR/GRH/007",
+        "OKPE/FOR/GRH/008",
+        "OKPE/FOR/GRH/009",
+        "OKPE/FOR/GRH/010",
+        "OKPE/FOR/GRH/011",
+        "OKPE/FOR/GRH/012",
+        "OKPE/FOR/GRO/001",
+        "OKPE/FOR/GSS/001",
+        "OKPE/FOR/GSS/002",
+        "OKPE/FOR/GSS/003",
+        "OKPE/FOR/GSS/004",
+        "OKPE/FOR/GSS/005",
+        "OKPE/FOR/GSS/006",
+        "OKPE/FOR/GSS/007",
+        "OKPE/FOR/GSS/008",
+        "OKPE/FOR/OAI/001",
+        "OKPE/FOR/OAI/002",
+        "OKPE/FOR/OAI/003",
+        "OKPE/FOR/OAI/004",
+        "OKPE/FOR/TPR/001",
+        "OKPE/FOR/TPR/002",
+        "OKPE/FOR/TPR/003",
+        "OKPE/MOP/CTR/001",
+        "OKPE/MOP/CTR/002",
+        "OKPE/MOP/DIC/001",
+        "OKPE/MOP/DIC/002",
+        "OKPE/MOP/DIC/003",
+        "OKPE/MOP/DIC/004",
+        "OKPE/MOP/GAP/001",
+        "OKPE/MOP/GSS/001",
+        "OKPE/MOP/GSS/002",
+        "OKPE/PRO/CTR/001",
+        "OKPE/PRO/DIC/001",
+        "OKPE/PRO/ESP/001",
+        "OKPE/PRO/GAP/001",
+        "OKPE/PRO/GEE/001",
+        "OKPE/PRO/GIM/001",
+        "OKPE/PRO/GNA/001",
+        "OKPE/PRO/GPE/001",
+        "OKPE/PRO/GRH/001",
+        "OKPE/PRO/GRO/001",
+        "OKPE/PRO/GSS/001",
+        "OKPE/PRO/OAI/001",
+        "OKPE/PRO/OFO/001",
+        "OKPE/PRO/TPR/001"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/ENR/GAP/001",
+        "OKPE/ENR/GEE/001",
+        "OKPE/ENR/GIM/001",
+        "OKPE/ENR/GPE/001",
+        "OKPE/ENR/GRO/001",
+        "OKPE/FOR/CTR/001",
+        "OKPE/FOR/CTR/002",
+        "OKPE/FOR/CTR/003",
+        "OKPE/FOR/CTR/004",
+        "OKPE/FOR/CTR/005",
+        "OKPE/FOR/CTR/006",
+        "OKPE/FOR/CTR/007",
+        "OKPE/FOR/CTR/008",
+        "OKPE/FOR/CTR/009",
+        "OKPE/FOR/CTR/010",
+        "OKPE/FOR/DIC/001",
+        "OKPE/FOR/DIC/002",
+        "OKPE/FOR/DIC/003",
+        "OKPE/FOR/DIC/004",
+        "OKPE/FOR/DIC/005",
+        "OKPE/FOR/ESP/001",
+        "OKPE/FOR/ESP/002",
+        "OKPE/FOR/ESP/003",
+        "OKPE/FOR/ESP/004",
+        "OKPE/FOR/GAP/001",
+        "OKPE/FOR/GAP/002",
+        "OKPE/FOR/GAP/003",
+        "OKPE/FOR/GAP/004",
+        "OKPE/FOR/GAP/005",
+        "OKPE/FOR/GEE/001",
+        "OKPE/FOR/GEE/002",
+        "OKPE/FOR/GEE/003",
+        "OKPE/FOR/GEE/004",
+        "OKPE/FOR/GIM/001",
+        "OKPE/FOR/GIM/002",
+        "OKPE/FOR/GIM/003",
+        "OKPE/FOR/GIM/004",
+        "OKPE/FOR/GNA/001",
+        "OKPE/FOR/GPE/001",
+        "OKPE/FOR/GPE/002",
+        "OKPE/FOR/GRH/001",
+        "OKPE/FOR/GRH/002",
+        "OKPE/FOR/GRH/003",
+        "OKPE/FOR/GRH/004",
+        "OKPE/FOR/GRH/005",
+        "OKPE/FOR/GRH/006",
+        "OKPE/FOR/GRH/007",
+        "OKPE/FOR/GRH/008",
+        "OKPE/FOR/GRH/009",
+        "OKPE/FOR/GRH/010",
+        "OKPE/FOR/GRH/011",
+        "OKPE/FOR/GRH/012",
+        "OKPE/FOR/GRO/001",
+        "OKPE/FOR/GSS/001",
+        "OKPE/FOR/GSS/002",
+        "OKPE/FOR/GSS/003",
+        "OKPE/FOR/GSS/004",
+        "OKPE/FOR/GSS/005",
+        "OKPE/FOR/GSS/006",
+        "OKPE/FOR/GSS/007",
+        "OKPE/FOR/GSS/008",
+        "OKPE/FOR/OAI/001",
+        "OKPE/FOR/OAI/002",
+        "OKPE/FOR/OAI/003",
+        "OKPE/FOR/OAI/004",
+        "OKPE/FOR/TPR/001",
+        "OKPE/FOR/TPR/002",
+        "OKPE/FOR/TPR/003",
+        "OKPE/MOP/CTR/001",
+        "OKPE/MOP/CTR/002",
+        "OKPE/MOP/DIC/001",
+        "OKPE/MOP/DIC/002",
+        "OKPE/MOP/DIC/003",
+        "OKPE/MOP/DIC/004",
+        "OKPE/MOP/GAP/001",
+        "OKPE/MOP/GSS/001",
+        "OKPE/MOP/GSS/002",
+        "OKPE/PRO/CTR/001",
+        "OKPE/PRO/DIC/001",
+        "OKPE/PRO/ESP/001",
+        "OKPE/PRO/GAP/001",
+        "OKPE/PRO/GEE/001",
+        "OKPE/PRO/GIM/001",
+        "OKPE/PRO/GNA/001",
+        "OKPE/PRO/GPE/001",
+        "OKPE/PRO/GRH/001",
+        "OKPE/PRO/GRO/001",
+        "OKPE/PRO/GSS/001",
+        "OKPE/PRO/OAI/001",
+        "OKPE/PRO/OFO/001",
+        "OKPE/PRO/TPR/001"
+      ],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "1.MAITRISE DOCUMENTAIRE/PRO- Procédure de gestion des informations documentées et des modifications.docx",
+      "sha256": "1d30e91f58cfc5634e97d79bf669568db3e879456b530227ef2c23b42295b9e4",
+      "cle_source": "3095841a39d0be558afbbbfbb16cc98fa53efd79dd0b20b39bc9df48c7558dce",
+      "octets": 112286,
+      "titre_source": "PRO- Procédure de gestion des informations documentées et des modifications",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/FICHE de Retrait d'Equipement.doc",
+      "sha256": "9596084e8508eee7bd1322bdc62c333d2c2f27aef808c16b943ee1a49d227d04",
+      "cle_source": "236ee2d2fa7ef2ff084a239eaf1b9d546d9ea601bd3dbad81cb1ca6dec596955",
+      "octets": 86528,
+      "titre_source": "FICHE de Retrait d'Equipement",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "ancien_format_non_extrait",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/FOR & ENR  Plan de Formation.xlsx",
+      "sha256": "e585f5c7bc5a7557480b060d43fd93adc7a32e46e94f003a24041c5924f7dc4f",
+      "cle_source": "b072d2db99ec1c07031cb6661e91c989de0cbddaa1fd44a940edda186a5b4ba9",
+      "octets": 43495,
+      "titre_source": "FOR & ENR  Plan de Formation",
+      "codes_reperes": [
+        "OKPE/ENR/GRH/007",
+        "OKPE/FOR/GRH/007"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/FOR/GRH/007"
+      ],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GRH/007"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/FOR & ENR-Gestion des Congés.xlsx",
+      "sha256": "2d40733f00fa9da8b9d9f8a4a65bbff0e584d03e1a8060f3e219fde1217a8fda",
+      "cle_source": "14fd3ffcc0d8cf6359c7d178148310b388316796741f34df33194029cdf74545",
+      "octets": 35651,
+      "titre_source": "FOR & ENR-Gestion des Congés",
+      "codes_reperes": [
+        "OKPE/ENR/GRH/008",
+        "OKPE/FOR/GRH/008"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/FOR/GRH/008"
+      ],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GRH/008"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/FOR & ENR-Plan de Nettoyage et d'Entretien ..xlsx",
+      "sha256": "abb5fb8b5a3adb51dd1c7648a08527d1fef771100a5e5f6858c6922cc3f37ad6",
+      "cle_source": "5dbe1b6cba468b21d053e50a88078f8305c4ec50c5e3e8c70c97a67e01e9c9ba",
+      "octets": 82088,
+      "titre_source": "FOR & ENR-Plan de Nettoyage et d'Entretien .",
+      "codes_reperes": [
+        "OKPE/ENR/GEE/004",
+        "OKPE/FOR/GEE/004"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/FOR/GEE/004"
+      ],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GEE/004"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/FOR &ENR Inventaire des équipements.xlsx",
+      "sha256": "1ea9d8d5518c782056d7596f5b4635ee9260f5397c66a077e92ebe9b2a94529e",
+      "cle_source": "c8d3eb00726dc2dbf730f7ed6ee86e6c74a4973a020b6a9a76ac1674d93745c7",
+      "octets": 38832,
+      "titre_source": "FOR &ENR Inventaire des équipements",
+      "codes_reperes": [
+        "OKPE/ENR/GEE/001"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/ENR/GEE/001"
+      ],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/FOR &ENR Plan de Maintenance et d'étalonnage des équipements.xlsx",
+      "sha256": "d991844876eafbc3b18fcef3117d32f46fac16c3cbfe0087f679617c9a607508",
+      "cle_source": "adad9c92c588c1201a6f0de44ab7897e0405b921d4adb5a39af6707706de5692",
+      "octets": 33401,
+      "titre_source": "FOR &ENR Plan de Maintenance et d'étalonnage des équipements",
+      "codes_reperes": [
+        "OKPE/ENR/GEE/001",
+        "OKPE/FOR/GEE/001"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/ENR/GEE/001",
+        "OKPE/FOR/GEE/001"
+      ],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/FOR-Fiche de Mise en service d'Equipement.doc",
+      "sha256": "e5292134c784defe1175a1891e7d7057a53a045dcc5a370aade000c2efebcb7a",
+      "cle_source": "bf599262668043cdbbe97debf42eb89f2c0b7af7da123c1820552cd4d81b8b56",
+      "octets": 322048,
+      "titre_source": "FOR-Fiche de Mise en service d'Equipement",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "ancien_format_non_extrait",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation des Prestataires Externes.docx",
+      "sha256": "f658d9ed53ed077cd9b9f0e3b4fbf526b3fededceefeb33d46e506d39b6cab1c",
+      "cle_source": "8e1ec59acfe1662d22c446ce8009daa636270ccbe2a4dc1d5653255bb050afa8",
+      "octets": 69623,
+      "titre_source": "Fiche d'Evaluation des Prestataires Externes",
+      "codes_reperes": [
+        "OKPE/ENR/GPE/001"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/ENR/GPE/001"
+      ],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation du Personnel (Cadre).docx",
+      "sha256": "a471a72ec4bd8cebaf0ac301935a55180b34e1e67b60ceb965b1a421ea5adf81",
+      "cle_source": "9cdd68b184e99b00c3b3c3779a71b912621561659b9fcfe7eb03ff980334c620",
+      "octets": 74252,
+      "titre_source": "Fiche d'Evaluation du Personnel (Cadre)",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche d'Evaluation du Personnel (Non-cadre).docx",
+      "sha256": "f38a63471dd02c01e554d84166c33de2906a8e31be609821c194dc296bc37f46",
+      "cle_source": "50f311535db555e8227debcbaee8924800a0dab518030efa59c0235285c62d22",
+      "octets": 74753,
+      "titre_source": "Fiche d'Evaluation du Personnel (Non-cadre)",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste (canevas).docx",
+      "sha256": "c32f3a5d1377f0bc582688171993097d8ad0fd40bf29a7b07c3768ee7b97f81d",
+      "cle_source": "ac66baf800678565a12fbb72101f1c748924530d0e9f8919d9ff636091fc8b94",
+      "octets": 78045,
+      "titre_source": "Fiche de Poste (canevas)",
+      "codes_reperes": [
+        "OKPE/ENR/GRH/00",
+        "OKPE/FOR/GRH/00"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GRH/00",
+        "OKPE/FOR/GRH/00"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Assistant de Gestion.docx",
+      "sha256": "ab321effc783db6662407553b450a7587a298091b705406d3f58e2e49acc3216",
+      "cle_source": "cbbcf85265a674d68711ead5ff6baaed82cf496af92b85c692efca3155efef53",
+      "octets": 81145,
+      "titre_source": "Fiche de Poste Assistant de Gestion",
+      "codes_reperes": [
+        "OKPE/ENR/GRH/00",
+        "OKPE/FOR/GRH/00"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GRH/00",
+        "OKPE/FOR/GRH/00"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Auxiliaire de vente_Caisse.docx",
+      "sha256": "50082f2498a2b1afa2031d2e4ac2dc4d319c139e47d5a3667dcf73068552e39c",
+      "cle_source": "31cfb01c46059941567ca047c12fea37f614c59e2d8ccfbf9a7b84f985d2b033",
+      "octets": 77481,
+      "titre_source": "Fiche de Poste Auxiliaire de vente_Caisse",
+      "codes_reperes": [
+        "OKPE/ENR/GRH/00",
+        "OKPE/FOR/GRH/00"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GRH/00",
+        "OKPE/FOR/GRH/00"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Chargé d'Approvisionnement.docx",
+      "sha256": "fa8bfd0f0fdb3e631af3709a955d8a38c29248e35aef9b1deb5c73b7ba563f0b",
+      "cle_source": "d5bbd3b5db305b7b12708f8637af3f5c1273db93bbae87722152e47684a9236f",
+      "octets": 82069,
+      "titre_source": "Fiche de Poste Chargé d'Approvisionnement",
+      "codes_reperes": [
+        "OKPE/ENR/GRH/00",
+        "OKPE/FOR/GRH/00"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GRH/00",
+        "OKPE/FOR/GRH/00"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Poste Pharmacien Assistant.docx",
+      "sha256": "01975288a91f88d4e813f1ced4d2c7be3858eb904b9ea550252d299fb145a56c",
+      "cle_source": "5ea5cdc92dc799d63e6a135d5579a61c7482d9720f6f24b4eb45d2c20235a5ea",
+      "octets": 77781,
+      "titre_source": "Fiche de Poste Pharmacien Assistant",
+      "codes_reperes": [
+        "OKPE/ENR/GRH/00",
+        "OKPE/FOR/GRH/00"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GRH/00",
+        "OKPE/FOR/GRH/00"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Clients.docx",
+      "sha256": "840572decf523b576db4966e3d9c6332b2ff304647427bc1ded86e1b8b429f92",
+      "cle_source": "6057d781c84d750369ca45dfb15f26ba909c4eb62756fea9d2be94492527590b",
+      "octets": 74773,
+      "titre_source": "Fiche de Satisfaction Clients",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Des Prestataires Externes.docx",
+      "sha256": "bec989462429130ddfb2c1dc5c9b014179cebbf12c997834d093123ee987340b",
+      "cle_source": "7cf854ee87c034d6d58d9f01a96d03f880754985c27a16e31532e06c9ca84b45",
+      "octets": 74446,
+      "titre_source": "Fiche de Satisfaction Des Prestataires Externes",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de Satisfaction Personnel.docx",
+      "sha256": "985d2ea7d280426855fcb4ae23d6c2602740b8bccd7b28522e2e1ebfe9c3add0",
+      "cle_source": "8b1eba3184750dc21443cce66970046a7106019df868c03c2a672f81689218e8",
+      "octets": 80940,
+      "titre_source": "Fiche de Satisfaction Personnel",
+      "codes_reperes": [
+        "OKPE/FOR/ESP/00"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/FOR/ESP/00"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Fiche de poste  OKPE OLUWA docx.docx",
+      "sha256": "134c770bc5a9523de01bbc02d336b009dd0fcfb9be74c00ec0d49898dfef8ffc",
+      "cle_source": "e2ab4949c5c4c4bcc94bf0287f73b0df4c67045c4253a48c3bf68a0beb9b67a6",
+      "octets": 73806,
+      "titre_source": "Fiche de poste  OKPE OLUWA docx",
+      "codes_reperes": [
+        "OKPE/FOR/GRH/004"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/FOR/GRH/004"
+      ],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Formulaire de demande d'absence V1.0.docx",
+      "sha256": "5945de972f7f903975a1bee758a86347ce08b52f73ec653db1a1930a98eb7974",
+      "cle_source": "7b102d328dafca4088b701c158cb149549e068eabe9359a6503d393701b616df",
+      "octets": 74638,
+      "titre_source": "Formulaire de demande d'absence V1.0",
+      "codes_reperes": [
+        "OKPE/FOR/GRH/001"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/FOR/GRH/001"
+      ],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Les Eléments Constitutifs du Dossier du Personnel.docx",
+      "sha256": "2f42cdc66afddf37141c6e2601d73848038cb1d1ac9e99af186864136dcd7412",
+      "cle_source": "5b098a9cff7cc909e0218154ac3c13510aa99b7324d38b9fd526d17144455a8c",
+      "octets": 68833,
+      "titre_source": "Les Eléments Constitutifs du Dossier du Personnel",
+      "codes_reperes": [
+        "OKPE/FOR/GRH/0"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/FOR/GRH/0"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/PRO- Evaluation de la Satisfation des PIP.docx",
+      "sha256": "e1eaf4afaab74eaa93de14900a7cd199fc75382d0aaa822b02ebe0d21ae66ba6",
+      "cle_source": "0d8661c7b39b5a48b86c5ca33ce5006a44cd83348eb6746a5e2cb7ee47b43a5d",
+      "octets": 99253,
+      "titre_source": "PRO- Evaluation de la Satisfation des PIP",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/PRO- Gestion des Equipements et Entretien des Locaux.docx",
+      "sha256": "79844aa9b7e9800303632d724338cb4fccc34c60f3aa67c0b7633f6d8569782c",
+      "cle_source": "4758fbfc5a190771797db032ae6ee4e2d30aaaa2f652ecd81782aa17956f7b35",
+      "octets": 100935,
+      "titre_source": "PRO- Gestion des Equipements et Entretien des Locaux",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/PRO- Gestion des Prestataires.docx",
+      "sha256": "cb5ddb0ae3a4cce123b5b58664c7213e8f81c981bae373f3023e518ead5678f5",
+      "cle_source": "f14b7c82a6cdb2dc381e6e482663f0048e27a55aa9ebd413d2bc84092308bf7b",
+      "octets": 100338,
+      "titre_source": "PRO- Gestion des Prestataires",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/PRO- Gestion des Ressources Humaines.docx",
+      "sha256": "7af215b8ca62fb2790f5d11b93ffb83c8f1fc60c98e84155fedd56625084a1e4",
+      "cle_source": "0f0d2059b5334c6253b0694d5fbddc1847ed8689f17dc8f943331fbed35e79fe",
+      "octets": 106080,
+      "titre_source": "PRO- Gestion des Ressources Humaines",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/PRO- Ouverture et Fermeture de l’officine et Gestion des Gardes.docx",
+      "sha256": "ab6f50b4f1c649723bd3c75512cb960d2807cafa4b41e38ac2872b19bb0c63e3",
+      "cle_source": "2a89f259e511c0e1db08846de523dedaa3390d5e25c732921259e320d350a2ae",
+      "octets": 99979,
+      "titre_source": "PRO- Ouverture et Fermeture de l’officine et Gestion des Gardes",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Plan de continuité_Pharmacie.xlsx",
+      "sha256": "decab62c484ec8a0b1efb60e9564f705c900b33b1674a11ad968b3fbd38a095a",
+      "cle_source": "48dd7b62d0cfbc1e6ed7d6ecc43fec7d1c640ece38300eed78f0433872062304",
+      "octets": 25907,
+      "titre_source": "Plan de continuité_Pharmacie",
+      "codes_reperes": [
+        "OKPE/FOR/GRO/002"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/FOR/GRO/002"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Rapport d'Evaluation des Performances.docx",
+      "sha256": "50af482cd69a4717e3f8ba400f478109b994e47eecf207279e3bb7bc91bbe59c",
+      "cle_source": "a35f108e23950759f0abb2aca37c0c974405485ab907a5df51b6e0b156c031fa",
+      "octets": 125317,
+      "titre_source": "Rapport d'Evaluation des Performances",
+      "codes_reperes": [
+        "OKPE/ENR/GRH/0"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GRH/0"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Rapport de Satisfaction des PIP.docx",
+      "sha256": "a607ffb83602d7a33992e26bc6e253b3dc253d60ea1ce1438c28ed2910ceef9e",
+      "cle_source": "ddc99bb50132d113e9cba5187da54346843b3f8d61e9ff6d40c20c2df07d7c87",
+      "octets": 126528,
+      "titre_source": "Rapport de Satisfaction des PIP",
+      "codes_reperes": [
+        "OKPE/FOR/ESP/00"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/FOR/ESP/00"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Registre de Maintenance & Tests 2025.xlsx",
+      "sha256": "e3f85e871000ecea9153a342b7100427556cca295791ceeac276f73a366087a7",
+      "cle_source": "59a35057d060c9b9156e546081ea3ea94e427f6837201559efdaaac723da64ed",
+      "octets": 42078,
+      "titre_source": "Registre de Maintenance & Tests 2025",
+      "codes_reperes": [
+        "OKPE/ENR/GEE/001"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/ENR/GEE/001"
+      ],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "2.RESSOURCES ET COLLABORATION/Registre de Maintenance & Tests 2026.xlsx",
+      "sha256": "541ae5bd67ce2bada62b5f8e7c929306e6bbfe9969b61c2cff59e4a7577f7454",
+      "cle_source": "186d2184f16b322900e56698cebf0f3581dadabaf69108235e8c8650e26af986",
+      "octets": 44983,
+      "titre_source": "Registre de Maintenance & Tests 2026",
+      "codes_reperes": [
+        "OKPE/ENR/GEE/002",
+        "OKPE/FOR/GEE/002"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/FOR/GEE/002"
+      ],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/GEE/002"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/Affiche Gestion Plaintes Et Réclamations.docx",
+      "sha256": "7ee66b765b9c3aeb24e5cb58c1b3f59a43658ffdc65bf475d704e8cbecf740d1",
+      "cle_source": "61db712c3d4a1c9838f581b8d3a47d3c5c6d7634aa279f3f810e05b51e0dc6e9",
+      "octets": 91178,
+      "titre_source": "Affiche Gestion Plaintes Et Réclamations",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR &ENR-Plan d'Actions du SMQ.xlsx",
+      "sha256": "0518a617c2ff3d8a93a006e8f819008952acc401845bbce3a0a18aba0d77ff7c",
+      "cle_source": "456f342a3b58528ba909621afc6b1eb36dc89c1ab588159fff6160f9ec0734a1",
+      "octets": 78645,
+      "titre_source": "FOR &ENR-Plan d'Actions du SMQ",
+      "codes_reperes": [
+        "OKPE/ENR/OAI/004",
+        "OKPE/FOR/OAI/004"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/FOR/OAI/004"
+      ],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/OAI/004"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Fiche d'Evaluation des Inspecteurs Internes.docx",
+      "sha256": "67d0576f67d5a520f2b5c2109c5115873ae001ff5c80a566daf9cc77bdd8e90b",
+      "cle_source": "6b5394773d6440d7ddc45076e03d5b0bd2ab8bd1a53a54e5f6ba64a64c8aa2f0",
+      "octets": 71402,
+      "titre_source": "FOR-Fiche d'Evaluation des Inspecteurs Internes",
+      "codes_reperes": [
+        "OKPE/ENR/OAI/002",
+        "OKPE/FOR/OAI/00"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/OAI/002",
+        "OKPE/FOR/OAI/00"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Fiche de Non-conformités & d'Actions d'Amélioration.doc",
+      "sha256": "65a8454d99c5b8846a3619332398401a6a4b599a3e9100504be98cacbd17e905",
+      "cle_source": "42fc5b10d8d8f6d23031a9e2461128881c99da1aba3a6c9d8c47e5187fb548e8",
+      "octets": 94720,
+      "titre_source": "FOR-Fiche de Non-conformités & d'Actions d'Amélioration",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "ancien_format_non_extrait",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Plan d'Auto-inspections.docx",
+      "sha256": "21360691059f4603625de2ade0de0666c40001e7cd4faaf927dde888445636dc",
+      "cle_source": "915606405c9ff22f2504929fcf2ad10d7d005beeefb5c046898f11abf8d70164",
+      "octets": 72396,
+      "titre_source": "FOR-Plan d'Auto-inspections",
+      "codes_reperes": [
+        "OKPE/ENR/OAI/001",
+        "OKPE/FOR/OAI/0"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/OAI/001",
+        "OKPE/FOR/OAI/0"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Plan de Maîtrise des Risques et Opportunités.xlsx",
+      "sha256": "eceb368434b969d9b34e78914bfdbe9aa2a86c9b5ad8c6ec5e289efe9b0490ff",
+      "cle_source": "554069d2866b4ae9d59f2df2ecffa6164e73f79ae3c9f33e9c6721a788cc5963",
+      "octets": 76413,
+      "titre_source": "FOR-Plan de Maîtrise des Risques et Opportunités",
+      "codes_reperes": [
+        "OKPE/ENR/GRO/001",
+        "OKPE/FOR/GRO/001"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/ENR/GRO/001",
+        "OKPE/FOR/GRO/001"
+      ],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Rapport D'Auto-inspection.doc",
+      "sha256": "2ccba6acdb65e8163a3dbd9e40d1fc6a0cafe3637f26740b1e2c12649e0d356a",
+      "cle_source": "ea8a5cc8f5a561f163b2ab4356605c87ccf0a7744aec01182c7fc0302296f199",
+      "octets": 92672,
+      "titre_source": "FOR-Rapport D'Auto-inspection",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "ancien_format_non_extrait",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Tableau de Suivi des Améliorations du SMQ.xlsx",
+      "sha256": "1ae08fd1e99dffb0230d1c3f359a362fbc81f1bd8eaf5ba7911bb3bf60337cc6",
+      "cle_source": "8e6ef131ed4c3dc98124306747a1311940d5b4833f1453556ff462de4d22f59a",
+      "octets": 121225,
+      "titre_source": "FOR-Tableau de Suivi des Améliorations du SMQ",
+      "codes_reperes": [
+        "OKPE/ENR/TPR/003",
+        "OKPE/FOR/TPR/003"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/FOR/TPR/003"
+      ],
+      "codes_absents_inventaire": [
+        "OKPE/ENR/TPR/003"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/FOR-Traitement des Réclamations Prestataires.doc",
+      "sha256": "ac33f778121acd37c57501b11c7c9dda60916a11b1f551920556d1ce5a9a625b",
+      "cle_source": "0f8b6980cec095e250260efdcdb4f99d630dec64884a5ceb0379f20652beb7c8",
+      "octets": 85504,
+      "titre_source": "FOR-Traitement des Réclamations Prestataires",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "ancien_format_non_extrait",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/Fiche de deroulement de l'auto inspection.docx",
+      "sha256": "0dd33f50239574f242ad3b4d5fcf8e9714dfcbb184d103c8670b1c00ca1c4212",
+      "cle_source": "a38b0b1003867f42a9ec6cbe1b62ba8aeb0782beb0707f4dd5d9e74b1a246611",
+      "octets": 84331,
+      "titre_source": "Fiche de deroulement de l'auto inspection",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO- Procédure (Canevas).docx",
+      "sha256": "deb3fc42ae76f756dfc0a004568982225f8bbdef36c0d4db620760d177ae30d9",
+      "cle_source": "bce81572a1b0b217644490249f50bb5500f7cd450695af1659b730ac31e1f6c1",
+      "octets": 107819,
+      "titre_source": "PRO- Procédure (Canevas)",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Procédure d'Organisation des Auto-inspections.docx",
+      "sha256": "1a3e3fbfe5568427573b1000bd847a61e1e5584197de8f898c09b7816f962df5",
+      "cle_source": "292cd90025052cf1977d578e599b0db3992fe624bcab6f1c320159a6346935c0",
+      "octets": 111198,
+      "titre_source": "PRO-Procédure d'Organisation des Auto-inspections",
+      "codes_reperes": [
+        "OKPE/PRO/OAI/001"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/PRO/OAI/001"
+      ],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Procédure de Gestion des Risques et Opportunités.docx",
+      "sha256": "cd366cfedb054b68f23269283453a775522cead5fd0103756698bcc2fec08d55",
+      "cle_source": "e84dacbf7e5fe1e5b50f9e473821b29e6d1fa0c23220d54adb8736ec17d159a3",
+      "octets": 106633,
+      "titre_source": "PRO-Procédure de Gestion des Risques et Opportunités",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Procédures de Gestion des Non-conformités et Actions d'amélioration.docx",
+      "sha256": "c1c1ae066b689cfa1c6736b5c6c1f98671ea628e6a59e33a7256d1e87534a624",
+      "cle_source": "0998cbd9a78bc7108c6c181fa593923436d542789056f714f3bc0261e962965d",
+      "octets": 96921,
+      "titre_source": "PRO-Procédures de Gestion des Non-conformités et Actions d'amélioration",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/PRO-Traitement des Plaintes et Réclamations.docx",
+      "sha256": "739f8c42424322bcca2e66c67ddcca88e8bc019ae17ff19edbaa23925560bc6f",
+      "cle_source": "ad084d93838be3a9cb511665a1ce866aa16b5feac05a124d3691233b05867c86",
+      "octets": 99918,
+      "titre_source": "PRO-Traitement des Plaintes et Réclamations",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/Plan de continuité_Pharmacie.xlsx",
+      "sha256": "38e99ac7f22485c3526514b369a6082f9ded6957e685f873f098de06718fcba6",
+      "cle_source": "6d25113a4c00fd6aa1694ae2e26ea722d4fd2d9b40a88d1799de0bfc6adc05bb",
+      "octets": 26057,
+      "titre_source": "Plan de continuité_Pharmacie",
+      "codes_reperes": [
+        "OKPE/FOR/GRO/002"
+      ],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [
+        "OKPE/FOR/GRO/002"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "3.SURVEILLANCE ET AMELIORATION/Tableau de maîtrise des risques et opportunités.xlsx",
+      "sha256": "d5d8510bd2f57b3370ba71f87c0207c7956529be346c847ea5802dc28eca7eae",
+      "cle_source": "7c79fb2c3225d57e1565ed6737b7cade3c5944811599339593d8c9d9fc32902e",
+      "octets": 30400,
+      "titre_source": "Tableau de maîtrise des risques et opportunités",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "4. PROCEDURES OPERATIONNELLES/PRO- Gestion de Stock et Sécurité des Produits.docx",
+      "sha256": "1070025fc0ffdaeb8f93a8d3c061bbc5b0f8b26c47380bb2e6d76a8ffdf8743c",
+      "cle_source": "027ae8755424b6525bd9a84f76dcd3eb5b9496b85a9e7fe77faea16d24780acd",
+      "octets": 122558,
+      "titre_source": "PRO- Gestion de Stock et Sécurité des Produits",
+      "codes_reperes": [
+        "OKPE/MOP/GSS/001",
+        "OKPE/MOP/GSS/002"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/MOP/GSS/001",
+        "OKPE/MOP/GSS/002"
+      ],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "4. PROCEDURES OPERATIONNELLES/PRO-Dispensation et Conseils.docx",
+      "sha256": "7bef8c60e9d7d41411703470c64d02f60599efa6db3472096b7f0abd03bfb3f7",
+      "cle_source": "444490cd7ffc66224c84080012c5062af6c59f7eedae5188a9802c7e6cbd72ed",
+      "octets": 124787,
+      "titre_source": "PRO-Dispensation et Conseils",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "4. PROCEDURES OPERATIONNELLES/PRO-Gestion de la Caisse et Traitement des Recettes.docx",
+      "sha256": "f9789ebad25052131322479df2748376fdbb9cebcf49be4eea689056ccce3170",
+      "cle_source": "cf38dbbda86acc5ab8edc61ef832a7e7a27db4e62f2d785d6c03e4979c6ccccd",
+      "octets": 113080,
+      "titre_source": "PRO-Gestion de la Caisse et Traitement des Recettes",
+      "codes_reperes": [
+        "OKPE/FOR/CTR/00",
+        "OKPE/FOR/CTR/006",
+        "OKPE/FOR/CTR/007",
+        "OKPE/MOP/CTR/00",
+        "OKPE/MOP/CTR/001"
+      ],
+      "codes_connus_inventaire": [
+        "OKPE/FOR/CTR/006",
+        "OKPE/FOR/CTR/007",
+        "OKPE/MOP/CTR/001"
+      ],
+      "codes_absents_inventaire": [
+        "OKPE/FOR/CTR/00",
+        "OKPE/MOP/CTR/00"
+      ],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "4. PROCEDURES OPERATIONNELLES/PRO-Gestion des Approvisionnements.docx",
+      "sha256": "b47eb47392cfa2fd2bbb8b4c6cc97a1ad2b7f814b83c739ab265bd372ee213f8",
+      "cle_source": "17e0e08672f9aeed046b530dda0dec6f565329e48bfb59ace839b9d99e9dd912",
+      "octets": 115893,
+      "titre_source": "PRO-Gestion des Approvisionnements",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "Document en cours et autres/CANEVAS DE PROCEDURE.docx",
+      "sha256": "16032314be8003351fdd54822bfe0374dfd6964b3968309265aedec2f451ad1b",
+      "cle_source": "b6a89dcb7c2ec525c57b659c7174c4fef00d4e31e073ecd0e6ef539224f89381",
+      "octets": 81594,
+      "titre_source": "CANEVAS DE PROCEDURE",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "Document en cours et autres/Liste des procédures et leurs activités de couverture (Version annotée).pdf",
+      "sha256": "11d1880a1cf73dbabe212c2653973ae7a300dd764d069d9d0b19dbfff5f05506",
+      "cle_source": "8b649477999427d1ef19c3fa1a9cbc893ce432bcb8fff403e40b0ebf6d6e14d6",
+      "octets": 153460,
+      "titre_source": "Liste des procédures et leurs activités de couverture (Version annotée)",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "Document en cours et autres/Liste des procédures et leurs activités de couverture.odt",
+      "sha256": "bfbffad345c99d2cd8651cace2d54b8dc95d0da8601dc5a07ede4ba529218b19",
+      "cle_source": "bfbc54de56ce4173942d571d85b799f1e547c6cd857490e6b585cf4f2a56e065",
+      "octets": 12832,
+      "titre_source": "Liste des procédures et leurs activités de couverture",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "Document en cours et autres/PLANNING DU PERSONNEL MODEL.xlsx",
+      "sha256": "ecc48ebd526e2b322a8728068da7be9bbfc8dff16e41d81cc5ce4e16c4f14606",
+      "cle_source": "1adcad0795791bb8395d0eeb976f414c6e6669ee2c78e2250606977406a09ea6",
+      "octets": 11526,
+      "titre_source": "PLANNING DU PERSONNEL MODEL",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "Document en cours et autres/POINTS DES PROCEDURES ET ACTIVITES DE COUVERTURE OKPE.docx",
+      "sha256": "9daa4b6180095e37868d12afa0c19b1e041e4149244b27cf839a628b269fc975",
+      "cle_source": "538deffc9176edf5b760d26a300396e148a97dcd00d62df270a960d60bf6b72b",
+      "octets": 17720,
+      "titre_source": "POINTS DES PROCEDURES ET ACTIVITES DE COUVERTURE OKPE",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    },
+    {
+      "chemin": "Document en cours et autres/Quelques plans de la pharmacie OKPE OLUWA.xlsx",
+      "sha256": "defedecf513696145d5f3810affc97624e4cd74c1098824d23d233ca4838b397",
+      "cle_source": "e36372032da0774783641743d5033053044e9008115c9bfda26132f17fc5bcc3",
+      "octets": 104251,
+      "titre_source": "Quelques plans de la pharmacie OKPE OLUWA",
+      "codes_reperes": [],
+      "codes_connus_inventaire": [],
+      "codes_absents_inventaire": [],
+      "lecture": "codes_reperes_non_attribues",
+      "code_documentaire_confirme": null,
+      "mode_import": "source_a_verifier"
+    }
+  ],
+  "exclus": [
+    {
+      "chemin": "Document en cours et autres/OKPE OLUWA POUR BEST EXPERTS G/microsoft-integration-ui-transparent-2048x1280.png",
+      "motif": "illustration_non_documentaire",
+      "sha256": "f9e8c3396713f8ba22e91b246111badddf41a98532396bd8e85e582e75570a84"
+    }
+  ],
+  "bilan": {
+    "lignes_inventaire": 91,
+    "fichiers_a_importer": 62,
+    "fichiers_exclus": 1,
+    "anciens_doc_non_extraits": 5,
+    "fichiers_avec_codes_absents_inventaire": 22
+  }
+}

@@ -23,8 +23,12 @@ export interface Officine {
   };
 }
 
+export class ApiHttpError extends Error {
+  constructor(message: string, public readonly status: number) { super(message); this.name = "ApiHttpError"; }
+}
+
 class ApiClient {
-  private getHeaders(): HeadersInit {
+  private getHeaders(sansOfficine = false): HeadersInit {
     const token = this.getToken();
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -32,7 +36,10 @@ class ApiClient {
     };
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
+      headers["X-Session-Begpharma"] = token;
     }
+    const officine = typeof window !== "undefined" ? localStorage.getItem("begpharma.officine") : null;
+    if (!sansOfficine && officine && this.getOfficines().some(o => o.id === officine)) headers["X-Officine-Id"] = officine;
     return headers;
   }
 
@@ -53,7 +60,10 @@ class ApiClient {
   getUser(): User | null {
     if (typeof window === "undefined") return null;
     const raw = localStorage.getItem(CLE_USER);
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const user = raw ? JSON.parse(raw) : null;
+      return user && typeof user.id === "string" && typeof user.email === "string" ? user : null;
+    } catch { return null; }
   }
 
   setUser(user: User | null) {
@@ -68,7 +78,10 @@ class ApiClient {
   getOfficines(): Officine[] {
     if (typeof window === "undefined") return [];
     const raw = localStorage.getItem(CLE_OFFICINES);
-    return raw ? JSON.parse(raw) : [];
+    try {
+      const officines = raw ? JSON.parse(raw) : [];
+      return Array.isArray(officines) ? officines.filter(o => o && typeof o.id === "string" && typeof o.nom === "string") : [];
+    } catch { return []; }
   }
 
   setOfficines(officines: Officine[]) {
@@ -91,13 +104,25 @@ class ApiClient {
     const formatted = this.formatUrl(url);
     const res = await fetch(formatted, {
       method: "GET",
-      headers: this.getHeaders(),
+      headers: this.getHeaders(["/api/auth/me", "/api/officines"].includes(formatted.split("?")[0])),
+      cache: "no-store",
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ message: res.statusText }));
-      throw new Error(err.message || "Erreur de communication avec le serveur");
+      throw new ApiHttpError(err.message || "Erreur de communication avec le serveur", res.status);
     }
-    return res.json();
+    try { return await res.json(); }
+    catch { throw new ApiHttpError("Le serveur n’a pas renvoyé les données attendues.", 502); }
+  }
+
+  async synchroniserSession(): Promise<void> {
+    const profil = await this.get<{ user: User; officines: Officine[] }>("/auth/me");
+    if (!profil.user?.id || !Array.isArray(profil.officines)) throw new ApiHttpError("Réponse de connexion incomplète.", 502);
+    const ancien = this.getUser()?.id;
+    this.setUser(profil.user); this.setOfficines(profil.officines);
+    const choix = localStorage.getItem("begpharma.officine");
+    if (!profil.officines.some(o => o.id === choix)) localStorage.removeItem("begpharma.officine");
+    if (ancien && ancien !== profil.user.id) window.location.reload();
   }
 
   async post<T>(url: string, body?: unknown): Promise<T> {
@@ -154,6 +179,7 @@ class ApiClient {
     };
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
+      headers["X-Session-Begpharma"] = token;
     }
     const res = await fetch(formatted, {
       method: "POST",
@@ -165,6 +191,18 @@ class ApiClient {
       throw new Error(err.message || "Erreur lors du téléversement");
     }
     return res.json();
+  }
+
+  async telechargerFichier(url: string): Promise<Blob> {
+    const token = this.getToken();
+    const res = await fetch(this.formatUrl(url), {
+      headers: token ? { Authorization: `Bearer ${token}`, "X-Session-Begpharma": token } : {},
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: "Téléchargement impossible." }));
+      throw new Error(err.message || "Téléchargement impossible.");
+    }
+    return res.blob();
   }
 
   logout() {

@@ -106,9 +106,9 @@ const statutInventaire: Record<Inventaire["statut"], { label: string; classe: st
 };
 
 const dateFr = (valeur?: string | null) => {
-  if (!valeur) return "—";
+  if (!valeur) return "Non renseigné";
   const d = new Date(valeur.length === 10 ? `${valeur}T12:00:00` : valeur);
-  return Number.isNaN(d.getTime()) ? "—" : formatDate(d);
+  return Number.isNaN(d.getTime()) ? "Non renseigné" : formatDate(d);
 };
 
 const fcfa = (n: number) => formatFCFA(n);
@@ -176,7 +176,7 @@ export function InventairesStock() {
   const mutationValider = useMutation({
     mutationFn: (id: string) => api.post(`/inventaires/${id}/valider`, {}),
     onSuccess: (res: any) => {
-      toast.success(res.message || "Inventaire validé — ajustements appliqués");
+      toast.success(res.message || "Inventaire validé : ajustements appliqués");
       invaliderInventaires();
       queryClient.invalidateQueries({ queryKey: ["stocks"] });
       queryClient.invalidateQueries({ queryKey: ["mouvements"] });
@@ -191,7 +191,7 @@ export function InventairesStock() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="font-display font-black text-[#0F3B27]">Inventaires — tournant et général annuel (STO-12)</h3>
+          <h3 className="font-display font-black text-[#0F3B27]">Inventaires : tournant et général annuel</h3>
           <p className="text-xs text-[#475C50]">Une campagne par zone, un comptage ligne à ligne, puis la validation du pharmacien qui applique les ajustements.</p>
         </div>
         <Button className="bg-[#0F3B27] text-white font-bold" onClick={() => setDialogOuvert(true)}>
@@ -203,7 +203,7 @@ export function InventairesStock() {
         <CardHeader>
           <CardTitle className="text-xs font-bold text-[#0F3B27]">Campagnes</CardTitle>
           <CardDescription className="text-xs">
-            {isLoading ? "Chargement…" : inventaires.length === 0 ? "Aucune campagne — lancez un inventaire tournant par zone : réserve, comptoir, frigo ou armoire." : `${inventaires.length} campagne(s) enregistrée(s).`}
+            {isLoading ? "Chargement…" : inventaires.length === 0 ? "Aucune campagne : lancez un inventaire tournant par zone : réserve, comptoir, frigo ou armoire." : `${inventaires.length} campagne(s) enregistrée(s).`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -221,7 +221,7 @@ export function InventairesStock() {
                     </span>
                   </div>
                   <p className="mt-1 text-[11px] text-[#475C50]">
-                    Du {dateFr(inv.date_inventaire)} · {inv.initiateur?.name ?? "—"}
+                    Du {dateFr(inv.date_inventaire)} · {inv.initiateur?.name ?? "Non renseigné"}
                     {typeof inv.lignes_count === "number" ? ` · ${comptees}/${inv.lignes_count} ligne(s) comptée(s)` : ""}
                   </p>
                 </div>
@@ -248,7 +248,7 @@ export function InventairesStock() {
 
       <Card className="border-[#CFF1D2]">
         <CardContent className="pt-6 text-xs text-[#475C50]">
-          La feuille de comptage s’utilise sur téléphone et fonctionne hors connexion. Comptage aveugle et double comptage en option, écarts valorisés, validation du pharmacien avant tout ajustement (STO-12). Export PDF et Excel conservé cinq ans — GAC-EN-010.
+          La feuille de comptage s’utilise sur téléphone et fonctionne hors connexion. Comptage aveugle et double comptage en option, écarts valorisés, validation du pharmacien avant tout ajustement. Export PDF et Excel conservé cinq ans : GAC-EN-010.
         </CardContent>
       </Card>
 
@@ -306,7 +306,7 @@ export function InventairesStock() {
                         <td className="px-3 py-2">
                           <div className="font-bold text-[#0F3B27]">{ligne.produit?.nom_commercial ?? "Produit"}</div>
                           <div className="font-mono text-[11px] text-[#475C50]">
-                            Lot {ligne.lot?.numero_lot ?? "—"}{ligne.lot?.date_peremption ? ` · péremption ${dateFr(ligne.lot.date_peremption)}` : ""}
+                            Lot {ligne.lot?.numero_lot ?? "Non renseigné"}{ligne.lot?.date_peremption ? ` · péremption ${dateFr(ligne.lot.date_peremption)}` : ""}
                           </div>
                         </td>
                         <td className="px-3 py-2 text-center font-mono font-bold text-[#0F3B27]">{ligne.quantite_theorique}</td>
@@ -323,7 +323,7 @@ export function InventairesStock() {
                         </td>
                         <td className="px-3 py-2 text-center">
                           {ecart === null || ecart === undefined ? (
-                            <span className="text-[11px] text-[#475C50]">—</span>
+                            <span className="text-[11px] text-[#475C50]">Non renseigné</span>
                           ) : ecart === 0 ? (
                             <Badge className="bg-[#CFF1D2] text-[#0F3B27]">0</Badge>
                           ) : (
@@ -332,7 +332,7 @@ export function InventairesStock() {
                             </Badge>
                           )}
                         </td>
-                        <td className="px-3 py-2 text-[11px] text-[#475C50]">{ligne.commentaire || "—"}</td>
+                        <td className="px-3 py-2 text-[11px] text-[#475C50]">{ligne.commentaire || "Non renseigné"}</td>
                         <td className="px-3 py-2 text-right">
                           <Button
                             size="sm"
@@ -390,17 +390,17 @@ export function InventairesStock() {
             <ColonneFiche titre="Ce que l’on compte" aide="Choisissez l’étendue et la date du comptage.">
               <Champ label="Type d’inventaire" obligatoire>
                 <select value={type} onChange={(e) => setType(e.target.value as any)} className="mt-1 h-12 w-full rounded-xl border border-[#CFF1D2] bg-white px-3 text-sm font-medium text-[#0F3B27]">
-                  <option value="tournant">Tournant — une zone à la fois</option>
-                  <option value="general_annuel">Général annuel — tout le magasin</option>
+                  <option value="tournant">Tournant : une zone à la fois</option>
+                  <option value="general_annuel">Général annuel : tout le magasin</option>
                 </select>
               </Champ>
               <Champ label="Zone ciblée" aide="Laissez vide pour couvrir tous les emplacements.">
-                <Input value={zone} onChange={(e) => setZone(e.target.value)} placeholder="Ex. Réserve — Stock principal" className="h-12 rounded-xl" list="zones-inventaire" />
+                <Input value={zone} onChange={(e) => setZone(e.target.value)} placeholder="Ex. Réserve : Stock principal" className="h-12 rounded-xl" list="zones-inventaire" />
                 <datalist id="zones-inventaire">
-                  <option value="Comptoir — Délivrance" />
-                  <option value="Réserve — Stock principal" />
+                  <option value="Comptoir : Délivrance" />
+                  <option value="Réserve : Stock principal" />
                   <option value="Réfrigérateur 2°C–8°C" />
-                  <option value="Armoire sécurisée — Stupéfiants & Listes" />
+                  <option value="Armoire sécurisée : Stupéfiants & Listes" />
                   <option value="Zone d’attente de contrôle" />
                 </datalist>
               </Champ>
@@ -481,16 +481,16 @@ export function RappelsStock() {
       <Card className="border-amber-400 bg-amber-50">
         <CardHeader>
           <CardTitle className="text-sm font-black text-amber-900 flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4" /> Rappels de lots — blocage immédiat (STO-14)
+            <ShieldAlert className="w-4 h-4" /> Rappels sanitaires
           </CardTitle>
           <CardDescription className="text-amber-800">
-            On saisit ou on importe l’avis reçu (source, produits, lots, date, action, pièce jointe). La caisse et la dispensation bloquent en moins d’une minute, une liste de prélèvement est éditée par emplacement, les boîtes sont scannées puis isolées, un bordereau de retour est signé et les patients concernés sont recherchés avant la clôture avec preuve.
+            Enregistrez les avis reçus et suivez les lots concernés. Ces avis sont distincts des alertes automatiques de péremption.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-xs text-amber-900 sm:flex-row sm:items-center sm:justify-between">
-          <span>Conservation GAC-EN-008 : dix ans. Le cahier de rappel de lot et de mise en quarantaine s’imprime en PDF.</span>
+          <span>Retrouvez les lots concernés et le suivi de leur retrait.</span>
           <Button className="h-11 shrink-0 bg-amber-900 font-bold text-white" onClick={() => setDialogOuvert(true)}>
-            <Plus className="w-4 h-4 mr-1" /> Saisir un avis de rappel
+            <Plus className="w-4 h-4 mr-1" /> Ajouter un rappel sanitaire
           </Button>
         </CardContent>
       </Card>
@@ -499,7 +499,7 @@ export function RappelsStock() {
         <CardHeader>
           <CardTitle className="text-xs font-bold text-[#0F3B27]">Avis enregistrés</CardTitle>
           <CardDescription className="text-xs">
-            {isLoading ? "Chargement…" : rappels.length === 0 ? "Aucun rappel actif — dès qu’un avis est saisi, les lots concernés sont bloqués sur-le-champ." : `${rappelsActifs.length} avis encore actif(s) sur ${rappels.length} enregistré(s).`}
+            {isLoading ? "Chargement…" : rappels.length === 0 ? "Aucun rappel actif : dès qu’un avis est saisi, les lots concernés sont bloqués sur-le-champ." : `${rappelsActifs.length} avis encore actif(s) sur ${rappels.length} enregistré(s).`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -509,7 +509,7 @@ export function RappelsStock() {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-xs font-black text-[#0F3B27]">{r.reference}</span>
                   <Badge variant="outline" className={`text-[10px] font-bold ${r.statut === "cloture" ? "border-[#CFF1D2] text-[#475C50]" : "border-amber-400 bg-white text-amber-900"}`}>
-                    {r.statut === "cloture" ? "Clôturé" : r.statut === "en_traitement" ? "En traitement" : "Actif — lots bloqués"}
+                    {r.statut === "cloture" ? "Clôturé" : r.statut === "en_traitement" ? "En traitement" : "Actif : lots bloqués"}
                   </Badge>
                   <span className="text-[11px] font-bold text-[#475C50]">{dateFr(r.date_avis)}</span>
                 </div>
@@ -518,7 +518,7 @@ export function RappelsStock() {
                   {r.source} · lot(s) : {(r.lots_concernes ?? []).map((l) => l.numero_lot).filter(Boolean).join(", ") || "non précisés"}
                 </p>
                 <p className="text-[11px] text-[#475C50]">{r.action_requise}</p>
-                {r.preuve_cloture ? <p className="text-[11px] text-emerald-700">Clôturé — preuve : {r.preuve_cloture}</p> : null}
+                {r.preuve_cloture ? <p className="text-[11px] text-emerald-700">Clôturé : preuve : {r.preuve_cloture}</p> : null}
               </div>
               {r.statut !== "cloture" && (
                 <Button variant="outline" size="sm" className="h-9 shrink-0 border-amber-400 font-bold text-amber-900" onClick={() => setRappelACloturer(r)}>
@@ -533,9 +533,8 @@ export function RappelsStock() {
       {/* Saisie d'un avis */}
       <Dialog open={dialogOuvert} onOpenChange={setDialogOuvert}>
         <ModaleFiche
-          titre="Saisir un avis de rappel"
-          sousTitre="Dès l’enregistrement, chaque lot dont le numéro correspond est mis en quarantaine et la vente est bloquée."
-          badge={<Badge className="bg-amber-900 text-white">STO-14</Badge>}
+          titre="Ajouter un rappel sanitaire"
+          sousTitre="Indiquez les lots concernés par l’avis reçu."
           pied={
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-[11px] text-[#475C50]">Le blocage est automatique : inutile de repasser par la feuille des lots.</p>
@@ -561,13 +560,13 @@ export function RappelsStock() {
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <ColonneFiche titre="D’où vient l’avis" aide="Reprenez la source telle qu’elle figure sur le courrier reçu.">
               <Champ label="Source de l’avis" obligatoire aide="Agence, fabricant, grossiste…">
-                <Input value={source} onChange={(e) => setSource(e.target.value)} placeholder="Ex. ABMed — Agence béninoise de régulation pharmaceutique" className="h-12 rounded-xl" />
+                <Input value={source} onChange={(e) => setSource(e.target.value)} placeholder="Organisme à l’origine de l’avis" className="h-12 rounded-xl" />
               </Champ>
               <Champ label="Date de l’avis" obligatoire>
                 <Input type="date" value={dateAvis} onChange={(e) => setDateAvis(e.target.value)} className="h-12 rounded-xl" />
               </Champ>
               <Champ label="Produits concernés" obligatoire aide="Le libellé complet, avec le laboratoire si possible.">
-                <Input value={produitsConcernes} onChange={(e) => setProduitsConcernes(e.target.value)} placeholder="Ex. Amoxicilline 1 g — GSK" className="h-12 rounded-xl" />
+                <Input value={produitsConcernes} onChange={(e) => setProduitsConcernes(e.target.value)} placeholder="Ex. Amoxicilline 1 g : GSK" className="h-12 rounded-xl" />
               </Champ>
             </ColonneFiche>
 
@@ -576,7 +575,7 @@ export function RappelsStock() {
                 <Textarea rows={3} value={numerosLots} onChange={(e) => setNumerosLots(e.target.value)} placeholder={"Ex. LOT-2026-003\nLOT-2026-017"} className="rounded-xl font-mono text-sm" />
               </Champ>
               <Champ label="Action demandée" obligatoire aide="Ce que l’émetteur de l’avis demande de faire.">
-                <Textarea rows={3} value={actionRequise} onChange={(e) => setActionRequise(e.target.value)} placeholder="Ex. retrait immédiat de la vente, isolement en quarantaine et retour au grossiste." className="rounded-xl text-sm" />
+                <Textarea rows={3} value={actionRequise} onChange={(e) => setActionRequise(e.target.value)} placeholder="Précisez l’intervention à effectuer." className="rounded-xl text-sm" />
               </Champ>
               <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] leading-snug text-amber-900">
                 {lotsSaisis.length === 0
@@ -596,7 +595,6 @@ export function RappelsStock() {
         <ModaleFiche
           titre="Clôturer l’avis de rappel"
           sousTitre={rappelACloturer ? `${rappelACloturer.reference} · ${rappelACloturer.produits_concernes}` : "La clôture exige une preuve."}
-          badge={<Badge className="bg-amber-900 text-white">STO-14</Badge>}
           pied={
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button variant="outline" className="h-12 rounded-xl sm:h-11" onClick={() => setRappelACloturer(null)}>Annuler</Button>
@@ -614,7 +612,7 @@ export function RappelsStock() {
             <ColonneFiche titre="Ce qui a été fait">
               <div className="rounded-2xl border border-[#CFF1D2] bg-[#F7F9F7] p-3 text-xs text-[#475C50]">
                 <p className="font-bold text-[#0F3B27]">Action demandée</p>
-                <p>{rappelACloturer?.action_requise || "—"}</p>
+                <p>{rappelACloturer?.action_requise || "Non renseigné"}</p>
                 <p className="mt-2 font-bold text-[#0F3B27]">Lots concernés</p>
                 <p>{((rappelACloturer?.lots_concernes ?? []).map((l) => l.numero_lot).filter(Boolean).join(", ")) || "non précisés"}</p>
               </div>
@@ -687,14 +685,14 @@ export function DechetsStock() {
       <Card className="border-red-300 bg-red-50/30">
         <CardHeader>
           <CardTitle className="text-sm font-black text-red-800 flex items-center gap-2">
-            <Trash2 className="w-4 h-4" /> Déchets et destruction — BPD9 (STO-17)
+            <Trash2 className="w-4 h-4" /> Déchets et destruction : BPD9
           </CardTitle>
           <CardDescription className="text-red-700">
             Motif possible : périmé, avarié, non conforme, rappelé ou retourné. Le lot rejoint l’aire sécurisée, devient « à détruire », puis part chez un prestataire qualifié. Le procès-verbal contradictoire est signé électroniquement et rangé dans le coffre-fort numérique, avec l’écriture de perte.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-xs text-red-800 sm:flex-row sm:items-center sm:justify-between">
-          <span>Les procès-verbaux de destruction se conservent dix ans (GAC-EN). Chaque déchet génère une perte comptable (STO-18).</span>
+          <span>Les procès-verbaux de destruction se conservent dix ans (GAC-EN). Chaque déchet génère une perte comptable.</span>
           <Button className="h-11 shrink-0 bg-red-800 font-bold text-white" onClick={() => setDialogOuvert(true)}>
             <Plus className="w-4 h-4 mr-1" /> Constituer un lot à détruire
           </Button>
@@ -705,7 +703,7 @@ export function DechetsStock() {
         <CardHeader>
           <CardTitle className="text-xs font-bold text-[#0F3B27]">Lots de déchets</CardTitle>
           <CardDescription className="text-xs">
-            {isLoading ? "Chargement…" : dechets.length === 0 ? "Aucun lot en déchet — pour en constituer un, sélectionnez des lots périmés ou rejetés." : `${dechets.length} lot(s) de déchets suivi(s).`}
+            {isLoading ? "Chargement…" : dechets.length === 0 ? "Aucun lot en déchet : pour en constituer un, sélectionnez des lots périmés ou rejetés." : `${dechets.length} lot(s) de déchets suivi(s).`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">

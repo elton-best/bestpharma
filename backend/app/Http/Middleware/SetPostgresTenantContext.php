@@ -35,9 +35,10 @@ class SetPostgresTenantContext
             $user->timestamps = true;
 
             // 2. Détermination de l'officine active
-            $officineId = $request->header('X-Officine-Id')
+            $officineId = $request->route('officineId')
+                ?? $request->header('X-Officine-Id')
                 ?? $request->input('officine_id')
-                ?? $user->officines()->wherePivot('actif', true)->value('officines.id');
+                ?? $user->officines()->wherePivot('actif', true)->wherePivot('archived', false)->value('officines.id');
 
             if ($officineId) {
                 $user->officine_id = $officineId;
@@ -46,7 +47,9 @@ class SetPostgresTenantContext
                 // contrôles d'habilitation (visa pharmacien, promotion, paramètres).
                 $role = $user->officines()
                     ->where('officines.id', $officineId)
+                    ->wherePivot('actif', true)->wherePivot('archived', false)
                     ->value('utilisateurs_officines.role_code');
+                abort_unless($role, 403, 'Cette officine n’est pas accessible avec votre compte.');
                 $user->role_code = $role;
             }
 

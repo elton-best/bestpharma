@@ -1,3 +1,4 @@
+import { EtatConnexion } from "@/components/connexion-donnees";
 import { useCallback, useEffect, useState } from "react";
 import {
   Outlet,
@@ -12,7 +13,7 @@ import { Menu, X } from "reicon-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { NotificationsSheet } from "@/components/notifications-sheet";
 import { TourProvider, BoutonGuide } from "@/components/guide-tour";
-import { api } from "@/lib/api-client";
+import { api, ApiHttpError } from "@/lib/api-client";
 import { enregistrerAppareil } from "@/lib/appareil";
 import { OfficineProvider, useOfficine } from "@/lib/officine-context";
 import { fr } from "@/lib/i18n/fr";
@@ -43,7 +44,10 @@ export const Route = createFileRoute("/_authenticated")({
         api.setUser(profil.user as any);
         return { user: { id: profil.user.id, email: profil.user.email ?? "" } } as any;
       }
-    } catch {}
+    } catch (error) {
+      // Une coupure ou une panne serveur ne prouve pas l’expiration du jeton.
+      if (!(error instanceof ApiHttpError && error.status === 401)) throw error;
+    }
 
     api.logout();
     throw redirect({ to: "/auth", search: {} });
@@ -218,7 +222,7 @@ function Coquille({ userId, email }: { userId: string; email: string }) {
 
             {/* Accès rapide réglages / profil */}
             <Link
-              to="/compte"
+              to="/dashboard/compte"
               data-tour="user-profile"
               className="flex items-center gap-2 rounded-xl border border-[#CFF1D2] p-1.5 pr-3 bg-white hover:bg-[#CFF1D2]/25 transition-colors"
               title="Mon compte & profil professionnel"
@@ -235,7 +239,8 @@ function Coquille({ userId, email }: { userId: string; email: string }) {
 
         {/* CONTENU DE LA PAGE */}
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-8">
-          <Outlet />
+          <EtatConnexion />
+          <Outlet key={courante?.officine_id ?? "sans-officine"} />
         </main>
       </div>
     </div>

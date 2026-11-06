@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 /** Rôles métier reconnus par le backend (colonne `role_code`). */
 /** Rôles connus, avec leur libellé métier (source unique, alignée sur fr.roles). */
@@ -35,6 +35,7 @@ const OfficineCtx = createContext<Ctx | null>(null);
 const CLE = "begpharma.officine";
 
 export function OfficineProvider({ userId, children }: { userId: string; children: ReactNode }) {
+  const qc = useQueryClient();
   const [choix, setChoix] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
     return localStorage.getItem(CLE);
@@ -42,6 +43,7 @@ export function OfficineProvider({ userId, children }: { userId: string; childre
 
   const { data = [] } = useQuery({
     queryKey: ["rattachements", userId],
+    initialDataUpdatedAt: 0,
     initialData: () => {
       const offs = api.getOfficines();
       return (offs || []).map((o: any) => ({
@@ -51,7 +53,9 @@ export function OfficineProvider({ userId, children }: { userId: string; childre
       })) as Rattachement[];
     },
     queryFn: async () => {
-      const offs = await api.get<any[]>("/api/officines").catch(() => api.getOfficines());
+      const offs = await api.get<any[]>("/api/officines");
+      if (!Array.isArray(offs)) throw new Error("Liste des officines indisponible.");
+      api.setOfficines(offs);
       return (offs || []).map((o: any) => ({
         officine_id: o.id,
         role: (o.pivot?.role_code || "dispensateur") as Role,
@@ -68,13 +72,20 @@ export function OfficineProvider({ userId, children }: { userId: string; childre
       courante,
       chargement: false,
       choisir: (id) => {
+        if (!list.some(r => r.officine_id === id)) return;
         localStorage.setItem(CLE, id);
+        qc.removeQueries({ predicate: q => q.queryKey[0] !== "rattachements" });
         setChoix(id);
       },
       aRole: (...roles) => !!courante && roles.includes(courante.role),
     };
-  }, [data, choix]);
+  }, [data, choix, qc]);
 
+  useEffect(() => {
+    if (value.courante && value.courante.officine_id !== choix) {
+      localStorage.setItem(CLE, value.courante.officine_id); setChoix(value.courante.officine_id);
+    }
+  }, [value.courante, choix]);
   return <OfficineCtx.Provider value={value}>{children}</OfficineCtx.Provider>;
 }
 

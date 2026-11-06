@@ -248,7 +248,7 @@ export function imprimerBadgeDoubleFace(
 
     <div class="badge-planche">
       <div class="notice-impression">
-        <strong>Carte Professionnelle Double Face — Format CR80</strong><br>
+        <strong>Carte Professionnelle Double Face : Format CR80</strong><br>
         Découpez le contour puis pliez sur l'axe central pour insérer dans votre porte-badge ou plastifier en recto-verso.
       </div>
 
@@ -605,7 +605,7 @@ export function ModaleBadgeDoubleFace({
         <DialogHeader className="border-b border-[#CFF1D2] pb-3">
           <DialogTitle className="text-lg font-bold font-display text-[#0F3B27] flex items-center gap-2">
             <QrCode className="size-5 text-[#0F3B27]" />
-            Badge Professionnel Double Face — {employe.nom_complet}
+            Badge Professionnel Double Face : {employe.nom_complet}
           </DialogTitle>
         </DialogHeader>
 

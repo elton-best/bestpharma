@@ -7,6 +7,9 @@ use App\Models\CampagneAutoEvaluation;
 use App\Models\EvaluationArticle;
 use App\Models\NonConformite;
 use App\Services\ReferentielBpdService;
+use App\Services\ReferentielCompletService;
+use App\Services\ImportReferentielBpdService;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,50 +22,25 @@ class AutoEvaluationController extends Controller
      */
     public function campagneCourante(Request $request, string $officineId): JsonResponse
     {
+        $this->autoriser($request, $officineId);
         $campagne = CampagneAutoEvaluation::where('officine_id', $officineId)
             ->where('statut', 'en_cours')
             ->orderByDesc('created_at')
             ->first();
 
-        // Initialisation automatique de la campagne annuelle si aucune n'est en cours
         if (!$campagne) {
-            $annee = Carbon::now()->year;
-            $campagne = CampagneAutoEvaluation::create([
-                'id' => (string) Str::uuid(),
-                'officine_id' => $officineId,
-                'titre' => "Auto-évaluation annuelle de conformité BPD {$annee}",
-                'annee' => $annee,
-                'date_debut' => Carbon::now()->toDateString(),
-                'statut' => 'en_cours',
-                'auditeur_id' => $request->user()?->id,
-                'score_global' => 0.0,
-            ]);
-
-            // Peuplement avec les articles du Guide BPD ABMed
-            $articlesRef = ReferentielBpdService::genererArticlesPourCampagne();
-            foreach ($articlesRef as $art) {
-                EvaluationArticle::create([
-                    'id' => (string) Str::uuid(),
-                    'campagne_id' => $campagne->id,
-                    'officine_id' => $officineId,
-                    'chapitre_numero' => $art['chapitre_numero'],
-                    'chapitre_titre' => $art['chapitre_titre'],
-                    'article_numero' => $art['article_numero'],
-                    'article_libelle' => $art['article_libelle'],
-                    'processus' => $art['processus'],
-                    'cotation' => 'non_evalue',
-                ]);
-            }
+            $this->autoriser($request, $officineId, true);
+            $campagne = $this->initialiserComplete($request, $officineId, false);
         }
 
         $evaluations = $campagne->evaluations()
             ->with(['nonConformite:id,numero_nc,titre,gravite,statut', 'responsable:id,name,email'])
             ->orderBy('chapitre_numero')
-            ->orderBy('article_numero')
+            ->orderByRaw("split_part(article_numero, '.', 2)::integer")
             ->get();
 
         // Synthèse par chapitre
-        $chapitresRef = ReferentielBpdService::getChapitres();
+        $chapitresRef = $campagne->referentiel_version_id ? app(ReferentielCompletService::class)->chapitres() : ReferentielBpdService::getChapitres();
         $syntheseChapitres = [];
 
         foreach ($chapitresRef as $ch) {
@@ -95,6 +73,8 @@ class AutoEvaluationController extends Controller
         }
 
         return response()->json([
+            'referentiel_complet' => (bool) $campagne->referentiel_version_id,
+            'texte_a_relire' => (bool) $campagne->referentiel_version_id,
             'campagne' => $campagne,
             'evaluations' => $evaluations,
             'synthese_chapitres' => $syntheseChapitres,
@@ -115,6 +95,7 @@ class AutoEvaluationController extends Controller
      */
     public function evaluerArticle(Request $request, string $officineId, string $evaluationId): JsonResponse
     {
+        $this->autoriser($request, $officineId, true);
         $evaluation = EvaluationArticle::where('officine_id', $officineId)->findOrFail($evaluationId);
 
         $validated = $request->validate([
@@ -145,6 +126,7 @@ class AutoEvaluationController extends Controller
      */
     public function genererCapa(Request $request, string $officineId, string $evaluationId): JsonResponse
     {
+        $this->autoriser($request, $officineId, true);
         $evaluation = EvaluationArticle::where('officine_id', $officineId)->findOrFail($evaluationId);
 
         $validated = $request->validate([
@@ -189,6 +171,7 @@ class AutoEvaluationController extends Controller
      */
     public function rapport(Request $request, string $officineId): JsonResponse
     {
+        $this->autoriser($request, $officineId);
         $campagne = CampagneAutoEvaluation::where('officine_id', $officineId)
             ->with(['officine', 'auditeur'])
             ->orderByDesc('created_at')
@@ -219,4 +202,44 @@ class AutoEvaluationController extends Controller
             }),
         ]);
     }
+    public function nouvelleComplete(Request $request, string $officineId): JsonResponse
+    {
+        $this->autoriser($request, $officineId, true);
+        $campagne = $this->initialiserComplete($request, $officineId, true);
+        return response()->json(['id' => $campagne->id], 201);
+    }
+
+    private function initialiserComplete(Request $request, string $officineId, bool $remplacer): CampagneAutoEvaluation
+    {
+        return DB::transaction(function () use ($request, $officineId, $remplacer) {
+            DB::table('officines')->where('id', $officineId)->lockForUpdate()->first();
+            $courante = CampagneAutoEvaluation::where('officine_id', $officineId)->where('statut', 'en_cours')->first();
+            if ($courante && (!$remplacer || $courante->referentiel_version_id)) return $courante;
+            if ($courante) $courante->update(['statut' => 'remplacee']);
+            $racine = dirname(__DIR__, 5);
+            $version = app(ImportReferentielBpdService::class)->importer(
+                file_get_contents($racine.'/references/abmed/extraction/articles-a-relire.json'),
+                file_get_contents($racine.'/references/abmed/guide-bpdisp.pdf'));
+            $campagne = CampagneAutoEvaluation::create([
+                'officine_id' => $officineId, 'titre' => 'Auto-évaluation complète', 'annee' => now()->year,
+                'date_debut' => now()->toDateString(), 'statut' => 'en_cours', 'auditeur_id' => $request->user()->id,
+                'score_global' => 0, 'referentiel_version_id' => $version['id'],
+            ]);
+            foreach (app(ReferentielCompletService::class)->articles() as $article) {
+                EvaluationArticle::create($article + ['campagne_id' => $campagne->id, 'officine_id' => $officineId, 'cotation' => 'non_evalue']);
+            }
+            return $campagne;
+        });
+    }
+
+    private function autoriser(Request $request, string $officineId, bool $ecrire = false): void
+    {
+        abort_unless(Str::isUuid($officineId), 404);
+        abort_unless($request->user() && $request->user()->actif && !$request->user()->archived, 403);
+        $role = DB::table('utilisateurs_officines')->where('officine_id', $officineId)->where('user_id', $request->user()->id)
+            ->where('actif', true)->where('archived', false)->value('role_code');
+        abort_unless($role, 403);
+        if ($ecrire) abort_unless(in_array($role, ['promoteur', 'pharmacien_titulaire', 'pharmacien_adjoint', 'rmq']), 403);
+    }
+
 }

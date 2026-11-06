@@ -213,7 +213,7 @@ export function TableauDeBord() {
             </button>
           ) : (
             <Link
-              to="/pointage"
+              to="/dashboard/pointage"
               className="rounded-2xl border border-[#CFF1D2] bg-white hover:bg-[#CFF1D2]/30 text-[#0F3B27] font-bold text-xs sm:text-sm px-4 py-2 shrink-0 transition-all flex items-center gap-1.5"
             >
               <span>Présences actives ({pointageActif?.pointages_actifs?.length ?? 1})</span>
@@ -227,7 +227,7 @@ export function TableauDeBord() {
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* CARTE 1 : FRIGO VACCINS */}
         <Link
-          to="/temperatures"
+          to="/dashboard/temperatures"
           className="p-5 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
@@ -251,7 +251,7 @@ export function TableauDeBord() {
 
         {/* CARTE 2 : MAGASIN RÉSERVE */}
         <Link
-          to="/temperatures"
+          to="/dashboard/temperatures"
           className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
@@ -273,7 +273,7 @@ export function TableauDeBord() {
 
         {/* CARTE 3 : SCORE CONFORMITÉ BPD */}
         <Link
-          to="/auto-evaluation"
+          to="/dashboard/auto-evaluation"
           className="p-5 sm:p-6 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
@@ -295,7 +295,7 @@ export function TableauDeBord() {
 
         {/* CARTE 4 : QUALITÉ & NON-CONFORMITÉS */}
         <Link
-          to="/non-conformites"
+          to="/dashboard/non-conformites"
           className="p-5 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
@@ -527,7 +527,7 @@ export function TableauDeBord() {
           <div className="mt-3 pt-3 border-t border-[#CFF1D2]/60 flex items-center justify-between text-xs text-[#475C50]">
             <span>Mesures horodatées en continu</span>
             <Link
-              to="/temperatures"
+              to="/dashboard/temperatures"
               className="font-bold text-[#0F3B27] hover:underline flex items-center gap-1"
             >
               <span>Exporter registre BPD</span>
@@ -540,7 +540,7 @@ export function TableauDeBord() {
       {/* 4. ACCÈS RAPIDES OPÉRATIONNELS (COMPTOIR, RÉSERVE, QUALITÉ) */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Link
-          to="/caisse"
+          to="/dashboard/vente"
           data-tour="caisse-link"
           className="p-5 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all flex items-center justify-between group"
         >
@@ -557,7 +557,7 @@ export function TableauDeBord() {
         </Link>
 
         <Link
-          to="/stock"
+          to="/dashboard/stock"
           className="p-5 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all flex items-center justify-between group"
         >
           <div className="flex items-center gap-3.5">
@@ -573,7 +573,7 @@ export function TableauDeBord() {
         </Link>
 
         <Link
-          to="/auto-evaluation"
+          to="/dashboard/auto-evaluation"
           className="p-5 rounded-3xl border border-[#CFF1D2] bg-white hover:border-[#0F3B27]/40 hover:shadow-card-hover transition-all flex items-center justify-between group"
         >
           <div className="flex items-center gap-3.5">

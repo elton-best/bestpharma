@@ -8,7 +8,7 @@ export const Route = createFileRoute("/inscription")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Créer un compte — BESTPHARMA" },
+      { title: "Créer un compte : BESTPHARMA" },
       {
         name: "description",
         content:
@@ -35,7 +35,7 @@ function PageInscription() {
 
   useEffect(() => {
     if (api.getToken() && api.getUser()) {
-      navigate({ to: "/app" });
+      navigate({ to: "/dashboard" });
     }
   }, [navigate]);
 
@@ -71,7 +71,7 @@ function PageInscription() {
       api.setUser(data.user);
       if (data.officines) api.setOfficines(data.officines);
 
-      navigate({ to: "/app" });
+      navigate({ to: "/dashboard" });
     } catch (err: any) {
       setErreur(err.message || fr.commun.erreur);
     } finally {

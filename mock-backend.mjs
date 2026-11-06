@@ -1,8 +1,17 @@
+import { lireEtatDemo, ecrireEtatDemo } from "./mock-data/persistance-demo.mjs";
+import { fileURLToPath } from "node:url";
+import { recalculerCanevas } from "./mock-data/calculs-canevas.mjs";
 import http from "http";
+import { readFileSync } from "node:fs";
+import { randomUUID, createHash, scryptSync } from "node:crypto";
+const CATALOGUE_SUIVIS = JSON.parse(readFileSync(new URL("./mock-data/catalogue-suivis.json", import.meta.url), "utf8"));
+const SUIVIS_DOCUMENTAIRES = [];
+const CANEVAS = JSON.parse(readFileSync(new URL("./references/canevas/catalogue.json", import.meta.url), "utf8")).canevas;
+const empreinteDocumentDemo = d => createHash("sha256").update(JSON.stringify([d.contenu, d.updated_at, d.statut])).digest("hex");
 
-const PORT = 8001;
+const PORT = Number(process.env.PORT || 8001);
 
-// Données démo — extraites des seeders BEGPHARMA
+// Données démo  :  extraites des seeders BEGPHARMA
 const DEMO_USERS = {
   "promoteur@begpharma.bj": { id: "u1", name: "Dr. Anicet ANIAMBOSSOU", email: "promoteur@begpharma.bj", role: "promoteur", mfa: true, officines: ["off1","off2"] },
   "pharmacien@begpharma.bj": { id: "u2", name: "Dr. Marcelle HOUNNOU", email: "pharmacien@begpharma.bj", role: "pharmacien_titulaire", mfa: true, officines: ["off1"] },
@@ -15,6 +24,8 @@ const OFFICINES = [
   { id: "off2", nom: "Pharmacie du Littoral", raison_sociale: "Pharmacie du Littoral SAS", ville: "Porto-Novo", numero_licence: "BEN-OFF-2025-002", pivot: { role_code: "dispensateur", actif: true } },
 ];
 
+const officinesPour = user => OFFICINES.filter(o => user.officines.includes(o.id)).map(o => ({ ...o, pivot: { role_code: user.role, actif: true } }));
+
 const PRODUITS = [
   { id: "p1", code_cip: "6170123456789", code_interne: "BEG-001", nom_commercial: "Paracétamol 500mg", dci: "Paracétamol", forme: "Comprimé", dosage: "500mg", laboratoire: "Sanofi", tableau_substance: "sans", classe_produit: "standard", groupe_taxation: "B_TAXABLE", est_thermolabile: false, prix_public_ttc: 1500, prix_achat_moyen: 900, stock_total: 120, seuil_stock_min: 10, prochain_lot_fefo: { id: "l1", numero_lot: "LOT-2026-001", date_peremption: "2027-06-15", quantite_disponible: 45, jours_avant_peremption: 210, statut_peremption: "normal" } },
   { id: "p2", code_cip: "6170123456790", nom_commercial: "Amoxicilline 1g", dci: "Amoxicilline", forme: "Gélule", dosage: "1g", laboratoire: "GSK", tableau_substance: "liste_1", classe_produit: "liste_1", groupe_taxation: "B_TAXABLE", est_thermolabile: false, prix_public_ttc: 3200, stock_total: 8, seuil_stock_min: 10, alerte_rupture: true },
@@ -24,26 +35,26 @@ const PRODUITS = [
 ];
 
 const LOTS = [
-  { id: "l1", produit_id: "p1", numero_lot: "LOT-2026-001", date_peremption: "2027-06-15", date_reception: "2026-10-20", quantite_disponible: 45, quantite_initiale: 50, emplacement: "Réserve — Stock principal", fournisseur_nom: "CAMEG BÉNIN", bon_livraison_ref: "BL-2026-1045", statut: "en_stock", statut_detail: "commercialisable", statut_effectif: "commercialisable", est_vendable: true, jours_avant_peremption: 210, statut_peremption: "normal", produit: PRODUITS[0] },
-  { id: "l2", produit_id: "p1", numero_lot: "LOT-2026-002", date_peremption: "2026-12-10", date_reception: "2026-11-01", quantite_disponible: 12, quantite_initiale: 30, emplacement: "Comptoir — Délivrance", fournisseur_nom: "UBIPHARM BÉNIN", bon_livraison_ref: "BL-2026-1046", statut: "en_stock", statut_detail: "commercialisable", statut_effectif: "commercialisable", est_vendable: true, jours_avant_peremption: 28, statut_peremption: "critique_1m", produit: PRODUITS[0] },
-  { id: "l3", produit_id: "p2", numero_lot: "LOT-2026-003", date_peremption: "2026-11-30", date_reception: "2026-09-15", quantite_disponible: 8, quantite_initiale: 20, emplacement: "Réserve — Stock principal", fournisseur_nom: "CAMEG BÉNIN", bon_livraison_ref: "BL-2026-1047", statut: "quarantaine", statut_detail: "quarantaine", statut_effectif: "quarantaine", est_vendable: false, motif_quarantaine: "Rappel lot fabricant — vérification ABMed", jours_avant_peremption: 18, statut_peremption: "critique_1m", produit: PRODUITS[1] },
+  { id: "l1", produit_id: "p1", numero_lot: "LOT-2026-001", date_peremption: "2027-06-15", date_reception: "2026-10-20", quantite_disponible: 45, quantite_initiale: 50, emplacement: "Réserve  :  Stock principal", fournisseur_nom: "CAMEG BÉNIN", bon_livraison_ref: "BL-2026-1045", statut: "en_stock", statut_detail: "commercialisable", statut_effectif: "commercialisable", est_vendable: true, jours_avant_peremption: 210, statut_peremption: "normal", produit: PRODUITS[0] },
+  { id: "l2", produit_id: "p1", numero_lot: "LOT-2026-002", date_peremption: "2026-12-10", date_reception: "2026-11-01", quantite_disponible: 12, quantite_initiale: 30, emplacement: "Comptoir  :  Délivrance", fournisseur_nom: "UBIPHARM BÉNIN", bon_livraison_ref: "BL-2026-1046", statut: "en_stock", statut_detail: "commercialisable", statut_effectif: "commercialisable", est_vendable: true, jours_avant_peremption: 28, statut_peremption: "critique_1m", produit: PRODUITS[0] },
+  { id: "l3", produit_id: "p2", numero_lot: "LOT-2026-003", date_peremption: "2026-11-30", date_reception: "2026-09-15", quantite_disponible: 8, quantite_initiale: 20, emplacement: "Réserve  :  Stock principal", fournisseur_nom: "CAMEG BÉNIN", bon_livraison_ref: "BL-2026-1047", statut: "quarantaine", statut_detail: "quarantaine", statut_effectif: "quarantaine", est_vendable: false, motif_quarantaine: "Rappel lot fabricant  :  vérification ABMed", jours_avant_peremption: 18, statut_peremption: "critique_1m", produit: PRODUITS[1] },
   { id: "l4", produit_id: "p3", numero_lot: "LOT-2026-004", date_peremption: "2027-01-20", date_reception: "2026-11-02", quantite_disponible: 15, quantite_initiale: 15, emplacement: "Réfrigérateur 2°C–8°C", fournisseur_nom: "LABOREX BÉNIN", bon_livraison_ref: "BL-2026-1048", statut: "en_stock", statut_detail: "commercialisable", statut_effectif: "commercialisable", est_vendable: true, jours_avant_peremption: 68, statut_peremption: "alerte_3m", produit: PRODUITS[2] },
 ];
 
 const EMPLACEMENTS = [
-  { id: "e1", code: "COMPTOIR", libelle: "Comptoir — Délivrance", type_zone: "comptoir", lots_count: 1 },
-  { id: "e2", code: "RESERVE", libelle: "Réserve — Stock principal", type_zone: "reserve", lots_count: 2 },
+  { id: "e1", code: "COMPTOIR", libelle: "Comptoir  :  Délivrance", type_zone: "comptoir", lots_count: 1 },
+  { id: "e2", code: "RESERVE", libelle: "Réserve  :  Stock principal", type_zone: "reserve", lots_count: 2 },
   { id: "e3", code: "FRIGO", libelle: "Réfrigérateur 2°C–8°C", type_zone: "frigo", lots_count: 1 },
-  { id: "e4", code: "ARMOIRE", libelle: "Armoire sécurisée — Stupéfiants & Listes", type_zone: "armoire_securisee", lots_count: 0 },
+  { id: "e4", code: "ARMOIRE", libelle: "Armoire sécurisée  :  Stupéfiants & Listes", type_zone: "armoire_securisee", lots_count: 0 },
   { id: "e5", code: "ATTENTE", libelle: "Zone d'attente de contrôle", type_zone: "attente_controle", lots_count: 0 },
   { id: "e6", code: "RETOURS", libelle: "Zone des retours fournisseur", type_zone: "retours", lots_count: 0 },
   { id: "e7", code: "DECHETS", libelle: "Aire des déchets sécurisée", type_zone: "dechets", lots_count: 0 },
 ];
 
 const MOUVEMENTS = [
-  { id: "m1", type_mouvement: "entree_reception", quantite: 50, stock_avant: 0, stock_apres: 50, motif: "Réception conforme — commercialisable", reference_piece: "BL-2026-1045", created_at: "2026-10-20T10:00:00Z", produit: PRODUITS[0], lot: LOTS[0], auteur: { name: "Dr. Marcelle HOUNNOU" } },
-  { id: "m2", type_mouvement: "vente", quantite: -5, stock_avant: 50, stock_apres: 45, motif: "Vente FEFO — lot LOT-2026-001", reference_piece: "TICKET-2026-001", created_at: "2026-11-03T14:30:00Z", produit: PRODUITS[0], lot: LOTS[0], auteur: { name: "Gervais KPADONOU" } },
-  { id: "m3", type_mouvement: "changement_statut", quantite: 0, stock_avant: 8, stock_apres: 8, motif: "Statut: commercialisable → quarantaine — Rappel lot fabricant", reference_piece: "RAPPEL-2026-0001", created_at: "2026-11-02T09:00:00Z", produit: PRODUITS[1], lot: LOTS[2], auteur: { name: "Dr. Anicet ANIAMBOSSOU" } },
+  { id: "m1", type_mouvement: "entree_reception", quantite: 50, stock_avant: 0, stock_apres: 50, motif: "Réception conforme  :  commercialisable", reference_piece: "BL-2026-1045", created_at: "2026-10-20T10:00:00Z", produit: PRODUITS[0], lot: LOTS[0], auteur: { name: "Dr. Marcelle HOUNNOU" } },
+  { id: "m2", type_mouvement: "vente", quantite: -5, stock_avant: 50, stock_apres: 45, motif: "Vente FEFO  :  lot LOT-2026-001", reference_piece: "TICKET-2026-001", created_at: "2026-11-03T14:30:00Z", produit: PRODUITS[0], lot: LOTS[0], auteur: { name: "Gervais KPADONOU" } },
+  { id: "m3", type_mouvement: "changement_statut", quantite: 0, stock_avant: 8, stock_apres: 8, motif: "Statut: commercialisable → quarantaine  :  Rappel lot fabricant", reference_piece: "RAPPEL-2026-0001", created_at: "2026-11-02T09:00:00Z", produit: PRODUITS[1], lot: LOTS[2], auteur: { name: "Dr. Anicet ANIAMBOSSOU" } },
 ];
 
 const STUPEFIANTS = {
@@ -64,7 +75,7 @@ const PREPARATIONS = {
   data: {
     data: [
       { id: "pr1", numero_preparation: "PREP-2026-0001", nom_preparation: "Pâte à l'eau", type_preparation: "officinale", formule_detaillee: "Oxyde de zinc 20g, Talc 20g, Glycérine 20g, Eau purifiée qsp 100g", quantite_produite: "100g", conditionnement: "Pot hermétique", date_fabrication: "2026-11-01", date_limite_utilisation: "2026-12-01", patient_nom: null, prescripteur_nom: null, conforme: true, matieres_premieres_lots: [{ matiere: "Oxyde de zinc", lot: "MP-2026-012", fournisseur: "Cooper Bénin", quantite: "20 g", certificat: "CA-2026-014.pdf" }, { matiere: "Talc", lot: "MP-2026-009", fournisseur: "Cooper Bénin", quantite: "20 g", certificat: "CA-2026-009.pdf" }, { matiere: "Glycérine", lot: "MP-2026-021", fournisseur: "UBIPHARM", quantite: "20 g", certificat: "CA-2026-021.pdf" }], executant: { name: "Dr. Marcelle HOUNNOU" }, pharmacien_visa: { name: "Dr. Marcelle HOUNNOU" } },
-      { id: "pr2", numero_preparation: "PREP-2026-0002", nom_preparation: "Sirop de Pholcodine", type_preparation: "magistrale", formule_detaillee: "Pholcodine 100mg, Saccharose, Arôme cerise, Eau purifiée qsp 200ml", quantite_produite: "200ml", conditionnement: "Flacon teinté hermétique", date_fabrication: "2026-11-03", date_limite_utilisation: "2026-11-17", patient_nom: "Enfant M. D.", prescripteur_nom: "Dr. ADJASSA", conforme: true, matieres_premieres_lots: [{ matiere: "Pholcodine", lot: "MP-2026-031", fournisseur: "LABOREX BÉNIN", quantite: "100 mg", certificat: "CA-2026-031.pdf" }, { matiere: "Saccharose", lot: "MP-2026-018", fournisseur: "CAMEG BÉNIN", quantite: "qsp 200 ml", certificat: "—" }], executant: { name: "Gervais KPADONOU" }, pharmacien_visa: null },
+      { id: "pr2", numero_preparation: "PREP-2026-0002", nom_preparation: "Sirop de Pholcodine", type_preparation: "magistrale", formule_detaillee: "Pholcodine 100mg, Saccharose, Arôme cerise, Eau purifiée qsp 200ml", quantite_produite: "200ml", conditionnement: "Flacon teinté hermétique", date_fabrication: "2026-11-03", date_limite_utilisation: "2026-11-17", patient_nom: "Enfant M. D.", prescripteur_nom: "Dr. ADJASSA", conforme: true, matieres_premieres_lots: [{ matiere: "Pholcodine", lot: "MP-2026-031", fournisseur: "LABOREX BÉNIN", quantite: "100 mg", certificat: "CA-2026-031.pdf" }, { matiere: "Saccharose", lot: "MP-2026-018", fournisseur: "CAMEG BÉNIN", quantite: "qsp 200 ml", certificat: " : " }], executant: { name: "Gervais KPADONOU" }, pharmacien_visa: null },
     ],
     total: 2
   }
@@ -77,7 +88,7 @@ const INVENTAIRES = {
       id: "inv1",
       reference: "INV-2026-0001",
       type: "tournant",
-      zone: "Réserve — Stock principal",
+      zone: "Réserve  :  Stock principal",
       statut: "en_cours",
       Parametres: { double_comptage: true, comptage_aveugle: false },
       date_inventaire: "2026-11-04",
@@ -113,8 +124,8 @@ const RAPPELS = {
     {
       id: "rap1",
       reference: "RAPPEL-2026-0001",
-      source: "ABMed — Agence béninoise de régulation pharmaceutique",
-      produits_concernes: "Amoxicilline 1g — GSK",
+      source: "ABMed  :  Agence béninoise de régulation pharmaceutique",
+      produits_concernes: "Amoxicilline 1g  :  GSK",
       lots_concernes: [{ produit_id: "p2", numero_lot: "LOT-2026-003" }],
       date_avis: "2026-11-02",
       action_requise: "Retrait immédiat de la vente, isolement en quarantaine et retour au grossiste.",
@@ -215,6 +226,7 @@ const ECRITURES = [
 const DISPENSATIONS = [
   {
     id: "disp1",
+    officine_id: "off1",
     numero_dispensation: "DISP-2026-0007",
     type_dispensation: "ordonnance",
     patient_nom: "Adjoua KOUGBADO",
@@ -275,28 +287,25 @@ const NON_CONFORMITES = [
   { id: "nc3", numero_nc: "NC-2026-0009", titre: "Registre de nettoyage non visé", description: null, gravite: "critique", processus: "5.20", source: "audit_interne", statut: "cloturee", action_immediate: "Visa du pharmacien rattrapé le jour même", action_preventive: "Rappel du circuit de visa à l'agent d'entretien", analyse_causes_5m: "Absence du pharmacien lors du pointage du soir", responsable_action: "Dr. Marcelle HOUNNOU", date_echeance_capa: "2026-10-30", date_creation: "2026-10-27T19:00:00Z" },
 ];
 
-const CHAPITRES_BPD = [
-  { numero: 1, libelle: "Personnel", total: 3, conformes: 3, ecarts_mineurs: 0, ecarts_majeurs: 0, non_applicables: 0 },
-  { numero: 5, libelle: "Locaux, matériel et stockage", total: 6, conformes: 4, ecarts_mineurs: 1, ecarts_majeurs: 1, non_applicables: 0 },
-  { numero: 6, libelle: "Documentation", total: 4, conformes: 3, ecarts_mineurs: 1, ecarts_majeurs: 0, non_applicables: 0 },
-  { numero: 9, libelle: "Vigilances et rapports", total: 3, conformes: 2, ecarts_mineurs: 0, ecarts_majeurs: 0, non_applicables: 1 },
-];
-
-const AUTO_EVALUATION = {
-  campagne: { id: "camp1", reference: "AUTO-2026-01", libelle: "Auto-inspection annuelle", statut: "en_cours", ouverte_le: "2026-10-15", score_global: 76.5 },
-  evaluations: [
-    { id: "ev1", article_numero: "1.1", article_libelle: "Personnel qualifié et formé", chapitre: 1, cotation: "conforme", preuve: "Attestations de formation 2026", commentaire: "Dossier complet" },
-    { id: "ev2", article_numero: "1.11", article_libelle: "Présence pharmaceutique continue", chapitre: 1, cotation: "conforme", preuve: "Registre de pointage", commentaire: null },
-    { id: "ev3", article_numero: "5.12", article_libelle: "Gestion FEFO des lots", chapitre: 5, cotation: "ecart_mineur", preuve: "Étiquette illisible en réserve", commentaire: "À revoir au prochain rangement" },
-    { id: "ev4", article_numero: "5.20", article_libelle: "Chaîne du froid du réfrigérateur", chapitre: 5, cotation: "ecart_majeur", preuve: "Relevé du soir à 9,6 °C", commentaire: "Action corrective en cours" },
-    { id: "ev5", article_numero: "6.2", article_libelle: "Documents approuvés et datés", chapitre: 6, cotation: "conforme", preuve: "Procédures visées", commentaire: null },
-    { id: "ev6", article_numero: "9.3", article_libelle: "Traçabilité des rappels de lots", chapitre: 9, cotation: "non_applicable", preuve: null, commentaire: "Aucun rappel en 2026" },
-    { id: "ev7", article_numero: "5.4", article_libelle: "Étalonnage des équipements de mesure", chapitre: 5, cotation: "conforme", preuve: "Certificats d'étalonnage", commentaire: null },
-    { id: "ev8", article_numero: "6.4", article_libelle: "Archivage des registres", chapitre: 6, cotation: "non_evalue", preuve: null, commentaire: null },
-  ],
-  statistiques: { score_global: 76.5, total_articles: 8, conformes: 5, ecarts_mineurs: 1, ecarts_majeurs: 1, non_applicables: 1, non_evalues: 0 },
-  synthese_chapitres: CHAPITRES_BPD,
-};
+const GUIDE_COMPLET = JSON.parse(readFileSync(new URL("./references/abmed/extraction/articles-a-relire.json", import.meta.url), "utf8"));
+const TITRES_CHAPITRES = ["Système de management de la qualité", "Personnel", "Documentation", "Locaux et équipements", "Approvisionnement", "Sous-traitance", "Dispensation", "Gestion des retours, réclamations, retraits et rappels de lots", "Destruction des déchets pharmaceutiques", "Auto-inspection et audit interne"];
+const PROCESSUS_CHAPITRES = ["TAM", "GAR", "QAM", "GAR", "GAC", "TAM", "GAD", "GAD", "GAC", "QAM"];
+const CHAPITRES_BPD = TITRES_CHAPITRES.map((titre, i) => ({ numero: i + 1, titre, processus: PROCESSUS_CHAPITRES[i], total_articles: GUIDE_COMPLET.repartition[i + 1] }));
+function nouvelleGrilleComplete(officine) {
+  const evaluations = GUIDE_COMPLET.articles.map((a, i) => ({ id: `ev${i + 1}`, article_numero: a.numero, article_libelle: a.texte_extrait,
+    chapitre_numero: a.chapitre, chapitre_titre: TITRES_CHAPITRES[a.chapitre - 1], processus: PROCESSUS_CHAPITRES[a.chapitre - 1],
+    cotation: "non_evalue", preuve: null, commentaire: null, non_conformite: null }));
+  return { mode_demo: true, referentiel_complet: true, texte_a_relire: true, campagne: { id: "ae-" + officine, titre: "Auto-évaluation complète", annee: 2026, statut: "en_cours", score_global: 0, date_debut: "2026-11-06" }, evaluations, statistiques: {}, synthese_chapitres: [] };
+}
+function recalculerGrille(grille) {
+  const e = grille.evaluations;
+  const count = (c, list = e) => list.filter(a => a.cotation === c).length;
+  const score = list => { const applicables = list.filter(a => !["non_evalue", "non_applicable"].includes(a.cotation)); return applicables.length ? Math.round((count("conforme", applicables) + count("ecart_mineur", applicables) * .5) / applicables.length * 1000) / 10 : 0; };
+  grille.statistiques = { total_articles: e.length, score_global: score(e), total_conformes: count("conforme"), total_ecarts_mineurs: count("ecart_mineur"), total_ecarts_majeurs: count("ecart_majeur"), total_non_applicables: count("non_applicable"), total_non_evalues: count("non_evalue") };
+  grille.campagne.score_global = score(e);
+  grille.synthese_chapitres = CHAPITRES_BPD.map(ch => { const list = e.filter(a => a.chapitre_numero === ch.numero); return { ...ch, evalues: list.filter(a => a.cotation !== "non_evalue").length, conformes: count("conforme", list), ecarts_mineurs: count("ecart_mineur", list), ecarts_majeurs: count("ecart_majeur", list), score_chapitre: score(list) }; });
+}
+const GRILLES_COMPLETES = new Map();
 
 const MODELES_BPD = [
   { id: "mod1", code_document: "BPD10-F01", titre: "Fiche de fonction du pharmacien titulaire", type_document: "procédure", categorie: "personnel", processus: "01", indice_revision: "02", redacteur_nom: "Dr. Anicet ANIAMBOSSOU", contenu: null },
@@ -355,6 +364,11 @@ function filtrerJournal(url) {
 }
 
 function sendJson(res, status, data) {
+  if (status >= 200 && status < 300 && !["GET", "HEAD", "OPTIONS"].includes(res.req?.method)) {
+    try { conserverDemo(); }
+    catch (e) { console.error("Conservation locale de démonstration impossible", e); status = 503; data = {message: "L’enregistrement local de l’aperçu n’a pas pu être confirmé. Réessayez avant de fermer la page."}; }
+  }
+  if (status >= 400) console.warn(`[MOCK] Réponse ${status} : ${(res.req?.url || "").split("?")[0]}`);
   const body = JSON.stringify(data);
   res.writeHead(status, {
     "Content-Type": "application/json",
@@ -378,9 +392,8 @@ function parseBody(req) {
 
 /** Utilisateur démo correspondant au jeton porteur (défaut : promoteur). */
 function utilisateurCourant(req) {
-  const auth = req.headers.authorization || "";
-  const uid = auth.includes("u3") ? "u3" : auth.includes("u2") ? "u2" : auth.includes("u4") ? "u4" : "u1";
-  return Object.values(DEMO_USERS).find((u) => u.id === uid) || DEMO_USERS["promoteur@begpharma.bj"];
+  const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+  return Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
 }
 
 const OFFICINE_COURANTE = OFFICINES[0];
@@ -400,6 +413,18 @@ function paginer(lignes, page = 1, parPage = 30) {
   };
 }
 
+// Conservation locale de l’aperçu uniquement, sans valeur de conservation réglementaire.
+const FICHIER_DEMO = process.env.BEGPHARMA_DEMO_STATE || fileURLToPath(new URL('./.demo-state/session.json', import.meta.url));
+const etatDemo = lireEtatDemo(FICHIER_DEMO);
+if (etatDemo) {
+  for (const u of etatDemo.utilisateurs) DEMO_USERS[u.email] = u;
+  OFFICINES.splice(0, OFFICINES.length, ...etatDemo.officines);
+  DOCUMENTS.push(...etatDemo.documents);
+}
+function conserverDemo() {
+  ecrireEtatDemo(FICHIER_DEMO, {utilisateurs: Object.values(DEMO_USERS), officines: OFFICINES, documents: DOCUMENTS.filter(d => d.mode_demo)});
+}
+
 const server = http.createServer(async (req, res) => {
   // CORS preflight
   if (req.method === "OPTIONS") {
@@ -414,36 +439,172 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   const path = url.pathname;
   const method = req.method;
+  const officineEvaluation = path.match(/^\/api\/officines\/([^/]+)\/auto-evaluation\//)?.[1];
+  let AUTO_EVALUATION;
+  if (officineEvaluation) {
+    const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+    const utilisateur = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
+    if (!utilisateur) return sendJson(res, 401, { message: "Connexion requise." });
+    if (!utilisateur.officines.includes(officineEvaluation)) return sendJson(res, 403, { message: "Officine non autorisée." });
+    if (method !== "GET" && !["promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq"].includes(utilisateur.role)) return sendJson(res, 403, { message: "Modification réservée aux responsables habilités." });
+    if (!GRILLES_COMPLETES.has(officineEvaluation)) GRILLES_COMPLETES.set(officineEvaluation, nouvelleGrilleComplete(officineEvaluation));
+    AUTO_EVALUATION = GRILLES_COMPLETES.get(officineEvaluation);
+    recalculerGrille(AUTO_EVALUATION);
+    if (path.endsWith("/nouvelle-complete") && method === "POST") return sendJson(res, 201, { id: AUTO_EVALUATION.campagne.id });
+  }
+
   console.log(`[MOCK] ${method} ${path}`);
 
-  // AUTH — login
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/canevas(?:\/([a-f0-9]+)(\/documents)?)?$/);
+    if (m) {
+      const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+      const u = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
+      if (!u) return sendJson(res, 401, { message: "Connexion requise." });
+      if (!u.officines.includes(m[1])) return sendJson(res, 403, { message: "Officine non autorisée." });
+      if (!m[2] && method === "GET") return sendJson(res, 200, CANEVAS.map(({ id, titre, rubrique, fichier, sha256, usage, format }) => ({ id, titre, rubrique, fichier, sha256, usage, format })));
+      const c = CANEVAS.find(c => c.id === m[2]);
+      if (!c) return sendJson(res, 404, { message: "Canevas introuvable." });
+      if (!m[3] && method === "GET") return sendJson(res, 200, c);
+      if (m[3] && method === "POST") {
+        if (c.usage === "reference") return sendJson(res, 422, {message: "Ce document annoté est une référence à consulter, pas un formulaire à remplir."});
+        if (!["promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq"].includes(u.role)) return sendJson(res, 403, { message: "Création réservée aux responsables habilités." });
+        const b = await parseBody(req);
+        if (!b.valeurs || typeof b.valeurs !== "object" || Array.isArray(b.valeurs) || !["TAM", "QAM", "GAD", "GAC", "GAR"].includes(b.processus) || !["procedure", "enregistrement", "fiche_poste"].includes(b.type_doc)) return sendJson(res, 422, { message: "Vérifiez la nature, le processus et les zones du canevas." });
+        const cles = new Set();
+        const visiter = blocs => blocs.forEach(bloc => { if (bloc.type === "paragraphe") cles.add(bloc.cle); else bloc.lignes.forEach(l => l.forEach(cell => { cles.add(cell.cle); visiter(cell.imbriques || []); })); });
+        c.parties.forEach(p => visiter(p.blocs));
+        if (Object.entries(b.valeurs).some(([k, v]) => !cles.has(k) || typeof v !== "string" || v.length > 30000)) return sendJson(res, 422, { message: "Zone du canevas invalide." });
+        const doc = { id: randomUUID(), officine_id: m[1], titre: c.titre, code_document: "CAN-" + randomUUID().slice(0, 8), type_doc: b.type_doc, processus: b.processus,
+          contenu: JSON.stringify({ schema: "begpharma.canevas-rempli.v1", canevas: c, valeurs: recalculerCanevas(c, b.valeurs) }), statut: "brouillon", version: 1, indice_revision: 0, redacteur_nom: u.name, updated_at: new Date().toISOString(), mode_demo: true };
+        doc.empreinte_contenu = empreinteDocumentDemo(doc);
+        DOCUMENTS.unshift(doc); return sendJson(res, 201, doc);
+      }
+    }
+  }
+  if (path.startsWith("/api/") && !["/api/auth/login", "/api/auth/register", "/api/auth/verify-mfa", "/api/demo/access"].includes(path) && !utilisateurCourant(req)) return sendJson(res, 401, {message: "Reconnectez-vous pour ouvrir votre espace de travail."});
+  const jour = new Date().toLocaleDateString("sv-SE", {timeZone: "Africa/Porto-Novo"});
+  for (const l of LOTS) {
+    l.jours_avant_peremption = Math.round((Date.parse(l.date_peremption) - Date.parse(jour))/86400000);
+    l.est_vendable = (l.statut_detail || (l.statut === "en_stock" ? "commercialisable" : l.statut)) === "commercialisable" && l.quantite_disponible > 0 && l.date_peremption > jour;
+    l.statut_peremption = l.jours_avant_peremption <= 0 ? "perime" : l.jours_avant_peremption <= 30 ? "critique_1m" : l.jours_avant_peremption <= 90 ? "alerte_3m" : l.jours_avant_peremption <= 180 ? "attention_6m" : "normal";
+  }
+  for (const p of PRODUITS) {
+    const lots = LOTS.filter(l => l.produit_id === p.id && l.est_vendable).sort((a,b) => a.date_peremption.localeCompare(b.date_peremption));
+    p.stock_total = lots.reduce((n,l) => n + l.quantite_disponible, 0);
+    p.prochain_lot_fefo = lots.length ? { id: lots[0].id, numero_lot: lots[0].numero_lot, date_peremption: lots[0].date_peremption, quantite_disponible: lots[0].quantite_disponible, jours_avant_peremption: lots[0].jours_avant_peremption, statut_peremption: lots[0].statut_peremption } : null;
+  }
+  if (/^\/api\/officines\/[^/]+\/documents(?:\/|$)/.test(path)) {
+    const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+    const utilisateur = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
+    if (!utilisateur) return sendJson(res, 401, { message: "Connexion requise." });
+    if (!utilisateur.officines.includes(path.split("/")[3])) return sendJson(res, 403, { message: "Officine non autorisée." });
+    if (method !== "GET" && !["promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq"].includes(utilisateur.role)) return sendJson(res, 403, { message: "Modification réservée aux responsables habilités." });
+  }
+  // AUTH  :  login
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/suivis-documentaires\/(formations|maintenance)(?:\/(definition|[a-f0-9-]+))?$/);
+    if (m) {
+      const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+      const utilisateur = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
+      if (!utilisateur) return sendJson(res, 401, { message: "Connexion requise." });
+      if (!utilisateur.officines.includes(m[1])) return sendJson(res, 403, { message: "Officine non autorisée." });
+      const definition = CATALOGUE_SUIVIS[m[2]];
+      const ecrire = ["promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq"].includes(utilisateur.role);
+      if (m[3] === "definition" && method === "GET") return sendJson(res, 200, {
+        ...definition, peut_ecrire: ecrire, mode_demo: true,
+        equipements: m[2] === "maintenance" && m[1] === "off1" ? EQUIPEMENTS.map(e => ({ id: e.id, designation: e.designation, code_interne: e.code_interne })) : [],
+      });
+      if (!m[3] && method === "GET") {
+        let lignes = SUIVIS_DOCUMENTAIRES.filter(r => r.officine_id === m[1] && r.type === m[2]);
+        const annee = url.searchParams.get("annee"), statut = url.searchParams.get("statut"), q = url.searchParams.get("q");
+        if (annee) lignes = lignes.filter(r => String(r.donnees[definition.champ_date] || "").startsWith(annee + "-"));
+        if (statut) lignes = lignes.filter(r => r.statut === statut);
+        if (q) lignes = lignes.filter(r => String(r.donnees[definition.champ_titre] || "").toLowerCase().includes(q.toLowerCase()));
+        return sendJson(res, 200, paginer(lignes, Number(url.searchParams.get("page")) || 1, 25));
+      }
+      if (method === "POST" || method === "PUT") {
+        if (!ecrire) return sendJson(res, 403, { message: "Modification réservée aux responsables habilités." });
+        const b = await parseBody(req);
+        if (!["planifie", "realise", "annule"].includes(b.statut) || !b.donnees) return sendJson(res, 422, { message: "État et champs du formulaire requis." });
+        if (Array.isArray(b.donnees) || typeof b.donnees !== "object") return sendJson(res, 422, { message: "Formulaire invalide." });
+        const cles = [...definition.champs.map(c => c.cle), "motif_annulation"];
+        if (Object.keys(b.donnees).some(c => !cles.includes(c))) return sendJson(res, 422, { message: "Un champ du formulaire n’est pas autorisé." });
+        for (const champ of definition.champs) {
+          const v = b.donnees[champ.cle];
+          if (v != null && (typeof v !== "string" || v.length > 5000)) return sendJson(res, 422, { message: `Champ invalide : ${champ.libelle}.` });
+          if (v && champ.type === "date" && (!/^\d{4}-\d{2}-\d{2}$/.test(v) || Number.isNaN(Date.parse(v)) || new Date(v).toISOString().slice(0, 10) !== v)) return sendJson(res, 422, { message: `Date invalide : ${champ.libelle}.` });
+          if ((champ.obligatoire || (champ.obligatoire_realise && b.statut === "realise")) && !String(b.donnees[champ.cle] || "").trim()) {
+            return sendJson(res, 422, { message: `Champ requis : ${champ.libelle}.` });
+          }
+        }
+        if (b.statut === "annule" && !b.donnees.motif_annulation) return sendJson(res, 422, { message: "Motif d’annulation requis." });
+        const aujourdHui = new Date().toLocaleDateString("sv-SE", { timeZone: "Africa/Porto-Novo" });
+        const d = b.donnees;
+        if ((d.date_realisation && d.date_realisation > aujourdHui) || (d.date_fin_prevue && d.date_fin_prevue < d.date_debut_prevue) || (d.date_prochaine_intervention && d.date_prochaine_intervention < (d.date_realisation || d.date_prevue))) return sendJson(res, 422, { message: "Vérifiez l’ordre chronologique et la date de réalisation." });
+        const donnees = Object.fromEntries([...definition.champs.map(c => c.cle), "motif_annulation"].filter(c => b.donnees[c]).map(c => [c, b.donnees[c]]));
+        if (m[2] === "maintenance") {
+          const e = EQUIPEMENTS.find(e => e.id === donnees.equipement_id);
+          if (m[1] !== "off1" || !e) return sendJson(res, 422, { message: "Équipement de cette officine requis." });
+          donnees.equipement_nom = e.designation;
+        }
+        if (method === "POST" && !m[3]) {
+          const r = { id: randomUUID(), officine_id: m[1], type: m[2], statut: b.statut, revision: 1, donnees, source: definition.source, created_at: new Date().toISOString(), motif_modification: null };
+          SUIVIS_DOCUMENTAIRES.unshift(r);
+          return sendJson(res, 201, r);
+        }
+        const r = SUIVIS_DOCUMENTAIRES.find(r => r.id === m[3] && r.officine_id === m[1] && r.type === m[2]);
+        if (!r) return sendJson(res, 404, { message: "Suivi introuvable." });
+        if (r.revision !== b.revision) return sendJson(res, 409, { message: "Cette fiche a changé. Rechargez le registre." });
+        if (!b.motif_modification || b.motif_modification.trim().length < 5) return sendJson(res, 422, { message: "Motif de correction requis." });
+        if (r.statut !== "planifie" && r.statut !== b.statut) return sendJson(res, 409, { message: "L’état final est conservé." });
+        Object.assign(r, { statut: b.statut, donnees, revision: r.revision + 1, motif_modification: b.motif_modification });
+        return sendJson(res, 200, r);
+      }
+    }
+  }
+  if (path === "/api/demo/access" && method === "GET") {
+    return sendJson(res, 200, {
+      demonstration: true,
+      password: "Begpharma2026!",
+      code_mfa: "123456",
+      comptes: Object.values(DEMO_USERS).filter(u => !u.passwordHash).map(u => ({ email: u.email, nom: u.name,
+        role: ({ promoteur: "Promoteur", pharmacien_titulaire: "Pharmacien titulaire", dispensateur: "Dispensateur" })[u.role] || "Équipe officinale" })),
+    });
+  }
   if (path === "/api/auth/login" && method === "POST") {
     const body = await parseBody(req);
     const user = DEMO_USERS[body.email];
-    if (!user || body.password !== "Begpharma2026!") {
+    if (!user || (user.passwordHash ? scryptSync(String(body.password), user.passwordSalt, 32).toString("hex") !== user.passwordHash : body.password !== "Begpharma2026!")) {
       return sendJson(res, 401, { message: "Identifiants invalides" });
     }
     if (user.mfa) {
       return sendJson(res, 200, { mfa_required: true, temp_token: "temp-demo-" + user.id, message: "Code TOTP requis (démo: 123456 ou app JBSWY3DPEHPK3PXP)" });
     }
-    return sendJson(res, 200, { token: "demo-token-" + user.id, user: { id: user.id, name: user.name, email: user.email, mfa_enabled: user.mfa }, officines: OFFICINES.filter(o => user.officines.includes(o.id)) });
+    return sendJson(res, 200, { token: "demo-token-" + user.id, user: { id: user.id, name: user.name, email: user.email, mfa_enabled: user.mfa }, officines: officinesPour(user) });
   }
   if (path === "/api/auth/verify-mfa" && method === "POST") {
     const body = await parseBody(req);
     // accept any 6-digit code in demo, or 123456
     const tempToken = req.headers.authorization?.replace("Bearer ", "") || body.temp_token;
     // find user by temp token
-    const user = Object.values(DEMO_USERS).find(u => tempToken?.includes(u.id)) || DEMO_USERS["promoteur@begpharma.bj"];
-    return sendJson(res, 200, { token: "demo-token-" + user.id, user: { id: user.id, name: user.name, email: user.email, mfa_enabled: true }, officines: OFFICINES.filter(o => user.officines.includes(o.id)) });
+    const user = Object.values(DEMO_USERS).find(u => tempToken === "temp-demo-" + u.id);
+    if (!user || body.code !== "123456") return sendJson(res, 401, { message: "Code de démonstration incorrect." });
+    return sendJson(res, 200, { token: "demo-token-" + user.id, user: { id: user.id, name: user.name, email: user.email, mfa_enabled: true }, officines: officinesPour(user) });
   }
   if (path === "/api/auth/register" && method === "POST") {
-    return sendJson(res, 201, { message: "Inscription réussie", token: "demo-token-new", user: { id: "new", name: "Nouveau", email: "new@begpharma.bj" }, officines: [OFFICINES[0]] });
+    const b = await parseBody(req);
+    if (!b.name || !/^.+@.+\..+$/.test(b.email || "") || String(b.password || "").length < 8 || DEMO_USERS[b.email]) return sendJson(res, 422, {message: "Vérifiez le nom, l’adresse de courriel et le mot de passe. Cette adresse doit être disponible."});
+    const salt = randomUUID();
+    const user = { id: randomUUID(), name: b.name, email: b.email, mfa: false, role: "promoteur", officines: [], passwordSalt: salt, passwordHash: scryptSync(b.password, salt, 32).toString("hex") };
+    DEMO_USERS[b.email] = user;
+    return sendJson(res, 201, {message: "Compte temporaire de démonstration créé.", token: "demo-token-" + user.id, user: {id: user.id, name: user.name, email: user.email, mfa_enabled: false}, officines: []});
   }
   if (path === "/api/auth/me" && method === "GET") {
     const user = utilisateurCourant(req);
     return sendJson(res, 200, {
       user: { id: user.id, name: user.name, email: user.email, telephone: "+229 97 00 00 01", mfa_enabled: user.mfa, last_activity_at: new Date().toISOString() },
-      officines: OFFICINES.filter(o => user.officines.includes(o.id)),
+      officines: officinesPour(user),
     });
   }
   if (path === "/api/auth/logout" && method === "POST") {
@@ -487,7 +648,7 @@ const server = http.createServer(async (req, res) => {
   // OFFICINES
   if (path === "/api/officines" && method === "GET") {
     const user = utilisateurCourant(req);
-    return sendJson(res, 200, OFFICINES.filter(o => user.officines.includes(o.id)));
+    return sendJson(res, 200, officinesPour(user));
   }
   if (path === "/api/officines" && method === "POST") {
     const b = await parseBody(req);
@@ -502,6 +663,7 @@ const server = http.createServer(async (req, res) => {
       pivot: { role_code: "promoteur", actif: true },
     };
     OFFICINES.push(officine);
+    utilisateurCourant(req).officines.push(officine.id);
     for (const p of PARAMETRES) {
       p.officine_id = officine.id;
     }
@@ -767,10 +929,12 @@ const server = http.createServer(async (req, res) => {
       const b = await parseBody(req);
       const evaluation = AUTO_EVALUATION.evaluations.find(e => e.id === m[2]);
       if (!evaluation) return sendJson(res, 404, { message: "Article introuvable" });
-      Object.assign(evaluation, b);
+      if (!["conforme", "ecart_mineur", "ecart_majeur", "non_applicable", "non_evalue"].includes(b.cotation)) return sendJson(res, 422, { message: "Cotation invalide." });
+      Object.assign(evaluation, { cotation: b.cotation, ...(b.preuve != null ? { preuve: b.preuve } : {}), ...(b.commentaire != null ? { commentaire: b.commentaire } : {}) });
+      recalculerGrille(AUTO_EVALUATION);
       const notees = AUTO_EVALUATION.evaluations.filter(e => e.cotation && e.cotation !== "non_evalue");
       const conformesPondere = notees.filter(e => e.cotation === "conforme").length + notees.filter(e => e.cotation === "ecart_mineur").length * 0.5;
-      const score = notees.length ? Math.round((conformesPondere / notees.length) * 1000) / 10 : 0;
+      const score = AUTO_EVALUATION.statistiques.score_global;
       AUTO_EVALUATION.statistiques.score_global = score;
       return sendJson(res, 200, { evaluation, nouveau_score_global: score });
     }
@@ -779,10 +943,15 @@ const server = http.createServer(async (req, res) => {
     const m = path.match(/^\/api\/officines\/([^/]+)\/auto-evaluation\/generer-capa\/([^/]+)$/);
     if (m && method === "POST") {
       const evaluation = AUTO_EVALUATION.evaluations.find(e => e.id === m[2]);
+      if (!evaluation) return sendJson(res, 404, { message: "Article introuvable." });
+      const b = await parseBody(req);
+      if (!b.action_corrective?.trim()) return sendJson(res, 422, { message: "Action corrective requise." });
+      if (evaluation.non_conformite) return sendJson(res, 409, { message: "Une action est déjà liée." });
       const nc = {
         id: "nc" + (NON_CONFORMITES.length + 1),
         numero_nc: `NC-2026-${String(NON_CONFORMITES.length + 12).padStart(4, "0")}`,
         titre: `Écart BPD sur l'article ${evaluation?.article_numero ?? ""}`.trim(),
+        action_corrective: b.action_corrective, analyse_causes_5m: b.cause_principale ?? null,
         gravite: "majeure",
         processus: "06",
         source: "auto_evaluation",
@@ -790,6 +959,8 @@ const server = http.createServer(async (req, res) => {
         date_creation: new Date().toISOString(),
       };
       NON_CONFORMITES.unshift(nc);
+      evaluation.non_conformite = nc;
+      evaluation.non_conformite_id = nc.id;
       return sendJson(res, 201, {
         evaluation,
         non_conformite: nc,
@@ -814,7 +985,7 @@ const server = http.createServer(async (req, res) => {
   {
     const m = path.match(/^\/api\/officines\/([^/]+)\/documents$/);
     if (m && method === "GET") {
-      let docs = [...DOCUMENTS];
+      let docs = DOCUMENTS.filter(d => (d.officine_id || "off1") === m[1]);
       if (url.searchParams.get("statut") && url.searchParams.get("statut") !== "tous") {
         docs = docs.filter(d => d.statut === url.searchParams.get("statut"));
       }
@@ -835,14 +1006,43 @@ const server = http.createServer(async (req, res) => {
     }
   }
   {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/documents\/([^/]+)\/approbations$/);
+    if (m && method === "GET") return sendJson(res, 503, {
+      message: "Historique vérifiable indisponible sur le serveur de démonstration. Connectez Laravel.",
+    });
+  }
+  {
     const m = path.match(/^\/api\/officines\/([^/]+)\/documents\/([^/]+)$/);
+    if (m && method === "GET") {
+      const doc = DOCUMENTS.find(d => d.id === m[2] && (d.officine_id || "off1") === m[1]);
+      return doc ? sendJson(res, 200, doc) : sendJson(res, 404, { message: "Document introuvable." });
+    }
     if (m && method === "PUT") {
       const b = await parseBody(req);
-      const doc = DOCUMENTS.find(d => d.id === m[2]);
+      if (b.statut === "valide" || b.password !== undefined) return sendJson(res, 503, {
+        message: "L’approbation sécurisée nécessite Laravel. Aucun mot de passe ni preuve d’approbation n’est conservé par la démonstration.",
+      });
+      const doc = DOCUMENTS.find(d => d.id === m[2] && (d.officine_id || "off1") === m[1]);
       if (!doc) return sendJson(res, 404, { message: "Document introuvable" });
-      Object.assign(doc, b);
+      if (b.empreinte_edition && b.empreinte_edition !== doc.empreinte_contenu) return sendJson(res, 409, { message: "Ce document a changé. Rechargez-le avant de reprendre les modifications." });
+      if (b.contenu !== undefined) {
+        let ancien; try { ancien = JSON.parse(doc.contenu || ""); } catch {}
+        if (ancien?.schema === "begpharma.canevas-rempli.v1") {
+          let nouveau; try { nouveau = JSON.parse(b.contenu); } catch {}
+          if (!b.empreinte_edition || !nouveau?.valeurs || Array.isArray(nouveau.valeurs) || nouveau.schema !== ancien.schema || JSON.stringify(nouveau.canevas) !== JSON.stringify(ancien.canevas)) return sendJson(res, 422, {message: "La structure du modèle doit être conservée. Rechargez le document."});
+          const cles = new Set();
+          const visiter = blocs => blocs.forEach(x => { if (x.type === "paragraphe") cles.add(x.cle); else x.lignes.forEach(l => l.forEach(c => { cles.add(c.cle); visiter(c.imbriques || []); })); });
+          ancien.canevas.parties.forEach(p => visiter(p.blocs));
+          if (Object.entries(nouveau.valeurs).some(([k,v]) => !cles.has(k) || typeof v !== "string" || v.length > 30000)) return sendJson(res, 422, {message:"Zone de saisie invalide."});
+          nouveau.valeurs = recalculerCanevas(ancien.canevas, nouveau.valeurs); b.contenu = JSON.stringify(nouveau);
+        }
+      }
+      for (const cle of ["titre", "contenu", "type_doc", "processus", "statut", "motif_refus"]) {
+        if (b[cle] !== undefined) doc[cle] = b[cle];
+      }
       doc.version = (doc.version || 1) + 1;
       doc.updated_at = new Date().toISOString();
+      if (doc.mode_demo) doc.empreinte_contenu = empreinteDocumentDemo(doc);
       return sendJson(res, 200, doc);
     }
   }
@@ -868,7 +1068,7 @@ const server = http.createServer(async (req, res) => {
 
   // PRODUITS
   if (path === "/api/produits" && method === "GET") {
-    return sendJson(res, 200, { status: "success", data: PRODUITS });
+    return sendJson(res, 200, { status: "success", data: url.searchParams.get("vendables") === "1" ? PRODUITS.filter(p => p.stock_total > 0) : PRODUITS });
   }
   if (path === "/api/produits" && method === "POST") {
     const b = await parseBody(req);
@@ -913,7 +1113,7 @@ const server = http.createServer(async (req, res) => {
     const newLot = { id: "l" + Date.now(), produit_id: b.produit_id, numero_lot: b.numero_lot, date_peremption: b.date_peremption, quantite_disponible: b.quantite, quantite_initiale: b.quantite, emplacement: b.emplacement || "Réserve", fournisseur_nom: b.fournisseur_nom, bon_livraison_ref: b.bon_livraison_ref, statut: lotConforme ? "en_stock" : "quarantaine", statut_detail: lotConforme ? "commercialisable" : "en_attente_controle", statut_effectif: lotConforme ? "commercialisable" : "en_attente_controle", est_vendable: lotConforme, motif_quarantaine: lotConforme ? null : "Contrôles de réception incomplets : lot isolé en quarantaine", jours_avant_peremption: Math.floor((new Date(b.date_peremption) - new Date())/86400000), statut_peremption: "normal", produit: prod, prix_achat_unitaire: b.prix_achat_unitaire || 900 };
     LOTS.push(newLot);
     MOUVEMENTS.unshift({ id: "m"+Date.now(), type_mouvement: "entree_reception", quantite: b.quantite, stock_avant: 0, stock_apres: b.quantite, motif: "Réception contrôlée", reference_piece: b.bon_livraison_ref, created_at: new Date().toISOString(), produit: prod, lot: newLot, auteur: { name: "Démo" } });
-    return sendJson(res, 201, { status: "success", message: `Lot ${newLot.numero_lot} réceptionné — FEFO appliqué`, data: newLot });
+    return sendJson(res, 201, { status: "success", message: `Lot ${newLot.numero_lot} réceptionné  :  FEFO appliqué`, data: newLot });
   }
   if (path.match(/^\/api\/stocks\/[^\/]+\/quarantaine$/) && method === "POST") {
     const id = path.split("/")[3];
@@ -934,12 +1134,13 @@ const server = http.createServer(async (req, res) => {
     if (lot) { lot.statut_detail = b.statut; lot.statut_effectif = b.statut; lot.est_vendable = b.statut === "commercialisable"; lot.motif_statut = b.motif; return sendJson(res, 200, { status: "success", message: `Lot ${lot.numero_lot} → ${b.statut}`, data: lot }); }
     return sendJson(res, 404, { message: "Lot non trouvé" });
   }
+  if (path === "/api/stocks/alertes-peremption" && method === "GET") return sendJson(res, 200, {mode_demo: true, courriel_configure: false, seuils_jours: [90,45,10,1], envois: {}});
   if (path === "/api/stocks/peremptions" && method === "GET") {
     const now = new Date();
-    const a1 = LOTS.filter(l => { const d=new Date(l.date_peremption); const diff=(d-now)/86400000; return diff>=0 && diff<=30; });
+    const a1 = LOTS.filter(l => { const d=new Date(l.date_peremption); const diff=(d-now)/86400000; return l.jours_avant_peremption>0 && l.jours_avant_peremption<=30; });
     const a3 = LOTS.filter(l => { const d=new Date(l.date_peremption); const diff=(d-now)/86400000; return diff>30 && diff<=90; });
     const a6 = LOTS.filter(l => { const d=new Date(l.date_peremption); const diff=(d-now)/86400000; return diff>90 && diff<=180; });
-    return sendJson(res, 200, { status: "success", data: { a_1_mois: a1, a_3_mois: a3, a_6_mois: a6, perimes: [] } });
+    return sendJson(res, 200, { status: "success", data: { a_1_mois: a1, a_3_mois: a3, a_6_mois: a6, perimes: LOTS.filter(l => l.jours_avant_peremption <= 0 && l.quantite_disponible > 0) } });
   }
   if (path === "/api/stocks/valorisation" && method === "GET") {
     return sendJson(res, 200, { status: "success", data: { total: LOTS.reduce((s,l)=> s + l.quantite_disponible*900,0), par_produit: PRODUITS.map(p=>({ produit:p, quantite: LOTS.filter(l=>l.produit_id===p.id).reduce((s,l)=>s+l.quantite_disponible,0), valeur: LOTS.filter(l=>l.produit_id===p.id).reduce((s,l)=>s+l.quantite_disponible*900,0), cmp: 900 })) } });
@@ -984,13 +1185,13 @@ const server = http.createServer(async (req, res) => {
     const newNum = Math.max(...STUPEFIANTS.data.data.map(m=> m.numero_ordre),0)+1;
     const newM = { id: "s"+Date.now(), numero_ordre: newNum, date_mouvement: new Date().toISOString(), type_mouvement: b.type_mouvement, quantite: b.quantite, stock_precedent: 15, stock_nouveau: b.type_mouvement==="entree_livraison" ? 15+b.quantite : 15-b.quantite, reference_piece: b.reference_piece, tiers_nom: b.tiers_nom, patient_nom: b.patient_nom, prescripteur_nom: b.prescripteur_nom, observations: b.observations, produit: { nom_commercial: prod.nom_commercial, dosage: prod.dosage, code_cip: prod.code_cip }, lot: { numero_lot: "STUP-002", date_peremption: "2027-06-01" }, operateur: { name: "Démo" }, pharmacien_visa: null };
     STUPEFIANTS.data.data.unshift(newM);
-    return sendJson(res, 201, { status: "success", message: `Ligne #${String(newNum).padStart(4,"0")} inscrite — immuable après visa`, data: newM });
+    return sendJson(res, 201, { status: "success", message: `Ligne #${String(newNum).padStart(4,"0")} inscrite  :  immuable après visa`, data: newM });
   }
   if (path.match(/^\/api\/stupefiants\/[^\/]+\/viser$/) && method === "POST") {
     const id = path.split("/")[3];
     const m = STUPEFIANTS.data.data.find(x=> x.id===id);
-    if (m) { m.pharmacien_visa = { name: "Dr. Marcelle HOUNNOU" }; m.date_visa = new Date().toISOString(); return sendJson(res, 200, { status: "success", message: "Visa apposé — ligne verrouillée", data: m }); }
-    // try s id is after /stupefiants/inventaire etc — already handled
+    if (m) { m.pharmacien_visa = { name: "Dr. Marcelle HOUNNOU" }; m.date_visa = new Date().toISOString(); return sendJson(res, 200, { status: "success", message: "Visa apposé  :  ligne verrouillée", data: m }); }
+    // try s id is after /stupefiants/inventaire etc  :  already handled
     return sendJson(res, 404, { message: "Non trouvé" });
   }
   if (path.match(/^\/api\/stupefiants\/[^\/]+\/rectificative$/) && method === "POST") {
@@ -1019,10 +1220,10 @@ const server = http.createServer(async (req, res) => {
     });
   }
   if (path === "/api/stupefiants/declaration-vol" && method === "POST") {
-    return sendJson(res, 201, { status: "success", message: "Déclaration enregistrée — alerte promoteur SMS/push", data: {} });
+    return sendJson(res, 201, { status: "success", message: "Déclaration enregistrée  :  alerte promoteur SMS/push", data: {} });
   }
   if (path === "/api/stupefiants/demande-destruction" && method === "POST") {
-    return sendJson(res, 201, { status: "success", message: "Destruction enregistrée — PV à signer", data: {} });
+    return sendJson(res, 201, { status: "success", message: "Destruction enregistrée  :  PV à signer", data: {} });
   }
 
   // PREPARATIONS
@@ -1101,7 +1302,7 @@ const server = http.createServer(async (req, res) => {
       const ecarts = inv.lignes.filter((l) => l.ecart);
       return sendJson(res, 200, {
         status: "success",
-        message: `Inventaire ${inv.reference} validé — ${ecarts.length} ajustement(s) appliqué(s)`,
+        message: `Inventaire ${inv.reference} validé  :  ${ecarts.length} ajustement(s) appliqué(s)`,
         data: inv,
       });
     }
@@ -1139,14 +1340,14 @@ const server = http.createServer(async (req, res) => {
         lot.statut_detail = "quarantaine";
         lot.statut_effectif = "quarantaine";
         lot.est_vendable = false;
-        lot.motif_statut = `Rappel ${rappel.reference} — ${rappel.source}`;
+        lot.motif_statut = `Rappel ${rappel.reference}  :  ${rappel.source}`;
         MOUVEMENTS.unshift({
           id: "m" + Date.now() + bloques,
           type_mouvement: "changement_statut",
           quantite: 0,
           stock_avant: lot.quantite_disponible,
           stock_apres: lot.quantite_disponible,
-          motif: `Blocage automatique — rappel ${rappel.reference}`,
+          motif: `Blocage automatique  :  rappel ${rappel.reference}`,
           reference_piece: rappel.reference,
           created_at: new Date().toISOString(),
           produit: lot.produit,
@@ -1159,8 +1360,8 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 201, {
       status: "success",
       message: bloques > 0
-        ? `Avis enregistré — ${bloques} lot(s) bloqué(s) immédiatement`
-        : "Avis enregistré — aucun lot de cette officine ne correspond aux numéros saisis",
+        ? `Avis enregistré  :  ${bloques} lot(s) bloqué(s) immédiatement`
+        : "Avis enregistré  :  aucun lot de cette officine ne correspond aux numéros saisis",
       data: rappel,
       lots_bloques: bloques,
     });
@@ -1216,7 +1417,7 @@ const server = http.createServer(async (req, res) => {
         quantite: -lot.quantite_disponible,
         stock_avant: lot.quantite_disponible,
         stock_apres: 0,
-        motif: `Sortie vers déchet — ${b.motif}`,
+        motif: `Sortie vers déchet  :  ${b.motif}`,
         reference_piece: dechet.reference,
         created_at: new Date().toISOString(),
         produit: lot.produit,
@@ -1231,7 +1432,7 @@ const server = http.createServer(async (req, res) => {
     }
     return sendJson(res, 201, {
       status: "success",
-      message: `Lot de déchets ${dechet.reference} constitué — perte de ${valeur.toLocaleString("fr-FR")} FCFA enregistrée`,
+      message: `Lot de déchets ${dechet.reference} constitué  :  perte de ${valeur.toLocaleString("fr-FR")} FCFA enregistrée`,
       data: dechet,
     });
   }
@@ -1242,7 +1443,7 @@ const server = http.createServer(async (req, res) => {
       if (!dechet) return sendJson(res, 404, { message: "Lot de déchets non trouvé" });
       dechet.statut = "detruit";
       dechet.date_destruction_reelle = new Date().toISOString().slice(0, 10);
-      return sendJson(res, 200, { status: "success", message: `Destruction ${dechet.reference} validée — procès-verbal à archiver dix ans`, data: dechet });
+      return sendJson(res, 200, { status: "success", message: `Destruction ${dechet.reference} validée  :  procès-verbal à archiver dix ans`, data: dechet });
     }
   }
 
@@ -1320,6 +1521,15 @@ const server = http.createServer(async (req, res) => {
   }
   if (path === "/api/caisse/ventes" && method === "POST") {
     const b = await parseBody(req);
+    const besoins = new Map();
+    for (const ligne of b.lignes || []) {
+      if (!Number.isInteger(ligne.quantite) || ligne.quantite <= 0) return sendJson(res, 422, {message: "La quantité doit être un entier positif."});
+      besoins.set(ligne.produit_id, (besoins.get(ligne.produit_id) || 0) + ligne.quantite);
+    }
+    for (const [id, besoin] of besoins) {
+      if (LOTS.filter(l => l.produit_id === id && l.est_vendable).reduce((n,l) => n + l.quantite_disponible, 0) < besoin) return sendJson(res, 422, {message: "Stock vendable insuffisant : les lots périmés et isolés sont exclus."});
+    }
+
     if (!b.lignes || !b.lignes.length) {
       return sendJson(res, 422, { message: "La vente doit comporter au moins une ligne.", errors: { lignes: ["Champ obligatoire."] } });
     }
@@ -1358,6 +1568,12 @@ const server = http.createServer(async (req, res) => {
         qr_code_data: `BEN-DGI|MECEF|2026|${numero}|${total}`,
       },
     };
+    for (const [id, besoin] of besoins) {
+      let restant = besoin;
+      for (const lot of LOTS.filter(l => l.produit_id === id && l.est_vendable).sort((a,b) => a.date_peremption.localeCompare(b.date_peremption))) {
+        const q = Math.min(restant, lot.quantite_disponible); lot.quantite_disponible -= q; restant -= q; if (!restant) break;
+      }
+    }
     VENTES.unshift(vente);
     session.ventes = VENTES;
     FACTURES_EMECEF.unshift({
@@ -1377,7 +1593,7 @@ const server = http.createServer(async (req, res) => {
     );
     return sendJson(res, 201, {
       status: "success",
-      message: `Vente encaissée — ticket ${numero}`,
+      message: `Vente encaissée  :  ticket ${numero}`,
       data: vente,
     });
   }
@@ -1404,8 +1620,28 @@ const server = http.createServer(async (req, res) => {
   if (path === "/api/dispensations" && method === "GET") {
     return sendJson(res, 200, { status: "success", data: paginer(DISPENSATIONS) });
   }
+  if (/^\/api\/dispensations\/[^/]+\/viser$/.test(path) && method === "POST") {
+    const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+    const user = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
+    if (!user) return sendJson(res, 401, { message: "Connexion requise." });
+    if (!["pharmacien_titulaire", "pharmacien_adjoint", "promoteur"].includes(user.role)) return sendJson(res, 403, { message: "Visa réservé au pharmacien habilité." });
+    const ligne = DISPENSATIONS.find(d => d.id === path.split("/")[3] && user.officines.includes(d.officine_id));
+    if (!ligne) return sendJson(res, 404, { message: "Dispensation introuvable." });
+    ligne.pharmacien_id = user.id;
+    ligne.pharmacien = { id: user.id, name: user.name };
+    return sendJson(res, 200, { status: "success", mode_demo: true, message: "Visa de démonstration enregistré.", data: ligne });
+  }
   if (path === "/api/dispensations" && method === "POST") {
     const b = await parseBody(req);
+    const besoins = new Map();
+    for (const ligne of b.lignes || []) {
+      if (!Number.isInteger(ligne.quantite) || ligne.quantite <= 0) return sendJson(res, 422, {message: "La quantité doit être un entier positif."});
+      besoins.set(ligne.produit_id, (besoins.get(ligne.produit_id) || 0) + ligne.quantite);
+    }
+    for (const [id, besoin] of besoins) {
+      if (LOTS.filter(l => l.produit_id === id && l.est_vendable).reduce((n,l) => n + l.quantite_disponible, 0) < besoin) return sendJson(res, 422, {message: "Stock vendable insuffisant : les lots périmés et isolés sont exclus."});
+    }
+
     if (!b.patient_nom) {
       return sendJson(res, 422, { message: "Le nom du patient est obligatoire.", errors: { patient_nom: ["Champ obligatoire."] } });
     }
@@ -1427,11 +1663,18 @@ const server = http.createServer(async (req, res) => {
       id: "disp" + (DISPENSATIONS.length + 1),
       numero_dispensation: `DISP-2026-${String(8 + DISPENSATIONS.length).padStart(4, "0")}`,
       ...b,
+      officine_id: "off1",
       lignes,
       montant_total: lignes.reduce((t, l) => t + (PRODUITS.find(p => p.id === l.produit_id)?.prix_public_ttc || 0) * l.quantite, 0),
       statut: "delivree",
       date_dispensation: new Date().toISOString(),
     };
+    for (const [id, besoin] of besoins) {
+      let restant = besoin;
+      for (const lot of LOTS.filter(l => l.produit_id === id && l.est_vendable).sort((a,b) => a.date_peremption.localeCompare(b.date_peremption))) {
+        const q = Math.min(restant, lot.quantite_disponible); lot.quantite_disponible -= q; restant -= q; if (!restant) break;
+      }
+    }
     DISPENSATIONS.unshift(dispensation);
     return sendJson(res, 201, { status: "success", message: `Dispensation ${dispensation.numero_dispensation} enregistrée.`, data: dispensation });
   }
@@ -1466,7 +1709,7 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, filtrerJournal(url));
   }
 
-  // DIVERS — une route it non implémentée doit se voir tout de suite, pas
+  // DIVERS  :  une route it non implémentée doit se voir tout de suite, pas
   // renvoyer un tableau vide qui laisse croire que l'écran fonctionne.
   if (path.startsWith("/api/")) {
     console.error(`[MOCK] route non implémentée : ${method} ${path}`);
@@ -1481,5 +1724,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`[MOCK BEGPHARMA] Backend démo écoute sur http://0.0.0.0:${PORT} — login Begpharma2026! / TOTP JBSWY3DPEHPK3PXP (code démo 123456)`);
+  console.log(`[MOCK BEGPHARMA] Backend démo écoute sur http://0.0.0.0:${PORT}  :  login Begpharma2026! / TOTP JBSWY3DPEHPK3PXP (code démo 123456)`);
 });

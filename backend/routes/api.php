@@ -90,10 +90,23 @@ Route::middleware('auth:sanctum')->group(function () {
     // PARTIE 1 : MODULE BPD SOCLE (LOT 1.1)
     // ==========================================
 
+    Route::get('/officines/{officineId}/canevas', [\App\Http\Controllers\Api\CanevasController::class, 'index']);
+    Route::get('/officines/{officineId}/canevas/{id}', [\App\Http\Controllers\Api\CanevasController::class, 'show']);
+    Route::post('/officines/{officineId}/canevas/{id}/documents', [\App\Http\Controllers\Api\CanevasController::class, 'store']);
+    Route::get('/officines/{officineId}/suivis-documentaires/{type}/definition', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'definition']);
+    Route::get('/officines/{officineId}/suivis-documentaires/{type}', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'index']);
+    Route::post('/officines/{officineId}/suivis-documentaires/{type}', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'store']);
+    Route::put('/officines/{officineId}/suivis-documentaires/{type}/{id}', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'update']);
+
     // GED et documents qualité (BPD-1 & BPD-3)
     Route::get('/officines/{officineId}/documents', [DocumentController::class, 'index']);
+    Route::get('/officines/{officineId}/imports-corpus', [DocumentController::class, 'importsCorpus']);
     Route::post('/officines/{officineId}/documents', [DocumentController::class, 'store']);
     Route::get('/officines/{officineId}/documents/{id}', [DocumentController::class, 'show']);
+    Route::get('/officines/{officineId}/documents/{id}/approbations', [DocumentController::class, 'approbations']);
+    Route::get('/officines/{officineId}/documents/{id}/fichiers', [\App\Http\Controllers\Api\FichierDocumentController::class, 'index']);
+    Route::post('/officines/{officineId}/documents/{id}/fichiers', [\App\Http\Controllers\Api\FichierDocumentController::class, 'store'])->middleware('throttle:20,1');
+    Route::get('/officines/{officineId}/documents/{id}/fichiers/{fichierId}/telecharger', [\App\Http\Controllers\Api\FichierDocumentController::class, 'telecharger']);
     Route::put('/officines/{officineId}/documents/{id}', [DocumentController::class, 'update']);
 
     // Bibliothèque des modèles BPD types de l'ABMed (BPD-C02)
@@ -147,6 +160,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/officines/{officineId}/nettoyages', [NettoyageController::class, 'store']);
 
     // Auto-évaluation & Audit Interne 267 articles (BPD-10 & 4.0.1)
+    Route::post('/officines/{officineId}/auto-evaluation/nouvelle-complete', [AutoEvaluationController::class, 'nouvelleComplete']);
     Route::get('/officines/{officineId}/auto-evaluation/campagne-courante', [AutoEvaluationController::class, 'campagneCourante']);
     Route::put('/officines/{officineId}/auto-evaluation/evaluer/{evaluationId}', [AutoEvaluationController::class, 'evaluerArticle']);
     Route::post('/officines/{officineId}/auto-evaluation/generer-capa/{evaluationId}', [AutoEvaluationController::class, 'genererCapa']);
@@ -166,6 +180,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/stocks/{id}/quarantaine', [StockLotController::class, 'miseEnQuarantaine']);
     Route::post('/stocks/{id}/lever-quarantaine', [StockLotController::class, 'leverQuarantaine']);
     Route::put('/stocks/{id}/statut', [StockLotController::class, 'changerStatut']);
+    Route::get('/stocks/alertes-peremption', [StockLotController::class, 'alertesPeremption']);
     Route::get('/stocks/peremptions', [StockLotController::class, 'peremptions']);
     Route::get('/stocks/valorisation', [StockLotController::class, 'valorisation']);
     Route::get('/stocks/alertes', [StockLotController::class, 'alertes']);

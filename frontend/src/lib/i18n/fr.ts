@@ -85,6 +85,7 @@ export const fr = {
     derniere: "Dernière activité",
   },
   roles: {
+    dispensateur: "Dispensateur",
     promoteur: "Promoteur",
     pharmacien_titulaire: "Pharmacien titulaire",
     pharmacien_adjoint: "Pharmacien adjoint",

@@ -22,7 +22,7 @@ export function Vide({ texte }: { texte: string }) {
 }
 
 export const dateFr = (d: string | null) =>
-  d ? new Date(d.length === 10 ? d + "T12:00:00" : d).toLocaleDateString("fr-FR", { timeZone: "Africa/Porto-Novo" }) : "—";
+  d ? new Date(d.length === 10 ? d + "T12:00:00" : d).toLocaleDateString("fr-FR", { timeZone: "Africa/Porto-Novo" }) : "Non renseigné";
 
 export const heureFr = (d: string) =>
   new Date(d).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Porto-Novo" });

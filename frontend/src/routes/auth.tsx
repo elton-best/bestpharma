@@ -12,7 +12,7 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Connexion — BESTPHARMA" },
+      { title: "Connexion : BESTPHARMA" },
       {
         name: "description",
         content:
@@ -23,44 +23,12 @@ export const Route = createFileRoute("/auth")({
   component: PageConnexion,
 });
 
-const COMPTES_TEST = [
-  {
-    role: "Pharmacien Titulaire",
-    email: "pharmacien@begpharma.bj",
-    nom: "Dr Félicien AGBO",
-    badge: "Responsable BPD",
-  },
-  {
-    role: "Promoteur / Fondateur",
-    email: "promoteur@begpharma.bj",
-    nom: "M. Aimé TOSSOU",
-    badge: "Multi-officines",
-  },
-  {
-    role: "Dispensateur (Comptoir)",
-    email: "dispensateur@begpharma.bj",
-    nom: "Gervais KPADONOU",
-    badge: "Vente & Conseil",
-  },
-  {
-    role: "Caissière",
-    email: "caissier@begpharma.bj",
-    nom: "Saliou TOURE",
-    badge: "Encaissement",
-  },
-  {
-    role: "Magasinier",
-    email: "magasinier@begpharma.bj",
-    nom: "Bénédicte HOUNSOU",
-    badge: "Stock & FEFO",
-  },
-  {
-    role: "Inspecteur ABMed",
-    email: "inspecteur@abmed.bj",
-    nom: "Dr Marc KPOSSOU",
-    badge: "Audit BPD",
-  },
-];
+interface AccesDemo {
+  demonstration: boolean;
+  password: string;
+  code_mfa: string;
+  comptes: { email: string; nom: string; role: string }[];
+}
 
 function PageConnexion() {
   const navigate = useNavigate();
@@ -71,7 +39,17 @@ function PageConnexion() {
   const [afficherMdp, setAfficherMdp] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [afficherRolesDemo, setAfficherRolesDemo] = useState(false);
+  const [afficherRolesDemo, setAfficherRolesDemo] = useState(true);
+  const [demo, setDemo] = useState<AccesDemo | null>(null);
+  useEffect(() => {
+    const controle = new AbortController();
+    fetch("/api/demo/access", { signal: controle.signal }).then(async r => {
+      if (!r.ok) return;
+      const d = await r.json();
+      if (d.demonstration === true && Array.isArray(d.comptes)) setDemo(d);
+    }).catch(() => {});
+    return () => controle.abort();
+  }, []);
   const [mfaRequis, setMfaRequis] = useState(false);
   const [tempToken, setTempToken] = useState<string | null>(null);
   const [codeTOTP, setCodeTOTP] = useState("");
@@ -79,7 +57,7 @@ function PageConnexion() {
 
   useEffect(() => {
     if (api.getToken() && api.getUser()) {
-      navigate({ to: "/app" });
+      navigate({ to: "/dashboard" });
     }
   }, [navigate]);
 
@@ -105,19 +83,19 @@ function PageConnexion() {
         throw new Error(data.message || "Identifiants incorrects.");
       }
 
-      // MFA requis (promoteur, pharmacien) — code démo 123456 ou JBSWY3DPEHPK3PXP
+      // MFA requis (promoteur, pharmacien) : code démo 123456 ou JBSWY3DPEHPK3PXP
       if (data.mfa_required) {
         setMfaRequis(true);
         setTempToken(data.temp_token);
         setEmailMFA(emailToUse);
-        setMessage("🔐 MFA requis — saisissez le code TOTP (démo : 123456)");
+        setMessage("Saisissez le code de vérification de votre application d’authentification.");
         return;
       }
 
       api.setToken(data.token);
       api.setUser(data.user);
       if (data.officines) api.setOfficines(data.officines);
-      window.location.href = "/app";
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setMessage(err.message || fr.commun.erreur);
     } finally {
@@ -127,7 +105,7 @@ function PageConnexion() {
 
   async function verifierMFA(e?: React.FormEvent) {
     if (e) e.preventDefault();
-    if (!codeTOTP || codeTOTP.length < 6) { setMessage("Code à 6 chiffres requis (démo : 123456)"); return; }
+    if (!codeTOTP || codeTOTP.length < 6) { setMessage("Saisissez le code complet de votre application d’authentification."); return; }
     setEnCours(true);
     setMessage(null);
     try {
@@ -137,6 +115,7 @@ function PageConnexion() {
           "Content-Type": "application/json",
           "Accept": "application/json",
           "Authorization": tempToken ? `Bearer ${tempToken}` : "",
+          ...(tempToken ? { "X-Session-Begpharma": tempToken } : {}),
         },
         body: JSON.stringify({ temp_token: tempToken, code: codeTOTP, email: emailMFA }),
       });
@@ -145,21 +124,22 @@ function PageConnexion() {
       api.setToken(data.token);
       api.setUser(data.user);
       if (data.officines) api.setOfficines(data.officines);
-      window.location.href = "/app";
+      window.location.href = "/dashboard";
     } catch (err: any) {
-      setMessage(err.message || "Code MFA invalide — essayez 123456");
+      setMessage(err.message || "Code de vérification invalide. Veuillez réessayer.");
     } finally { setEnCours(false); }
   }
 
   function connexionRapide(compteEmail: string) {
     setEmail(compteEmail);
-    setMotDePasse("Bestpharma2026!");
-    soumettre(undefined, compteEmail, "Bestpharma2026!");
+    if (!demo) return;
+    setMotDePasse(demo.password);
+    soumettre(undefined, compteEmail, demo.password);
   }
 
   return (
-    <div className="h-screen w-full bg-[#D4E8B8] flex items-center justify-center overflow-hidden font-sans selection:bg-[#92FF5F] selection:text-[#0F3B27]">
-      <div className="w-full max-w-md px-6">
+    <div className="min-h-dvh w-full bg-[#D4E8B8] flex items-center justify-center overflow-x-hidden py-6 sm:py-10 font-sans selection:bg-[#92FF5F] selection:text-[#0F3B27]">
+      <div className="w-full min-w-0 max-w-md px-4 sm:px-6">
 
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
@@ -182,7 +162,7 @@ function PageConnexion() {
           </Alert>
         ) : null}
 
-        {/* Formulaire — login ou MFA */}
+        {/* Formulaire : login ou MFA */}
         {!mfaRequis ? (
           <form onSubmit={soumettre} className="space-y-4">
             <div>
@@ -231,8 +211,8 @@ function PageConnexion() {
           <form onSubmit={verifierMFA} className="space-y-4">
             <div className="p-4 rounded-2xl bg-white border border-[#0F3B27]/10 text-center">
               <p className="text-sm font-black text-[#0F3B27]">Vérification MFA</p>
-              <p className="text-xs text-[#0F3B27]/60 mt-1">Connecté en tant que <strong>{emailMFA}</strong></p>
-              <p className="text-[11px] text-[#0F3B27]/50 mt-1">Code démo : <span className="font-mono bg-[#92FF5F]/30 px-2 py-0.5 rounded font-bold text-[#0F3B27]">123456</span> ou TOTP <span className="font-mono text-[10px]">JBSWY3DPEHPK3PXP</span></p>
+              <p className="break-words text-xs text-[#0F3B27]/60 mt-1">Connecté en tant que <strong>{emailMFA}</strong></p>
+              {demo && <p className="text-[11px] text-[#0F3B27]/50 mt-1">Code démo : <span className="font-mono bg-[#92FF5F]/30 px-2 py-0.5 rounded font-bold text-[#0F3B27]">{demo.code_mfa}</span></p>}
             </div>
             <div>
               <input
@@ -242,8 +222,11 @@ function PageConnexion() {
                 maxLength={6}
                 value={codeTOTP}
                 onChange={(e) => setCodeTOTP(e.target.value.replace(/\D/g, ""))}
-                placeholder="Code à 6 chiffres"
-                className="w-full rounded-2xl border border-[#0F3B27]/20 bg-white px-4 py-3.5 text-center text-lg tracking-[0.3em] font-mono font-black text-[#0F3B27] placeholder:text-[#0F3B27]/30 outline-none focus:border-[#0F3B27] focus:ring-4 focus:ring-[#92FF5F]/30"
+                aria-label="Code de vérification"
+                autoComplete="one-time-code"
+                pattern="[0-9]{6}"
+                placeholder="Code de vérification"
+                className="w-full rounded-2xl border border-[#0F3B27]/20 bg-white px-4 py-3.5 text-center text-lg tracking-[0.15em] placeholder:tracking-normal placeholder:text-sm font-mono font-black text-[#0F3B27] placeholder:text-[#0F3B27]/30 outline-none focus:border-[#0F3B27] focus:ring-4 focus:ring-[#92FF5F]/30"
                 autoFocus
               />
             </div>
@@ -259,39 +242,40 @@ function PageConnexion() {
             >
               {enCours ? "Vérification..." : "Valider le code"}
             </button>
-            <button type="button" onClick={() => { setMfaRequis(false); setCodeTOTP(""); setMessage(null); }} className="w-full text-xs font-bold text-[#0F3B27]/60 hover:text-[#0F3B27]">
+            <button type="button" onClick={() => { setMfaRequis(false); setCodeTOTP(""); setMessage(null); }} className="min-h-12 w-full text-xs font-bold text-[#0F3B27]/60 hover:text-[#0F3B27]">
               ← Retour à la connexion
             </button>
           </form>
         )}
 
         {/* Accès démo */}
-        <div className="mt-6 text-center">
+        {demo && <div className="mt-6 text-center">
           <button
             type="button"
             onClick={() => setAfficherRolesDemo(!afficherRolesDemo)}
-            className="text-xs font-bold text-[#0F3B27]/70 hover:text-[#0F3B27] transition-colors cursor-pointer"
+            className="min-h-12 text-xs font-bold text-[#0F3B27]/70 hover:text-[#0F3B27] transition-colors cursor-pointer"
           >
             {afficherRolesDemo ? "Masquer les comptes démo ▲" : "Accès rapide aux comptes démo ▼"}
           </button>
-        </div>
+        </div>}
 
-        {/* Panneau déroulant des 6 rôles de démo */}
-        {afficherRolesDemo && (
+        {/* Comptes publiés uniquement par le serveur de démonstration */}
+        {demo && afficherRolesDemo && (
           <div className="mt-3 p-3 rounded-2xl bg-white/60 backdrop-blur-sm border border-[#0F3B27]/10 space-y-1.5 animate-in fade-in">
             <p className="text-[11px] font-bold text-[#0F3B27] mb-1.5">
-              Mot de passe : <span className="font-mono bg-[#0F3B27]/10 px-1.5 py-0.5 rounded">Bestpharma2026!</span>
+              Aperçu de démonstration : cliquez sur un compte pour vous connecter.<br />Mot de passe : <span className="font-mono bg-[#0F3B27]/10 px-1.5 py-0.5 rounded">{demo.password}</span>
             </p>
             <div className="grid grid-cols-2 gap-1.5">
-              {COMPTES_TEST.map((c) => (
+              {demo.comptes.map((c) => (
                 <button
                   key={c.email}
                   type="button"
+                  disabled={enCours}
                   onClick={() => connexionRapide(c.email)}
-                  className="text-left p-2 rounded-xl border border-[#0F3B27]/10 bg-white hover:border-[#0F3B27] hover:bg-[#92FF5F]/10 text-[11px] transition-colors cursor-pointer"
+                  className="min-h-12 text-left p-2 rounded-xl border border-[#0F3B27]/10 bg-white hover:border-[#0F3B27] hover:bg-[#92FF5F]/10 text-[11px] transition-colors cursor-pointer"
                 >
                   <span className="font-bold text-[#0F3B27] block truncate">{c.role}</span>
-                  <span className="text-[#0F3B27]/50 block truncate text-[10px]">{c.nom}</span>
+                  <span className="text-[#0F3B27]/50 block truncate text-[10px]">{c.email}</span>
                 </button>
               ))}
             </div>

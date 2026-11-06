@@ -73,9 +73,7 @@ class DispensationController extends Controller
                 // Récupération des lots valides classés par date_peremption ASC (FEFO)
                 $lotsDisponibles = StockLot::where('officine_id', $officineId)
                     ->where('produit_id', $produit->id)
-                    ->where('statut', 'en_stock')
-                    ->where('quantite_disponible', '>', 0)
-                    ->where('date_peremption', '>=', Carbon::now()->startOfDay())
+                    ->vendables()
                     ->orderBy('date_peremption', 'asc')
                     ->lockForUpdate()
                     ->get();

@@ -48,9 +48,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/mfa/demarrer', [AuthController::class, 'demarrerMfa']);
     Route::delete('/auth/mfa', [AuthController::class, 'desactiverMfa']);
     Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
+    Route::put('/auth/password', [AuthController::class, 'updatePassword']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/devices', [AuthController::class, 'devices']);
     Route::delete('/auth/devices/{tokenId}', [AuthController::class, 'revokeDevice']);
+    Route::post('/auth/devices/revoke-others', [AuthController::class, 'revokeOtherDevices']);
 
     // Gestion des officines (multi-tenant E0-S2)
     Route::get('/officines', [OfficineController::class, 'index']);

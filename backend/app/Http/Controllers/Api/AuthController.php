@@ -418,4 +418,70 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Session révoquée avec succès.']);
     }
+
+    /**
+     * Révocation de toutes les autres sessions actives
+     */
+    public function revokeOtherDevices(Request $request): JsonResponse
+    {
+        $currentTokenId = $request->user()->currentAccessToken()->id;
+        $request->user()->tokens()->where('id', '!=', $currentTokenId)->delete();
+
+        return response()->json(['message' => 'Toutes les autres sessions ont été révoquées.']);
+    }
+
+    /**
+     * Mise à jour des informations de profil
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'telephone' => 'nullable|string|max:50',
+        ]);
+
+        $user = $request->user();
+        $user->update([
+            'name' => $validated['name'],
+            'telephone' => $validated['telephone'] ?? $user->telephone,
+        ]);
+
+        return response()->json([
+            'message' => 'Profil mis à jour avec succès.',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'telephone' => $user->telephone,
+                'mfa_enabled' => (bool) $user->mfa_enabled,
+            ],
+        ]);
+    }
+
+    /**
+     * Changement de mot de passe sécurisé
+     */
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8',
+        ]);
+
+        $user = $request->user();
+
+        if (! Hash::check($validated['current_password'], $user->password)) {
+            return response()->json([
+                'message' => 'Le mot de passe actuel est incorrect.',
+            ], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($validated['new_password']),
+        ]);
+
+        return response()->json([
+            'message' => 'Mot de passe modifié avec succès.',
+        ]);
+    }
 }

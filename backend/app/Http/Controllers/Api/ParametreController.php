@@ -36,15 +36,27 @@ class ParametreController extends Controller
         $param = OfficineParametre::where('officine_id', $officineId)
             ->where('cle', $cle)
             ->where('archived', false)
-            ->firstOrFail();
+            ->first();
 
         $valeurFormatee = is_array($validated['valeur']) ? $validated['valeur'] : ['valeur' => $validated['valeur']];
 
-        $param->update([
-            'valeur' => $valeurFormatee,
-            'description' => $validated['description'] ?? $param->description,
-            'version' => $param->version + 1,
-        ]);
+        if (! $param) {
+            $param = OfficineParametre::create([
+                'officine_id' => $officineId,
+                'cle' => $cle,
+                'type_donnee' => is_bool($validated['valeur']) ? 'boolean' : (is_numeric($validated['valeur']) ? 'number' : 'texte'),
+                'valeur' => $valeurFormatee,
+                'description' => $validated['description'] ?? null,
+                'version' => 1,
+                'archived' => false,
+            ]);
+        } else {
+            $param->update([
+                'valeur' => $valeurFormatee,
+                'description' => $validated['description'] ?? $param->description,
+                'version' => $param->version + 1,
+            ]);
+        }
 
         return response()->json($this->presenter($param->fresh()));
     }
@@ -68,14 +80,23 @@ class ParametreController extends Controller
                 ->where('archived', false)
                 ->first();
 
-            if (! $param) {
-                continue;
-            }
+            $valeurFormatee = is_array($entree['valeur']) ? $entree['valeur'] : ['valeur' => $entree['valeur']];
 
-            $param->update([
-                'valeur' => is_array($entree['valeur']) ? $entree['valeur'] : ['valeur' => $entree['valeur']],
-                'version' => $param->version + 1,
-            ]);
+            if (! $param) {
+                $param = OfficineParametre::create([
+                    'officine_id' => $officineId,
+                    'cle' => $entree['cle'],
+                    'type_donnee' => is_bool($entree['valeur']) ? 'boolean' : (is_numeric($entree['valeur']) ? 'number' : 'texte'),
+                    'valeur' => $valeurFormatee,
+                    'version' => 1,
+                    'archived' => false,
+                ]);
+            } else {
+                $param->update([
+                    'valeur' => $valeurFormatee,
+                    'version' => $param->version + 1,
+                ]);
+            }
 
             $misAJour[] = $param;
         }
@@ -93,12 +114,24 @@ class ParametreController extends Controller
     private function presenter(OfficineParametre $parametre): array
     {
         $catalogue = [
-            'fuseau_horaire' => ['libelle' => 'Fuseau horaire', 'unite' => null],
-            'devise' => ['libelle' => 'Devise', 'unite' => null],
-            'delai_inactivite_minutes' => ['libelle' => 'Verrouillage après inactivité', 'unite' => 'minutes'],
-            'tolerance_pointage_minutes' => ['libelle' => 'Tolérance de pointage', 'unite' => 'minutes'],
-            'mode_presence_pharmacien' => ['libelle' => 'Absence de pharmacien', 'unite' => null],
-            'conservation_registres_ans' => ['libelle' => 'Conservation des registres', 'unite' => 'ans'],
+            'fuseau_horaire' => ['libelle' => 'Fuseau horaire officiel', 'unite' => null],
+            'devise' => ['libelle' => 'Devise monétaire légale', 'unite' => null],
+            'delai_inactivite_minutes' => ['libelle' => 'Verrouillage automatique après inactivité', 'unite' => 'minutes'],
+            'tolerance_pointage_minutes' => ['libelle' => 'Tolérance de retard de pointage', 'unite' => 'minutes'],
+            'mode_presence_pharmacien' => ['libelle' => 'Règle en cas d\'absence du pharmacien', 'unite' => null],
+            'conservation_registres_ans' => ['libelle' => 'Conservation des registres de santé', 'unite' => 'ans'],
+            'conservation_stupefiants_ordonnances_ans' => ['libelle' => 'Conservation copies ordonnances stupéfiants', 'unite' => 'ans'],
+            'conservation_procedures_temperatures_ans' => ['libelle' => 'Conservation procédures et températures', 'unite' => 'ans'],
+            'conservation_sang_ans' => ['libelle' => 'Conservation dérivés du sang (MDS)', 'unite' => 'ans'],
+            'remise_max_caissier_pct' => ['libelle' => 'Remise maximale caissier', 'unite' => '%'],
+            'remise_max_dispensateur_pct' => ['libelle' => 'Remise maximale dispensateur', 'unite' => '%'],
+            'seuil_validation_pharmacien_fcfa' => ['libelle' => 'Seuil validation obligatoire pharmacien', 'unite' => 'FCFA'],
+            'delai_alerte_reclamations_jours' => ['libelle' => 'Délai d\'alerte réclamations clients', 'unite' => 'jours'],
+            'temp_frigo_min' => ['libelle' => 'Température frigo minimale', 'unite' => '°C'],
+            'temp_frigo_max' => ['libelle' => 'Température frigo maximale', 'unite' => '°C'],
+            'regime_fiscal' => ['libelle' => 'Régime fiscal d\'imposition', 'unite' => null],
+            'emceef_environnement' => ['libelle' => 'Environnement e-MECeF DGI', 'unite' => null],
+            'mfa_obligatoire_roles' => ['libelle' => 'Rôles soumis au MFA obligatoire', 'unite' => null],
         ];
 
         $meta = $catalogue[$parametre->cle] ?? [
@@ -111,7 +144,7 @@ class ParametreController extends Controller
         return [
             'id' => $parametre->id,
             'cle' => $parametre->cle,
-            'libelle' => $meta['libellé'],
+            'libelle' => $meta['libelle'],
             'unite' => $meta['unite'],
             'type' => match ($parametre->type_donnee) {
                 'boolean', 'booleen' => 'booleen',

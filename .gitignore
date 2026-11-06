@@ -46,3 +46,7 @@ frontend/.tanstack/
 
 # Dépendances des outils de recette à la racine
 /node_modules/
+
+# Cache des outils Python
+__pycache__/
+*.pyc

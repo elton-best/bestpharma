@@ -130,7 +130,7 @@ def produire():
     result.extend(autres.extraire(SOURCE))
     result.sort(key=lambda c: c['fichier'])
     return {'schema': 'begpharma.canevas.v1', 'canevas': result,
-            'non_integres': []}
+            'non_integres': [f.relative_to(SOURCE).as_posix() for f in sorted(SOURCE.rglob('*')) if f.suffix.lower() in ['.docx', '.doc', '.xlsx', '.xls', '.odt', '.pdf'] and f.relative_to(SOURCE).as_posix() not in {c['fichier'] for c in result}]}
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); args = parser.parse_args()
     contenu = json.dumps(produire(), ensure_ascii=False, indent=2)+'\n'

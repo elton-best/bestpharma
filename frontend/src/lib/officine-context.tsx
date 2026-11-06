@@ -42,6 +42,7 @@ export function OfficineProvider({ userId, children }: { userId: string; childre
 
   const { data = [] } = useQuery({
     queryKey: ["rattachements", userId],
+    initialDataUpdatedAt: 0,
     initialData: () => {
       const offs = api.getOfficines();
       return (offs || []).map((o: any) => ({

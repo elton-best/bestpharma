@@ -12,7 +12,7 @@ import { Menu, X } from "reicon-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { NotificationsSheet } from "@/components/notifications-sheet";
 import { TourProvider, BoutonGuide } from "@/components/guide-tour";
-import { api } from "@/lib/api-client";
+import { api, ApiHttpError } from "@/lib/api-client";
 import { enregistrerAppareil } from "@/lib/appareil";
 import { OfficineProvider, useOfficine } from "@/lib/officine-context";
 import { fr } from "@/lib/i18n/fr";
@@ -43,7 +43,10 @@ export const Route = createFileRoute("/_authenticated")({
         api.setUser(profil.user as any);
         return { user: { id: profil.user.id, email: profil.user.email ?? "" } } as any;
       }
-    } catch {}
+    } catch (error) {
+      // Une coupure ou une panne serveur ne prouve pas l’expiration du jeton.
+      if (!(error instanceof ApiHttpError && error.status === 401)) throw error;
+    }
 
     api.logout();
     throw redirect({ to: "/auth", search: {} });

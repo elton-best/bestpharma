@@ -21,6 +21,8 @@ const OFFICINES = [
   { id: "off2", nom: "Pharmacie du Littoral", raison_sociale: "Pharmacie du Littoral SAS", ville: "Porto-Novo", numero_licence: "BEN-OFF-2025-002", pivot: { role_code: "dispensateur", actif: true } },
 ];
 
+const officinesPour = user => OFFICINES.filter(o => user.officines.includes(o.id)).map(o => ({ ...o, pivot: { role_code: user.role, actif: true } }));
+
 const PRODUITS = [
   { id: "p1", code_cip: "6170123456789", code_interne: "BEG-001", nom_commercial: "Paracétamol 500mg", dci: "Paracétamol", forme: "Comprimé", dosage: "500mg", laboratoire: "Sanofi", tableau_substance: "sans", classe_produit: "standard", groupe_taxation: "B_TAXABLE", est_thermolabile: false, prix_public_ttc: 1500, prix_achat_moyen: 900, stock_total: 120, seuil_stock_min: 10, prochain_lot_fefo: { id: "l1", numero_lot: "LOT-2026-001", date_peremption: "2027-06-15", quantite_disponible: 45, jours_avant_peremption: 210, statut_peremption: "normal" } },
   { id: "p2", code_cip: "6170123456790", nom_commercial: "Amoxicilline 1g", dci: "Amoxicilline", forme: "Gélule", dosage: "1g", laboratoire: "GSK", tableau_substance: "liste_1", classe_produit: "liste_1", groupe_taxation: "B_TAXABLE", est_thermolabile: false, prix_public_ttc: 3200, stock_total: 8, seuil_stock_min: 10, alerte_rupture: true },
@@ -547,7 +549,7 @@ const server = http.createServer(async (req, res) => {
     if (user.mfa) {
       return sendJson(res, 200, { mfa_required: true, temp_token: "temp-demo-" + user.id, message: "Code TOTP requis (démo: 123456 ou app JBSWY3DPEHPK3PXP)" });
     }
-    return sendJson(res, 200, { token: "demo-token-" + user.id, user: { id: user.id, name: user.name, email: user.email, mfa_enabled: user.mfa }, officines: OFFICINES.filter(o => user.officines.includes(o.id)) });
+    return sendJson(res, 200, { token: "demo-token-" + user.id, user: { id: user.id, name: user.name, email: user.email, mfa_enabled: user.mfa }, officines: officinesPour(user) });
   }
   if (path === "/api/auth/verify-mfa" && method === "POST") {
     const body = await parseBody(req);
@@ -555,7 +557,7 @@ const server = http.createServer(async (req, res) => {
     const tempToken = req.headers.authorization?.replace("Bearer ", "") || body.temp_token;
     // find user by temp token
     const user = Object.values(DEMO_USERS).find(u => tempToken?.includes(u.id)) || DEMO_USERS["promoteur@begpharma.bj"];
-    return sendJson(res, 200, { token: "demo-token-" + user.id, user: { id: user.id, name: user.name, email: user.email, mfa_enabled: true }, officines: OFFICINES.filter(o => user.officines.includes(o.id)) });
+    return sendJson(res, 200, { token: "demo-token-" + user.id, user: { id: user.id, name: user.name, email: user.email, mfa_enabled: true }, officines: officinesPour(user) });
   }
   if (path === "/api/auth/register" && method === "POST") {
     return sendJson(res, 201, { message: "Inscription réussie", token: "demo-token-new", user: { id: "new", name: "Nouveau", email: "new@begpharma.bj" }, officines: [OFFICINES[0]] });
@@ -564,7 +566,7 @@ const server = http.createServer(async (req, res) => {
     const user = utilisateurCourant(req);
     return sendJson(res, 200, {
       user: { id: user.id, name: user.name, email: user.email, telephone: "+229 97 00 00 01", mfa_enabled: user.mfa, last_activity_at: new Date().toISOString() },
-      officines: OFFICINES.filter(o => user.officines.includes(o.id)),
+      officines: officinesPour(user),
     });
   }
   if (path === "/api/auth/logout" && method === "POST") {
@@ -608,7 +610,7 @@ const server = http.createServer(async (req, res) => {
   // OFFICINES
   if (path === "/api/officines" && method === "GET") {
     const user = utilisateurCourant(req);
-    return sendJson(res, 200, OFFICINES.filter(o => user.officines.includes(o.id)));
+    return sendJson(res, 200, officinesPour(user));
   }
   if (path === "/api/officines" && method === "POST") {
     const b = await parseBody(req);

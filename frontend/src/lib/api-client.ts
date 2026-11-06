@@ -23,6 +23,10 @@ export interface Officine {
   };
 }
 
+export class ApiHttpError extends Error {
+  constructor(message: string, public readonly status: number) { super(message); this.name = "ApiHttpError"; }
+}
+
 class ApiClient {
   private getHeaders(): HeadersInit {
     const token = this.getToken();
@@ -53,7 +57,10 @@ class ApiClient {
   getUser(): User | null {
     if (typeof window === "undefined") return null;
     const raw = localStorage.getItem(CLE_USER);
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const user = raw ? JSON.parse(raw) : null;
+      return user && typeof user.id === "string" && typeof user.email === "string" ? user : null;
+    } catch { return null; }
   }
 
   setUser(user: User | null) {
@@ -68,7 +75,10 @@ class ApiClient {
   getOfficines(): Officine[] {
     if (typeof window === "undefined") return [];
     const raw = localStorage.getItem(CLE_OFFICINES);
-    return raw ? JSON.parse(raw) : [];
+    try {
+      const officines = raw ? JSON.parse(raw) : [];
+      return Array.isArray(officines) ? officines.filter(o => o && typeof o.id === "string" && typeof o.nom === "string") : [];
+    } catch { return []; }
   }
 
   setOfficines(officines: Officine[]) {
@@ -95,7 +105,7 @@ class ApiClient {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ message: res.statusText }));
-      throw new Error(err.message || "Erreur de communication avec le serveur");
+      throw new ApiHttpError(err.message || "Erreur de communication avec le serveur", res.status);
     }
     return res.json();
   }

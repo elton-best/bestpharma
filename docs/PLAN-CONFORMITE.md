@@ -60,3 +60,13 @@ Frontend et backend liés par une empreinte serveur et une confirmation du mot d
 ## Lot GED de fichiers
 
 Stockage privé dédié, pièces conservées par version, historique, téléchargement authentifié avec vérification de l’empreinte et manifeste inclus dans les nouvelles approbations. Tests frontend et SQL PostgreSQL exécutés ; tests HTTP Laravel écrits mais non exécutés localement. Import du corpus, antivirus, conversion PDF/A, diffusion et sauvegardes restent distincts. Voir `GED-FICHIERS.md`.
+
+## Rapprochement de l'inventaire et du corpus
+
+Lecture reproductible de l'onglet `Inventaire` (sans réécriture du classeur) et inventaire des fichiers actuels, avec empreintes. Rapports : `rapprochement-corpus.md` et `rapprochement-corpus.json`.
+
+Résultat : 91 codes uniques, 14 processus, 63 fichiers. Types : 14 PRO, 9 MOP, 63 FOR, 5 ENR. États du classeur : 88 terminés, un en cours, un à établir et un sans état renseigné. Cela corrige l'omission d'une ligne dans le résumé initial.
+
+La proximité des noms propose des pistes pour 56 lignes ; 35 n'ont pas de piste suffisante par ce seul critère. Huit fichiers sont sollicités comme première piste par plusieurs lignes : rapprochements ambigus, pas doublons binaires prouvés. Aucun fichier n'est confirmé ni importé automatiquement. Les annexes et variantes doivent être examinées dans le contenu ; il serait incorrect de conclure à des documents absents en soustrayant simplement le nombre de fichiers du nombre de lignes.
+
+Commande de reproduction : `python scripts/rapprocher-corpus.py`, après installation de `scripts/requirements-corpus.txt`. Contrôle : option `--check` et `python -m unittest discover -s scripts/tests` (trois tests exécutés avec succès). La CI rejoue ces contrôles. Prochaine étape : lire les cartouches/codes des documents pour lever les ambiguïtés et établir un manifeste d'import explicite, sans transférer les statuts « Validé » en approbations applicatives.

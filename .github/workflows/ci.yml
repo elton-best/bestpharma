@@ -116,3 +116,9 @@ jobs:
         run: pip install -r scripts/requirements-referentiel.txt
       - name: Vérifier source, numérotation et reproductibilité
         run: python scripts/extraire-referentiel-abmed.py --check
+
+      - name: Vérifier le rapprochement du corpus documentaire
+        run: |
+          pip install -r scripts/requirements-corpus.txt
+          python scripts/rapprocher-corpus.py --check
+          python -m unittest discover -s scripts/tests

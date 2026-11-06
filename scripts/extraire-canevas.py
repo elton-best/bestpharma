@@ -84,8 +84,47 @@ def produire():
             result.append({'id': cle, 'titre': f.stem, 'rubrique': f.relative_to(SOURCE).parts[0],
                 'fichier': f.relative_to(SOURCE).as_posix(), 'sha256': hashlib.sha256(f.read_bytes()).hexdigest(),
                 'parties': parties, 'images': images})
+    # Les conversions sont versionnées avec l'empreinte de la source binaire et
+    # de l'XML. La CI n'a donc pas besoin d'un convertisseur installé au runtime.
+    anciens = ROOT/'references/canevas/anciens-doc'
+    for doc in json.loads((anciens/'manifeste.json').read_text())['documents']:
+        f = SOURCE/doc['fichier']; xml = (anciens/doc['xml']).read_bytes()
+        if hashlib.sha256(f.read_bytes()).hexdigest() != doc['sha256_source'] or hashlib.sha256(xml).hexdigest() != doc['sha256_xml']:
+            raise ValueError('Conversion DOC désalignée : '+doc['fichier'])
+        index = 0
+        blocs = []
+        def cle():
+            nonlocal index
+            index += 1
+            return f'b{index}'
+        root = ET.fromstring(xml)
+        def lire(elements):
+            sortie = []
+            for n in elements:
+                if n.tag in ['informaltable', 'table']:
+                    for group in n.findall('tgroup'):
+                        largeurs = [round(float(col.get('colwidth', '1pt').replace('pt', '')) * 20) for col in group.findall('colspec')]
+                        lignes = []
+                        for row in group.findall('.//row'):
+                            lignes.append([{'cle': cle(), 'texte': ''.join(cell.itertext()).strip('\n'), 'largeur': 1, 'hauteur': 1} for cell in row.findall('entry')])
+                        sortie.append({'cle': cle(), 'type': 'tableau', 'largeurs': largeurs, 'lignes': lignes})
+                elif n.tag in ['para', 'title']:
+                    tables = list(n.findall('informaltable')) + list(n.findall('table'))
+                    if tables:
+                        debut = (n.text or '').strip()
+                        if debut: sortie.append({'cle': cle(), 'type': 'paragraphe', 'texte': debut})
+                        sortie.extend(lire(tables))
+                    else:
+                        sortie.append({'cle': cle(), 'type': 'paragraphe', 'texte': ''.join(n.itertext()).strip('\n'), 'gras': n.tag == 'title'})
+                else: sortie.extend(lire(list(n)))
+            return sortie
+        for chapter in root.findall('chapter'): blocs.extend(lire(list(chapter)))
+        result.append({'id': hashlib.sha256(doc['fichier'].encode()).hexdigest()[:24], 'titre': f.stem,
+            'rubrique': Path(doc['fichier']).parts[0], 'fichier': doc['fichier'], 'sha256': doc['sha256_source'],
+            'conversion': 'antiword_docbook', 'parties': [{'origine': 'document', 'blocs': blocs}], 'images': {}})
+    result.sort(key=lambda c: c['fichier'])
     return {'schema': 'begpharma.canevas.v1', 'canevas': result,
-            'non_integres': [f.relative_to(SOURCE).as_posix() for f in sorted(SOURCE.rglob('*')) if f.suffix.lower() in ['.doc', '.xlsx', '.odt', '.pdf']]}
+            'non_integres': [f.relative_to(SOURCE).as_posix() for f in sorted(SOURCE.rglob('*')) if f.suffix.lower() in ['.xlsx', '.odt', '.pdf']]}
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); args = parser.parse_args()
     contenu = json.dumps(produire(), ensure_ascii=False, indent=2)+'\n'

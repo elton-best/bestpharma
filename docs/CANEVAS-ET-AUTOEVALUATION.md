@@ -2,7 +2,7 @@
 
 ## Canevas Word
 
-Le catalogue est extrait des trente-neuf fichiers DOCX du dossier fourni. Il conserve le texte, l’ordre des paragraphes, les tableaux, les cellules fusionnées, les proportions de colonnes, les en-têtes/pieds de page textuels et les images usuelles. Chaque zone peut être adaptée dans la fiche du modèle. Les tableaux imbriqués sont conservés.
+Le catalogue est extrait des trente-neuf fichiers DOCX du dossier fourni et complété par les cinq anciens fichiers DOC convertis en XML contrôlé. Il conserve le texte, l’ordre des paragraphes, les tableaux, les cellules fusionnées, les proportions de colonnes, les en-têtes/pieds de page textuels et les images usuelles. Chaque zone peut être adaptée dans la fiche du modèle. Les tableaux imbriqués sont conservés.
 
 Les canevas sont proposés dans les documents, la bibliothèque des modèles et, pour les sources concernées, la rubrique des non-conformités. La nature et le processus doivent être confirmés à la création. La saisie devient un brouillon documentaire dans Laravel/PostgreSQL, avec une copie structurée du modèle et son empreinte ; une mise à jour du catalogue ne change donc pas une ancienne saisie. Le brouillon peut être complété depuis sa fiche ; un contrôle d’empreinte refuse d’écraser une modification concurrente.
 
@@ -10,7 +10,9 @@ Le catalogue ne confère aucune approbation aux noms ou signatures imprimés dan
 
 **Limites de fidélité :** il s’agit d’une transposition web structurée, pas du moteur de mise en page de Word. La pagination et la typographie s’adaptent à l’écran. Les objets graphiques propriétaires, champs automatiques et règles d’impression Word ne sont pas garantis. Le document source reste nécessaire pour une comparaison finale.
 
-**Couverture non achevée :** les anciens fichiers DOC binaires, les classeurs XLSX, l’ODT et le PDF ne sont pas transformés par cet extracteur. Ils sont énumérés dans `non_integres` du catalogue. Les registres formation et maintenance déjà livrés restent distincts. Les anciennes fiches de non-conformité au format DOC ne sont donc pas déclarées intégrées à l’identique.
+**Anciens fichiers Word :** les conversions DocBook proviennent d’antiword, dont la version et les empreintes sont conservées. Les tableaux et les zones de la fiche de non-conformités sont intégrés ; les images, objets et détails de mise en page des DOC ne sont pas garantis.
+
+**Couverture non achevée :** les classeurs XLSX, l’ODT et le PDF ne sont pas transformés par cet extracteur. Ils sont énumérés dans `non_integres` du catalogue. Les registres formation et maintenance déjà livrés restent distincts. La saisie d’une fiche qualité crée un document brouillon ; elle ne synchronise pas automatiquement chaque cellule avec les actions du registre des non-conformités.
 
 Les pièces et validations sont désormais dans une section secondaire repliée. Leurs indisponibilités sont indiquées simplement, sans être transformées en succès ou historique vide. Les preuves de conservation et d’approbation ne sont pas supprimées du serveur.
 

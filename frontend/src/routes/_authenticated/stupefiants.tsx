@@ -313,7 +313,7 @@ function PageStupefiantsTabB() {
 
   const mutationViser = useMutation({
     mutationFn: (id: string) => api.post(`/stupefiants/${id}/viser`, {}),
-    onSuccess: () => { toast.success("Visa apposé — ligne verrouillée (INT-02)"); queryClient.invalidateQueries({ queryKey: ["stupefiants"] }); },
+    onSuccess: () => { toast.success("Visa apposé — ligne verrouillée"); queryClient.invalidateQueries({ queryKey: ["stupefiants"] }); },
     onError: (err: any) => toast.error(err.message),
   });
   const mutationCreer = useMutation({
@@ -472,20 +472,14 @@ function PageStupefiantsTabB() {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-black tracking-tight text-[#0F3B27]">Registre des Stupéfiants (Tableau B)</h1>
-            <Badge className="bg-[#0F3B27] text-[#92FF5F]">Conservation légale 10 ans</Badge>
           </div>
           <p className="mt-1 text-sm text-[#475C50] max-w-2xl">
             Suivi des entrées et sorties, balance permanente en temps réel. Chaque opération est numérotée, signée et verrouillée.
           </p>
-          <div className="mt-2 flex flex-wrap gap-2 text-xs font-bold">
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#0F3B27] text-white px-3 py-1"><Lock className="w-3 h-3" /> Registre inaltérable</span>
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#CFF1D2] bg-white px-3 py-1 text-[#0F3B27]">Numérotation continue</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-purple-50 border border-purple-200 px-3 py-1 text-purple-800">Armoire fermée à clé</span>
-          </div>
+
         </div>
         <div className="flex flex-col gap-2">
           <Button onClick={() => setDialogMouvementOuvert(true)} className="gap-2 bg-[#0F3B27] hover:bg-[#164E35] text-white font-bold"><Plus className="w-4 h-4" /> Inscrire un mouvement</Button>
-          <Badge variant="outline" className="justify-center border-amber-300 text-amber-800 bg-amber-50 text-xs">Conservation 10 ans — verrou suppression</Badge>
         </div>
       </div>
 
@@ -714,9 +708,8 @@ function PageStupefiantsTabB() {
       {/* Écriture rectificative STU-03 */}
       <Dialog open={dialogRectifOuvert} onOpenChange={setDialogRectifOuvert}>
         <ModaleFiche
-          titre="Écriture rectificative (STU-03)"
+          titre="Écriture rectificative"
           sousTitre={mouvementPourRectif ? `Ligne n° ${String(mouvementPourRectif.numero_ordre).padStart(4, "0")} — on ne rature pas, on ne supprime pas : on ajoute une ligne qui corrige.` : "On ne rature pas : on ajoute une ligne qui corrige."}
-          badge={<Badge variant="outline" className="border-purple-300 bg-purple-50 text-purple-800">INT-02</Badge>}
           pied={
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button variant="outline" onClick={() => setDialogRectifOuvert(false)} className="h-12 rounded-xl sm:h-11">Annuler</Button>

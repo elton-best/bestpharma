@@ -45,10 +45,10 @@ export const Route = createFileRoute("/_authenticated/caisse")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Caisse POS Tactile & FeexPay — BestPharma" },
+      { title: "Caisse POS Tactile & Mobile Money — BestPharma" },
       {
         name: "description",
-        content: "Point de vente tactile, paiements Mobile Money FeexPay et certification fiscale DGI e-MECeF.",
+        content: "Point de vente tactile, paiements Mobile Money Mobile Money et certification fiscale DGI e-MECeF.",
       },
     ],
   }),
@@ -126,9 +126,9 @@ function PageCaissePos() {
 
   const produitsFiltres = produits.filter(
     (p) =>
-      p.nom_commercial.toLowerCase().includes(recherche.toLowerCase()) ||
+      (p.nom_commercial ?? "").toLowerCase().includes(recherche.toLowerCase()) ||
       p.code_cip.includes(recherche) ||
-      (p.dci && p.dci.toLowerCase().includes(recherche.toLowerCase()))
+      (p.dci && (p.dci ?? "").toLowerCase().includes(recherche.toLowerCase()))
   );
 
   // Mutations
@@ -295,10 +295,10 @@ function PageCaissePos() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Caisse POS Tactile & FeexPay
+              Caisse POS Tactile & Mobile Money
             </h1>
             <Badge variant="outline" className="border-emerald-600 text-emerald-700 bg-emerald-50">
-              DGI e-MECeF & SYSCOHADA
+              Encaissements et tickets de vente
             </Badge>
           </div>
           <p className="text-sm text-slate-500">
@@ -599,11 +599,11 @@ function PageCaissePos() {
                   </div>
                 )}
 
-                {/* Si Mobile Money FeexPay */}
+                {/* Si Mobile Money Mobile Money */}
                 {modeReglement === "mobile_money" && (
                   <div className="p-2.5 bg-purple-50/70 rounded-md border border-purple-200 space-y-2 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-purple-900">Passerelle FeexPay Bénin</span>
+                      <span className="font-semibold text-purple-900">Passerelle Mobile Money Bénin</span>
                       <span className="text-[10px] text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded font-bold">
                         Instantané
                       </span>

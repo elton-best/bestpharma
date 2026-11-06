@@ -11,16 +11,22 @@ export function nombre(n: number | string): string {
 
 
 /** JJ/MM/AAAA dans le fuseau de l'officine. */
-export function formatDate(d: string | Date, fuseau = FUSEAU): string {
+export function formatDate(d: string | Date | null | undefined, fuseau = FUSEAU): string {
+  if (!d) return "Date non renseignée";
+  const date = new Date(d);
+  if (!Number.isFinite(date.getTime())) return "Date non renseignée";
   return new Intl.DateTimeFormat("fr-FR", {
     timeZone: fuseau,
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }).format(new Date(d));
+  }).format(date);
 }
 
-export function formatDateHeure(d: string | Date, fuseau = FUSEAU): string {
+export function formatDateHeure(d: string | Date | null | undefined, fuseau = FUSEAU): string {
+  if (!d) return "Date non renseignée";
+  const date = new Date(d);
+  if (!Number.isFinite(date.getTime())) return "Date non renseignée";
   return new Intl.DateTimeFormat("fr-FR", {
     timeZone: fuseau,
     day: "2-digit",
@@ -28,7 +34,7 @@ export function formatDateHeure(d: string | Date, fuseau = FUSEAU): string {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(d));
+  }).format(date);
 }
 
 /** Montant en FCFA, sans décimale. */

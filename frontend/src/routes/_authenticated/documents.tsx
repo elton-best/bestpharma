@@ -191,9 +191,9 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
     if (recherche.trim()) {
       const q = recherche.toLowerCase();
       return (
-        d.titre.toLowerCase().includes(q) ||
-        (d.code_document && d.code_document.toLowerCase().includes(q)) ||
-        d.contenu.toLowerCase().includes(q)
+        (d.titre ?? "").toLowerCase().includes(q) ||
+        (d.code_document && (d.code_document ?? "").toLowerCase().includes(q)) ||
+        (d.contenu ?? "").toLowerCase().includes(q)
       );
     }
     return true;

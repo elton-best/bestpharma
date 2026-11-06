@@ -203,9 +203,9 @@ function PagePointage() {
     const nettoyee = brut.replace("BESTPHARMA_BADGE:", "").replace("BESTPHARMA:EMP:", "").replace("BESTPHARMA:", "").trim();
 
     const matchEmp = employes.find((item: any) =>
-      (item.matricule && item.matricule.toLowerCase() === nettoyee.toLowerCase()) ||
+      (item.matricule && (item.matricule ?? "").toLowerCase() === nettoyee.toLowerCase()) ||
       item.id === nettoyee ||
-      (item.code_badge && item.code_badge.toLowerCase() === nettoyee.toLowerCase()) ||
+      (item.code_badge && (item.code_badge ?? "").toLowerCase() === nettoyee.toLowerCase()) ||
       nettoyee.includes(item.id) ||
       (item.matricule && nettoyee.includes(item.matricule))
     ) || employes[0] || { id: "emp-1", nom_complet: "Dr Félicien AGBO", poste: "pharmacien_titulaire" };

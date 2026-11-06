@@ -223,7 +223,7 @@ export function LandingPage() {
             <div className="rounded-2xl border border-[#CFE3D5] bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
               <p className="font-display text-2xl sm:text-3xl font-black text-[#18AA38]">e-MECeF</p>
               <p className="text-xs font-bold text-[#1F2420] mt-1">DGI Bénin & POS</p>
-              <p className="text-[11px] text-[#5C6660]">Mobile Money FeexPay & OHADA</p>
+              <p className="text-[11px] text-[#5C6660]">Mobile Money Mobile Money & OHADA</p>
             </div>
           </div>
         </div>
@@ -356,7 +356,7 @@ export function LandingPage() {
               </div>
             </div>
             <p className="text-xs text-[#5C6660] leading-relaxed mb-4">
-              Encaissement rapide au comptoir, intégration directe avec l'API e-MECeF de la DGI Bénin, paiements Mobile Money FeexPay et génération du journal des ventes OHADA.
+              Encaissement rapide au comptoir, intégration directe avec l'API e-MECeF de la DGI Bénin, paiements Mobile Money Mobile Money et génération du journal des ventes OHADA.
             </p>
             <ul className="space-y-2 text-xs text-[#1F2420] font-medium border-t border-[#CFE3D5]/60 pt-4">
               <li className="flex items-center gap-2">
@@ -396,7 +396,7 @@ export function LandingPage() {
           {[
             {
               titre: "Caisse POS Tactile",
-              desc: "Vente au comptoir, e-MECeF, Mobile Money FeexPay & clôtures Z.",
+              desc: "Vente au comptoir, e-MECeF, Mobile Money Mobile Money & clôtures Z.",
               code: "POS-01",
               icone: "Receipt",
               url: "/auth",

@@ -88,7 +88,7 @@ function PageConnexion() {
         setMfaRequis(true);
         setTempToken(data.temp_token);
         setEmailMFA(emailToUse);
-        setMessage("🔐 MFA requis — saisissez le code TOTP (démo : 123456)");
+        setMessage("Saisissez le code de vérification de votre application d’authentification.");
         return;
       }
 
@@ -105,7 +105,7 @@ function PageConnexion() {
 
   async function verifierMFA(e?: React.FormEvent) {
     if (e) e.preventDefault();
-    if (!codeTOTP || codeTOTP.length < 6) { setMessage("Code à 6 chiffres requis (démo : 123456)"); return; }
+    if (!codeTOTP || codeTOTP.length < 6) { setMessage("Saisissez le code complet de votre application d’authentification."); return; }
     setEnCours(true);
     setMessage(null);
     try {
@@ -125,7 +125,7 @@ function PageConnexion() {
       if (data.officines) api.setOfficines(data.officines);
       window.location.href = "/app";
     } catch (err: any) {
-      setMessage(err.message || "Code MFA invalide — essayez 123456");
+      setMessage(err.message || "Code de vérification invalide. Veuillez réessayer.");
     } finally { setEnCours(false); }
   }
 
@@ -137,8 +137,8 @@ function PageConnexion() {
   }
 
   return (
-    <div className="h-screen w-full bg-[#D4E8B8] flex items-center justify-center overflow-hidden font-sans selection:bg-[#92FF5F] selection:text-[#0F3B27]">
-      <div className="w-full max-w-md px-6">
+    <div className="min-h-dvh w-full bg-[#D4E8B8] flex items-center justify-center overflow-x-hidden py-6 sm:py-10 font-sans selection:bg-[#92FF5F] selection:text-[#0F3B27]">
+      <div className="w-full min-w-0 max-w-md px-4 sm:px-6">
 
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
@@ -210,7 +210,7 @@ function PageConnexion() {
           <form onSubmit={verifierMFA} className="space-y-4">
             <div className="p-4 rounded-2xl bg-white border border-[#0F3B27]/10 text-center">
               <p className="text-sm font-black text-[#0F3B27]">Vérification MFA</p>
-              <p className="text-xs text-[#0F3B27]/60 mt-1">Connecté en tant que <strong>{emailMFA}</strong></p>
+              <p className="break-words text-xs text-[#0F3B27]/60 mt-1">Connecté en tant que <strong>{emailMFA}</strong></p>
               {demo && <p className="text-[11px] text-[#0F3B27]/50 mt-1">Code démo : <span className="font-mono bg-[#92FF5F]/30 px-2 py-0.5 rounded font-bold text-[#0F3B27]">{demo.code_mfa}</span></p>}
             </div>
             <div>
@@ -221,8 +221,11 @@ function PageConnexion() {
                 maxLength={6}
                 value={codeTOTP}
                 onChange={(e) => setCodeTOTP(e.target.value.replace(/\D/g, ""))}
-                placeholder="Code à 6 chiffres"
-                className="w-full rounded-2xl border border-[#0F3B27]/20 bg-white px-4 py-3.5 text-center text-lg tracking-[0.3em] font-mono font-black text-[#0F3B27] placeholder:text-[#0F3B27]/30 outline-none focus:border-[#0F3B27] focus:ring-4 focus:ring-[#92FF5F]/30"
+                aria-label="Code de vérification"
+                autoComplete="one-time-code"
+                pattern="[0-9]{6}"
+                placeholder="Code de vérification"
+                className="w-full rounded-2xl border border-[#0F3B27]/20 bg-white px-4 py-3.5 text-center text-lg tracking-[0.15em] placeholder:tracking-normal placeholder:text-sm font-mono font-black text-[#0F3B27] placeholder:text-[#0F3B27]/30 outline-none focus:border-[#0F3B27] focus:ring-4 focus:ring-[#92FF5F]/30"
                 autoFocus
               />
             </div>
@@ -238,7 +241,7 @@ function PageConnexion() {
             >
               {enCours ? "Vérification..." : "Valider le code"}
             </button>
-            <button type="button" onClick={() => { setMfaRequis(false); setCodeTOTP(""); setMessage(null); }} className="w-full text-xs font-bold text-[#0F3B27]/60 hover:text-[#0F3B27]">
+            <button type="button" onClick={() => { setMfaRequis(false); setCodeTOTP(""); setMessage(null); }} className="min-h-12 w-full text-xs font-bold text-[#0F3B27]/60 hover:text-[#0F3B27]">
               ← Retour à la connexion
             </button>
           </form>
@@ -249,7 +252,7 @@ function PageConnexion() {
           <button
             type="button"
             onClick={() => setAfficherRolesDemo(!afficherRolesDemo)}
-            className="text-xs font-bold text-[#0F3B27]/70 hover:text-[#0F3B27] transition-colors cursor-pointer"
+            className="min-h-12 text-xs font-bold text-[#0F3B27]/70 hover:text-[#0F3B27] transition-colors cursor-pointer"
           >
             {afficherRolesDemo ? "Masquer les comptes démo ▲" : "Accès rapide aux comptes démo ▼"}
           </button>

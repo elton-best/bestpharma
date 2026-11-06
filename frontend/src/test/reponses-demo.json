@@ -1,0 +1,1641 @@
+{
+  "/produits": {
+    "status": "success",
+    "data": [
+      {
+        "id": "p1",
+        "code_cip": "6170123456789",
+        "code_interne": "BEG-001",
+        "nom_commercial": "Paracétamol 500mg",
+        "dci": "Paracétamol",
+        "forme": "Comprimé",
+        "dosage": "500mg",
+        "laboratoire": "Sanofi",
+        "tableau_substance": "sans",
+        "classe_produit": "standard",
+        "groupe_taxation": "B_TAXABLE",
+        "est_thermolabile": false,
+        "prix_public_ttc": 1500,
+        "prix_achat_moyen": 900,
+        "stock_total": 120,
+        "seuil_stock_min": 10,
+        "prochain_lot_fefo": {
+          "id": "l1",
+          "numero_lot": "LOT-2026-001",
+          "date_peremption": "2027-06-15",
+          "quantite_disponible": 45,
+          "jours_avant_peremption": 210,
+          "statut_peremption": "normal"
+        }
+      },
+      {
+        "id": "p2",
+        "code_cip": "6170123456790",
+        "nom_commercial": "Amoxicilline 1g",
+        "dci": "Amoxicilline",
+        "forme": "Gélule",
+        "dosage": "1g",
+        "laboratoire": "GSK",
+        "tableau_substance": "liste_1",
+        "classe_produit": "liste_1",
+        "groupe_taxation": "B_TAXABLE",
+        "est_thermolabile": false,
+        "prix_public_ttc": 3200,
+        "stock_total": 8,
+        "seuil_stock_min": 10,
+        "alerte_rupture": true
+      },
+      {
+        "id": "p3",
+        "code_cip": "6170123456791",
+        "nom_commercial": "Insuline Rapide",
+        "dci": "Insuline",
+        "forme": "Injectable",
+        "dosage": "100UI/ml",
+        "laboratoire": "Novo Nordisk",
+        "tableau_substance": "sans",
+        "classe_produit": "thermolabile",
+        "est_thermolabile": true,
+        "prix_public_ttc": 12500,
+        "stock_total": 15,
+        "seuil_stock_min": 5
+      },
+      {
+        "id": "p4",
+        "code_cip": "6170123456792",
+        "nom_commercial": "Tramadol 50mg",
+        "dci": "Tramadol",
+        "forme": "Gélule",
+        "dosage": "50mg",
+        "laboratoire": "Pfizer",
+        "tableau_substance": "stupefiant",
+        "classe_produit": "stupefiant",
+        "est_thermolabile": false,
+        "prix_public_ttc": 4500,
+        "stock_total": 30
+      },
+      {
+        "id": "p5",
+        "code_cip": "6170123456793",
+        "nom_commercial": "Diazépam 10mg",
+        "dci": "Diazépam",
+        "forme": "Comprimé",
+        "dosage": "10mg",
+        "laboratoire": "Roche",
+        "tableau_substance": "liste_2",
+        "classe_produit": "psychotrope",
+        "est_thermolabile": false,
+        "prix_public_ttc": 2800,
+        "stock_total": 22
+      }
+    ]
+  },
+  "/preparations": {
+    "data": {
+      "data": [
+        {
+          "id": "pr1",
+          "numero_preparation": "PREP-2026-0001",
+          "nom_preparation": "Pâte à l'eau",
+          "type_preparation": "officinale",
+          "formule_detaillee": "Oxyde de zinc 20g, Talc 20g, Glycérine 20g, Eau purifiée qsp 100g",
+          "quantite_produite": "100g",
+          "conditionnement": "Pot hermétique",
+          "date_fabrication": "2026-11-01",
+          "date_limite_utilisation": "2026-12-01",
+          "patient_nom": null,
+          "prescripteur_nom": null,
+          "conforme": true,
+          "matieres_premieres_lots": [
+            {
+              "matiere": "Oxyde de zinc",
+              "lot": "MP-2026-012",
+              "fournisseur": "Cooper Bénin",
+              "quantite": "20 g",
+              "certificat": "CA-2026-014.pdf"
+            },
+            {
+              "matiere": "Talc",
+              "lot": "MP-2026-009",
+              "fournisseur": "Cooper Bénin",
+              "quantite": "20 g",
+              "certificat": "CA-2026-009.pdf"
+            },
+            {
+              "matiere": "Glycérine",
+              "lot": "MP-2026-021",
+              "fournisseur": "UBIPHARM",
+              "quantite": "20 g",
+              "certificat": "CA-2026-021.pdf"
+            }
+          ],
+          "executant": {
+            "name": "Dr. Marcelle HOUNNOU"
+          },
+          "pharmacien_visa": {
+            "name": "Dr. Marcelle HOUNNOU"
+          }
+        },
+        {
+          "id": "pr2",
+          "numero_preparation": "PREP-2026-0002",
+          "nom_preparation": "Sirop de Pholcodine",
+          "type_preparation": "magistrale",
+          "formule_detaillee": "Pholcodine 100mg, Saccharose, Arôme cerise, Eau purifiée qsp 200ml",
+          "quantite_produite": "200ml",
+          "conditionnement": "Flacon teinté hermétique",
+          "date_fabrication": "2026-11-03",
+          "date_limite_utilisation": "2026-11-17",
+          "patient_nom": "Enfant M. D.",
+          "prescripteur_nom": "Dr. ADJASSA",
+          "conforme": true,
+          "matieres_premieres_lots": [
+            {
+              "matiere": "Pholcodine",
+              "lot": "MP-2026-031",
+              "fournisseur": "LABOREX BÉNIN",
+              "quantite": "100 mg",
+              "certificat": "CA-2026-031.pdf"
+            },
+            {
+              "matiere": "Saccharose",
+              "lot": "MP-2026-018",
+              "fournisseur": "CAMEG BÉNIN",
+              "quantite": "qsp 200 ml",
+              "certificat": "—"
+            }
+          ],
+          "executant": {
+            "name": "Gervais KPADONOU"
+          },
+          "pharmacien_visa": null
+        }
+      ],
+      "total": 2
+    }
+  },
+  "/dispensations": {
+    "status": "success",
+    "data": {
+      "current_page": 1,
+      "data": [
+        {
+          "id": "disp1",
+          "numero_dispensation": "DISP-2026-0007",
+          "type_dispensation": "ordonnance",
+          "patient_nom": "Adjoua KOUGBADO",
+          "patient_age": 34,
+          "patient_telephone": "+229 97 21 45 63",
+          "prescripteur_nom": "Dr. Sémèvo ADJOVI",
+          "prescripteur_titre": "Dr",
+          "prescripteur_centre": "CNHU-HKM Cotonou",
+          "montant_total": 3200,
+          "statut": "delivree",
+          "date_dispensation": "2026-11-03T09:40:00Z",
+          "commentaires_posologie": "Traitement au cours des repas",
+          "lignes": [
+            {
+              "id": "dl1",
+              "produit_id": "p2",
+              "quantite": 1,
+              "posologie": "1 gélule matin et soir",
+              "duree_traitement": "7 jours",
+              "produit": {
+                "nom_commercial": "Amoxicilline 1g",
+                "dosage": "1g"
+              }
+            }
+          ]
+        }
+      ],
+      "first_page_url": "http://localhost:8001/?page=1",
+      "from": 1,
+      "last_page": 1,
+      "per_page": 30,
+      "to": 1,
+      "total": 1
+    }
+  },
+  "/caisse/session-active": {
+    "status": "success",
+    "data": {
+      "id": "sess1",
+      "numero_session": "CAISSE-2026-0021",
+      "statut": "ouverte",
+      "fond_caisse_ouverture": 20000,
+      "fond_caisse_fermeture_reel": null,
+      "fond_caisse_fermeture_theorique": null,
+      "ecart_caisse": null,
+      "opened_at": "2026-11-04T07:30:00Z",
+      "closed_at": null,
+      "caissier": {
+        "id": "u3",
+        "name": "Gervais KPADONOU"
+      },
+      "ventes": [
+        {
+          "id": "v1",
+          "numero_ticket": "TICKET-2026-0142",
+          "date_vente": "2026-11-04T10:12:00Z",
+          "client_nom": "Client comptoir",
+          "client_ifu": null,
+          "mode_reglement": "especes",
+          "montant_total": 4500,
+          "montant_recu": 5000,
+          "monnaie_rendue": 500,
+          "caissier": {
+            "id": "u3",
+            "name": "Gervais KPADONOU"
+          },
+          "lignes": [
+            {
+              "id": "vl1",
+              "produit_id": "p1",
+              "quantite": 2,
+              "prix_unitaire_ttc": 1500,
+              "montant_ligne": 3000,
+              "produit": {
+                "nom_commercial": "Paracétamol 500mg",
+                "dosage": "500mg"
+              }
+            },
+            {
+              "id": "vl2",
+              "produit_id": "p5",
+              "quantite": 1,
+              "prix_unitaire_ttc": 1500,
+              "montant_ligne": 1500,
+              "produit": {
+                "nom_commercial": "Diazépam 10mg",
+                "dosage": "10mg"
+              }
+            }
+          ],
+          "facture_emecef": {
+            "numero_facture": "DGI-2026-001234",
+            "qr_code_data": "BEN-DGI|MECEF|2026|001234|4500"
+          }
+        }
+      ]
+    }
+  },
+  "/comptabilite/journal-ventes": {
+    "status": "success",
+    "data": {
+      "current_page": 1,
+      "data": [
+        {
+          "id": "ec1",
+          "numero_compte": "571100",
+          "libelle_compte": "Caisse espèces",
+          "date_piece": "2026-11-04",
+          "libelle_piece": "Vente comptoir TICKET-2026-0142",
+          "debit": 4500,
+          "credit": 0
+        },
+        {
+          "id": "ec2",
+          "numero_compte": "701000",
+          "libelle_compte": "Ventes de marchandises",
+          "date_piece": "2026-11-04",
+          "libelle_piece": "Vente comptoir TICKET-2026-0142",
+          "debit": 0,
+          "credit": 4500
+        }
+      ],
+      "first_page_url": "http://localhost:8001/?page=1",
+      "from": 1,
+      "last_page": 1,
+      "per_page": 30,
+      "to": 2,
+      "total": 2
+    },
+    "balance": [
+      {
+        "numero_compte": "571100",
+        "libelle_compte": "Caisse espèces",
+        "total_debit": 4500,
+        "total_credit": 0
+      },
+      {
+        "numero_compte": "701000",
+        "libelle_compte": "Ventes de marchandises",
+        "total_debit": 0,
+        "total_credit": 4500
+      }
+    ]
+  },
+  "/comptabilite/clotures": {
+    "status": "success",
+    "data": {
+      "current_page": 1,
+      "data": [],
+      "first_page_url": "http://localhost:8001/?page=1",
+      "from": null,
+      "last_page": 1,
+      "per_page": 20,
+      "to": 0,
+      "total": 0
+    }
+  },
+  "/facturation/emecef": {
+    "status": "success",
+    "data": {
+      "current_page": 1,
+      "data": [
+        {
+          "id": "f1",
+          "numero_facture": "DGI-2026-001234",
+          "vente_id": "v1",
+          "montant_total": 4500,
+          "regime_tva": "B_TAXABLE",
+          "statut_dgi": "certifiee",
+          "qr_code_data": "BEN-DGI|MECEF|2026|001234|4500",
+          "date_certification": "2026-11-04T10:12:05Z",
+          "vente": {
+            "numero_ticket": "TICKET-2026-0142",
+            "montant_total": 4500,
+            "caissier": {
+              "name": "Gervais KPADONOU"
+            },
+            "lignes": [
+              {
+                "id": "vl1",
+                "quantite": 2,
+                "prix_unitaire_ttc": 1500,
+                "produit": {
+                  "nom_commercial": "Paracétamol 500mg"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "first_page_url": "http://localhost:8001/?page=1",
+      "from": 1,
+      "last_page": 1,
+      "per_page": 25,
+      "to": 1,
+      "total": 1
+    }
+  },
+  "/stupefiants": {
+    "data": {
+      "data": [
+        {
+          "id": "s1",
+          "numero_ordre": 1,
+          "date_mouvement": "2026-11-01T09:00:00Z",
+          "type_mouvement": "entree_livraison",
+          "categorie": "stupefiant",
+          "quantite": 20,
+          "stock_precedent": 0,
+          "stock_nouveau": 20,
+          "reference_piece": "BL-2026-1045",
+          "tiers_nom": "CAMEG BÉNIN",
+          "prescripteur_nom": null,
+          "observations": "Entrée stock lot STUP-001 (FEFO)",
+          "produit": {
+            "nom_commercial": "Tramadol 50mg",
+            "dosage": "50mg",
+            "code_cip": "6170123456792"
+          },
+          "lot": {
+            "numero_lot": "STUP-001",
+            "date_peremption": "2027-03-01"
+          },
+          "operateur": {
+            "name": "Dr. Marcelle HOUNNOU"
+          },
+          "pharmacien_visa": null
+        },
+        {
+          "id": "s2",
+          "numero_ordre": 2,
+          "date_mouvement": "2026-11-03T11:00:00Z",
+          "type_mouvement": "sortie_dispensation",
+          "quantite": 5,
+          "stock_precedent": 20,
+          "stock_nouveau": 15,
+          "reference_piece": "ORD-2026-001",
+          "tiers_nom": "Patient A. K.",
+          "prescripteur_nom": "Dr. SOSSOU",
+          "observations": "Délivrance sur ordonnance",
+          "produit": {
+            "nom_commercial": "Tramadol 50mg",
+            "dosage": "50mg",
+            "code_cip": "6170123456792"
+          },
+          "lot": {
+            "numero_lot": "STUP-001",
+            "date_peremption": "2027-03-01"
+          },
+          "operateur": {
+            "name": "Gervais KPADONOU"
+          },
+          "pharmacien_visa": {
+            "name": "Dr. Marcelle HOUNNOU"
+          }
+        }
+      ],
+      "total": 2,
+      "current_page": 1,
+      "per_page": 30
+    },
+    "balance_produits": [
+      {
+        "id": "p4",
+        "code_cip": "6170123456792",
+        "nom_commercial": "Tramadol 50mg",
+        "dosage": "50mg",
+        "stock_theorique_registre": 15,
+        "stock_physique_lots": 15,
+        "concordance_exacte": true,
+        "ecart": 0,
+        "non_vises_count": 1
+      },
+      {
+        "id": "p5",
+        "code_cip": "6170123456793",
+        "nom_commercial": "Diazépam 10mg",
+        "dosage": "10mg",
+        "stock_theorique_registre": 0,
+        "stock_physique_lots": 0,
+        "concordance_exacte": true,
+        "ecart": 0,
+        "non_vises_count": 0
+      }
+    ]
+  },
+  "/stupefiants/balance": {
+    "status": "success",
+    "data": {
+      "date": "2026-11-06",
+      "par_produit": [
+        {
+          "id": "p4",
+          "code_cip": "6170123456792",
+          "nom_commercial": "Tramadol 50mg",
+          "dosage": "50mg",
+          "stock_theorique_registre": 15,
+          "stock_physique_lots": 15,
+          "concordance_exacte": true,
+          "ecart": 0,
+          "non_vises_count": 1
+        },
+        {
+          "id": "p5",
+          "code_cip": "6170123456793",
+          "nom_commercial": "Diazépam 10mg",
+          "dosage": "10mg",
+          "stock_theorique_registre": 0,
+          "stock_physique_lots": 0,
+          "concordance_exacte": true,
+          "ecart": 0,
+          "non_vises_count": 0
+        }
+      ],
+      "total_lignes": 2
+    }
+  },
+  "/stupefiants/armoire": {
+    "status": "success",
+    "data": {
+      "contenu": [],
+      "lots_stupefiants": [],
+      "exigence": "Armoire fermée à clé"
+    }
+  },
+  "/stupefiants/ordonnancier": {
+    "status": "success",
+    "data": {
+      "data": [
+        {
+          "id": "s2",
+          "numero_ordre": 2,
+          "date_mouvement": "2026-11-03T11:00:00Z",
+          "type_mouvement": "sortie_dispensation",
+          "quantite": 5,
+          "stock_precedent": 20,
+          "stock_nouveau": 15,
+          "reference_piece": "ORD-2026-001",
+          "tiers_nom": "Patient A. K.",
+          "prescripteur_nom": "Dr. SOSSOU",
+          "observations": "Délivrance sur ordonnance",
+          "produit": {
+            "nom_commercial": "Tramadol 50mg",
+            "dosage": "50mg",
+            "code_cip": "6170123456792"
+          },
+          "lot": {
+            "numero_lot": "STUP-001",
+            "date_peremption": "2027-03-01"
+          },
+          "operateur": {
+            "name": "Gervais KPADONOU"
+          },
+          "pharmacien_visa": {
+            "name": "Dr. Marcelle HOUNNOU"
+          }
+        }
+      ],
+      "conservation": "10 ans"
+    }
+  },
+  "/stocks": {
+    "status": "success",
+    "data": [
+      {
+        "id": "l3",
+        "produit_id": "p2",
+        "numero_lot": "LOT-2026-003",
+        "date_peremption": "2026-11-30",
+        "date_reception": "2026-09-15",
+        "quantite_disponible": 8,
+        "quantite_initiale": 20,
+        "emplacement": "Réserve — Stock principal",
+        "fournisseur_nom": "CAMEG BÉNIN",
+        "bon_livraison_ref": "BL-2026-1047",
+        "statut": "quarantaine",
+        "statut_detail": "quarantaine",
+        "statut_effectif": "quarantaine",
+        "est_vendable": false,
+        "motif_quarantaine": "Rappel lot fabricant — vérification ABMed",
+        "jours_avant_peremption": 18,
+        "statut_peremption": "critique_1m",
+        "produit": {
+          "id": "p2",
+          "code_cip": "6170123456790",
+          "nom_commercial": "Amoxicilline 1g",
+          "dci": "Amoxicilline",
+          "forme": "Gélule",
+          "dosage": "1g",
+          "laboratoire": "GSK",
+          "tableau_substance": "liste_1",
+          "classe_produit": "liste_1",
+          "groupe_taxation": "B_TAXABLE",
+          "est_thermolabile": false,
+          "prix_public_ttc": 3200,
+          "stock_total": 8,
+          "seuil_stock_min": 10,
+          "alerte_rupture": true
+        }
+      },
+      {
+        "id": "l2",
+        "produit_id": "p1",
+        "numero_lot": "LOT-2026-002",
+        "date_peremption": "2026-12-10",
+        "date_reception": "2026-11-01",
+        "quantite_disponible": 12,
+        "quantite_initiale": 30,
+        "emplacement": "Comptoir — Délivrance",
+        "fournisseur_nom": "UBIPHARM BÉNIN",
+        "bon_livraison_ref": "BL-2026-1046",
+        "statut": "en_stock",
+        "statut_detail": "commercialisable",
+        "statut_effectif": "commercialisable",
+        "est_vendable": true,
+        "jours_avant_peremption": 28,
+        "statut_peremption": "critique_1m",
+        "produit": {
+          "id": "p1",
+          "code_cip": "6170123456789",
+          "code_interne": "BEG-001",
+          "nom_commercial": "Paracétamol 500mg",
+          "dci": "Paracétamol",
+          "forme": "Comprimé",
+          "dosage": "500mg",
+          "laboratoire": "Sanofi",
+          "tableau_substance": "sans",
+          "classe_produit": "standard",
+          "groupe_taxation": "B_TAXABLE",
+          "est_thermolabile": false,
+          "prix_public_ttc": 1500,
+          "prix_achat_moyen": 900,
+          "stock_total": 120,
+          "seuil_stock_min": 10,
+          "prochain_lot_fefo": {
+            "id": "l1",
+            "numero_lot": "LOT-2026-001",
+            "date_peremption": "2027-06-15",
+            "quantite_disponible": 45,
+            "jours_avant_peremption": 210,
+            "statut_peremption": "normal"
+          }
+        }
+      },
+      {
+        "id": "l4",
+        "produit_id": "p3",
+        "numero_lot": "LOT-2026-004",
+        "date_peremption": "2027-01-20",
+        "date_reception": "2026-11-02",
+        "quantite_disponible": 15,
+        "quantite_initiale": 15,
+        "emplacement": "Réfrigérateur 2°C–8°C",
+        "fournisseur_nom": "LABOREX BÉNIN",
+        "bon_livraison_ref": "BL-2026-1048",
+        "statut": "en_stock",
+        "statut_detail": "commercialisable",
+        "statut_effectif": "commercialisable",
+        "est_vendable": true,
+        "jours_avant_peremption": 68,
+        "statut_peremption": "alerte_3m",
+        "produit": {
+          "id": "p3",
+          "code_cip": "6170123456791",
+          "nom_commercial": "Insuline Rapide",
+          "dci": "Insuline",
+          "forme": "Injectable",
+          "dosage": "100UI/ml",
+          "laboratoire": "Novo Nordisk",
+          "tableau_substance": "sans",
+          "classe_produit": "thermolabile",
+          "est_thermolabile": true,
+          "prix_public_ttc": 12500,
+          "stock_total": 15,
+          "seuil_stock_min": 5
+        }
+      },
+      {
+        "id": "l1",
+        "produit_id": "p1",
+        "numero_lot": "LOT-2026-001",
+        "date_peremption": "2027-06-15",
+        "date_reception": "2026-10-20",
+        "quantite_disponible": 45,
+        "quantite_initiale": 50,
+        "emplacement": "Réserve — Stock principal",
+        "fournisseur_nom": "CAMEG BÉNIN",
+        "bon_livraison_ref": "BL-2026-1045",
+        "statut": "en_stock",
+        "statut_detail": "commercialisable",
+        "statut_effectif": "commercialisable",
+        "est_vendable": true,
+        "jours_avant_peremption": 210,
+        "statut_peremption": "normal",
+        "produit": {
+          "id": "p1",
+          "code_cip": "6170123456789",
+          "code_interne": "BEG-001",
+          "nom_commercial": "Paracétamol 500mg",
+          "dci": "Paracétamol",
+          "forme": "Comprimé",
+          "dosage": "500mg",
+          "laboratoire": "Sanofi",
+          "tableau_substance": "sans",
+          "classe_produit": "standard",
+          "groupe_taxation": "B_TAXABLE",
+          "est_thermolabile": false,
+          "prix_public_ttc": 1500,
+          "prix_achat_moyen": 900,
+          "stock_total": 120,
+          "seuil_stock_min": 10,
+          "prochain_lot_fefo": {
+            "id": "l1",
+            "numero_lot": "LOT-2026-001",
+            "date_peremption": "2027-06-15",
+            "quantite_disponible": 45,
+            "jours_avant_peremption": 210,
+            "statut_peremption": "normal"
+          }
+        }
+      }
+    ],
+    "stats": {
+      "perimes": 0,
+      "critiques_1m": 1,
+      "alertes_3m": 1,
+      "total_lots_actifs": 3,
+      "valorisation_totale": 72000
+    }
+  },
+  "/emplacements": {
+    "status": "success",
+    "data": [
+      {
+        "id": "e1",
+        "code": "COMPTOIR",
+        "libelle": "Comptoir — Délivrance",
+        "type_zone": "comptoir",
+        "lots_count": 1
+      },
+      {
+        "id": "e2",
+        "code": "RESERVE",
+        "libelle": "Réserve — Stock principal",
+        "type_zone": "reserve",
+        "lots_count": 2
+      },
+      {
+        "id": "e3",
+        "code": "FRIGO",
+        "libelle": "Réfrigérateur 2°C–8°C",
+        "type_zone": "frigo",
+        "lots_count": 1
+      },
+      {
+        "id": "e4",
+        "code": "ARMOIRE",
+        "libelle": "Armoire sécurisée — Stupéfiants & Listes",
+        "type_zone": "armoire_securisee",
+        "lots_count": 0
+      },
+      {
+        "id": "e5",
+        "code": "ATTENTE",
+        "libelle": "Zone d'attente de contrôle",
+        "type_zone": "attente_controle",
+        "lots_count": 0
+      },
+      {
+        "id": "e6",
+        "code": "RETOURS",
+        "libelle": "Zone des retours fournisseur",
+        "type_zone": "retours",
+        "lots_count": 0
+      },
+      {
+        "id": "e7",
+        "code": "DECHETS",
+        "libelle": "Aire des déchets sécurisée",
+        "type_zone": "dechets",
+        "lots_count": 0
+      }
+    ]
+  },
+  "/mouvements": {
+    "status": "success",
+    "data": {
+      "data": [
+        {
+          "id": "m1",
+          "type_mouvement": "entree_reception",
+          "quantite": 50,
+          "stock_avant": 0,
+          "stock_apres": 50,
+          "motif": "Réception conforme — commercialisable",
+          "reference_piece": "BL-2026-1045",
+          "created_at": "2026-10-20T10:00:00Z",
+          "produit": {
+            "id": "p1",
+            "code_cip": "6170123456789",
+            "code_interne": "BEG-001",
+            "nom_commercial": "Paracétamol 500mg",
+            "dci": "Paracétamol",
+            "forme": "Comprimé",
+            "dosage": "500mg",
+            "laboratoire": "Sanofi",
+            "tableau_substance": "sans",
+            "classe_produit": "standard",
+            "groupe_taxation": "B_TAXABLE",
+            "est_thermolabile": false,
+            "prix_public_ttc": 1500,
+            "prix_achat_moyen": 900,
+            "stock_total": 120,
+            "seuil_stock_min": 10,
+            "prochain_lot_fefo": {
+              "id": "l1",
+              "numero_lot": "LOT-2026-001",
+              "date_peremption": "2027-06-15",
+              "quantite_disponible": 45,
+              "jours_avant_peremption": 210,
+              "statut_peremption": "normal"
+            }
+          },
+          "lot": {
+            "id": "l1",
+            "produit_id": "p1",
+            "numero_lot": "LOT-2026-001",
+            "date_peremption": "2027-06-15",
+            "date_reception": "2026-10-20",
+            "quantite_disponible": 45,
+            "quantite_initiale": 50,
+            "emplacement": "Réserve — Stock principal",
+            "fournisseur_nom": "CAMEG BÉNIN",
+            "bon_livraison_ref": "BL-2026-1045",
+            "statut": "en_stock",
+            "statut_detail": "commercialisable",
+            "statut_effectif": "commercialisable",
+            "est_vendable": true,
+            "jours_avant_peremption": 210,
+            "statut_peremption": "normal",
+            "produit": {
+              "id": "p1",
+              "code_cip": "6170123456789",
+              "code_interne": "BEG-001",
+              "nom_commercial": "Paracétamol 500mg",
+              "dci": "Paracétamol",
+              "forme": "Comprimé",
+              "dosage": "500mg",
+              "laboratoire": "Sanofi",
+              "tableau_substance": "sans",
+              "classe_produit": "standard",
+              "groupe_taxation": "B_TAXABLE",
+              "est_thermolabile": false,
+              "prix_public_ttc": 1500,
+              "prix_achat_moyen": 900,
+              "stock_total": 120,
+              "seuil_stock_min": 10,
+              "prochain_lot_fefo": {
+                "id": "l1",
+                "numero_lot": "LOT-2026-001",
+                "date_peremption": "2027-06-15",
+                "quantite_disponible": 45,
+                "jours_avant_peremption": 210,
+                "statut_peremption": "normal"
+              }
+            }
+          },
+          "auteur": {
+            "name": "Dr. Marcelle HOUNNOU"
+          }
+        },
+        {
+          "id": "m2",
+          "type_mouvement": "vente",
+          "quantite": -5,
+          "stock_avant": 50,
+          "stock_apres": 45,
+          "motif": "Vente FEFO — lot LOT-2026-001",
+          "reference_piece": "TICKET-2026-001",
+          "created_at": "2026-11-03T14:30:00Z",
+          "produit": {
+            "id": "p1",
+            "code_cip": "6170123456789",
+            "code_interne": "BEG-001",
+            "nom_commercial": "Paracétamol 500mg",
+            "dci": "Paracétamol",
+            "forme": "Comprimé",
+            "dosage": "500mg",
+            "laboratoire": "Sanofi",
+            "tableau_substance": "sans",
+            "classe_produit": "standard",
+            "groupe_taxation": "B_TAXABLE",
+            "est_thermolabile": false,
+            "prix_public_ttc": 1500,
+            "prix_achat_moyen": 900,
+            "stock_total": 120,
+            "seuil_stock_min": 10,
+            "prochain_lot_fefo": {
+              "id": "l1",
+              "numero_lot": "LOT-2026-001",
+              "date_peremption": "2027-06-15",
+              "quantite_disponible": 45,
+              "jours_avant_peremption": 210,
+              "statut_peremption": "normal"
+            }
+          },
+          "lot": {
+            "id": "l1",
+            "produit_id": "p1",
+            "numero_lot": "LOT-2026-001",
+            "date_peremption": "2027-06-15",
+            "date_reception": "2026-10-20",
+            "quantite_disponible": 45,
+            "quantite_initiale": 50,
+            "emplacement": "Réserve — Stock principal",
+            "fournisseur_nom": "CAMEG BÉNIN",
+            "bon_livraison_ref": "BL-2026-1045",
+            "statut": "en_stock",
+            "statut_detail": "commercialisable",
+            "statut_effectif": "commercialisable",
+            "est_vendable": true,
+            "jours_avant_peremption": 210,
+            "statut_peremption": "normal",
+            "produit": {
+              "id": "p1",
+              "code_cip": "6170123456789",
+              "code_interne": "BEG-001",
+              "nom_commercial": "Paracétamol 500mg",
+              "dci": "Paracétamol",
+              "forme": "Comprimé",
+              "dosage": "500mg",
+              "laboratoire": "Sanofi",
+              "tableau_substance": "sans",
+              "classe_produit": "standard",
+              "groupe_taxation": "B_TAXABLE",
+              "est_thermolabile": false,
+              "prix_public_ttc": 1500,
+              "prix_achat_moyen": 900,
+              "stock_total": 120,
+              "seuil_stock_min": 10,
+              "prochain_lot_fefo": {
+                "id": "l1",
+                "numero_lot": "LOT-2026-001",
+                "date_peremption": "2027-06-15",
+                "quantite_disponible": 45,
+                "jours_avant_peremption": 210,
+                "statut_peremption": "normal"
+              }
+            }
+          },
+          "auteur": {
+            "name": "Gervais KPADONOU"
+          }
+        },
+        {
+          "id": "m3",
+          "type_mouvement": "changement_statut",
+          "quantite": 0,
+          "stock_avant": 8,
+          "stock_apres": 8,
+          "motif": "Statut: commercialisable → quarantaine — Rappel lot fabricant",
+          "reference_piece": "RAPPEL-2026-0001",
+          "created_at": "2026-11-02T09:00:00Z",
+          "produit": {
+            "id": "p2",
+            "code_cip": "6170123456790",
+            "nom_commercial": "Amoxicilline 1g",
+            "dci": "Amoxicilline",
+            "forme": "Gélule",
+            "dosage": "1g",
+            "laboratoire": "GSK",
+            "tableau_substance": "liste_1",
+            "classe_produit": "liste_1",
+            "groupe_taxation": "B_TAXABLE",
+            "est_thermolabile": false,
+            "prix_public_ttc": 3200,
+            "stock_total": 8,
+            "seuil_stock_min": 10,
+            "alerte_rupture": true
+          },
+          "lot": {
+            "id": "l3",
+            "produit_id": "p2",
+            "numero_lot": "LOT-2026-003",
+            "date_peremption": "2026-11-30",
+            "date_reception": "2026-09-15",
+            "quantite_disponible": 8,
+            "quantite_initiale": 20,
+            "emplacement": "Réserve — Stock principal",
+            "fournisseur_nom": "CAMEG BÉNIN",
+            "bon_livraison_ref": "BL-2026-1047",
+            "statut": "quarantaine",
+            "statut_detail": "quarantaine",
+            "statut_effectif": "quarantaine",
+            "est_vendable": false,
+            "motif_quarantaine": "Rappel lot fabricant — vérification ABMed",
+            "jours_avant_peremption": 18,
+            "statut_peremption": "critique_1m",
+            "produit": {
+              "id": "p2",
+              "code_cip": "6170123456790",
+              "nom_commercial": "Amoxicilline 1g",
+              "dci": "Amoxicilline",
+              "forme": "Gélule",
+              "dosage": "1g",
+              "laboratoire": "GSK",
+              "tableau_substance": "liste_1",
+              "classe_produit": "liste_1",
+              "groupe_taxation": "B_TAXABLE",
+              "est_thermolabile": false,
+              "prix_public_ttc": 3200,
+              "stock_total": 8,
+              "seuil_stock_min": 10,
+              "alerte_rupture": true
+            }
+          },
+          "auteur": {
+            "name": "Dr. Anicet ANIAMBOSSOU"
+          }
+        }
+      ]
+    }
+  },
+  "/stocks/alertes": {
+    "status": "success",
+    "data": {
+      "ruptures": 1,
+      "lots_bloques": 1,
+      "perimes": 0,
+      "rappels_actifs": 0
+    }
+  },
+  "/stocks/peremptions": {
+    "status": "success",
+    "data": {
+      "a_1_mois": [
+        {
+          "id": "l3",
+          "produit_id": "p2",
+          "numero_lot": "LOT-2026-003",
+          "date_peremption": "2026-11-30",
+          "date_reception": "2026-09-15",
+          "quantite_disponible": 8,
+          "quantite_initiale": 20,
+          "emplacement": "Réserve — Stock principal",
+          "fournisseur_nom": "CAMEG BÉNIN",
+          "bon_livraison_ref": "BL-2026-1047",
+          "statut": "quarantaine",
+          "statut_detail": "quarantaine",
+          "statut_effectif": "quarantaine",
+          "est_vendable": false,
+          "motif_quarantaine": "Rappel lot fabricant — vérification ABMed",
+          "jours_avant_peremption": 18,
+          "statut_peremption": "critique_1m",
+          "produit": {
+            "id": "p2",
+            "code_cip": "6170123456790",
+            "nom_commercial": "Amoxicilline 1g",
+            "dci": "Amoxicilline",
+            "forme": "Gélule",
+            "dosage": "1g",
+            "laboratoire": "GSK",
+            "tableau_substance": "liste_1",
+            "classe_produit": "liste_1",
+            "groupe_taxation": "B_TAXABLE",
+            "est_thermolabile": false,
+            "prix_public_ttc": 3200,
+            "stock_total": 8,
+            "seuil_stock_min": 10,
+            "alerte_rupture": true
+          }
+        }
+      ],
+      "a_3_mois": [
+        {
+          "id": "l2",
+          "produit_id": "p1",
+          "numero_lot": "LOT-2026-002",
+          "date_peremption": "2026-12-10",
+          "date_reception": "2026-11-01",
+          "quantite_disponible": 12,
+          "quantite_initiale": 30,
+          "emplacement": "Comptoir — Délivrance",
+          "fournisseur_nom": "UBIPHARM BÉNIN",
+          "bon_livraison_ref": "BL-2026-1046",
+          "statut": "en_stock",
+          "statut_detail": "commercialisable",
+          "statut_effectif": "commercialisable",
+          "est_vendable": true,
+          "jours_avant_peremption": 28,
+          "statut_peremption": "critique_1m",
+          "produit": {
+            "id": "p1",
+            "code_cip": "6170123456789",
+            "code_interne": "BEG-001",
+            "nom_commercial": "Paracétamol 500mg",
+            "dci": "Paracétamol",
+            "forme": "Comprimé",
+            "dosage": "500mg",
+            "laboratoire": "Sanofi",
+            "tableau_substance": "sans",
+            "classe_produit": "standard",
+            "groupe_taxation": "B_TAXABLE",
+            "est_thermolabile": false,
+            "prix_public_ttc": 1500,
+            "prix_achat_moyen": 900,
+            "stock_total": 120,
+            "seuil_stock_min": 10,
+            "prochain_lot_fefo": {
+              "id": "l1",
+              "numero_lot": "LOT-2026-001",
+              "date_peremption": "2027-06-15",
+              "quantite_disponible": 45,
+              "jours_avant_peremption": 210,
+              "statut_peremption": "normal"
+            }
+          }
+        },
+        {
+          "id": "l4",
+          "produit_id": "p3",
+          "numero_lot": "LOT-2026-004",
+          "date_peremption": "2027-01-20",
+          "date_reception": "2026-11-02",
+          "quantite_disponible": 15,
+          "quantite_initiale": 15,
+          "emplacement": "Réfrigérateur 2°C–8°C",
+          "fournisseur_nom": "LABOREX BÉNIN",
+          "bon_livraison_ref": "BL-2026-1048",
+          "statut": "en_stock",
+          "statut_detail": "commercialisable",
+          "statut_effectif": "commercialisable",
+          "est_vendable": true,
+          "jours_avant_peremption": 68,
+          "statut_peremption": "alerte_3m",
+          "produit": {
+            "id": "p3",
+            "code_cip": "6170123456791",
+            "nom_commercial": "Insuline Rapide",
+            "dci": "Insuline",
+            "forme": "Injectable",
+            "dosage": "100UI/ml",
+            "laboratoire": "Novo Nordisk",
+            "tableau_substance": "sans",
+            "classe_produit": "thermolabile",
+            "est_thermolabile": true,
+            "prix_public_ttc": 12500,
+            "stock_total": 15,
+            "seuil_stock_min": 5
+          }
+        }
+      ],
+      "a_6_mois": [],
+      "perimes": []
+    }
+  },
+  "/stocks/valorisation": {
+    "status": "success",
+    "data": {
+      "total": 72000,
+      "par_produit": [
+        {
+          "produit": {
+            "id": "p1",
+            "code_cip": "6170123456789",
+            "code_interne": "BEG-001",
+            "nom_commercial": "Paracétamol 500mg",
+            "dci": "Paracétamol",
+            "forme": "Comprimé",
+            "dosage": "500mg",
+            "laboratoire": "Sanofi",
+            "tableau_substance": "sans",
+            "classe_produit": "standard",
+            "groupe_taxation": "B_TAXABLE",
+            "est_thermolabile": false,
+            "prix_public_ttc": 1500,
+            "prix_achat_moyen": 900,
+            "stock_total": 120,
+            "seuil_stock_min": 10,
+            "prochain_lot_fefo": {
+              "id": "l1",
+              "numero_lot": "LOT-2026-001",
+              "date_peremption": "2027-06-15",
+              "quantite_disponible": 45,
+              "jours_avant_peremption": 210,
+              "statut_peremption": "normal"
+            }
+          },
+          "quantite": 57,
+          "valeur": 51300,
+          "cmp": 900
+        },
+        {
+          "produit": {
+            "id": "p2",
+            "code_cip": "6170123456790",
+            "nom_commercial": "Amoxicilline 1g",
+            "dci": "Amoxicilline",
+            "forme": "Gélule",
+            "dosage": "1g",
+            "laboratoire": "GSK",
+            "tableau_substance": "liste_1",
+            "classe_produit": "liste_1",
+            "groupe_taxation": "B_TAXABLE",
+            "est_thermolabile": false,
+            "prix_public_ttc": 3200,
+            "stock_total": 8,
+            "seuil_stock_min": 10,
+            "alerte_rupture": true
+          },
+          "quantite": 8,
+          "valeur": 7200,
+          "cmp": 900
+        },
+        {
+          "produit": {
+            "id": "p3",
+            "code_cip": "6170123456791",
+            "nom_commercial": "Insuline Rapide",
+            "dci": "Insuline",
+            "forme": "Injectable",
+            "dosage": "100UI/ml",
+            "laboratoire": "Novo Nordisk",
+            "tableau_substance": "sans",
+            "classe_produit": "thermolabile",
+            "est_thermolabile": true,
+            "prix_public_ttc": 12500,
+            "stock_total": 15,
+            "seuil_stock_min": 5
+          },
+          "quantite": 15,
+          "valeur": 13500,
+          "cmp": 900
+        },
+        {
+          "produit": {
+            "id": "p4",
+            "code_cip": "6170123456792",
+            "nom_commercial": "Tramadol 50mg",
+            "dci": "Tramadol",
+            "forme": "Gélule",
+            "dosage": "50mg",
+            "laboratoire": "Pfizer",
+            "tableau_substance": "stupefiant",
+            "classe_produit": "stupefiant",
+            "est_thermolabile": false,
+            "prix_public_ttc": 4500,
+            "stock_total": 30
+          },
+          "quantite": 0,
+          "valeur": 0,
+          "cmp": 900
+        },
+        {
+          "produit": {
+            "id": "p5",
+            "code_cip": "6170123456793",
+            "nom_commercial": "Diazépam 10mg",
+            "dci": "Diazépam",
+            "forme": "Comprimé",
+            "dosage": "10mg",
+            "laboratoire": "Roche",
+            "tableau_substance": "liste_2",
+            "classe_produit": "psychotrope",
+            "est_thermolabile": false,
+            "prix_public_ttc": 2800,
+            "stock_total": 22
+          },
+          "quantite": 0,
+          "valeur": 0,
+          "cmp": 900
+        }
+      ]
+    }
+  },
+  "/auth/devices": {
+    "devices": [
+      {
+        "id": "dev1",
+        "name": "Chrome · Windows",
+        "is_current": true,
+        "last_used_at": "2026-11-04T09:40:00Z",
+        "created_at": "2026-10-01T08:00:00Z"
+      },
+      {
+        "id": "dev2",
+        "name": "Safari · iOS",
+        "is_current": false,
+        "last_used_at": "2026-11-02T17:20:00Z",
+        "created_at": "2026-09-18T11:05:00Z"
+      }
+    ]
+  },
+  "/officines/off1/employes": {
+    "employes": [
+      {
+        "id": "emp1",
+        "nom_complet": "Dr. Marcelle HOUNNOU",
+        "poste": "pharmacien_titulaire",
+        "telephone": "+229 97 45 12 30",
+        "actif": true,
+        "date_embauche": "2021-03-01",
+        "date_visite_medicale": "2026-03-12",
+        "pin_code": "1234"
+      },
+      {
+        "id": "emp2",
+        "nom_complet": "Gervais KPADONOU",
+        "poste": "dispensateur",
+        "telephone": "+229 96 22 87 41",
+        "actif": true,
+        "date_embauche": "2023-01-09",
+        "date_visite_medicale": "2026-01-20",
+        "pin_code": "2345"
+      },
+      {
+        "id": "emp3",
+        "nom_complet": "Sabine AGBODJAN",
+        "poste": "caissier",
+        "telephone": "+229 95 14 66 02",
+        "actif": true,
+        "date_embauche": "2024-06-17",
+        "date_visite_medicale": "2025-11-28",
+        "pin_code": "3456"
+      },
+      {
+        "id": "emp4",
+        "nom_complet": "Ismaël DOSSOU",
+        "poste": "agent_entretien",
+        "telephone": "+229 94 70 31 18",
+        "actif": false,
+        "date_embauche": "2022-08-02",
+        "date_visite_medicale": "2025-09-15",
+        "pin_code": "4567"
+      }
+    ],
+    "inscriptions_ordre": {
+      "emp1": {
+        "numero_inscription": "PHB-2019-0417",
+        "statut": "a_jour"
+      },
+      "emp2": {
+        "numero_inscription": "PHB-2022-1180",
+        "statut": "a_jour"
+      }
+    }
+  },
+  "/officines/off1/documents": [
+    {
+      "id": "doc1",
+      "code_document": "PRO-001",
+      "titre": "Procédure de réception des lots et contrôles",
+      "type_doc": "procedure",
+      "processus": "05",
+      "statut": "valide",
+      "version": 3,
+      "approbateur_nom": "Dr. Marcelle HOUNNOU",
+      "approuve_le": "2026-09-12",
+      "updated_at": "2026-09-12T10:00:00Z"
+    },
+    {
+      "id": "doc2",
+      "code_document": "ENR-014",
+      "titre": "Registre de nettoyage des locaux",
+      "type_doc": "enregistrement",
+      "processus": "05",
+      "statut": "en_attente_validation",
+      "version": 1,
+      "approbateur_nom": null,
+      "approuve_le": null,
+      "updated_at": "2026-11-02T16:20:00Z"
+    },
+    {
+      "id": "doc3",
+      "code_document": "PRO-008",
+      "titre": "Procédure de gestion des rappels de lots",
+      "type_doc": "procedure",
+      "processus": "09",
+      "statut": "brouillon",
+      "version": 1,
+      "approbateur_nom": null,
+      "approuve_le": null,
+      "updated_at": "2026-10-28T09:30:00Z"
+    }
+  ],
+  "/officines/off1/temperatures": {
+    "current_page": 1,
+    "data": [
+      {
+        "id": "rt1",
+        "zone": "refrigeree_2_8",
+        "moment": "matin",
+        "temperature": 5.2,
+        "humidite": 58,
+        "date_releve": "2026-11-04",
+        "heure_releve": "08:00:00",
+        "statut_conformite": "conforme",
+        "notes": null,
+        "agent": {
+          "name": "Gervais KPADONOU"
+        }
+      },
+      {
+        "id": "rt2",
+        "zone": "magasin_reserve",
+        "moment": "matin",
+        "temperature": 24.1,
+        "humidite": 62,
+        "date_releve": "2026-11-04",
+        "heure_releve": "08:05:00",
+        "statut_conformite": "conforme",
+        "notes": null,
+        "agent": {
+          "name": "Gervais KPADONOU"
+        }
+      },
+      {
+        "id": "rt3",
+        "zone": "hall_dispensation",
+        "moment": "matin",
+        "temperature": 25.4,
+        "humidite": 60,
+        "date_releve": "2026-11-04",
+        "heure_releve": "08:10:00",
+        "statut_conformite": "conforme",
+        "notes": null,
+        "agent": {
+          "name": "Gervais KPADONOU"
+        }
+      },
+      {
+        "id": "rt4",
+        "zone": "refrigeree_2_8",
+        "moment": "soir",
+        "temperature": 9.6,
+        "humidite": 61,
+        "date_releve": "2026-11-03",
+        "heure_releve": "18:00:00",
+        "statut_conformite": "excursion_chaud",
+        "notes": "Porte laissée entrouverte",
+        "agent": {
+          "name": "Ismaël DOSSOU"
+        }
+      }
+    ],
+    "first_page_url": "http://localhost:8001/?page=1",
+    "from": 1,
+    "last_page": 1,
+    "per_page": 30,
+    "to": 4,
+    "total": 4
+  },
+  "/officines/off1/temperatures/stats": {
+    "date": "2026-11-04",
+    "zones": {
+      "refrigeree_2_8": {
+        "matin_fait": true,
+        "soir_fait": false,
+        "dernier_releve": {
+          "id": "rt1",
+          "zone": "refrigeree_2_8",
+          "moment": "matin",
+          "temperature": 5.2,
+          "humidite": 58,
+          "date_releve": "2026-11-04",
+          "heure_releve": "08:00:00",
+          "statut_conformite": "conforme",
+          "notes": null,
+          "agent": {
+            "name": "Gervais KPADONOU"
+          }
+        },
+        "statut_actuel": "conforme",
+        "temp_actuelle": 5.2
+      },
+      "magasin_reserve": {
+        "matin_fait": true,
+        "soir_fait": false,
+        "dernier_releve": {
+          "id": "rt2",
+          "zone": "magasin_reserve",
+          "moment": "matin",
+          "temperature": 24.1,
+          "humidite": 62,
+          "date_releve": "2026-11-04",
+          "heure_releve": "08:05:00",
+          "statut_conformite": "conforme",
+          "notes": null,
+          "agent": {
+            "name": "Gervais KPADONOU"
+          }
+        },
+        "statut_actuel": "conforme",
+        "temp_actuelle": 24.1
+      },
+      "hall_dispensation": {
+        "matin_fait": true,
+        "soir_fait": false,
+        "dernier_releve": {
+          "id": "rt3",
+          "zone": "hall_dispensation",
+          "moment": "matin",
+          "temperature": 25.4,
+          "humidite": 60,
+          "date_releve": "2026-11-04",
+          "heure_releve": "08:10:00",
+          "statut_conformite": "conforme",
+          "notes": null,
+          "agent": {
+            "name": "Gervais KPADONOU"
+          }
+        },
+        "statut_actuel": "conforme",
+        "temp_actuelle": 25.4
+      }
+    },
+    "historique_30j": {
+      "total_releves": 58,
+      "total_excursions": 1,
+      "taux_conformite": 98.3
+    }
+  },
+  "/officines/off1/auto-evaluation/campagne-courante": {
+    "campagne": {
+      "id": "camp1",
+      "reference": "AUTO-2026-01",
+      "libelle": "Auto-inspection annuelle",
+      "statut": "en_cours",
+      "ouverte_le": "2026-10-15",
+      "score_global": 76.5
+    },
+    "evaluations": [
+      {
+        "id": "ev1",
+        "article_numero": "1.1",
+        "article_libelle": "Personnel qualifié et formé",
+        "chapitre": 1,
+        "cotation": "conforme",
+        "preuve": "Attestations de formation 2026",
+        "commentaire": "Dossier complet"
+      },
+      {
+        "id": "ev2",
+        "article_numero": "1.11",
+        "article_libelle": "Présence pharmaceutique continue",
+        "chapitre": 1,
+        "cotation": "conforme",
+        "preuve": "Registre de pointage",
+        "commentaire": null
+      },
+      {
+        "id": "ev3",
+        "article_numero": "5.12",
+        "article_libelle": "Gestion FEFO des lots",
+        "chapitre": 5,
+        "cotation": "ecart_mineur",
+        "preuve": "Étiquette illisible en réserve",
+        "commentaire": "À revoir au prochain rangement"
+      },
+      {
+        "id": "ev4",
+        "article_numero": "5.20",
+        "article_libelle": "Chaîne du froid du réfrigérateur",
+        "chapitre": 5,
+        "cotation": "ecart_majeur",
+        "preuve": "Relevé du soir à 9,6 °C",
+        "commentaire": "Action corrective en cours"
+      },
+      {
+        "id": "ev5",
+        "article_numero": "6.2",
+        "article_libelle": "Documents approuvés et datés",
+        "chapitre": 6,
+        "cotation": "conforme",
+        "preuve": "Procédures visées",
+        "commentaire": null
+      },
+      {
+        "id": "ev6",
+        "article_numero": "9.3",
+        "article_libelle": "Traçabilité des rappels de lots",
+        "chapitre": 9,
+        "cotation": "non_applicable",
+        "preuve": null,
+        "commentaire": "Aucun rappel en 2026"
+      },
+      {
+        "id": "ev7",
+        "article_numero": "5.4",
+        "article_libelle": "Étalonnage des équipements de mesure",
+        "chapitre": 5,
+        "cotation": "conforme",
+        "preuve": "Certificats d'étalonnage",
+        "commentaire": null
+      },
+      {
+        "id": "ev8",
+        "article_numero": "6.4",
+        "article_libelle": "Archivage des registres",
+        "chapitre": 6,
+        "cotation": "non_evalue",
+        "preuve": null,
+        "commentaire": null
+      }
+    ],
+    "statistiques": {
+      "score_global": 76.5,
+      "total_articles": 8,
+      "conformes": 5,
+      "ecarts_mineurs": 1,
+      "ecarts_majeurs": 1,
+      "non_applicables": 1,
+      "non_evalues": 0
+    },
+    "synthese_chapitres": [
+      {
+        "numero": 1,
+        "libelle": "Personnel",
+        "total": 3,
+        "conformes": 3,
+        "ecarts_mineurs": 0,
+        "ecarts_majeurs": 0,
+        "non_applicables": 0
+      },
+      {
+        "numero": 5,
+        "libelle": "Locaux, matériel et stockage",
+        "total": 6,
+        "conformes": 4,
+        "ecarts_mineurs": 1,
+        "ecarts_majeurs": 1,
+        "non_applicables": 0
+      },
+      {
+        "numero": 6,
+        "libelle": "Documentation",
+        "total": 4,
+        "conformes": 3,
+        "ecarts_mineurs": 1,
+        "ecarts_majeurs": 0,
+        "non_applicables": 0
+      },
+      {
+        "numero": 9,
+        "libelle": "Vigilances et rapports",
+        "total": 3,
+        "conformes": 2,
+        "ecarts_mineurs": 0,
+        "ecarts_majeurs": 0,
+        "non_applicables": 1
+      }
+    ]
+  },
+  "/officines/off1/appareils-autorises": {
+    "status": "error",
+    "message": "Route de démonstration absente du mock : GET /api/officines/off1/appareils-autorises"
+  }
+}

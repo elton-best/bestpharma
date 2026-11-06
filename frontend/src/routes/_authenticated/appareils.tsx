@@ -94,7 +94,7 @@ interface OperationMiseALecart {
   statut: "en_attente" | "validee" | "rejetee";
 }
 
-const fmtDate = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short" });
+const fmtDate = { format: (date: Date) => Number.isFinite(date.getTime()) ? date.toLocaleString("fr-FR", { timeZone: "Africa/Porto-Novo" }) : "Date non renseignée" };
 
 const SECTIONS_APPAREILS = [
   {

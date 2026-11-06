@@ -41,7 +41,7 @@ interface SelecteurFiltrableProps {
 
 function getTexteOption(opt?: OptionSection): string {
   if (!opt) return "";
-  return opt.label || opt.libelle || opt.titre || opt.valeur;
+  return opt.label || opt.libelle || opt.titre || opt.valeur || "Choix non renseigné";
 }
 
 /**
@@ -52,7 +52,7 @@ function getTexteOption(opt?: OptionSection): string {
  * - Badge de compteur intégré
  */
 export function SelecteurFiltrable({
-  options,
+  options = [],
   valeur,
   onChange,
   onChangement,
@@ -86,7 +86,7 @@ export function SelecteurFiltrable({
       const texte = getTexteOption(opt).toLowerCase();
       if (texte.includes(q)) return true;
       if (opt.description?.toLowerCase().includes(q)) return true;
-      if (opt.motsCles?.some((m) => m.toLowerCase().includes(q))) return true;
+      if (opt.motsCles?.some((m) => (m ?? "").toLowerCase().includes(q))) return true;
       return false;
     });
   }, [options, recherche]);
@@ -110,7 +110,7 @@ export function SelecteurFiltrable({
             role="combobox"
             aria-expanded={ouvert}
             aria-label={courante ? `Section : ${getTexteOption(courante)}` : placeholder}
-            className="flex h-10 w-full items-center justify-between gap-2.5 rounded-xl border border-[#CFF1D2] bg-white px-3 py-2 text-left shadow-2xs transition-all hover:border-[#0F3B27]/50 hover:bg-[#F7F9F7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F3B27]"
+            className="flex min-h-12 w-full items-center justify-between gap-2.5 rounded-xl border border-[#CFF1D2] bg-white px-3 py-2 text-left shadow-2xs transition-all hover:border-[#0F3B27]/50 hover:bg-[#F7F9F7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F3B27]"
           >
             <div className="flex items-center gap-2 min-w-0 flex-1">
               {courante?.icone ? (

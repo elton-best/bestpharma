@@ -133,9 +133,9 @@ function PageModeles() {
     const matchProcessus = filtreProcessus === "tous" || m.processus === filtreProcessus;
     const matchSearch =
       !recherche.trim() ||
-      m.titre.toLowerCase().includes(recherche.toLowerCase()) ||
-      m.code_ref.toLowerCase().includes(recherche.toLowerCase()) ||
-      (m.articles_guide && m.articles_guide.toLowerCase().includes(recherche.toLowerCase()));
+      (m.titre ?? "").toLowerCase().includes(recherche.toLowerCase()) ||
+      (m.code_ref ?? "").toLowerCase().includes(recherche.toLowerCase()) ||
+      (m.articles_guide && (m.articles_guide ?? "").toLowerCase().includes(recherche.toLowerCase()));
     return matchProcessus && matchSearch;
   });
 

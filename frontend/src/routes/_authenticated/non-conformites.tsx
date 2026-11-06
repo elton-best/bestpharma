@@ -155,9 +155,9 @@ function PageNonConformites() {
     const matchGravite = filtreGravite === "tous" || n.gravite === filtreGravite;
     const matchSearch =
       !recherche.trim() ||
-      n.titre.toLowerCase().includes(recherche.toLowerCase()) ||
-      (n.numero_nc && n.numero_nc.toLowerCase().includes(recherche.toLowerCase())) ||
-      (n.description && n.description.toLowerCase().includes(recherche.toLowerCase()));
+      (n.titre ?? "").toLowerCase().includes(recherche.toLowerCase()) ||
+      (n.numero_nc && (n.numero_nc ?? "").toLowerCase().includes(recherche.toLowerCase())) ||
+      (n.description && (n.description ?? "").toLowerCase().includes(recherche.toLowerCase()));
     return matchGravite && matchSearch;
   });
 

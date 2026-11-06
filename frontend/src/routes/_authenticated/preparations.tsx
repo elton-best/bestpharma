@@ -337,7 +337,7 @@ function PagePreparationsLabo() {
         </div>
         <div style="font-size: 10px; color: #666; margin-top: 6px;">Conservation : ${cible.conditionnement} — Température &lt; 25 °C à l'abri de l'humidité.</div>
         <div style="margin-top: 12px; font-size: 9px; color: #666; text-align: center; border-top: 1px dotted #ccc; padding-top: 6px;">
-          Étiquette conforme Bonnes Pratiques de Dispensation ABMed (BPD7-F15) · BestPharma
+          Étiquette conforme Bonnes Pratiques de Dispensation ABMed · BestPharma
         </div>
       </div>
     `;
@@ -366,7 +366,7 @@ function PagePreparationsLabo() {
 
     const html = `
       <p style="font-size: 12px; color: #475C50; margin-bottom: 15px;">
-        Cahier officiel des préparations magistrales et officinales de l'officine conformément au Chapitre 6 des Bonnes Pratiques de Dispensation (BPD ABMed) et à la procédure POI-03. Registre coté et paraphé à conservation légale obligatoire de 10 ans.
+        Cahier des préparations magistrales et officinales : formules, matières premières, contrôles et visa du pharmacien.
       </p>
       <table>
         <thead>
@@ -439,10 +439,8 @@ function PagePreparationsLabo() {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-black tracking-tight text-[#0F3B27]">Préparations Magistrales & Officinales</h1>
-            <Badge className="bg-[#0F3B27] text-[#92FF5F]">BPD chap. 6 · POI-03</Badge>
-            <Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">PRE</Badge>
           </div>
-          <p className="mt-1 text-sm text-[#475C50] max-w-2xl">Chaque préparation garde sa formule, les matières premières utilisées avec leur lot et leur fournisseur, les contrôles effectués et le visa du pharmacien. L’étiquette du flacon reprend la posologie, le numéro d’ordre et l’adresse de l’officine (BPD7-F15).</p>
+          <p className="mt-1 text-sm text-[#475C50] max-w-2xl">Chaque préparation garde sa formule, les matières premières utilisées avec leur lot et leur fournisseur, les contrôles effectués et le visa du pharmacien. L’étiquette du flacon reprend la posologie, le numéro d’ordre et l’adresse de l’officine.</p>
           <div className="mt-2 flex flex-wrap gap-2 text-xs font-bold">
             <span className="inline-flex items-center gap-1 rounded-full bg-[#0F3B27] text-white px-3 py-1"><FlaskConical className="w-3 h-3" /> Cahier coté et paraphé</span>
             <span className="rounded-full border border-[#CFF1D2] bg-white px-3 py-1 text-[#0F3B27]">Conservation dix ans</span>
@@ -597,7 +595,7 @@ function PagePreparationsLabo() {
 
       {tab === "etiquettes" && (
         <div className="space-y-4">
-          <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white font-display font-black flex items-center gap-2"><Printer className="w-5 h-5 text-[#92FF5F]" /> Étiquette de conditionnement (BPD7-F15)</CardTitle><CardDescription className="text-[#CFF1D2]">Posologie, numéro d’ordre PREP-2026-XXXX, nom et adresse du pharmacien, date limite d’utilisation et conditions de conservation.</CardDescription></CardHeader><CardContent className="text-xs text-[#CFF1D2]">Impression sur imprimante thermique ; le QR code de traçabilité est optionnel.</CardContent></Card>
+          <Card className="border-[#0F3B27] bg-[#0F3B27] text-white"><CardHeader><CardTitle className="text-white font-display font-black flex items-center gap-2"><Printer className="w-5 h-5 text-[#92FF5F]" /> Étiquette de conditionnement</CardTitle><CardDescription className="text-[#CFF1D2]">Posologie, référence de la préparation, nom et adresse du pharmacien, date limite d’utilisation et conditions de conservation.</CardDescription></CardHeader><CardContent className="text-xs text-[#CFF1D2]">Impression sur imprimante thermique ; le QR code de traçabilité est optionnel.</CardContent></Card>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="border-[#CFF1D2] bg-white"><CardHeader><CardTitle className="text-xs font-bold text-[#0F3B27]">Aperçu de l’étiquette {dernierePrep ? `(${dernierePrep.numero_preparation})` : ""}</CardTitle></CardHeader><CardContent>
               <div className="rounded-xl border-2 border-[#0F3B27] bg-white p-4 font-mono text-xs leading-tight">

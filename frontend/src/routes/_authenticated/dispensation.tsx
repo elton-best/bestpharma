@@ -154,9 +154,9 @@ function PageDispensation() {
 
   const produitsFiltres = produits.filter(
     (p) =>
-      p.nom_commercial.toLowerCase().includes(produitRecherche.toLowerCase()) ||
+      (p.nom_commercial ?? "").toLowerCase().includes(produitRecherche.toLowerCase()) ||
       p.code_cip.includes(produitRecherche) ||
-      (p.dci && p.dci.toLowerCase().includes(produitRecherche.toLowerCase()))
+      (p.dci && (p.dci ?? "").toLowerCase().includes(produitRecherche.toLowerCase()))
   );
 
   const ajouterLigne = (produit: ProduitItem) => {

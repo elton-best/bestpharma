@@ -89,10 +89,10 @@ function PageFacturation() {
 
   const facturesFiltrees = factures.filter(
     (f) =>
-      f.numero_facture_dgi.toLowerCase().includes(recherche.toLowerCase()) ||
-      f.code_mecef.toLowerCase().includes(recherche.toLowerCase()) ||
-      f.vente?.client_nom.toLowerCase().includes(recherche.toLowerCase()) ||
-      (f.vente?.numero_ticket && f.vente.numero_ticket.toLowerCase().includes(recherche.toLowerCase()))
+      (f.numero_facture_dgi ?? "").toLowerCase().includes(recherche.toLowerCase()) ||
+      (f.code_mecef ?? "").toLowerCase().includes(recherche.toLowerCase()) ||
+      (f.vente?.client_nom ?? "").toLowerCase().includes(recherche.toLowerCase()) ||
+      (f.vente?.numero_ticket && (f.vente.numero_ticket ?? "").toLowerCase().includes(recherche.toLowerCase()))
   );
 
   const imprimerFactureDgi = (f: FactureItem) => {

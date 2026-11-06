@@ -219,6 +219,7 @@ const ECRITURES = [
 const DISPENSATIONS = [
   {
     id: "disp1",
+    officine_id: "off1",
     numero_dispensation: "DISP-2026-0007",
     type_dispensation: "ordonnance",
     patient_nom: "Adjoua KOUGBADO",
@@ -1489,6 +1490,17 @@ const server = http.createServer(async (req, res) => {
   if (path === "/api/dispensations" && method === "GET") {
     return sendJson(res, 200, { status: "success", data: paginer(DISPENSATIONS) });
   }
+  if (/^\/api\/dispensations\/[^/]+\/viser$/.test(path) && method === "POST") {
+    const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+    const user = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
+    if (!user) return sendJson(res, 401, { message: "Connexion requise." });
+    if (!["pharmacien_titulaire", "pharmacien_adjoint", "promoteur"].includes(user.role)) return sendJson(res, 403, { message: "Visa réservé au pharmacien habilité." });
+    const ligne = DISPENSATIONS.find(d => d.id === path.split("/")[3] && user.officines.includes(d.officine_id));
+    if (!ligne) return sendJson(res, 404, { message: "Dispensation introuvable." });
+    ligne.pharmacien_id = user.id;
+    ligne.pharmacien = { id: user.id, name: user.name };
+    return sendJson(res, 200, { status: "success", mode_demo: true, message: "Visa de démonstration enregistré.", data: ligne });
+  }
   if (path === "/api/dispensations" && method === "POST") {
     const b = await parseBody(req);
     if (!b.patient_nom) {
@@ -1512,6 +1524,7 @@ const server = http.createServer(async (req, res) => {
       id: "disp" + (DISPENSATIONS.length + 1),
       numero_dispensation: `DISP-2026-${String(8 + DISPENSATIONS.length).padStart(4, "0")}`,
       ...b,
+      officine_id: "off1",
       lignes,
       montant_total: lignes.reduce((t, l) => t + (PRODUITS.find(p => p.id === l.produit_id)?.prix_public_ttc || 0) * l.quantite, 0),
       statut: "delivree",

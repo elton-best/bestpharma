@@ -137,9 +137,9 @@ function PageAutoEvaluation() {
     if (recherche.trim()) {
       const q = recherche.toLowerCase();
       return (
-        a.article_numero.toLowerCase().includes(q) ||
-        a.article_libelle.toLowerCase().includes(q) ||
-        a.chapitre_titre.toLowerCase().includes(q)
+        (a.article_numero ?? "").toLowerCase().includes(q) ||
+        (a.article_libelle ?? "").toLowerCase().includes(q) ||
+        (a.chapitre_titre ?? "").toLowerCase().includes(q)
       );
     }
     return true;
@@ -430,7 +430,7 @@ function PageAutoEvaluation() {
                   libelle: `Ch. ${ch.numero} : ${ch.titre}`,
                   description: `${ch.score_chapitre}% de conformité · ${ch.conformes}/${ch.total_articles} conformes (${ch.processus})`,
                   icone: <CheckSquare className="size-4 text-[#0F3B27]" />,
-                  motsCles: [String(ch.numero), ch.titre.toLowerCase(), ch.processus.toLowerCase()],
+                  motsCles: [String(ch.numero), (ch.titre ?? "").toLowerCase(), (ch.processus ?? "").toLowerCase()],
                 })),
               ]}
             />

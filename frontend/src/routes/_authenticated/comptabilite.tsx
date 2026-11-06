@@ -157,10 +157,10 @@ function PageComptabilite() {
       const texteRecherche = recherche.toLowerCase();
       const correspondRecherche =
         !recherche ||
-        e.numero_piece.toLowerCase().includes(texteRecherche) ||
+        (e.numero_piece ?? "").toLowerCase().includes(texteRecherche) ||
         e.numero_compte.includes(texteRecherche) ||
-        e.libelle_compte.toLowerCase().includes(texteRecherche) ||
-        e.libelle_ecriture.toLowerCase().includes(texteRecherche);
+        (e.libelle_compte ?? "").toLowerCase().includes(texteRecherche) ||
+        (e.libelle_ecriture ?? "").toLowerCase().includes(texteRecherche);
       return correspondJournal && correspondRecherche;
     });
   }, [ecritures, journalSelectionne, recherche]);
@@ -262,7 +262,7 @@ function PageComptabilite() {
     { valeur: "stocks", label: "Stocks & Valorisation CMP", description: "Rapprochement inventaire physique / compte 311 et variations", icone: <Scale className="size-4" />, badge: "CMP Conforme" },
     { valeur: "immobilisations", label: "Immobilisations & Amortissements", description: "Fiches d'agencement, informatique, dotations annuelles 681/28x", icone: <Building2 className="size-4" />, badge: "Amort. Linéaire" },
     { valeur: "tva_fiscalite", label: "TVA & Fiscalité DGI", description: "TVA collectée Groupe B 18%, déductible, quittances et calendrier fiscal", icone: <Receipt className="size-4" />, badge: "DGI Bénin" },
-    { valeur: "rapprochements", label: "Rapprochements & FeexPay", description: "Pointage banque BOA/Ecobank et monnaie électronique MTN/Moov", icone: <CreditCard className="size-4" />, badge: "Rapprochement" },
+    { valeur: "rapprochements", label: "Rapprochements & Mobile Money", description: "Pointage banque BOA/Ecobank et monnaie électronique MTN/Moov", icone: <CreditCard className="size-4" />, badge: "Rapprochement" },
     { valeur: "analytique_budget", label: "Analytique & Budget", description: "Marges par famille de produits et suivi des écarts prévisionnels", icone: <PieChart className="size-4" />, badge: "Budgets" },
     { valeur: "cloture", label: "Clôture de période", description: "Verrouillage mensuel bloquant et réouverture motivée [CS-03]", icone: <Lock className="size-4" />, badge: "Novembre ouvert" },
     { valeur: "etats_financiers", label: "États financiers & Liasse DGI", description: "Balance 6 colonnes, Grand Livre, Bilan, Compte de résultat et liasse", icone: <FileSpreadsheet className="size-4" />, badge: "Liasse DGI" },
@@ -399,7 +399,7 @@ function PageComptabilite() {
                 <div className="flex items-center justify-between p-3 rounded-[8px] bg-[#F7FBF8] border border-[#CFF1D2] text-xs">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="size-4 text-emerald-600" />
-                    <span>Rapprochement des paiements FeexPay justifié</span>
+                    <span>Rapprochement des paiements Mobile Money justifié</span>
                   </div>
                   <Badge className="bg-emerald-600 text-white text-[10px]">Vérifié</Badge>
                 </div>

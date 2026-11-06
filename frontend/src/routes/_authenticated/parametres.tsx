@@ -90,7 +90,6 @@ function PageParametres() {
 
   // Identifiants & masquage secrets
   const [afficherSecretMECeF, setAfficherSecretMECeF] = useState(false);
-  const [afficherSecretFeexPay, setAfficherSecretFeexPay] = useState(false);
 
   // État local des paramètres éditables
   const [raisonSociale, setRaisonSociale] = useState(courante?.officine?.nom || "Pharmacie de la Concorde SARL");
@@ -108,7 +107,6 @@ function PageParametres() {
   const [regimeFiscal, setRegimeFiscal] = useState("Régime Réel (Normal)");
   const [environnementMECeF, setEnvironnementMECeF] = useState<"test" | "production">("production");
   const [tokenMECeF, setTokenMECeF] = useState("dgi_live_sec_994829384729182374");
-  const [cleFeexPay, setCleFeexPay] = useState("fxp_live_key_88492019482019");
 
   // Utilisateurs de l'officine
   const [utilisateurs, setUtilisateurs] = useState([
@@ -275,7 +273,7 @@ function PageParametres() {
     { valeur: "horaires", label: "Horaires, Gardes & Pharmacien", description: "Heures d'ouverture, pharmacies de garde et contrôle de présence", icone: <Clock className="size-4" />, badge: modePharmacien === "blocage" ? "Blocage strict" : "Alerte" },
     { valeur: "regles", label: "Règles métier & Seuils", description: "Remises max, seuils de validation, tolérance pointage et températures", icone: <Sliders className="size-4" />, badge: "Configuré" },
     { valeur: "fiscalite", label: "Fiscalité & e-MECeF", description: "Régime fiscal, groupes TVA normalisés et passerelle DGI Bénin", icone: <Receipt className="size-4" />, badge: environnementMECeF === "production" ? "PROD" : "TEST" },
-    { valeur: "paiements", label: "Paiements & Trésorerie", description: "Espèces, Mobile Money (MTN/Moov), FeexPay et comptes bancaires", icone: <CreditCard className="size-4" />, badge: "FeexPay Actif" },
+    { valeur: "paiements", label: "Paiements & Trésorerie", description: "Espèces, Mobile Money (MTN/Moov), Mobile Money et comptes bancaires", icone: <CreditCard className="size-4" />, badge: "Moyens de paiement" },
     { valeur: "notifications", label: "Canaux de notification", description: "Passerelle SMS Bénin, WhatsApp Business et serveur e-mail", icone: <Bell className="size-4" />, badge: "SMS + Mail" },
     { valeur: "documents", label: "Documents & Éditions", description: "Logo d'officine, en-têtes officiels, mentions et numérotation", icone: <FileText className="size-4" />, badge: "Personnalisé" },
     { valeur: "conservation", label: "Durées de conservation", description: "Planchers légaux stricts : 3, 5, 10 et 40 ans non réductibles", icone: <ShieldCheck className="size-4" />, badge: "Plancher légal" },
@@ -717,7 +715,7 @@ function PageParametres() {
         <Card className="rounded-[10px] border-[#CFF1D2] bg-white shadow-2xs">
           <CardHeader className="pb-3 border-b border-[#CFF1D2]/60">
             <CardTitle className="font-display text-base text-[#0F3B27] flex items-center gap-2">
-              <CreditCard className="size-4 text-[#18AA38]" /> Paiements, FeexPay & Mobile Money (PAR-13)
+              <CreditCard className="size-4 text-[#18AA38]" /> Paiements, Mobile Money & Mobile Money
             </CardTitle>
             <CardDescription className="text-xs text-[#475C50]">
               Configuration des passerelles de paiement électronique au comptoir d'officine.
@@ -727,8 +725,8 @@ function PageParametres() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
                 { nom: "Espèces (FCFA)", actif: true, desc: "Caisse physique principale" },
-                { nom: "MTN Mobile Money", actif: true, desc: "Intégration directe FeexPay" },
-                { nom: "Moov Money Bénin", actif: true, desc: "Intégration directe FeexPay" },
+                { nom: "MTN Mobile Money", actif: true, desc: "Paiement par téléphone" },
+                { nom: "Moov Money Bénin", actif: true, desc: "Paiement par téléphone" },
                 { nom: "Carte Bancaire / TPE", actif: true, desc: "Visa & Mastercard Bénin" },
                 { nom: "Chèque certifié", actif: false, desc: "Montant > 100 000 FCFA" },
                 { nom: "Virement bancaire", actif: true, desc: "Clients en compte & mutuelles" },
@@ -745,25 +743,8 @@ function PageParametres() {
               ))}
             </div>
 
-            <div className="p-4 rounded-[10px] border border-[#CFF1D2] bg-[#F7FBF8] space-y-3 pt-3">
-              <h4 className="font-bold text-xs text-[#0F3B27]">Passerelle FeexPay Bénin (Mobile Money automatisé)</h4>
-              <div className="flex gap-2 items-center">
-                <Input
-                  type={afficherSecretFeexPay ? "text" : "password"}
-                  value={cleFeexPay}
-                  onChange={(e) => setCleFeexPay(e.target.value)}
-                  className="rounded-[10px] border-[#CFF1D2] bg-white text-xs h-10 font-mono flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setAfficherSecretFeexPay(!afficherSecretFeexPay)}
-                  className="rounded-[10px] border-[#CFF1D2] h-10 px-3 text-xs"
-                >
-                  {afficherSecretFeexPay ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                </Button>
-              </div>
-            </div>
+            <p className="text-sm text-[#475C50]">Les paiements mobiles nécessitent une configuration sécurisée du service de paiement. Aucun compte de paiement réel n’est connecté dans cet aperçu.</p>
+
           </CardContent>
         </Card>
       )}

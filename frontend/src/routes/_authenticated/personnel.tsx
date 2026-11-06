@@ -173,8 +173,8 @@ function PagePersonnel() {
       const matchRole = filtreRole === "tous" || e.poste === filtreRole;
       const matchQuery =
         !recherche.trim() ||
-        e.nom_complet.toLowerCase().includes(recherche.toLowerCase()) ||
-        e.poste.toLowerCase().includes(recherche.toLowerCase());
+        (e.nom_complet ?? "").toLowerCase().includes(recherche.toLowerCase()) ||
+        (e.poste ?? "").toLowerCase().includes(recherche.toLowerCase());
       return matchRole && matchQuery;
     });
   }, [employes, filtreRole, recherche]);

@@ -1,5 +1,8 @@
 # Import groupé du corpus — mode opératoire et bilan
 
+> **Validation complète du 6 novembre 2026 :** les migrations et les tests Laravel/PostgreSQL ainsi que les contrôles frontend et documentaires ont réussi dans la [CI du commit ead99c5](https://github.com/elton-best/begpharma/actions/runs/42224142108). Les mentions ci-dessous de tests non exécutés localement décrivent la limite de l’environnement local, désormais complétée par cette validation distante. Aucun import dans une officine en exploitation ni bascule de l’aperçu vers Laravel n’est revendiqué.
+
+
 ## Lot préparé
 
 Le manifeste `manifeste-import-corpus.json` contient les **62 fichiers documentaires** du dossier source (dont le classeur d'inventaire) ; **une illustration est exclue**. Les **91 lignes d'inventaire** sont conservées comme données de rapprochement, pas transformées artificiellement en fiches approuvées.

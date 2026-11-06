@@ -74,3 +74,7 @@ Commande de reproduction : `python scripts/rapprocher-corpus.py`, après install
 ## Lot groupé de préparation et d'import du corpus
 
 Manifeste complet de 62 fichiers documentaires et une illustration exclue ; lecture des codes DOCX/XLSX/ODT/PDF sans attribution implicite. Commande Laravel de vérification/import privé, reçus protégés, relance sans doublon, aperçu des imports et qualification des fiches dans la GED. Les sources non qualifiées restent bloquées à l'approbation. Les 91 lignes d'inventaire sont conservées séparément des fiches sources. Documentation et limites dans `IMPORT-CORPUS.md` ; ne pas déclarer les fichiers importés en base tant que la commande n'a pas été exécutée sur le backend cible.
+
+## Validation complète après regroupement
+
+Le 6 novembre 2026, la CI du commit `ead99c5` a terminé avec succès : migrations Laravel sur PostgreSQL 16, suite PHPUnit, recette SQL native, tests frontend, types, compilation et reproductibilité documentaire. Exécution : https://github.com/elton-best/begpharma/actions/runs/42224142108. Les limites d’exécution locale mentionnées dans les bilans précédents restent historiques ; elles ne signifient plus que la suite Laravel n’a jamais été exécutée. Le test d’import complet utilise les sources du dépôt dans une base et un stockage de test, pas une officine en exploitation. L’aperçu reste sur le serveur de démonstration tant qu’une instance Laravel persistante n’est pas configurée. Le référentiel réglementaire reste en relecture avant activation.

@@ -1,5 +1,8 @@
 # GED : fichiers privés et versions documentaires
 
+> **Validation complète du 6 novembre 2026 :** les migrations et les tests Laravel/PostgreSQL ainsi que les contrôles frontend et documentaires ont réussi dans la [CI du commit ead99c5](https://github.com/elton-best/begpharma/actions/runs/42224142108). Les mentions ci-dessous de tests non exécutés localement décrivent la limite de l’environnement local, désormais complétée par cette validation distante. Aucun import dans une officine en exploitation ni bascule de l’aperçu vers Laravel n’est revendiqué.
+
+
 ## Fonctionnement livré
 
 Les pièces GED utilisent le disque dédié `ged`, dans `backend/storage/app/ged-privee`, hors répertoire public et sans URL publique signée ou non. Le navigateur ne connaît que les identifiants des pièces, jamais les chemins de stockage.

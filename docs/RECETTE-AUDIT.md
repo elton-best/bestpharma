@@ -1,5 +1,8 @@
 # Audit : preuves réelles et limites d'exploitation
 
+> **Validation complète du 6 novembre 2026 :** les migrations et les tests Laravel/PostgreSQL ainsi que les contrôles frontend et documentaires ont réussi dans la [CI du commit ead99c5](https://github.com/elton-best/begpharma/actions/runs/42224142108). Les mentions ci-dessous de tests non exécutés localement décrivent la limite de l’environnement local, désormais complétée par cette validation distante. Aucun import dans une officine en exploitation ni bascule de l’aperçu vers Laravel n’est revendiqué.
+
+
 ## Livré
 
 - Les nouvelles entrées sont chaînées par officine à l'insertion dans PostgreSQL : séquence dédiée, empreinte précédente, SHA-256 de la ligne (hors empreinte courante).

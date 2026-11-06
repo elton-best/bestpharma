@@ -1,5 +1,8 @@
 # Approbation documentaire vérifiée côté serveur
 
+> **Validation complète du 6 novembre 2026 :** les migrations et les tests Laravel/PostgreSQL ainsi que les contrôles frontend et documentaires ont réussi dans la [CI du commit ead99c5](https://github.com/elton-best/begpharma/actions/runs/42224142108). Les mentions ci-dessous de tests non exécutés localement décrivent la limite de l’environnement local, désormais complétée par cette validation distante. Aucun import dans une officine en exploitation ni bascule de l’aperçu vers Laravel n’est revendiqué.
+
+
 ## Périmètre livré
 
 Le flux des documents ne s'appuie plus sur le faux PIN ni sur les identités, horloges et empreintes générées par le navigateur. Le mot de passe existant du compte est vérifié côté serveur, avec limitation des tentatives. Aucun secret de signature supplémentaire n'est créé.

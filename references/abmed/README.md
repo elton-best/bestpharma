@@ -1,5 +1,8 @@
 # Guide national des bonnes pratiques de dispensation
 
+> **Validation complète du 6 novembre 2026 :** les migrations et les tests Laravel/PostgreSQL ainsi que les contrôles frontend et documentaires ont réussi dans la [CI du commit ead99c5](https://github.com/elton-best/begpharma/actions/runs/42224142108). Les mentions ci-dessous de tests non exécutés localement décrivent la limite de l’environnement local, désormais complétée par cette validation distante. Aucun import dans une officine en exploitation ni bascule de l’aperçu vers Laravel n’est revendiqué.
+
+
 ## Provenance
 
 Le PDF `guide-bpdisp.pdf` est la copie fournie par l’utilisateur dans la conversation le 6 novembre 2026 sous le nom `Bonnes Pratiques de Dispensation (BPDisp).pdf`. Il n’a pas été téléchargé depuis un site de l’ABMed ni authentifié auprès de l’autorité.

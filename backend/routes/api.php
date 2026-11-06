@@ -90,6 +90,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // PARTIE 1 : MODULE BPD SOCLE (LOT 1.1)
     // ==========================================
 
+    Route::get('/officines/{officineId}/suivis-documentaires/{type}/definition', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'definition']);
+    Route::get('/officines/{officineId}/suivis-documentaires/{type}', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'index']);
+    Route::post('/officines/{officineId}/suivis-documentaires/{type}', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'store']);
+    Route::put('/officines/{officineId}/suivis-documentaires/{type}/{id}', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'update']);
+
     // GED et documents qualité (BPD-1 & BPD-3)
     Route::get('/officines/{officineId}/documents', [DocumentController::class, 'index']);
     Route::get('/officines/{officineId}/imports-corpus', [DocumentController::class, 'importsCorpus']);

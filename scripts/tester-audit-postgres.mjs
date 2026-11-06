@@ -147,6 +147,23 @@ try {
   assert.equal((await verifier(doc.officine_id)).premiere_rupture, null);
   console.log('✓ Reçus d’import privés, uniques, protégés et inclus dans l’audit');
 
+  await client.query(`CREATE TABLE suivis_documentaires (id uuid PRIMARY KEY, officine_id uuid, type text,
+    statut text, revision integer, donnees jsonb, source jsonb, created_by uuid, updated_by uuid,
+    motif_modification text, created_at timestamp, updated_at timestamp);`);
+  const migrationSuivis = readFileSync(new URL('../backend/database/migrations/2026_11_06_190000_create_suivis_documentaires.php', import.meta.url), 'utf8');
+  await client.query(migrationSuivis.match(/DB::unprepared\(<<<'SQL'\n([\s\S]*?)\n        SQL\);/)[1]);
+  const suivi = randomUUID();
+  await client.query(`INSERT INTO suivis_documentaires (id,officine_id,type,statut,revision,donnees,source)
+    VALUES ($1,$2,'formations','planifie',1,'{"theme":"Formation témoin","date_debut_prevue":"2026-11-06"}','{}')`, [suivi, doc.officine_id]);
+  const filtre = await client.query("SELECT id FROM suivis_documentaires WHERE donnees->>$1 ILIKE $2 AND donnees->>$3 >= $4", ['theme', '%témoin%', 'date_debut_prevue', '2026-01-01']);
+  assert.equal(filtre.rows.length, 1);
+  await client.query("UPDATE suivis_documentaires SET revision=2, motif_modification='Correction de recette' WHERE id=$1", [suivi]);
+  await assert.rejects(client.query('DELETE FROM suivis_documentaires WHERE id=$1', [suivi]));
+  await assert.rejects(client.query('TRUNCATE suivis_documentaires'));
+  assert.equal((await client.query("SELECT count(*) FROM audit_logs WHERE table_name='suivis_documentaires' AND record_id=$1", [suivi])).rows[0].count, '2');
+  assert.equal((await verifier(doc.officine_id)).premiere_rupture, null);
+  console.log('✓ Suivis structurés filtrables, corrections auditées, suppression interdite');
+
 } finally {
   if (client) await client.end();
   if (cree) await admin.query(`DROP DATABASE "${db}" WITH (FORCE)`);

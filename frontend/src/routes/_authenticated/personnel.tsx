@@ -1,3 +1,4 @@
+import { RegistreDocumentaire } from "@/components/modules/registre-documentaire";
 import { useState, useMemo, useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -43,7 +44,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 import {
   Dialog,
@@ -361,10 +361,10 @@ function PagePersonnel() {
       </div>
 
       {/* TABS DE LA PAGE */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <div className="space-y-4">
 
         {/* 1. ÉQUIPE */}
-        <TabsContent value="equipe" className="space-y-4">
+        {activeTab === "equipe" && <div className="space-y-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-[10px] border border-[#CFF1D2]">
             <div className="relative flex-1">
               <Search className="size-4 absolute left-3 top-2.5 text-muted-foreground" />
@@ -486,10 +486,10 @@ function PagePersonnel() {
               );
             })}
           </div>
-        </TabsContent>
+        </div>}
 
         {/* 2. DOSSIER INDIVIDUEL (PER-01) */}
-        <TabsContent value="dossier" className="space-y-4">
+        {activeTab === "dossier" && <div className="space-y-4">
           <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-4">
             <div className="flex justify-between items-center">
               <div>
@@ -527,10 +527,10 @@ function PagePersonnel() {
               ))}
             </div>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 3. ORDRE SECTION B (PER-02) */}
-        <TabsContent value="ordre" className="space-y-4">
+        {activeTab === "ordre" && <div className="space-y-4">
           <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
               Registre d'Exercice & Inscription à l'Ordre National des Pharmaciens (Section B)
@@ -565,10 +565,10 @@ function PagePersonnel() {
               </div>
             </div>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 4. POSTES & HABILITATIONS (PER-03 & PER-04) */}
-        <TabsContent value="postes" className="space-y-4">
+        {activeTab === "postes" && <div className="space-y-4">
           <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
               Fiches de Poste & Matrice d'Habilitations aux Actes de Dispensation
@@ -599,10 +599,10 @@ function PagePersonnel() {
               </div>
             </div>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 5. ORGANIGRAMME (PER-05) */}
-        <TabsContent value="organigramme" className="space-y-4">
+        {activeTab === "organigramme" && <div className="space-y-4">
           <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3 text-center">
             <div className="flex justify-between items-center text-left">
               <div>
@@ -689,39 +689,15 @@ function PagePersonnel() {
               </div>
             </div>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 6. FORMATIONS & COMPÉTENCES */}
-        <TabsContent value="formations" className="space-y-4">
-          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
-            <CardTitle className="text-base text-[#0F3B27] font-bold">
-              Plan Annuel de Formation & Compétences
-            </CardTitle>
-            <CardDescription className="text-xs text-[#475C50]">
-              Sessions : chaîne du froid, traçabilité des stupéfiants, hygiène et délivrance ordonnances.
-            </CardDescription>
-
-            <div className="space-y-2 pt-2 text-xs">
-              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] flex justify-between items-center">
-                <div>
-                  <span className="font-bold text-[#0F3B27]">Maîtrise de la chaîne du froid 2–8 °C</span>
-                  <p className="text-muted-foreground text-[11px]">Émargement électronique complet · 6 collaborateurs formés</p>
-                </div>
-                <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Validée</Badge>
-              </div>
-              <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] flex justify-between items-center">
-                <div>
-                  <span className="font-bold text-[#0F3B27]">Sécurisation de l'ordonnancier et stupéfiants</span>
-                  <p className="text-muted-foreground text-[11px]">Prévue pour le 25/11/2026</p>
-                </div>
-                <Badge variant="outline" className="text-[10px]">Planifiée</Badge>
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
+        {activeTab === "formations" && <div className="space-y-4">
+          {id && <RegistreDocumentaire key={`${id}-formations`} officine={id} type="formations" />}
+        </div>}
 
         {/* 7. ENTRETIENS ANNUELS */}
-        <TabsContent value="entretiens" className="space-y-4">
+        {activeTab === "entretiens" && <div className="space-y-4">
           <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
               Entretiens Annuels d'Évaluation
@@ -734,10 +710,10 @@ function PagePersonnel() {
               Campagne d'entretiens annuels planifiée pour Décembre. Trame standard prête à l'emploi.
             </div>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 8. CONGÉS & CONTRATS */}
-        <TabsContent value="conges" className="space-y-4">
+        {activeTab === "conges" && <div className="space-y-4">
           <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
               Contrats de Travail & Tableau des Congés
@@ -750,10 +726,10 @@ function PagePersonnel() {
               Tous les contrats de travail en cours sont en règle. Continuité de présence assurée sur les plannings prévisionnels.
             </div>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 9. INTÉGRATION & HYGIÈNE */}
-        <TabsContent value="hygiene" className="space-y-4">
+        {activeTab === "hygiene" && <div className="space-y-4">
           <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
               Parcours d'Intégration & Suivi Médical
@@ -782,8 +758,8 @@ function PagePersonnel() {
               </div>
             </div>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>}
+      </div>
 
       {/* MODALE CRÉATION COLLABORATEUR */}
       <Dialog open={modalEmploye} onOpenChange={setModalEmploye}>

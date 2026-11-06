@@ -1,3 +1,4 @@
+import { RegistreDocumentaire } from "@/components/modules/registre-documentaire";
 import { useState, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -38,7 +39,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 import {
   Dialog,
@@ -300,40 +300,6 @@ function PageLocaux() {
     }
   }
 
-  // Ordres de travail de maintenance (simulés/actifs)
-  const ordresMaintenance = [
-    {
-      id: "OT-2026-01",
-      code: "FRIG-01",
-      equipement: "Réfrigérateur Médical B Medical Systems",
-      type: "preventif",
-      echeance: "15/11/2026",
-      statut: "planifie",
-      prestataire: "FROID PLUS BÉNIN SARL",
-      description: "Contrôle compresseur, gaz frigorigène R134a et étanchéité joints.",
-    },
-    {
-      id: "OT-2026-02",
-      code: "CLIM-01",
-      equipement: "Climatiseur Inverter Magasin 18000 BTU",
-      type: "curatif",
-      echeance: "08/11/2026",
-      statut: "en_cours",
-      prestataire: "CLIM SERVICE COTONOU",
-      description: "Nettoyage filtres et vérification thermostat d'ambiance.",
-    },
-    {
-      id: "OT-2026-03",
-      code: "OND-01",
-      equipement: "Onduleur Haute Disponibilité APC 3kVA",
-      type: "preventif",
-      echeance: "20/12/2026",
-      statut: "planifie",
-      prestataire: "TECHNO-ENERGIE SA",
-      description: "Test de bascule automatique secteur/batteries et autonomie.",
-    },
-  ];
-
   // Grille de conformité des locaux (LOC-06)
   const criteresLocaux = [
     { rubrique: "Emplacement conforme à la licence", conforme: true, note: "Arrêté d'exploitation ABMed affiché à l'entrée." },
@@ -488,10 +454,10 @@ function PageLocaux() {
       </div>
 
       {/* TABS DE LA PAGE */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <div className="space-y-4">
 
         {/* 1. ÉQUIPEMENTS & CARNET DE VIE */}
-        <TabsContent value="equipements" className="space-y-4">
+        {activeTab === "equipements" && <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {equipements && equipements.length > 0 ? (
               equipements.map((eq) => {
@@ -564,76 +530,15 @@ function PageLocaux() {
               </div>
             )}
           </div>
-        </TabsContent>
+        </div>}
 
         {/* 2. MAINTENANCE & ORDRES DE TRAVAIL */}
-        <TabsContent value="maintenance" className="space-y-4">
-          <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-              <div>
-                <CardTitle className="text-base text-[#0F3B27] font-bold">
-                  Plan Annuel de Maintenance & Ordres de Travail
-                </CardTitle>
-                <CardDescription className="text-xs text-[#475C50]">
-                  Interventions préventives et curatives, traçabilité des prestataires et bons de travail.
-                </CardDescription>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => setModalOrdreTravail(true)}
-                className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] text-xs font-bold gap-1.5"
-              >
-                <Plus className="size-3.5" /> Émettre Ordre de Travail
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              {ordresMaintenance.map((ot) => (
-                <div
-                  key={ot.id}
-                  className="p-3.5 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-[#0F3B27]">{ot.id}</span>
-                      <Badge
-                        variant={ot.type === "preventif" ? "default" : "destructive"}
-                        className={ot.type === "preventif" ? "bg-blue-600 text-[10px]" : "text-[10px]"}
-                      >
-                        {ot.type.toUpperCase()}
-                      </Badge>
-                      <span className="font-bold text-[#0F3B27]">{ot.equipement}</span>
-                    </div>
-                    <p className="text-muted-foreground">{ot.description}</p>
-                    <div className="text-[11px] text-[#475C50]">
-                      Prestataire : <strong>{ot.prestataire}</strong> · Échéance : <strong>{ot.echeance}</strong>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setActionSignature({
-                          titre: `Validation de l'ordre de travail ${ot.id}`,
-                          cb: () => toast.success(`Intervention ${ot.id} validée et émargée.`),
-                        });
-                        setModaleSignOuverte(true);
-                      }}
-                      className="border-[#CFF1D2] text-[#0F3B27] text-xs font-semibold gap-1"
-                    >
-                      <CheckCircle2 className="size-3.5 text-emerald-600" /> Émarger fin travaux
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </TabsContent>
+        {activeTab === "maintenance" && <div className="space-y-4">
+          {id && <RegistreDocumentaire key={`${id}-maintenance`} officine={id} type="maintenance" />}
+        </div>}
 
         {/* 3. ÉTALONNAGE MÉTROLOGIQUE */}
-        <TabsContent value="etalonnage" className="space-y-4">
+        {activeTab === "etalonnage" && <div className="space-y-4">
           <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4">
             <CardHeader className="p-0 pb-3">
               <CardTitle className="text-base text-[#0F3B27] font-bold">
@@ -705,10 +610,10 @@ function PageLocaux() {
               </div>
             </div>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 4. NETTOYAGE & BIO-NETTOYAGE */}
-        <TabsContent value="nettoyage" className="space-y-4">
+        {activeTab === "nettoyage" && <div className="space-y-4">
           <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div>
@@ -780,10 +685,10 @@ function PageLocaux() {
               )}
             </div>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 5. NUISIBLES & SÉCURITÉ */}
-        <TabsContent value="nuisibles" className="space-y-4">
+        {activeTab === "nuisibles" && <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
               <div className="flex items-center justify-between">
@@ -851,10 +756,10 @@ function PageLocaux() {
               </Button>
             </Card>
           </div>
-        </TabsContent>
+        </div>}
 
         {/* 6. CONFORMITÉ DES LOCAUX */}
-        <TabsContent value="conformite" className="space-y-4">
+        {activeTab === "conformite" && <div className="space-y-4">
           <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <div>
@@ -887,10 +792,10 @@ function PageLocaux() {
               ))}
             </div>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 7. SYSTÈME INFORMATISÉ & PRA */}
-        <TabsContent value="systeme" className="space-y-4">
+        {activeTab === "systeme" && <div className="space-y-4">
           <Card className="rounded-[10px] border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
@@ -940,8 +845,8 @@ function PageLocaux() {
               </div>
             </div>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>}
+      </div>
 
       {/* MODALE CRÉATION ÉQUIPEMENT */}
       <Dialog open={modalEquipement} onOpenChange={setModalEquipement}>

@@ -1,4 +1,8 @@
 import http from "http";
+import { readFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+const CATALOGUE_SUIVIS = JSON.parse(readFileSync(new URL("./mock-data/catalogue-suivis.json", import.meta.url), "utf8"));
+const SUIVIS_DOCUMENTAIRES = [];
 
 const PORT = 8001;
 
@@ -417,6 +421,67 @@ const server = http.createServer(async (req, res) => {
   console.log(`[MOCK] ${method} ${path}`);
 
   // AUTH — login
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/suivis-documentaires\/(formations|maintenance)(?:\/(definition|[a-f0-9-]+))?$/);
+    if (m) {
+      const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+      const utilisateur = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
+      if (!utilisateur) return sendJson(res, 401, { message: "Connexion requise." });
+      if (!utilisateur.officines.includes(m[1])) return sendJson(res, 403, { message: "Officine non autorisée." });
+      const definition = CATALOGUE_SUIVIS[m[2]];
+      const ecrire = ["promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq"].includes(utilisateur.role);
+      if (m[3] === "definition" && method === "GET") return sendJson(res, 200, {
+        ...definition, peut_ecrire: ecrire, mode_demo: true,
+        equipements: m[2] === "maintenance" && m[1] === "off1" ? EQUIPEMENTS.map(e => ({ id: e.id, designation: e.designation, code_interne: e.code_interne })) : [],
+      });
+      if (!m[3] && method === "GET") {
+        let lignes = SUIVIS_DOCUMENTAIRES.filter(r => r.officine_id === m[1] && r.type === m[2]);
+        const annee = url.searchParams.get("annee"), statut = url.searchParams.get("statut"), q = url.searchParams.get("q");
+        if (annee) lignes = lignes.filter(r => String(r.donnees[definition.champ_date] || "").startsWith(annee + "-"));
+        if (statut) lignes = lignes.filter(r => r.statut === statut);
+        if (q) lignes = lignes.filter(r => String(r.donnees[definition.champ_titre] || "").toLowerCase().includes(q.toLowerCase()));
+        return sendJson(res, 200, paginer(lignes, Number(url.searchParams.get("page")) || 1, 25));
+      }
+      if (method === "POST" || method === "PUT") {
+        if (!ecrire) return sendJson(res, 403, { message: "Modification réservée aux responsables habilités." });
+        const b = await parseBody(req);
+        if (!["planifie", "realise", "annule"].includes(b.statut) || !b.donnees) return sendJson(res, 422, { message: "État et champs du formulaire requis." });
+        if (Array.isArray(b.donnees) || typeof b.donnees !== "object") return sendJson(res, 422, { message: "Formulaire invalide." });
+        const cles = [...definition.champs.map(c => c.cle), "motif_annulation"];
+        if (Object.keys(b.donnees).some(c => !cles.includes(c))) return sendJson(res, 422, { message: "Un champ du formulaire n’est pas autorisé." });
+        for (const champ of definition.champs) {
+          const v = b.donnees[champ.cle];
+          if (v != null && (typeof v !== "string" || v.length > 5000)) return sendJson(res, 422, { message: `Champ invalide : ${champ.libelle}.` });
+          if (v && champ.type === "date" && (!/^\d{4}-\d{2}-\d{2}$/.test(v) || Number.isNaN(Date.parse(v)) || new Date(v).toISOString().slice(0, 10) !== v)) return sendJson(res, 422, { message: `Date invalide : ${champ.libelle}.` });
+          if ((champ.obligatoire || (champ.obligatoire_realise && b.statut === "realise")) && !String(b.donnees[champ.cle] || "").trim()) {
+            return sendJson(res, 422, { message: `Champ requis : ${champ.libelle}.` });
+          }
+        }
+        if (b.statut === "annule" && !b.donnees.motif_annulation) return sendJson(res, 422, { message: "Motif d’annulation requis." });
+        const aujourdHui = new Date().toLocaleDateString("sv-SE", { timeZone: "Africa/Porto-Novo" });
+        const d = b.donnees;
+        if ((d.date_realisation && d.date_realisation > aujourdHui) || (d.date_fin_prevue && d.date_fin_prevue < d.date_debut_prevue) || (d.date_prochaine_intervention && d.date_prochaine_intervention < (d.date_realisation || d.date_prevue))) return sendJson(res, 422, { message: "Vérifiez l’ordre chronologique et la date de réalisation." });
+        const donnees = Object.fromEntries([...definition.champs.map(c => c.cle), "motif_annulation"].filter(c => b.donnees[c]).map(c => [c, b.donnees[c]]));
+        if (m[2] === "maintenance") {
+          const e = EQUIPEMENTS.find(e => e.id === donnees.equipement_id);
+          if (m[1] !== "off1" || !e) return sendJson(res, 422, { message: "Équipement de cette officine requis." });
+          donnees.equipement_nom = e.designation;
+        }
+        if (method === "POST" && !m[3]) {
+          const r = { id: randomUUID(), officine_id: m[1], type: m[2], statut: b.statut, revision: 1, donnees, source: definition.source, created_at: new Date().toISOString(), motif_modification: null };
+          SUIVIS_DOCUMENTAIRES.unshift(r);
+          return sendJson(res, 201, r);
+        }
+        const r = SUIVIS_DOCUMENTAIRES.find(r => r.id === m[3] && r.officine_id === m[1] && r.type === m[2]);
+        if (!r) return sendJson(res, 404, { message: "Suivi introuvable." });
+        if (r.revision !== b.revision) return sendJson(res, 409, { message: "Cette fiche a changé. Rechargez le registre." });
+        if (!b.motif_modification || b.motif_modification.trim().length < 5) return sendJson(res, 422, { message: "Motif de correction requis." });
+        if (r.statut !== "planifie" && r.statut !== b.statut) return sendJson(res, 409, { message: "L’état final est conservé." });
+        Object.assign(r, { statut: b.statut, donnees, revision: r.revision + 1, motif_modification: b.motif_modification });
+        return sendJson(res, 200, r);
+      }
+    }
+  }
   if (path === "/api/demo/access" && method === "GET") {
     return sendJson(res, 200, {
       demonstration: true,

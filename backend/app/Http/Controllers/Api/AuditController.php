@@ -61,6 +61,7 @@ class AuditController extends Controller
             'registres_stupefiants' => 'Registre des stupéfiants',
             'non_conformites' => 'Non-conformité',
             'documents' => 'Document qualité',
+            'suivis_documentaires' => 'Suivi documentaire',
             'employes' => 'Employé',
             'pointages' => 'Pointage',
             'echeances' => 'Échéance',

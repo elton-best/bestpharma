@@ -115,6 +115,7 @@ jobs:
           npm run typecheck
           node ../scripts/generer-calculs-demo.mjs --check
           node ../scripts/tester-persistance-demo.mjs
+          cd .. && node scripts/tester-demarrage-demo.mjs
 
       - name: Compilation de production et démarrage sans session serveur
         working-directory: frontend

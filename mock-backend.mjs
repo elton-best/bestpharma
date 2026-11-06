@@ -9,7 +9,7 @@ const SUIVIS_DOCUMENTAIRES = [];
 const CANEVAS = JSON.parse(readFileSync(new URL("./references/canevas/catalogue.json", import.meta.url), "utf8")).canevas;
 const empreinteDocumentDemo = d => createHash("sha256").update(JSON.stringify([d.contenu, d.updated_at, d.statut])).digest("hex");
 
-const PORT = 8001;
+const PORT = Number(process.env.PORT || 8001);
 
 // Données démo  :  extraites des seeders BEGPHARMA
 const DEMO_USERS = {
@@ -414,7 +414,7 @@ function paginer(lignes, page = 1, parPage = 30) {
 }
 
 // Conservation locale de l’aperçu uniquement, sans valeur de conservation réglementaire.
-const FICHIER_DEMO = fileURLToPath(new URL('./.demo-state/session.json', import.meta.url));
+const FICHIER_DEMO = process.env.BEGPHARMA_DEMO_STATE || fileURLToPath(new URL('./.demo-state/session.json', import.meta.url));
 const etatDemo = lireEtatDemo(FICHIER_DEMO);
 if (etatDemo) {
   for (const u of etatDemo.utilisateurs) DEMO_USERS[u.email] = u;

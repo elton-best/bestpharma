@@ -37,6 +37,8 @@ class ApiClient {
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
+    const officine = typeof window !== "undefined" ? localStorage.getItem("begpharma.officine") : null;
+    if (officine && this.getOfficines().some(o => o.id === officine)) headers["X-Officine-Id"] = officine;
     return headers;
   }
 

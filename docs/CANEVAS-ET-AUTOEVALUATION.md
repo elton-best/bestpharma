@@ -12,7 +12,9 @@ Le catalogue ne confère aucune approbation aux noms ou signatures imprimés dan
 
 **Anciens fichiers Word :** les conversions DocBook proviennent d’antiword, dont la version et les empreintes sont conservées. Les tableaux et les zones de la fiche de non-conformités sont intégrés ; les images, objets et détails de mise en page des DOC ne sont pas garantis.
 
-**Couverture non achevée :** les classeurs XLSX, l’ODT et le PDF ne sont pas transformés par cet extracteur. Ils sont énumérés dans `non_integres` du catalogue. Les registres formation et maintenance déjà livrés restent distincts. La saisie d’une fiche qualité crée un document brouillon ; elle ne synchronise pas automatiquement chaque cellule avec les actions du registre des non-conformités.
+**Classeurs Excel :** les seize classeurs sont intégrés, en complément des quarante-quatre canevas Word. Les feuilles modèles sont choisies explicitement, sans importer les historiques annuels lorsque le modèle existe. Les cellules, fusions, couleurs et zones de saisie sont conservées ; le formatage vide très éloigné de la zone utilisée est écarté. Les valeurs déjà calculées sont reprises lorsqu’elles existent, mais les formules ne sont pas recalculées : les totaux doivent être vérifiés manuellement.
+
+**Couverture non achevée :** seuls l’ODT et le PDF ne sont pas transformés par cet extracteur. Ils sont énumérés dans `non_integres` du catalogue. Les registres formation et maintenance déjà livrés restent distincts. La saisie d’une fiche qualité crée un document brouillon ; elle ne synchronise pas automatiquement chaque cellule avec les actions du registre des non-conformités.
 
 Les pièces et validations sont désormais dans une section secondaire repliée. Leurs indisponibilités sont indiquées simplement, sans être transformées en succès ou historique vide. Les preuves de conservation et d’approbation ne sont pas supprimées du serveur.
 
@@ -33,3 +35,15 @@ Cette mesure réduit les causes identifiées ; elle ne constitue pas une garanti
 ## Reproduction
 
 `python scripts/extraire-canevas.py --check` vérifie la reproductibilité et les empreintes des modèles. Les tests PHP couvrent les sources, les zones uniques, la création d’un brouillon, les droits, les conflits et la grille complète. Les vérifications frontend et la compilation SPA complètent la recette ; elles ne remplacent pas une comparaison visuelle de chaque source sur téléphone et à l’impression.
+
+## Péremptions et courriels
+
+La vente et la dispensation utilisent le même filtre de lots vendables. La date de péremption doit être strictement postérieure à la date courante au Bénin. Un lot périmant aujourd’hui est donc exclu sans attendre le planificateur ; les lots bloqués, rappelés et en quarantaine sont également exclus.
+
+La commande `php artisan stocks:surveiller-peremptions` prépare les courriels aux responsables actifs à quatre paliers : quatre-vingt-dix, quarante-cinq, dix jours et la veille. Un avis est aussi préparé le jour de péremption et les lots encore commercialisables sont placés en quarantaine. Les notifications sont distinctes des rappels sanitaires, conservées par officine et dédoublonnées par lot, date, palier et destinataire. Les échecs sont réessayés jusqu’à cinq fois ; les avertissements devenus obsolètes ne sont pas envoyés tardivement avec une durée erronée.
+
+**Mise en service obligatoire :** appliquer les migrations, configurer un transport de courriel réel et l’expéditeur dans les variables d’environnement Laravel, puis exécuter `php artisan schedule:run` chaque minute sur le serveur. La surveillance est appelée chaque heure, en fuseau Africa/Porto-Novo, avec verrou contre les chevauchements. En mode `log` ou `array`, aucun envoi n’est déclaré : les notifications restent en attente. L’aperçu mémoire ne fait aucun envoi. Une acceptation par le transport n’est pas une garantie de réception dans la boîte du destinataire. Une interruption complète du planificateur peut manquer un palier : supervision nécessaire. Un arrêt brutal entre acceptation SMTP et mise à jour de la notification peut provoquer un renvoi ; SMTP ne garantit pas l’envoi exactement une fois.
+
+## Navigation et officine active
+
+L’espace métier est sous `/dashboard` et la vente sous `/dashboard/vente`. Les anciennes adresses redirigent vers leurs équivalents. Les requêtes globales transmettent l’officine active lorsqu’elle appartient au compte connecté ; le serveur vérifie le rattachement actif. Le changement d’officine retire les anciennes données en cache et réinitialise la vue. Les canevas et la grille disposent d’une nouvelle tentative de chargement. L’inscription de démonstration crée un jeton reconnu et la création d’une officine donne réellement le rattachement au compte temporaire, jusqu’au redémarrage du simulateur.

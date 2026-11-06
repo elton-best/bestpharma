@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { useOfficine } from "@/lib/officine-context";
@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
 import { Dialog } from "@/components/ui/dialog";
 import { ModaleFiche, ColonneFiche } from "@/components/modules/modale";
-interface Cellule { cle: string; texte: string; largeur: number; hauteur: number; images?: string[]; imbriques?: Bloc[] }
+interface Cellule { cle: string; texte: string; largeur: number; hauteur: number; fond?: string; gras?: boolean; images?: string[]; imbriques?: Bloc[] }
 interface Bloc { cle: string; type: "paragraphe" | "tableau"; texte?: string; gras?: boolean; alignement?: string; images?: string[]; lignes?: Cellule[][]; largeurs?: number[] }
-export interface Canevas { id: string; titre: string; rubrique: string; fichier: string; sha256: string; parties: { origine: string; blocs: Bloc[] }[]; images: Record<string, string> }
+export interface Canevas { format?: string; id: string; titre: string; rubrique: string; fichier: string; sha256: string; parties: { origine: string; blocs: Bloc[] }[]; images: Record<string, string> }
 interface Rempli { schema: string; canevas: Canevas; valeurs: Record<string, string> }
 export function lireCanevas(contenu: string): Rempli | null {
   try {
@@ -17,16 +17,18 @@ export function lireCanevas(contenu: string): Rempli | null {
   } catch { return null; }
 }
 export function ContenuCanevas({ canevas, valeurs, changer }: { canevas: Canevas; valeurs: Record<string, string>; changer?: (cle: string, valeur: string) => void }) {
+  const [feuille, setFeuille] = useState(canevas.parties[0]?.origine ?? "");
+  const feuilleCourante = canevas.parties.some(p => p.origine === feuille) ? feuille : canevas.parties[0]?.origine;
   const texte = (cle: string, original = "") => valeurs[cle] ?? original;
   const zone = (cle: string, original: string, label: string) => changer ? <textarea aria-label={label} className="min-h-12 w-full min-w-0 resize-y rounded border border-emerald-200 bg-white p-2 text-sm leading-relaxed focus:border-emerald-700" rows={Math.min(15, Math.max(2, original.split("\n").length))} value={texte(cle, original)} onChange={e => changer(cle, e.target.value)} /> : <span className="whitespace-pre-wrap">{texte(cle, original) || "\u00a0"}</span>;
-  const blocs = (liste: Bloc[]) => liste.map((b, i) => b.type === "tableau" ? <div key={b.cle} className="max-w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-300 text-sm"><colgroup>{b.largeurs?.map((largeur, i) => <col key={i} style={{ width: `${largeur / b.largeurs!.reduce((a, v) => a + v, 0) * 100}%` }} />)}</colgroup><tbody>{b.lignes?.map((ligne, l) => <tr key={l}>{ligne.map((cell, c) => <td key={cell.cle} colSpan={cell.largeur} rowSpan={cell.hauteur} className="min-w-32 border border-slate-300 p-2 align-top">
+  const blocs = (liste: Bloc[]) => liste.map((b, i) => b.type === "tableau" ? <div key={b.cle} className="max-w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-300 text-sm"><colgroup>{b.largeurs?.map((largeur, i) => <col key={i} style={{ width: `${largeur / b.largeurs!.reduce((a, v) => a + v, 0) * 100}%` }} />)}</colgroup><tbody>{b.lignes?.map((ligne, l) => <tr key={l}>{ligne.map((cell, c) => <td key={cell.cle} colSpan={cell.largeur} rowSpan={cell.hauteur} className="min-w-32 border border-slate-300 p-2 align-top" style={{ backgroundColor: /^#[a-fA-F0-9]{6}$/.test(cell.fond ?? "") ? cell.fond : undefined, fontWeight: cell.gras ? "bold" : undefined }}>
     {cell.images?.map(image => canevas.images[image] && <img key={image} src={canevas.images[image]} alt="Illustration du modèle source" className="max-h-32 max-w-full object-contain" />)}
     {zone(cell.cle, cell.texte, `Cellule du tableau, ligne ${l + 1}, colonne ${c + 1}`)}{cell.imbriques && blocs(cell.imbriques)}
   </td>)}</tr>)}</tbody></table></div> : <div key={b.cle} className={b.gras ? "font-bold" : ""} style={{ textAlign: ["center", "right", "justify"].includes(b.alignement ?? "") ? b.alignement as "center" | "right" | "justify" : "left" }}>
     {b.images?.map(image => canevas.images[image] && <img key={image} src={canevas.images[image]} alt="Illustration du modèle source" className="max-h-32 max-w-full object-contain" />)}
     {zone(b.cle, b.texte ?? "", `Paragraphe du modèle ${i + 1}`)}
   </div>);
-  return <div className="grid min-w-0 gap-5">{canevas.parties.map(partie => <section key={partie.origine} className="grid min-w-0 gap-3">{blocs(partie.blocs)}</section>)}</div>;
+  return <div className="grid min-w-0 gap-5">{canevas.format === "xlsx" && <SelecteurFiltrable etiquette="Feuille du classeur" valeur={feuilleCourante ?? ""} onChange={setFeuille} options={canevas.parties.map(p => ({ valeur: p.origine, libelle: p.origine }))} />}{canevas.parties.filter(p => canevas.format !== "xlsx" || p.origine === feuilleCourante).map(partie => <section key={partie.origine} className="grid min-w-0 gap-3">{blocs(partie.blocs)}</section>)}</div>;
 }
 export function CanevasCatalogue({ officine, filtre = "tous", creer = true }: { officine: string; filtre?: "tous" | "procedures" | "qualite"; creer?: boolean }) {
   const qc = useQueryClient();
@@ -37,9 +39,10 @@ export function CanevasCatalogue({ officine, filtre = "tous", creer = true }: { 
   const [valeurs, setValeurs] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [enCours, setEnCours] = useState(false);
-  const liste = useQuery({ queryKey: ["canevas-catalogue", officine], queryFn: async () => { const donnees = await api.get<Canevas[]>(`/officines/${officine}/canevas`); if (!Array.isArray(donnees)) throw new Error("Catalogue indisponible."); return donnees; } });
+  const liste = useQuery({ refetchOnMount: "always", queryKey: ["canevas-catalogue", officine], queryFn: async () => { const donnees = await api.get<Canevas[]>(`/officines/${officine}/canevas`); if (!Array.isArray(donnees)) throw new Error("Catalogue indisponible."); return donnees; } });
   const modele = useQuery({ queryKey: ["canevas", officine, choix], enabled: !!choix, queryFn: () => api.get<Canevas>(`/officines/${officine}/canevas/${choix}`) });
   const candidats = (liste.data ?? []).filter(c => filtre === "tous" || (filtre === "procedures" ? /^(PRO|CANEVAS)/i.test(c.titre) : /non.conform|amélioration|auto.inspection|réclamation/i.test(c.titre)));
+  useEffect(() => { if (!choix && candidats.length) setChoix(candidats[0].id); }, [choix, candidats]);
   async function enregistrer() {
     setMessage(""); setEnCours(true);
     try {
@@ -51,14 +54,15 @@ export function CanevasCatalogue({ officine, filtre = "tous", creer = true }: { 
     finally { setEnCours(false); }
   }
   return <section className="grid gap-3 rounded-xl border border-emerald-100 bg-white p-4">
-    <h2 className="text-lg font-bold">Canevas à compléter</h2>
-    <p className="text-sm text-muted-foreground">Choisissez le modèle du dossier fourni et complétez ses zones directement. Les noms et informations du modèle doivent être adaptés à votre officine.</p>
-    {liste.isError ? <p role="alert">Les canevas ne peuvent pas être chargés. Réessayez lorsque la connexion est rétablie.</p> : <SelecteurFiltrable etiquette="Modèle source" valeur={choix} options={candidats.map(c => ({ valeur: c.id, libelle: c.titre, description: c.rubrique }))} onChange={c => { setChoix(c); setValeurs({}); setMessage(""); }} />}
-    <Button variant="outline" className="min-h-12 justify-self-start" disabled={!modele.data || modele.isError} onClick={() => setOuvert(true)}>{creer ? "Ouvrir et compléter le canevas" : "Consulter le canevas"}</Button>
+    <h2 className="text-lg font-bold">Modèles disponibles</h2>
+    <p className="text-sm text-muted-foreground">Complétez le formulaire de votre choix et enregistrez votre brouillon.</p>
+    {liste.isError ? <div role="alert"><p>Les modèles ne sont pas disponibles pour cette connexion.</p><Button variant="outline" className="min-h-12" onClick={() => liste.refetch()}>Recharger les modèles</Button></div> : <SelecteurFiltrable etiquette="Modèle source" valeur={choix} options={candidats.map(c => ({ valeur: c.id, libelle: c.titre, description: c.rubrique }))} onChange={c => { setChoix(c); setValeurs({}); setMessage(""); }} />}
+    {modele.data && <details className="rounded-xl border p-3"><summary className="min-h-12 cursor-pointer font-bold">Aperçu du formulaire</summary><ContenuCanevas canevas={modele.data} valeurs={{}} /></details>}
+    <Button variant="outline" className="min-h-12 justify-self-start" disabled={!modele.data || modele.isError} onClick={() => setOuvert(true)}>{creer ? "Compléter ce modèle" : "Consulter le canevas"}</Button>
     {modele.isError && <p role="alert">Ce canevas ne peut pas être ouvert.</p>}
     {message && <p role="status">{message}</p>}
     <Dialog open={ouvert} onOpenChange={o => { if (!enCours) setOuvert(o); }}><ModaleFiche titre={modele.data?.titre ?? "Canevas"} sousTitre="Complétez le modèle avant de l’enregistrer comme brouillon." pied={<div className="flex flex-wrap justify-end gap-3"><Button variant="outline" className="min-h-12" disabled={enCours} onClick={() => setOuvert(false)}>Fermer</Button>{creer && <Button className="min-h-12" disabled={enCours || !processus} onClick={enregistrer}>{enCours ? "Enregistrement…" : "Enregistrer le brouillon"}</Button>}</div>}>
-      {modele.data && <div className="grid min-w-0 gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,3fr)]"><ColonneFiche titre="Document source">{creer && <><SelecteurFiltrable etiquette="Nature du document" valeur={typeDoc} onChange={setTypeDoc} options={[{ valeur: "procedure", libelle: "Procédure" }, { valeur: "enregistrement", libelle: "Formulaire ou enregistrement" }, { valeur: "fiche_poste", libelle: "Fiche de poste" }]} /><SelecteurFiltrable etiquette="Processus à confirmer" valeur={processus} onChange={setProcessus} options={[{ valeur: "TAM", libelle: "Management" }, { valeur: "QAM", libelle: "Qualité et amélioration" }, { valeur: "GAD", libelle: "Dispensation" }, { valeur: "GAC", libelle: "Approvisionnement et stocks" }, { valeur: "GAR", libelle: "Ressources et locaux" }]} /></>}<p className="break-words text-sm">{modele.data.fichier}</p><p className="text-xs text-muted-foreground">L’ordre des textes et les tableaux du fichier Word sont conservés. L’affichage web adapte la pagination et la typographie.</p>{message && <p role="alert">{message}</p>}</ColonneFiche><ColonneFiche titre="Zones du canevas"><ContenuCanevas canevas={modele.data} valeurs={valeurs} changer={creer ? (cle, valeur) => setValeurs(v => ({ ...v, [cle]: valeur })) : undefined} /></ColonneFiche></div>}
+      {modele.data && <div className="grid min-w-0 gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,3fr)]"><ColonneFiche titre="Document source">{creer && <><SelecteurFiltrable etiquette="Nature du document" valeur={typeDoc} onChange={setTypeDoc} options={[{ valeur: "procedure", libelle: "Procédure" }, { valeur: "enregistrement", libelle: "Formulaire ou enregistrement" }, { valeur: "fiche_poste", libelle: "Fiche de poste" }]} /><SelecteurFiltrable etiquette="Processus à confirmer" valeur={processus} onChange={setProcessus} options={[{ valeur: "TAM", libelle: "Management" }, { valeur: "QAM", libelle: "Qualité et amélioration" }, { valeur: "GAD", libelle: "Dispensation" }, { valeur: "GAC", libelle: "Approvisionnement et stocks" }, { valeur: "GAR", libelle: "Ressources et locaux" }]} /></>}<p className="break-words text-sm">{modele.data.fichier}</p>{modele.data.format === "xlsx" && <p className="text-xs text-amber-800">Les calculs du classeur doivent être vérifiés après la saisie.</p>}<p className="text-xs text-muted-foreground">Les zones et tableaux du modèle sont repris pour la saisie. La présentation s’adapte à l’écran.</p>{message && <p role="alert">{message}</p>}</ColonneFiche><ColonneFiche titre="Zones du canevas"><ContenuCanevas canevas={modele.data} valeurs={valeurs} changer={creer ? (cle, valeur) => setValeurs(v => ({ ...v, [cle]: valeur })) : undefined} /></ColonneFiche></div>}
     </ModaleFiche></Dialog>
   </section>;
 }

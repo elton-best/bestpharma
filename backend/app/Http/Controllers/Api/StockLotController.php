@@ -53,7 +53,7 @@ class StockLotController extends Controller
                       });
                 })
                 ->where('quantite_disponible', '>', 0)
-                ->where('date_peremption', '>=', Carbon::now());
+                ->whereDate('date_peremption', '>', now('Africa/Porto-Novo')->toDateString());
             } else {
                 // Lots NON délivrables : quarantaine, attente de contrôle, à évaluer,
                 // retours, rejetés, périmés ou épuisés. Alimente la constitution
@@ -386,7 +386,7 @@ class StockLotController extends Controller
             'a_6_mois' => $lots->filter(fn($l)=> $l->date_peremption && Carbon::parse($l->date_peremption)->between($today, $today->copy()->addMonths(6)))->values(),
             'a_3_mois' => $lots->filter(fn($l)=> $l->date_peremption && Carbon::parse($l->date_peremption)->between($today, $today->copy()->addMonths(3)))->values(),
             'a_1_mois' => $lots->filter(fn($l)=> $l->date_peremption && Carbon::parse($l->date_peremption)->between($today, $today->copy()->addDays(30)))->values(),
-            'perimes' => $lots->filter(fn($l)=> $l->date_peremption && Carbon::parse($l->date_peremption)->lt($today))->values(),
+            'perimes' => $lots->filter(fn($l)=> $l->date_peremption && Carbon::parse($l->date_peremption)->lte($today))->values(),
         ]]);
     }
 
@@ -411,4 +411,12 @@ class StockLotController extends Controller
             'rappels_actifs' => \App\Models\AvisRappel::where('officine_id',$officineId)->where('statut','actif')->count(),
         ]]);
     }
+    public function alertesPeremption(Request $request): JsonResponse
+    {
+        $officine = $request->user()->officine_id;
+        $envois = DB::table('alertes_peremption')->where('officine_id', $officine)->select('statut', DB::raw('count(*) as total'))->groupBy('statut')->pluck('total', 'statut');
+        return response()->json(['courriel_configure' => !in_array(config('mail.default'), ['log','array']),
+            'seuils_jours' => [90,45,10,1], 'envois' => $envois]);
+    }
+
 }

@@ -67,72 +67,72 @@ interface Group {
 type NavEntry = Leaf | Group;
 
 const NAV_ENTRIES: NavEntry[] = [
-  { to: "/app", label: "Tableau de bord", icon: Home },
+  { to: "/dashboard", label: "Tableau de bord", icon: Home },
   {
     label: "Comptoir & Caisse",
     icon: Receipt,
     children: [
-      { to: "/caisse", label: "Caisse POS Tactile", icon: Receipt, badge: "e-MECeF" },
-      { to: "/dispensation", label: "Dispensation & Ordonnances", icon: Stethoscope },
-      { to: "/facturation", label: "Facturation DGI", icon: ScanBarcode },
+      { to: "/dashboard/vente", label: "Caisse POS Tactile", icon: Receipt, badge: "e-MECeF" },
+      { to: "/dashboard/dispensation", label: "Dispensation & Ordonnances", icon: Stethoscope },
+      { to: "/dashboard/facturation", label: "Facturation DGI", icon: ScanBarcode },
     ],
   },
   {
     label: "Stock",
     icon: ShoppingBag,
     children: [
-      { to: "/stock", tab: "vue-ensemble", label: "Vue d’ensemble", icon: Layers },
-      { to: "/stock", tab: "produits", label: "Produits", icon: Package },
-      { to: "/stock", tab: "lots", label: "Lots", icon: Boxes, badge: "FEFO" },
-      { to: "/stock", tab: "emplacements", label: "Emplacements", icon: MapPin },
-      { to: "/stock", tab: "mouvements", label: "Mouvements", icon: History },
-      { to: "/stock", tab: "reception", label: "Réception", icon: ScanLine, badge: "Scan" },
-      { to: "/stock", tab: "inventaires", label: "Inventaires", icon: ClipboardList },
-      { to: "/stock", tab: "peremptions", label: "Péremptions", icon: CalendarDays },
-      { to: "/stock", tab: "quarantaine", label: "Quarantaine & Rappels", icon: ShieldAlert },
-      { to: "/stock", tab: "dechets", label: "Déchets", icon: Trash2 },
-      { to: "/stock", tab: "valorisation", label: "Valorisation", icon: TrendingUp },
+      { to: "/dashboard/stock", tab: "vue-ensemble", label: "Vue d’ensemble", icon: Layers },
+      { to: "/dashboard/stock", tab: "produits", label: "Produits", icon: Package },
+      { to: "/dashboard/stock", tab: "lots", label: "Lots", icon: Boxes, badge: "FEFO" },
+      { to: "/dashboard/stock", tab: "emplacements", label: "Emplacements", icon: MapPin },
+      { to: "/dashboard/stock", tab: "mouvements", label: "Mouvements", icon: History },
+      { to: "/dashboard/stock", tab: "reception", label: "Réception", icon: ScanLine, badge: "Scan" },
+      { to: "/dashboard/stock", tab: "inventaires", label: "Inventaires", icon: ClipboardList },
+      { to: "/dashboard/stock", tab: "peremptions", label: "Péremptions", icon: CalendarDays },
+      { to: "/dashboard/stock", tab: "quarantaine", label: "Quarantaine & Rappels", icon: ShieldAlert },
+      { to: "/dashboard/stock", tab: "dechets", label: "Déchets", icon: Trash2 },
+      { to: "/dashboard/stock", tab: "valorisation", label: "Valorisation", icon: TrendingUp },
     ],
   },
   {
     label: "Stupéfiants & Préparations",
     icon: Lock,
     children: [
-      { to: "/stupefiants", label: "Registre Stupéfiants", icon: Lock, badge: "Tab. B" },
-      { to: "/preparations", label: "Préparations Magistrales", icon: TestTube },
+      { to: "/dashboard/stupefiants", label: "Registre Stupéfiants", icon: Lock, badge: "Tab. B" },
+      { to: "/dashboard/preparations", label: "Préparations Magistrales", icon: TestTube },
     ],
   },
   {
     label: "Qualité & BPD ABMed",
     icon: Shield,
     children: [
-      { to: "/temperatures", label: "Chaîne du froid (2-8°C)", icon: Thermometer },
-      { to: "/locaux", label: "Locaux & Matériel (5M)", icon: Building2 },
-      { to: "/auto-evaluation", label: "Auto-évaluation 267 Arts", icon: TickSquare },
-      { to: "/pointage", label: "Pointage Présence (Art 1.11)", icon: Clock },
-      { to: "/personnel", label: "Personnel & Ordre B", icon: Users },
-      { to: "/documents", label: "GED & Procédures", icon: FileText },
-      { to: "/modeles", label: "Modèles Types BPD (59)", icon: DocumentText },
-      { to: "/non-conformites", label: "Non-conformités & CAPA", icon: TriangleWarning },
-      { to: "/echeances", label: "Échéancier réglementaire", icon: Calendar },
+      { to: "/dashboard/temperatures", label: "Chaîne du froid (2-8°C)", icon: Thermometer },
+      { to: "/dashboard/locaux", label: "Locaux & Matériel (5M)", icon: Building2 },
+      { to: "/dashboard/auto-evaluation", label: "Auto-évaluation 267 Arts", icon: TickSquare },
+      { to: "/dashboard/pointage", label: "Pointage Présence (Art 1.11)", icon: Clock },
+      { to: "/dashboard/personnel", label: "Personnel & Ordre B", icon: Users },
+      { to: "/dashboard/documents", label: "GED & Procédures", icon: FileText },
+      { to: "/dashboard/modeles", label: "Modèles Types BPD (59)", icon: DocumentText },
+      { to: "/dashboard/non-conformites", label: "Non-conformités & CAPA", icon: TriangleWarning },
+      { to: "/dashboard/echeances", label: "Échéancier réglementaire", icon: Calendar },
     ],
   },
   {
     label: "Gestion & Finance",
     icon: ChartLine,
     children: [
-      { to: "/comptabilite", label: "Comptabilité SYSCOHADA", icon: ChartLine, badge: "OHADA" },
-      { to: "/journal", label: "Journal d'audit SHA-256", icon: FileText },
-      { to: "/appareils", label: "Appareils autorisés", icon: Mobile },
+      { to: "/dashboard/comptabilite", label: "Comptabilité SYSCOHADA", icon: ChartLine, badge: "OHADA" },
+      { to: "/dashboard/journal", label: "Journal d'audit SHA-256", icon: FileText },
+      { to: "/dashboard/appareils", label: "Appareils autorisés", icon: Mobile },
     ],
   },
   {
     label: "Compte & Officine",
     icon: Setting2,
     children: [
-      { to: "/compte", label: "Mon profil & Rôle", icon: User },
-      { to: "/parametres", label: "Paramètres Officine", icon: Setting2 },
-      { to: "/securite", label: "Sécurité & MFA", icon: Shield },
+      { to: "/dashboard/compte", label: "Mon profil & Rôle", icon: User },
+      { to: "/dashboard/parametres", label: "Paramètres Officine", icon: Setting2 },
+      { to: "/dashboard/securite", label: "Sécurité & MFA", icon: Shield },
     ],
   },
 ];
@@ -213,7 +213,7 @@ export function AppSidebar({
         }`}
       >
         <Link
-          to="/app"
+          to="/dashboard"
           onClick={onNavigate}
           className="flex items-center gap-2.5 focus-visible:outline-none group"
         >
@@ -375,7 +375,7 @@ export function AppSidebar({
       <div className="border-t border-[#CFF1D2] p-3 bg-[#F7F9F7]">
         <div className={`flex items-center gap-2.5 ${collapsed ? "flex-col" : ""}`}>
           <Link
-            to="/compte"
+            to="/dashboard/compte"
             onClick={onNavigate}
             className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl p-1.5 hover:bg-white transition-colors border border-transparent hover:border-[#CFF1D2]"
             title="Mon profil & réglages"

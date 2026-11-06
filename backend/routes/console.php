@@ -56,3 +56,12 @@ Artisan::command('ged:importer-corpus {manifeste} {racine} {--officine=} {--oper
         return 1;
     }
 })->purpose('Importer le corpus documentaire en sources privées, sans approbation automatique');
+
+Artisan::command('stocks:surveiller-peremptions', function () {
+    $bilan = app(\App\Services\SurveillancePeremptionService::class)->executer();
+    $this->line(json_encode($bilan, JSON_UNESCAPED_UNICODE));
+    if (!$bilan['courriel_configure']) $this->warn('Courriel non configuré : les alertes restent en attente.');
+    return $bilan['erreurs'] ? 1 : 0;
+})->purpose('Bloquer les lots périmés et préparer les alertes de péremption');
+
+\Illuminate\Support\Facades\Schedule::command('stocks:surveiller-peremptions')->hourly()->timezone('Africa/Porto-Novo')->withoutOverlapping();

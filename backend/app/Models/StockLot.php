@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -106,7 +107,19 @@ class StockLot extends Model
 
     public function getEstVendableAttribute(): bool
     {
-        return $this->statut_effectif === 'commercialisable' && $this->quantite_disponible > 0 && $this->jours_avant_peremption >= 0;
+        return $this->date_peremption !== null && $this->statut_effectif === 'commercialisable' && $this->quantite_disponible > 0 && $this->jours_avant_peremption > 0;
+    }
+
+    /** Disponible jusqu’à la veille de la date de péremption, jamais le jour même. */
+    public function scopeVendables(Builder $query): Builder
+    {
+        return $query->where('quantite_disponible', '>', 0)
+            ->whereDate('date_peremption', '>', now('Africa/Porto-Novo')->toDateString())
+            ->where(function ($q) {
+                $q->where('statut_detail', 'commercialisable')->orWhere(function ($q) {
+                    $q->whereNull('statut_detail')->where('statut', 'en_stock');
+                });
+            });
     }
 
     public const STATUTS = ['commercialisable','en_attente_controle','a_evaluer','quarantaine','attente_retour','rejete','dechet','epuise'];
@@ -120,7 +133,7 @@ class StockLot extends Model
         if (!$this->date_peremption) {
             return 9999;
         }
-        return (int) Carbon::now()->startOfDay()->diffInDays(Carbon::parse($this->date_peremption)->startOfDay(), false);
+        return (int) Carbon::now('Africa/Porto-Novo')->startOfDay()->diffInDays(Carbon::parse($this->date_peremption)->startOfDay(), false);
     }
 
     /**
@@ -129,7 +142,7 @@ class StockLot extends Model
     public function getStatutPeremptionAttribute(): string
     {
         $jours = $this->jours_avant_peremption;
-        if ($jours < 0) {
+        if ($jours <= 0) {
             return 'perime';
         }
         if ($jours <= 30) {

@@ -221,7 +221,7 @@ function Coquille({ userId, email }: { userId: string; email: string }) {
 
             {/* Accès rapide réglages / profil */}
             <Link
-              to="/compte"
+              to="/dashboard/compte"
               data-tour="user-profile"
               className="flex items-center gap-2 rounded-xl border border-[#CFF1D2] p-1.5 pr-3 bg-white hover:bg-[#CFF1D2]/25 transition-colors"
               title="Mon compte & profil professionnel"
@@ -238,7 +238,7 @@ function Coquille({ userId, email }: { userId: string; email: string }) {
 
         {/* CONTENU DE LA PAGE */}
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-8">
-          <Outlet />
+          <Outlet key={courante?.officine_id ?? "sans-officine"} />
         </main>
       </div>
     </div>

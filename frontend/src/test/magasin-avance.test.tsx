@@ -12,15 +12,15 @@ const rendre = (ui: React.ReactElement) => {
 describe("sections avancées du magasin", () => {
   it("affiche la campagne d’inventaire avec son bouton de création", () => {
     const html = rendre(<InventairesStock />);
-    expect(html).toContain("Inventaires — tournant et général annuel");
+    expect(html).toContain("Inventaires : tournant et général annuel");
     expect(html).toContain("Nouvelle campagne");
     expect(html).toContain("Chargement");
   });
 
   it("affiche les rappels avec la saisie d’un avis", () => {
     const html = rendre(<RappelsStock />);
-    expect(html).toContain("Rappels de lots — blocage immédiat");
-    expect(html).toContain("Saisir un avis de rappel");
+    expect(html).toContain("Rappels sanitaires");
+    expect(html).toContain("Ajouter un rappel sanitaire");
     expect(html).toContain("Avis enregistrés");
   });
 

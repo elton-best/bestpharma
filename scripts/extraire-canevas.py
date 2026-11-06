@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Canevas Word : ordre des paragraphes, tableaux, fusions et pièces graphiques.
+"""Canevas Word et Excel : ordre des paragraphes, tableaux, fusions et pièces graphiques.
 Ne réécrit jamais le corpus. Les DOC binaires et classeurs restent à traiter.
 """
-import argparse, base64, hashlib, json, re
+import argparse, base64, hashlib, json, re, importlib.util
 from pathlib import Path
 from zipfile import ZipFile
 import xml.etree.ElementTree as ET
@@ -122,15 +122,18 @@ def produire():
         result.append({'id': hashlib.sha256(doc['fichier'].encode()).hexdigest()[:24], 'titre': f.stem,
             'rubrique': Path(doc['fichier']).parts[0], 'fichier': doc['fichier'], 'sha256': doc['sha256_source'],
             'conversion': 'antiword_docbook', 'parties': [{'origine': 'document', 'blocs': blocs}], 'images': {}})
+    spec = importlib.util.spec_from_file_location('canevas_excel', Path(__file__).with_name('canevas-excel.py'))
+    module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    result.extend(module.extraire(SOURCE))
     result.sort(key=lambda c: c['fichier'])
     return {'schema': 'begpharma.canevas.v1', 'canevas': result,
-            'non_integres': [f.relative_to(SOURCE).as_posix() for f in sorted(SOURCE.rglob('*')) if f.suffix.lower() in ['.xlsx', '.odt', '.pdf']]}
+            'non_integres': [f.relative_to(SOURCE).as_posix() for f in sorted(SOURCE.rglob('*')) if f.suffix.lower() in ['.odt', '.pdf']]}
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); args = parser.parse_args()
     contenu = json.dumps(produire(), ensure_ascii=False, indent=2)+'\n'
     if args.check:
         if not SORTIE.exists() or SORTIE.read_text() != contenu: raise SystemExit('Canevas à régénérer : python scripts/extraire-canevas.py')
-        print('Canevas Word alignés sur le corpus.'); return
+        print('Canevas Word et Excel alignés sur le corpus.'); return
     SORTIE.parent.mkdir(parents=True, exist_ok=True); SORTIE.write_text(contenu)
-    print('Canevas Word extraits sans modification des sources.')
+    print('Canevas Word et Excel extraits sans modification des sources.')
 if __name__ == '__main__': main()

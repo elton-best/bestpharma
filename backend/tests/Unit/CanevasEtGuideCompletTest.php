@@ -9,8 +9,8 @@ class CanevasEtGuideCompletTest extends TestCase
     {
         $service = new CatalogueCanevasService;
         $canevas = $service->tous();
-        $this->assertCount(44, $canevas);
-        $this->assertCount(44, array_unique(array_column($canevas, 'id')));
+        $this->assertCount(60, $canevas);
+        $this->assertCount(60, array_unique(array_column($canevas, 'id')));
         foreach ($canevas as $c) {
             $this->assertSame($c['sha256'], hash_file('sha256', dirname(__DIR__, 3).'/0000. DIGIT ABMEB/'.$c['fichier']));
             $champs = $service->champs($c);

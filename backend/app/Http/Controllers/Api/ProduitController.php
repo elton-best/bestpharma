@@ -43,8 +43,7 @@ class ProduitController extends Controller
 
         $produits = $query->with(['lots' => function ($q) use ($officineId) {
             $q->where('officine_id', $officineId)
-              ->where('statut', 'en_stock')
-              ->where('quantite_disponible', '>', 0)
+              ->vendables()
               ->orderBy('date_peremption', 'asc');
         }])->orderBy('nom_commercial', 'asc')->get();
 
@@ -82,7 +81,7 @@ class ProduitController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $resultats,
+            'data' => $request->boolean('vendables') ? $resultats->filter(fn ($p) => $p['stock_total'] > 0)->values() : $resultats,
         ]);
     }
 

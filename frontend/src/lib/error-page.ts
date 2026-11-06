@@ -3,7 +3,7 @@ export function renderErrorPage(): string {
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <title>BestPharma — Connexion</title>
+    <title>BestPharma : Connexion</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -130,7 +130,7 @@ export function renderErrorPage(): string {
       <p>La connexion se rétablit automatiquement. Vos identifiants sont conservés.</p>
       <div class="actions">
         <button class="primary" onclick="location.reload()">Actualiser l'application</button>
-        <a class="secondary" href="/app">Tableau de bord</a>
+        <a class="secondary" href="/dashboard">Tableau de bord</a>
       </div>
     </div>
     <script>

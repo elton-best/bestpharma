@@ -38,7 +38,7 @@ export function ModaleApercuDocument() {
     <html lang="fr">
     <head>
       <meta charset="utf-8">
-      <title>${doc.titre} — BestPharma</title>
+      <title>${doc.titre} : BestPharma</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 24px; color: #111; line-height: 1.5; background: #fff; }
         .en-tete { border-bottom: 2px solid #0F3B27; padding-bottom: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start; }

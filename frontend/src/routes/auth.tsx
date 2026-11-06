@@ -12,7 +12,7 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Connexion — BESTPHARMA" },
+      { title: "Connexion : BESTPHARMA" },
       {
         name: "description",
         content:
@@ -57,7 +57,7 @@ function PageConnexion() {
 
   useEffect(() => {
     if (api.getToken() && api.getUser()) {
-      navigate({ to: "/app" });
+      navigate({ to: "/dashboard" });
     }
   }, [navigate]);
 
@@ -83,7 +83,7 @@ function PageConnexion() {
         throw new Error(data.message || "Identifiants incorrects.");
       }
 
-      // MFA requis (promoteur, pharmacien) — code démo 123456 ou JBSWY3DPEHPK3PXP
+      // MFA requis (promoteur, pharmacien) : code démo 123456 ou JBSWY3DPEHPK3PXP
       if (data.mfa_required) {
         setMfaRequis(true);
         setTempToken(data.temp_token);
@@ -95,7 +95,7 @@ function PageConnexion() {
       api.setToken(data.token);
       api.setUser(data.user);
       if (data.officines) api.setOfficines(data.officines);
-      window.location.href = "/app";
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setMessage(err.message || fr.commun.erreur);
     } finally {
@@ -123,7 +123,7 @@ function PageConnexion() {
       api.setToken(data.token);
       api.setUser(data.user);
       if (data.officines) api.setOfficines(data.officines);
-      window.location.href = "/app";
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setMessage(err.message || "Code de vérification invalide. Veuillez réessayer.");
     } finally { setEnCours(false); }
@@ -161,7 +161,7 @@ function PageConnexion() {
           </Alert>
         ) : null}
 
-        {/* Formulaire — login ou MFA */}
+        {/* Formulaire : login ou MFA */}
         {!mfaRequis ? (
           <form onSubmit={soumettre} className="space-y-4">
             <div>
@@ -262,7 +262,7 @@ function PageConnexion() {
         {demo && afficherRolesDemo && (
           <div className="mt-3 p-3 rounded-2xl bg-white/60 backdrop-blur-sm border border-[#0F3B27]/10 space-y-1.5 animate-in fade-in">
             <p className="text-[11px] font-bold text-[#0F3B27] mb-1.5">
-              Aperçu de démonstration — cliquez sur un compte pour vous connecter.<br />Mot de passe : <span className="font-mono bg-[#0F3B27]/10 px-1.5 py-0.5 rounded">{demo.password}</span>
+              Aperçu de démonstration : cliquez sur un compte pour vous connecter.<br />Mot de passe : <span className="font-mono bg-[#0F3B27]/10 px-1.5 py-0.5 rounded">{demo.password}</span>
             </p>
             <div className="grid grid-cols-2 gap-1.5">
               {demo.comptes.map((c) => (

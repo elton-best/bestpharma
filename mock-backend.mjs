@@ -1,6 +1,6 @@
 import http from "http";
 import { readFileSync } from "node:fs";
-import { randomUUID, createHash } from "node:crypto";
+import { randomUUID, createHash, scryptSync } from "node:crypto";
 const CATALOGUE_SUIVIS = JSON.parse(readFileSync(new URL("./mock-data/catalogue-suivis.json", import.meta.url), "utf8"));
 const SUIVIS_DOCUMENTAIRES = [];
 const CANEVAS = JSON.parse(readFileSync(new URL("./references/canevas/catalogue.json", import.meta.url), "utf8")).canevas;
@@ -8,7 +8,7 @@ const empreinteDocumentDemo = d => createHash("sha256").update(JSON.stringify([d
 
 const PORT = 8001;
 
-// Données démo — extraites des seeders BEGPHARMA
+// Données démo  :  extraites des seeders BEGPHARMA
 const DEMO_USERS = {
   "promoteur@begpharma.bj": { id: "u1", name: "Dr. Anicet ANIAMBOSSOU", email: "promoteur@begpharma.bj", role: "promoteur", mfa: true, officines: ["off1","off2"] },
   "pharmacien@begpharma.bj": { id: "u2", name: "Dr. Marcelle HOUNNOU", email: "pharmacien@begpharma.bj", role: "pharmacien_titulaire", mfa: true, officines: ["off1"] },
@@ -32,26 +32,26 @@ const PRODUITS = [
 ];
 
 const LOTS = [
-  { id: "l1", produit_id: "p1", numero_lot: "LOT-2026-001", date_peremption: "2027-06-15", date_reception: "2026-10-20", quantite_disponible: 45, quantite_initiale: 50, emplacement: "Réserve — Stock principal", fournisseur_nom: "CAMEG BÉNIN", bon_livraison_ref: "BL-2026-1045", statut: "en_stock", statut_detail: "commercialisable", statut_effectif: "commercialisable", est_vendable: true, jours_avant_peremption: 210, statut_peremption: "normal", produit: PRODUITS[0] },
-  { id: "l2", produit_id: "p1", numero_lot: "LOT-2026-002", date_peremption: "2026-12-10", date_reception: "2026-11-01", quantite_disponible: 12, quantite_initiale: 30, emplacement: "Comptoir — Délivrance", fournisseur_nom: "UBIPHARM BÉNIN", bon_livraison_ref: "BL-2026-1046", statut: "en_stock", statut_detail: "commercialisable", statut_effectif: "commercialisable", est_vendable: true, jours_avant_peremption: 28, statut_peremption: "critique_1m", produit: PRODUITS[0] },
-  { id: "l3", produit_id: "p2", numero_lot: "LOT-2026-003", date_peremption: "2026-11-30", date_reception: "2026-09-15", quantite_disponible: 8, quantite_initiale: 20, emplacement: "Réserve — Stock principal", fournisseur_nom: "CAMEG BÉNIN", bon_livraison_ref: "BL-2026-1047", statut: "quarantaine", statut_detail: "quarantaine", statut_effectif: "quarantaine", est_vendable: false, motif_quarantaine: "Rappel lot fabricant — vérification ABMed", jours_avant_peremption: 18, statut_peremption: "critique_1m", produit: PRODUITS[1] },
+  { id: "l1", produit_id: "p1", numero_lot: "LOT-2026-001", date_peremption: "2027-06-15", date_reception: "2026-10-20", quantite_disponible: 45, quantite_initiale: 50, emplacement: "Réserve  :  Stock principal", fournisseur_nom: "CAMEG BÉNIN", bon_livraison_ref: "BL-2026-1045", statut: "en_stock", statut_detail: "commercialisable", statut_effectif: "commercialisable", est_vendable: true, jours_avant_peremption: 210, statut_peremption: "normal", produit: PRODUITS[0] },
+  { id: "l2", produit_id: "p1", numero_lot: "LOT-2026-002", date_peremption: "2026-12-10", date_reception: "2026-11-01", quantite_disponible: 12, quantite_initiale: 30, emplacement: "Comptoir  :  Délivrance", fournisseur_nom: "UBIPHARM BÉNIN", bon_livraison_ref: "BL-2026-1046", statut: "en_stock", statut_detail: "commercialisable", statut_effectif: "commercialisable", est_vendable: true, jours_avant_peremption: 28, statut_peremption: "critique_1m", produit: PRODUITS[0] },
+  { id: "l3", produit_id: "p2", numero_lot: "LOT-2026-003", date_peremption: "2026-11-30", date_reception: "2026-09-15", quantite_disponible: 8, quantite_initiale: 20, emplacement: "Réserve  :  Stock principal", fournisseur_nom: "CAMEG BÉNIN", bon_livraison_ref: "BL-2026-1047", statut: "quarantaine", statut_detail: "quarantaine", statut_effectif: "quarantaine", est_vendable: false, motif_quarantaine: "Rappel lot fabricant  :  vérification ABMed", jours_avant_peremption: 18, statut_peremption: "critique_1m", produit: PRODUITS[1] },
   { id: "l4", produit_id: "p3", numero_lot: "LOT-2026-004", date_peremption: "2027-01-20", date_reception: "2026-11-02", quantite_disponible: 15, quantite_initiale: 15, emplacement: "Réfrigérateur 2°C–8°C", fournisseur_nom: "LABOREX BÉNIN", bon_livraison_ref: "BL-2026-1048", statut: "en_stock", statut_detail: "commercialisable", statut_effectif: "commercialisable", est_vendable: true, jours_avant_peremption: 68, statut_peremption: "alerte_3m", produit: PRODUITS[2] },
 ];
 
 const EMPLACEMENTS = [
-  { id: "e1", code: "COMPTOIR", libelle: "Comptoir — Délivrance", type_zone: "comptoir", lots_count: 1 },
-  { id: "e2", code: "RESERVE", libelle: "Réserve — Stock principal", type_zone: "reserve", lots_count: 2 },
+  { id: "e1", code: "COMPTOIR", libelle: "Comptoir  :  Délivrance", type_zone: "comptoir", lots_count: 1 },
+  { id: "e2", code: "RESERVE", libelle: "Réserve  :  Stock principal", type_zone: "reserve", lots_count: 2 },
   { id: "e3", code: "FRIGO", libelle: "Réfrigérateur 2°C–8°C", type_zone: "frigo", lots_count: 1 },
-  { id: "e4", code: "ARMOIRE", libelle: "Armoire sécurisée — Stupéfiants & Listes", type_zone: "armoire_securisee", lots_count: 0 },
+  { id: "e4", code: "ARMOIRE", libelle: "Armoire sécurisée  :  Stupéfiants & Listes", type_zone: "armoire_securisee", lots_count: 0 },
   { id: "e5", code: "ATTENTE", libelle: "Zone d'attente de contrôle", type_zone: "attente_controle", lots_count: 0 },
   { id: "e6", code: "RETOURS", libelle: "Zone des retours fournisseur", type_zone: "retours", lots_count: 0 },
   { id: "e7", code: "DECHETS", libelle: "Aire des déchets sécurisée", type_zone: "dechets", lots_count: 0 },
 ];
 
 const MOUVEMENTS = [
-  { id: "m1", type_mouvement: "entree_reception", quantite: 50, stock_avant: 0, stock_apres: 50, motif: "Réception conforme — commercialisable", reference_piece: "BL-2026-1045", created_at: "2026-10-20T10:00:00Z", produit: PRODUITS[0], lot: LOTS[0], auteur: { name: "Dr. Marcelle HOUNNOU" } },
-  { id: "m2", type_mouvement: "vente", quantite: -5, stock_avant: 50, stock_apres: 45, motif: "Vente FEFO — lot LOT-2026-001", reference_piece: "TICKET-2026-001", created_at: "2026-11-03T14:30:00Z", produit: PRODUITS[0], lot: LOTS[0], auteur: { name: "Gervais KPADONOU" } },
-  { id: "m3", type_mouvement: "changement_statut", quantite: 0, stock_avant: 8, stock_apres: 8, motif: "Statut: commercialisable → quarantaine — Rappel lot fabricant", reference_piece: "RAPPEL-2026-0001", created_at: "2026-11-02T09:00:00Z", produit: PRODUITS[1], lot: LOTS[2], auteur: { name: "Dr. Anicet ANIAMBOSSOU" } },
+  { id: "m1", type_mouvement: "entree_reception", quantite: 50, stock_avant: 0, stock_apres: 50, motif: "Réception conforme  :  commercialisable", reference_piece: "BL-2026-1045", created_at: "2026-10-20T10:00:00Z", produit: PRODUITS[0], lot: LOTS[0], auteur: { name: "Dr. Marcelle HOUNNOU" } },
+  { id: "m2", type_mouvement: "vente", quantite: -5, stock_avant: 50, stock_apres: 45, motif: "Vente FEFO  :  lot LOT-2026-001", reference_piece: "TICKET-2026-001", created_at: "2026-11-03T14:30:00Z", produit: PRODUITS[0], lot: LOTS[0], auteur: { name: "Gervais KPADONOU" } },
+  { id: "m3", type_mouvement: "changement_statut", quantite: 0, stock_avant: 8, stock_apres: 8, motif: "Statut: commercialisable → quarantaine  :  Rappel lot fabricant", reference_piece: "RAPPEL-2026-0001", created_at: "2026-11-02T09:00:00Z", produit: PRODUITS[1], lot: LOTS[2], auteur: { name: "Dr. Anicet ANIAMBOSSOU" } },
 ];
 
 const STUPEFIANTS = {
@@ -72,7 +72,7 @@ const PREPARATIONS = {
   data: {
     data: [
       { id: "pr1", numero_preparation: "PREP-2026-0001", nom_preparation: "Pâte à l'eau", type_preparation: "officinale", formule_detaillee: "Oxyde de zinc 20g, Talc 20g, Glycérine 20g, Eau purifiée qsp 100g", quantite_produite: "100g", conditionnement: "Pot hermétique", date_fabrication: "2026-11-01", date_limite_utilisation: "2026-12-01", patient_nom: null, prescripteur_nom: null, conforme: true, matieres_premieres_lots: [{ matiere: "Oxyde de zinc", lot: "MP-2026-012", fournisseur: "Cooper Bénin", quantite: "20 g", certificat: "CA-2026-014.pdf" }, { matiere: "Talc", lot: "MP-2026-009", fournisseur: "Cooper Bénin", quantite: "20 g", certificat: "CA-2026-009.pdf" }, { matiere: "Glycérine", lot: "MP-2026-021", fournisseur: "UBIPHARM", quantite: "20 g", certificat: "CA-2026-021.pdf" }], executant: { name: "Dr. Marcelle HOUNNOU" }, pharmacien_visa: { name: "Dr. Marcelle HOUNNOU" } },
-      { id: "pr2", numero_preparation: "PREP-2026-0002", nom_preparation: "Sirop de Pholcodine", type_preparation: "magistrale", formule_detaillee: "Pholcodine 100mg, Saccharose, Arôme cerise, Eau purifiée qsp 200ml", quantite_produite: "200ml", conditionnement: "Flacon teinté hermétique", date_fabrication: "2026-11-03", date_limite_utilisation: "2026-11-17", patient_nom: "Enfant M. D.", prescripteur_nom: "Dr. ADJASSA", conforme: true, matieres_premieres_lots: [{ matiere: "Pholcodine", lot: "MP-2026-031", fournisseur: "LABOREX BÉNIN", quantite: "100 mg", certificat: "CA-2026-031.pdf" }, { matiere: "Saccharose", lot: "MP-2026-018", fournisseur: "CAMEG BÉNIN", quantite: "qsp 200 ml", certificat: "—" }], executant: { name: "Gervais KPADONOU" }, pharmacien_visa: null },
+      { id: "pr2", numero_preparation: "PREP-2026-0002", nom_preparation: "Sirop de Pholcodine", type_preparation: "magistrale", formule_detaillee: "Pholcodine 100mg, Saccharose, Arôme cerise, Eau purifiée qsp 200ml", quantite_produite: "200ml", conditionnement: "Flacon teinté hermétique", date_fabrication: "2026-11-03", date_limite_utilisation: "2026-11-17", patient_nom: "Enfant M. D.", prescripteur_nom: "Dr. ADJASSA", conforme: true, matieres_premieres_lots: [{ matiere: "Pholcodine", lot: "MP-2026-031", fournisseur: "LABOREX BÉNIN", quantite: "100 mg", certificat: "CA-2026-031.pdf" }, { matiere: "Saccharose", lot: "MP-2026-018", fournisseur: "CAMEG BÉNIN", quantite: "qsp 200 ml", certificat: " : " }], executant: { name: "Gervais KPADONOU" }, pharmacien_visa: null },
     ],
     total: 2
   }
@@ -85,7 +85,7 @@ const INVENTAIRES = {
       id: "inv1",
       reference: "INV-2026-0001",
       type: "tournant",
-      zone: "Réserve — Stock principal",
+      zone: "Réserve  :  Stock principal",
       statut: "en_cours",
       Parametres: { double_comptage: true, comptage_aveugle: false },
       date_inventaire: "2026-11-04",
@@ -121,8 +121,8 @@ const RAPPELS = {
     {
       id: "rap1",
       reference: "RAPPEL-2026-0001",
-      source: "ABMed — Agence béninoise de régulation pharmaceutique",
-      produits_concernes: "Amoxicilline 1g — GSK",
+      source: "ABMed  :  Agence béninoise de régulation pharmaceutique",
+      produits_concernes: "Amoxicilline 1g  :  GSK",
       lots_concernes: [{ produit_id: "p2", numero_lot: "LOT-2026-003" }],
       date_avis: "2026-11-02",
       action_requise: "Retrait immédiat de la vente, isolement en quarantaine et retour au grossiste.",
@@ -384,9 +384,8 @@ function parseBody(req) {
 
 /** Utilisateur démo correspondant au jeton porteur (défaut : promoteur). */
 function utilisateurCourant(req) {
-  const auth = req.headers.authorization || "";
-  const uid = auth.includes("u3") ? "u3" : auth.includes("u2") ? "u2" : auth.includes("u4") ? "u4" : "u1";
-  return Object.values(DEMO_USERS).find((u) => u.id === uid) || DEMO_USERS["promoteur@begpharma.bj"];
+  const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+  return Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
 }
 
 const OFFICINE_COURANTE = OFFICINES[0];
@@ -462,6 +461,18 @@ const server = http.createServer(async (req, res) => {
       }
     }
   }
+  if (path.startsWith("/api/") && !["/api/auth/login", "/api/auth/register", "/api/auth/verify-mfa", "/api/demo/access"].includes(path) && !utilisateurCourant(req)) return sendJson(res, 401, {message: "Reconnectez-vous pour ouvrir votre espace de travail."});
+  const jour = new Date().toLocaleDateString("sv-SE", {timeZone: "Africa/Porto-Novo"});
+  for (const l of LOTS) {
+    l.jours_avant_peremption = Math.round((Date.parse(l.date_peremption) - Date.parse(jour))/86400000);
+    l.est_vendable = (l.statut_detail || (l.statut === "en_stock" ? "commercialisable" : l.statut)) === "commercialisable" && l.quantite_disponible > 0 && l.date_peremption > jour;
+    l.statut_peremption = l.jours_avant_peremption <= 0 ? "perime" : l.jours_avant_peremption <= 30 ? "critique_1m" : l.jours_avant_peremption <= 90 ? "alerte_3m" : l.jours_avant_peremption <= 180 ? "attention_6m" : "normal";
+  }
+  for (const p of PRODUITS) {
+    const lots = LOTS.filter(l => l.produit_id === p.id && l.est_vendable).sort((a,b) => a.date_peremption.localeCompare(b.date_peremption));
+    p.stock_total = lots.reduce((n,l) => n + l.quantite_disponible, 0);
+    p.prochain_lot_fefo = lots.length ? { id: lots[0].id, numero_lot: lots[0].numero_lot, date_peremption: lots[0].date_peremption, quantite_disponible: lots[0].quantite_disponible, jours_avant_peremption: lots[0].jours_avant_peremption, statut_peremption: lots[0].statut_peremption } : null;
+  }
   if (/^\/api\/officines\/[^/]+\/documents(?:\/|$)/.test(path)) {
     const token = (req.headers.authorization || "").replace(/^Bearer /, "");
     const utilisateur = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
@@ -469,7 +480,7 @@ const server = http.createServer(async (req, res) => {
     if (!utilisateur.officines.includes(path.split("/")[3])) return sendJson(res, 403, { message: "Officine non autorisée." });
     if (method !== "GET" && !["promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq"].includes(utilisateur.role)) return sendJson(res, 403, { message: "Modification réservée aux responsables habilités." });
   }
-  // AUTH — login
+  // AUTH  :  login
   {
     const m = path.match(/^\/api\/officines\/([^/]+)\/suivis-documentaires\/(formations|maintenance)(?:\/(definition|[a-f0-9-]+))?$/);
     if (m) {
@@ -543,7 +554,7 @@ const server = http.createServer(async (req, res) => {
   if (path === "/api/auth/login" && method === "POST") {
     const body = await parseBody(req);
     const user = DEMO_USERS[body.email];
-    if (!user || body.password !== "Begpharma2026!") {
+    if (!user || (user.passwordHash ? scryptSync(String(body.password), user.passwordSalt, 32).toString("hex") !== user.passwordHash : body.password !== "Begpharma2026!")) {
       return sendJson(res, 401, { message: "Identifiants invalides" });
     }
     if (user.mfa) {
@@ -556,11 +567,17 @@ const server = http.createServer(async (req, res) => {
     // accept any 6-digit code in demo, or 123456
     const tempToken = req.headers.authorization?.replace("Bearer ", "") || body.temp_token;
     // find user by temp token
-    const user = Object.values(DEMO_USERS).find(u => tempToken?.includes(u.id)) || DEMO_USERS["promoteur@begpharma.bj"];
+    const user = Object.values(DEMO_USERS).find(u => tempToken === "temp-demo-" + u.id);
+    if (!user || body.code !== "123456") return sendJson(res, 401, { message: "Code de démonstration incorrect." });
     return sendJson(res, 200, { token: "demo-token-" + user.id, user: { id: user.id, name: user.name, email: user.email, mfa_enabled: true }, officines: officinesPour(user) });
   }
   if (path === "/api/auth/register" && method === "POST") {
-    return sendJson(res, 201, { message: "Inscription réussie", token: "demo-token-new", user: { id: "new", name: "Nouveau", email: "new@begpharma.bj" }, officines: [OFFICINES[0]] });
+    const b = await parseBody(req);
+    if (!b.name || !/^.+@.+\..+$/.test(b.email || "") || String(b.password || "").length < 8 || DEMO_USERS[b.email]) return sendJson(res, 422, {message: "Vérifiez le nom, l’adresse de courriel et le mot de passe. Cette adresse doit être disponible."});
+    const salt = randomUUID();
+    const user = { id: randomUUID(), name: b.name, email: b.email, mfa: false, role: "promoteur", officines: [], passwordSalt: salt, passwordHash: scryptSync(b.password, salt, 32).toString("hex") };
+    DEMO_USERS[b.email] = user;
+    return sendJson(res, 201, {message: "Compte temporaire de démonstration créé.", token: "demo-token-" + user.id, user: {id: user.id, name: user.name, email: user.email, mfa_enabled: false}, officines: []});
   }
   if (path === "/api/auth/me" && method === "GET") {
     const user = utilisateurCourant(req);
@@ -625,6 +642,7 @@ const server = http.createServer(async (req, res) => {
       pivot: { role_code: "promoteur", actif: true },
     };
     OFFICINES.push(officine);
+    utilisateurCourant(req).officines.push(officine.id);
     for (const p of PARAMETRES) {
       p.officine_id = officine.id;
     }
@@ -1017,7 +1035,7 @@ const server = http.createServer(async (req, res) => {
 
   // PRODUITS
   if (path === "/api/produits" && method === "GET") {
-    return sendJson(res, 200, { status: "success", data: PRODUITS });
+    return sendJson(res, 200, { status: "success", data: url.searchParams.get("vendables") === "1" ? PRODUITS.filter(p => p.stock_total > 0) : PRODUITS });
   }
   if (path === "/api/produits" && method === "POST") {
     const b = await parseBody(req);
@@ -1062,7 +1080,7 @@ const server = http.createServer(async (req, res) => {
     const newLot = { id: "l" + Date.now(), produit_id: b.produit_id, numero_lot: b.numero_lot, date_peremption: b.date_peremption, quantite_disponible: b.quantite, quantite_initiale: b.quantite, emplacement: b.emplacement || "Réserve", fournisseur_nom: b.fournisseur_nom, bon_livraison_ref: b.bon_livraison_ref, statut: lotConforme ? "en_stock" : "quarantaine", statut_detail: lotConforme ? "commercialisable" : "en_attente_controle", statut_effectif: lotConforme ? "commercialisable" : "en_attente_controle", est_vendable: lotConforme, motif_quarantaine: lotConforme ? null : "Contrôles de réception incomplets : lot isolé en quarantaine", jours_avant_peremption: Math.floor((new Date(b.date_peremption) - new Date())/86400000), statut_peremption: "normal", produit: prod, prix_achat_unitaire: b.prix_achat_unitaire || 900 };
     LOTS.push(newLot);
     MOUVEMENTS.unshift({ id: "m"+Date.now(), type_mouvement: "entree_reception", quantite: b.quantite, stock_avant: 0, stock_apres: b.quantite, motif: "Réception contrôlée", reference_piece: b.bon_livraison_ref, created_at: new Date().toISOString(), produit: prod, lot: newLot, auteur: { name: "Démo" } });
-    return sendJson(res, 201, { status: "success", message: `Lot ${newLot.numero_lot} réceptionné — FEFO appliqué`, data: newLot });
+    return sendJson(res, 201, { status: "success", message: `Lot ${newLot.numero_lot} réceptionné  :  FEFO appliqué`, data: newLot });
   }
   if (path.match(/^\/api\/stocks\/[^\/]+\/quarantaine$/) && method === "POST") {
     const id = path.split("/")[3];
@@ -1083,12 +1101,13 @@ const server = http.createServer(async (req, res) => {
     if (lot) { lot.statut_detail = b.statut; lot.statut_effectif = b.statut; lot.est_vendable = b.statut === "commercialisable"; lot.motif_statut = b.motif; return sendJson(res, 200, { status: "success", message: `Lot ${lot.numero_lot} → ${b.statut}`, data: lot }); }
     return sendJson(res, 404, { message: "Lot non trouvé" });
   }
+  if (path === "/api/stocks/alertes-peremption" && method === "GET") return sendJson(res, 200, {mode_demo: true, courriel_configure: false, seuils_jours: [90,45,10,1], envois: {}});
   if (path === "/api/stocks/peremptions" && method === "GET") {
     const now = new Date();
-    const a1 = LOTS.filter(l => { const d=new Date(l.date_peremption); const diff=(d-now)/86400000; return diff>=0 && diff<=30; });
+    const a1 = LOTS.filter(l => { const d=new Date(l.date_peremption); const diff=(d-now)/86400000; return l.jours_avant_peremption>0 && l.jours_avant_peremption<=30; });
     const a3 = LOTS.filter(l => { const d=new Date(l.date_peremption); const diff=(d-now)/86400000; return diff>30 && diff<=90; });
     const a6 = LOTS.filter(l => { const d=new Date(l.date_peremption); const diff=(d-now)/86400000; return diff>90 && diff<=180; });
-    return sendJson(res, 200, { status: "success", data: { a_1_mois: a1, a_3_mois: a3, a_6_mois: a6, perimes: [] } });
+    return sendJson(res, 200, { status: "success", data: { a_1_mois: a1, a_3_mois: a3, a_6_mois: a6, perimes: LOTS.filter(l => l.jours_avant_peremption <= 0 && l.quantite_disponible > 0) } });
   }
   if (path === "/api/stocks/valorisation" && method === "GET") {
     return sendJson(res, 200, { status: "success", data: { total: LOTS.reduce((s,l)=> s + l.quantite_disponible*900,0), par_produit: PRODUITS.map(p=>({ produit:p, quantite: LOTS.filter(l=>l.produit_id===p.id).reduce((s,l)=>s+l.quantite_disponible,0), valeur: LOTS.filter(l=>l.produit_id===p.id).reduce((s,l)=>s+l.quantite_disponible*900,0), cmp: 900 })) } });
@@ -1133,13 +1152,13 @@ const server = http.createServer(async (req, res) => {
     const newNum = Math.max(...STUPEFIANTS.data.data.map(m=> m.numero_ordre),0)+1;
     const newM = { id: "s"+Date.now(), numero_ordre: newNum, date_mouvement: new Date().toISOString(), type_mouvement: b.type_mouvement, quantite: b.quantite, stock_precedent: 15, stock_nouveau: b.type_mouvement==="entree_livraison" ? 15+b.quantite : 15-b.quantite, reference_piece: b.reference_piece, tiers_nom: b.tiers_nom, patient_nom: b.patient_nom, prescripteur_nom: b.prescripteur_nom, observations: b.observations, produit: { nom_commercial: prod.nom_commercial, dosage: prod.dosage, code_cip: prod.code_cip }, lot: { numero_lot: "STUP-002", date_peremption: "2027-06-01" }, operateur: { name: "Démo" }, pharmacien_visa: null };
     STUPEFIANTS.data.data.unshift(newM);
-    return sendJson(res, 201, { status: "success", message: `Ligne #${String(newNum).padStart(4,"0")} inscrite — immuable après visa`, data: newM });
+    return sendJson(res, 201, { status: "success", message: `Ligne #${String(newNum).padStart(4,"0")} inscrite  :  immuable après visa`, data: newM });
   }
   if (path.match(/^\/api\/stupefiants\/[^\/]+\/viser$/) && method === "POST") {
     const id = path.split("/")[3];
     const m = STUPEFIANTS.data.data.find(x=> x.id===id);
-    if (m) { m.pharmacien_visa = { name: "Dr. Marcelle HOUNNOU" }; m.date_visa = new Date().toISOString(); return sendJson(res, 200, { status: "success", message: "Visa apposé — ligne verrouillée", data: m }); }
-    // try s id is after /stupefiants/inventaire etc — already handled
+    if (m) { m.pharmacien_visa = { name: "Dr. Marcelle HOUNNOU" }; m.date_visa = new Date().toISOString(); return sendJson(res, 200, { status: "success", message: "Visa apposé  :  ligne verrouillée", data: m }); }
+    // try s id is after /stupefiants/inventaire etc  :  already handled
     return sendJson(res, 404, { message: "Non trouvé" });
   }
   if (path.match(/^\/api\/stupefiants\/[^\/]+\/rectificative$/) && method === "POST") {
@@ -1168,10 +1187,10 @@ const server = http.createServer(async (req, res) => {
     });
   }
   if (path === "/api/stupefiants/declaration-vol" && method === "POST") {
-    return sendJson(res, 201, { status: "success", message: "Déclaration enregistrée — alerte promoteur SMS/push", data: {} });
+    return sendJson(res, 201, { status: "success", message: "Déclaration enregistrée  :  alerte promoteur SMS/push", data: {} });
   }
   if (path === "/api/stupefiants/demande-destruction" && method === "POST") {
-    return sendJson(res, 201, { status: "success", message: "Destruction enregistrée — PV à signer", data: {} });
+    return sendJson(res, 201, { status: "success", message: "Destruction enregistrée  :  PV à signer", data: {} });
   }
 
   // PREPARATIONS
@@ -1250,7 +1269,7 @@ const server = http.createServer(async (req, res) => {
       const ecarts = inv.lignes.filter((l) => l.ecart);
       return sendJson(res, 200, {
         status: "success",
-        message: `Inventaire ${inv.reference} validé — ${ecarts.length} ajustement(s) appliqué(s)`,
+        message: `Inventaire ${inv.reference} validé  :  ${ecarts.length} ajustement(s) appliqué(s)`,
         data: inv,
       });
     }
@@ -1288,14 +1307,14 @@ const server = http.createServer(async (req, res) => {
         lot.statut_detail = "quarantaine";
         lot.statut_effectif = "quarantaine";
         lot.est_vendable = false;
-        lot.motif_statut = `Rappel ${rappel.reference} — ${rappel.source}`;
+        lot.motif_statut = `Rappel ${rappel.reference}  :  ${rappel.source}`;
         MOUVEMENTS.unshift({
           id: "m" + Date.now() + bloques,
           type_mouvement: "changement_statut",
           quantite: 0,
           stock_avant: lot.quantite_disponible,
           stock_apres: lot.quantite_disponible,
-          motif: `Blocage automatique — rappel ${rappel.reference}`,
+          motif: `Blocage automatique  :  rappel ${rappel.reference}`,
           reference_piece: rappel.reference,
           created_at: new Date().toISOString(),
           produit: lot.produit,
@@ -1308,8 +1327,8 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 201, {
       status: "success",
       message: bloques > 0
-        ? `Avis enregistré — ${bloques} lot(s) bloqué(s) immédiatement`
-        : "Avis enregistré — aucun lot de cette officine ne correspond aux numéros saisis",
+        ? `Avis enregistré  :  ${bloques} lot(s) bloqué(s) immédiatement`
+        : "Avis enregistré  :  aucun lot de cette officine ne correspond aux numéros saisis",
       data: rappel,
       lots_bloques: bloques,
     });
@@ -1365,7 +1384,7 @@ const server = http.createServer(async (req, res) => {
         quantite: -lot.quantite_disponible,
         stock_avant: lot.quantite_disponible,
         stock_apres: 0,
-        motif: `Sortie vers déchet — ${b.motif}`,
+        motif: `Sortie vers déchet  :  ${b.motif}`,
         reference_piece: dechet.reference,
         created_at: new Date().toISOString(),
         produit: lot.produit,
@@ -1380,7 +1399,7 @@ const server = http.createServer(async (req, res) => {
     }
     return sendJson(res, 201, {
       status: "success",
-      message: `Lot de déchets ${dechet.reference} constitué — perte de ${valeur.toLocaleString("fr-FR")} FCFA enregistrée`,
+      message: `Lot de déchets ${dechet.reference} constitué  :  perte de ${valeur.toLocaleString("fr-FR")} FCFA enregistrée`,
       data: dechet,
     });
   }
@@ -1391,7 +1410,7 @@ const server = http.createServer(async (req, res) => {
       if (!dechet) return sendJson(res, 404, { message: "Lot de déchets non trouvé" });
       dechet.statut = "detruit";
       dechet.date_destruction_reelle = new Date().toISOString().slice(0, 10);
-      return sendJson(res, 200, { status: "success", message: `Destruction ${dechet.reference} validée — procès-verbal à archiver dix ans`, data: dechet });
+      return sendJson(res, 200, { status: "success", message: `Destruction ${dechet.reference} validée  :  procès-verbal à archiver dix ans`, data: dechet });
     }
   }
 
@@ -1469,6 +1488,15 @@ const server = http.createServer(async (req, res) => {
   }
   if (path === "/api/caisse/ventes" && method === "POST") {
     const b = await parseBody(req);
+    const besoins = new Map();
+    for (const ligne of b.lignes || []) {
+      if (!Number.isInteger(ligne.quantite) || ligne.quantite <= 0) return sendJson(res, 422, {message: "La quantité doit être un entier positif."});
+      besoins.set(ligne.produit_id, (besoins.get(ligne.produit_id) || 0) + ligne.quantite);
+    }
+    for (const [id, besoin] of besoins) {
+      if (LOTS.filter(l => l.produit_id === id && l.est_vendable).reduce((n,l) => n + l.quantite_disponible, 0) < besoin) return sendJson(res, 422, {message: "Stock vendable insuffisant : les lots périmés et isolés sont exclus."});
+    }
+
     if (!b.lignes || !b.lignes.length) {
       return sendJson(res, 422, { message: "La vente doit comporter au moins une ligne.", errors: { lignes: ["Champ obligatoire."] } });
     }
@@ -1507,6 +1535,12 @@ const server = http.createServer(async (req, res) => {
         qr_code_data: `BEN-DGI|MECEF|2026|${numero}|${total}`,
       },
     };
+    for (const [id, besoin] of besoins) {
+      let restant = besoin;
+      for (const lot of LOTS.filter(l => l.produit_id === id && l.est_vendable).sort((a,b) => a.date_peremption.localeCompare(b.date_peremption))) {
+        const q = Math.min(restant, lot.quantite_disponible); lot.quantite_disponible -= q; restant -= q; if (!restant) break;
+      }
+    }
     VENTES.unshift(vente);
     session.ventes = VENTES;
     FACTURES_EMECEF.unshift({
@@ -1526,7 +1560,7 @@ const server = http.createServer(async (req, res) => {
     );
     return sendJson(res, 201, {
       status: "success",
-      message: `Vente encaissée — ticket ${numero}`,
+      message: `Vente encaissée  :  ticket ${numero}`,
       data: vente,
     });
   }
@@ -1566,6 +1600,15 @@ const server = http.createServer(async (req, res) => {
   }
   if (path === "/api/dispensations" && method === "POST") {
     const b = await parseBody(req);
+    const besoins = new Map();
+    for (const ligne of b.lignes || []) {
+      if (!Number.isInteger(ligne.quantite) || ligne.quantite <= 0) return sendJson(res, 422, {message: "La quantité doit être un entier positif."});
+      besoins.set(ligne.produit_id, (besoins.get(ligne.produit_id) || 0) + ligne.quantite);
+    }
+    for (const [id, besoin] of besoins) {
+      if (LOTS.filter(l => l.produit_id === id && l.est_vendable).reduce((n,l) => n + l.quantite_disponible, 0) < besoin) return sendJson(res, 422, {message: "Stock vendable insuffisant : les lots périmés et isolés sont exclus."});
+    }
+
     if (!b.patient_nom) {
       return sendJson(res, 422, { message: "Le nom du patient est obligatoire.", errors: { patient_nom: ["Champ obligatoire."] } });
     }
@@ -1593,6 +1636,12 @@ const server = http.createServer(async (req, res) => {
       statut: "delivree",
       date_dispensation: new Date().toISOString(),
     };
+    for (const [id, besoin] of besoins) {
+      let restant = besoin;
+      for (const lot of LOTS.filter(l => l.produit_id === id && l.est_vendable).sort((a,b) => a.date_peremption.localeCompare(b.date_peremption))) {
+        const q = Math.min(restant, lot.quantite_disponible); lot.quantite_disponible -= q; restant -= q; if (!restant) break;
+      }
+    }
     DISPENSATIONS.unshift(dispensation);
     return sendJson(res, 201, { status: "success", message: `Dispensation ${dispensation.numero_dispensation} enregistrée.`, data: dispensation });
   }
@@ -1627,7 +1676,7 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, filtrerJournal(url));
   }
 
-  // DIVERS — une route it non implémentée doit se voir tout de suite, pas
+  // DIVERS  :  une route it non implémentée doit se voir tout de suite, pas
   // renvoyer un tableau vide qui laisse croire que l'écran fonctionne.
   if (path.startsWith("/api/")) {
     console.error(`[MOCK] route non implémentée : ${method} ${path}`);
@@ -1642,5 +1691,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`[MOCK BEGPHARMA] Backend démo écoute sur http://0.0.0.0:${PORT} — login Begpharma2026! / TOTP JBSWY3DPEHPK3PXP (code démo 123456)`);
+  console.log(`[MOCK BEGPHARMA] Backend démo écoute sur http://0.0.0.0:${PORT}  :  login Begpharma2026! / TOTP JBSWY3DPEHPK3PXP (code démo 123456)`);
 });

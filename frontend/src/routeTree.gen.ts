@@ -19,6 +19,7 @@ import { Route as AuthenticatedAutoEvaluationRouteImport } from './routes/_authe
 import { Route as AuthenticatedCaisseRouteImport } from './routes/_authenticated/caisse'
 import { Route as AuthenticatedComptabiliteRouteImport } from './routes/_authenticated/comptabilite'
 import { Route as AuthenticatedCompteRouteImport } from './routes/_authenticated/compte'
+import { Route as AuthenticatedDashboardRouteRouteImport } from './routes/_authenticated/dashboard/route'
 import { Route as AuthenticatedDispensationRouteImport } from './routes/_authenticated/dispensation'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedEcheancesRouteImport } from './routes/_authenticated/echeances'
@@ -35,6 +36,28 @@ import { Route as AuthenticatedSecuriteRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedStockRouteImport } from './routes/_authenticated/stock'
 import { Route as AuthenticatedStupefiantsRouteImport } from './routes/_authenticated/stupefiants'
 import { Route as AuthenticatedTemperaturesRouteImport } from './routes/_authenticated/temperatures'
+import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedDashboardAppareilsRouteImport } from './routes/_authenticated/dashboard/appareils'
+import { Route as AuthenticatedDashboardAutoEvaluationRouteImport } from './routes/_authenticated/dashboard/auto-evaluation'
+import { Route as AuthenticatedDashboardComptabiliteRouteImport } from './routes/_authenticated/dashboard/comptabilite'
+import { Route as AuthenticatedDashboardCompteRouteImport } from './routes/_authenticated/dashboard/compte'
+import { Route as AuthenticatedDashboardDispensationRouteImport } from './routes/_authenticated/dashboard/dispensation'
+import { Route as AuthenticatedDashboardDocumentsRouteImport } from './routes/_authenticated/dashboard/documents'
+import { Route as AuthenticatedDashboardEcheancesRouteImport } from './routes/_authenticated/dashboard/echeances'
+import { Route as AuthenticatedDashboardFacturationRouteImport } from './routes/_authenticated/dashboard/facturation'
+import { Route as AuthenticatedDashboardJournalRouteImport } from './routes/_authenticated/dashboard/journal'
+import { Route as AuthenticatedDashboardLocauxRouteImport } from './routes/_authenticated/dashboard/locaux'
+import { Route as AuthenticatedDashboardModelesRouteImport } from './routes/_authenticated/dashboard/modeles'
+import { Route as AuthenticatedDashboardNonConformitesRouteImport } from './routes/_authenticated/dashboard/non-conformites'
+import { Route as AuthenticatedDashboardParametresRouteImport } from './routes/_authenticated/dashboard/parametres'
+import { Route as AuthenticatedDashboardPersonnelRouteImport } from './routes/_authenticated/dashboard/personnel'
+import { Route as AuthenticatedDashboardPointageRouteImport } from './routes/_authenticated/dashboard/pointage'
+import { Route as AuthenticatedDashboardPreparationsRouteImport } from './routes/_authenticated/dashboard/preparations'
+import { Route as AuthenticatedDashboardSecuriteRouteImport } from './routes/_authenticated/dashboard/securite'
+import { Route as AuthenticatedDashboardStockRouteImport } from './routes/_authenticated/dashboard/stock'
+import { Route as AuthenticatedDashboardStupefiantsRouteImport } from './routes/_authenticated/dashboard/stupefiants'
+import { Route as AuthenticatedDashboardTemperaturesRouteImport } from './routes/_authenticated/dashboard/temperatures'
+import { Route as AuthenticatedDashboardVenteRouteImport } from './routes/_authenticated/dashboard/vente'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -87,6 +110,12 @@ const AuthenticatedCompteRoute = AuthenticatedCompteRouteImport.update({
   path: '/compte',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDashboardRouteRoute =
+  AuthenticatedDashboardRouteRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDispensationRoute =
   AuthenticatedDispensationRouteImport.update({
     id: '/dispensation',
@@ -173,11 +202,144 @@ const AuthenticatedTemperaturesRoute =
     path: '/temperatures',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardIndexRoute =
+  AuthenticatedDashboardIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardAppareilsRoute =
+  AuthenticatedDashboardAppareilsRouteImport.update({
+    id: '/appareils',
+    path: '/appareils',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardAutoEvaluationRoute =
+  AuthenticatedDashboardAutoEvaluationRouteImport.update({
+    id: '/auto-evaluation',
+    path: '/auto-evaluation',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardComptabiliteRoute =
+  AuthenticatedDashboardComptabiliteRouteImport.update({
+    id: '/comptabilite',
+    path: '/comptabilite',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardCompteRoute =
+  AuthenticatedDashboardCompteRouteImport.update({
+    id: '/compte',
+    path: '/compte',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardDispensationRoute =
+  AuthenticatedDashboardDispensationRouteImport.update({
+    id: '/dispensation',
+    path: '/dispensation',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardDocumentsRoute =
+  AuthenticatedDashboardDocumentsRouteImport.update({
+    id: '/documents',
+    path: '/documents',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardEcheancesRoute =
+  AuthenticatedDashboardEcheancesRouteImport.update({
+    id: '/echeances',
+    path: '/echeances',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardFacturationRoute =
+  AuthenticatedDashboardFacturationRouteImport.update({
+    id: '/facturation',
+    path: '/facturation',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardJournalRoute =
+  AuthenticatedDashboardJournalRouteImport.update({
+    id: '/journal',
+    path: '/journal',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardLocauxRoute =
+  AuthenticatedDashboardLocauxRouteImport.update({
+    id: '/locaux',
+    path: '/locaux',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardModelesRoute =
+  AuthenticatedDashboardModelesRouteImport.update({
+    id: '/modeles',
+    path: '/modeles',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardNonConformitesRoute =
+  AuthenticatedDashboardNonConformitesRouteImport.update({
+    id: '/non-conformites',
+    path: '/non-conformites',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardParametresRoute =
+  AuthenticatedDashboardParametresRouteImport.update({
+    id: '/parametres',
+    path: '/parametres',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardPersonnelRoute =
+  AuthenticatedDashboardPersonnelRouteImport.update({
+    id: '/personnel',
+    path: '/personnel',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardPointageRoute =
+  AuthenticatedDashboardPointageRouteImport.update({
+    id: '/pointage',
+    path: '/pointage',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardPreparationsRoute =
+  AuthenticatedDashboardPreparationsRouteImport.update({
+    id: '/preparations',
+    path: '/preparations',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardSecuriteRoute =
+  AuthenticatedDashboardSecuriteRouteImport.update({
+    id: '/securite',
+    path: '/securite',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardStockRoute =
+  AuthenticatedDashboardStockRouteImport.update({
+    id: '/stock',
+    path: '/stock',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardStupefiantsRoute =
+  AuthenticatedDashboardStupefiantsRouteImport.update({
+    id: '/stupefiants',
+    path: '/stupefiants',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardTemperaturesRoute =
+  AuthenticatedDashboardTemperaturesRouteImport.update({
+    id: '/temperatures',
+    path: '/temperatures',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardVenteRoute =
+  AuthenticatedDashboardVenteRouteImport.update({
+    id: '/vente',
+    path: '/vente',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/inscription': typeof InscriptionRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
   '/app': typeof AuthenticatedAppRoute
   '/appareils': typeof AuthenticatedAppareilsRoute
   '/auto-evaluation': typeof AuthenticatedAutoEvaluationRoute
@@ -200,6 +362,28 @@ export interface FileRoutesByFullPath {
   '/stock': typeof AuthenticatedStockRoute
   '/stupefiants': typeof AuthenticatedStupefiantsRoute
   '/temperatures': typeof AuthenticatedTemperaturesRoute
+  '/dashboard/appareils': typeof AuthenticatedDashboardAppareilsRoute
+  '/dashboard/auto-evaluation': typeof AuthenticatedDashboardAutoEvaluationRoute
+  '/dashboard/comptabilite': typeof AuthenticatedDashboardComptabiliteRoute
+  '/dashboard/compte': typeof AuthenticatedDashboardCompteRoute
+  '/dashboard/dispensation': typeof AuthenticatedDashboardDispensationRoute
+  '/dashboard/documents': typeof AuthenticatedDashboardDocumentsRoute
+  '/dashboard/echeances': typeof AuthenticatedDashboardEcheancesRoute
+  '/dashboard/facturation': typeof AuthenticatedDashboardFacturationRoute
+  '/dashboard/journal': typeof AuthenticatedDashboardJournalRoute
+  '/dashboard/locaux': typeof AuthenticatedDashboardLocauxRoute
+  '/dashboard/modeles': typeof AuthenticatedDashboardModelesRoute
+  '/dashboard/non-conformites': typeof AuthenticatedDashboardNonConformitesRoute
+  '/dashboard/parametres': typeof AuthenticatedDashboardParametresRoute
+  '/dashboard/personnel': typeof AuthenticatedDashboardPersonnelRoute
+  '/dashboard/pointage': typeof AuthenticatedDashboardPointageRoute
+  '/dashboard/preparations': typeof AuthenticatedDashboardPreparationsRoute
+  '/dashboard/securite': typeof AuthenticatedDashboardSecuriteRoute
+  '/dashboard/stock': typeof AuthenticatedDashboardStockRoute
+  '/dashboard/stupefiants': typeof AuthenticatedDashboardStupefiantsRoute
+  '/dashboard/temperatures': typeof AuthenticatedDashboardTemperaturesRoute
+  '/dashboard/vente': typeof AuthenticatedDashboardVenteRoute
+  '/dashboard/': typeof AuthenticatedDashboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -227,6 +411,28 @@ export interface FileRoutesByTo {
   '/stock': typeof AuthenticatedStockRoute
   '/stupefiants': typeof AuthenticatedStupefiantsRoute
   '/temperatures': typeof AuthenticatedTemperaturesRoute
+  '/dashboard/appareils': typeof AuthenticatedDashboardAppareilsRoute
+  '/dashboard/auto-evaluation': typeof AuthenticatedDashboardAutoEvaluationRoute
+  '/dashboard/comptabilite': typeof AuthenticatedDashboardComptabiliteRoute
+  '/dashboard/compte': typeof AuthenticatedDashboardCompteRoute
+  '/dashboard/dispensation': typeof AuthenticatedDashboardDispensationRoute
+  '/dashboard/documents': typeof AuthenticatedDashboardDocumentsRoute
+  '/dashboard/echeances': typeof AuthenticatedDashboardEcheancesRoute
+  '/dashboard/facturation': typeof AuthenticatedDashboardFacturationRoute
+  '/dashboard/journal': typeof AuthenticatedDashboardJournalRoute
+  '/dashboard/locaux': typeof AuthenticatedDashboardLocauxRoute
+  '/dashboard/modeles': typeof AuthenticatedDashboardModelesRoute
+  '/dashboard/non-conformites': typeof AuthenticatedDashboardNonConformitesRoute
+  '/dashboard/parametres': typeof AuthenticatedDashboardParametresRoute
+  '/dashboard/personnel': typeof AuthenticatedDashboardPersonnelRoute
+  '/dashboard/pointage': typeof AuthenticatedDashboardPointageRoute
+  '/dashboard/preparations': typeof AuthenticatedDashboardPreparationsRoute
+  '/dashboard/securite': typeof AuthenticatedDashboardSecuriteRoute
+  '/dashboard/stock': typeof AuthenticatedDashboardStockRoute
+  '/dashboard/stupefiants': typeof AuthenticatedDashboardStupefiantsRoute
+  '/dashboard/temperatures': typeof AuthenticatedDashboardTemperaturesRoute
+  '/dashboard/vente': typeof AuthenticatedDashboardVenteRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -234,6 +440,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/inscription': typeof InscriptionRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/appareils': typeof AuthenticatedAppareilsRoute
   '/_authenticated/auto-evaluation': typeof AuthenticatedAutoEvaluationRoute
@@ -256,6 +463,28 @@ export interface FileRoutesById {
   '/_authenticated/stock': typeof AuthenticatedStockRoute
   '/_authenticated/stupefiants': typeof AuthenticatedStupefiantsRoute
   '/_authenticated/temperatures': typeof AuthenticatedTemperaturesRoute
+  '/_authenticated/dashboard/appareils': typeof AuthenticatedDashboardAppareilsRoute
+  '/_authenticated/dashboard/auto-evaluation': typeof AuthenticatedDashboardAutoEvaluationRoute
+  '/_authenticated/dashboard/comptabilite': typeof AuthenticatedDashboardComptabiliteRoute
+  '/_authenticated/dashboard/compte': typeof AuthenticatedDashboardCompteRoute
+  '/_authenticated/dashboard/dispensation': typeof AuthenticatedDashboardDispensationRoute
+  '/_authenticated/dashboard/documents': typeof AuthenticatedDashboardDocumentsRoute
+  '/_authenticated/dashboard/echeances': typeof AuthenticatedDashboardEcheancesRoute
+  '/_authenticated/dashboard/facturation': typeof AuthenticatedDashboardFacturationRoute
+  '/_authenticated/dashboard/journal': typeof AuthenticatedDashboardJournalRoute
+  '/_authenticated/dashboard/locaux': typeof AuthenticatedDashboardLocauxRoute
+  '/_authenticated/dashboard/modeles': typeof AuthenticatedDashboardModelesRoute
+  '/_authenticated/dashboard/non-conformites': typeof AuthenticatedDashboardNonConformitesRoute
+  '/_authenticated/dashboard/parametres': typeof AuthenticatedDashboardParametresRoute
+  '/_authenticated/dashboard/personnel': typeof AuthenticatedDashboardPersonnelRoute
+  '/_authenticated/dashboard/pointage': typeof AuthenticatedDashboardPointageRoute
+  '/_authenticated/dashboard/preparations': typeof AuthenticatedDashboardPreparationsRoute
+  '/_authenticated/dashboard/securite': typeof AuthenticatedDashboardSecuriteRoute
+  '/_authenticated/dashboard/stock': typeof AuthenticatedDashboardStockRoute
+  '/_authenticated/dashboard/stupefiants': typeof AuthenticatedDashboardStupefiantsRoute
+  '/_authenticated/dashboard/temperatures': typeof AuthenticatedDashboardTemperaturesRoute
+  '/_authenticated/dashboard/vente': typeof AuthenticatedDashboardVenteRoute
+  '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -263,6 +492,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/inscription'
+    | '/dashboard'
     | '/app'
     | '/appareils'
     | '/auto-evaluation'
@@ -285,6 +515,28 @@ export interface FileRouteTypes {
     | '/stock'
     | '/stupefiants'
     | '/temperatures'
+    | '/dashboard/appareils'
+    | '/dashboard/auto-evaluation'
+    | '/dashboard/comptabilite'
+    | '/dashboard/compte'
+    | '/dashboard/dispensation'
+    | '/dashboard/documents'
+    | '/dashboard/echeances'
+    | '/dashboard/facturation'
+    | '/dashboard/journal'
+    | '/dashboard/locaux'
+    | '/dashboard/modeles'
+    | '/dashboard/non-conformites'
+    | '/dashboard/parametres'
+    | '/dashboard/personnel'
+    | '/dashboard/pointage'
+    | '/dashboard/preparations'
+    | '/dashboard/securite'
+    | '/dashboard/stock'
+    | '/dashboard/stupefiants'
+    | '/dashboard/temperatures'
+    | '/dashboard/vente'
+    | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -312,12 +564,35 @@ export interface FileRouteTypes {
     | '/stock'
     | '/stupefiants'
     | '/temperatures'
+    | '/dashboard/appareils'
+    | '/dashboard/auto-evaluation'
+    | '/dashboard/comptabilite'
+    | '/dashboard/compte'
+    | '/dashboard/dispensation'
+    | '/dashboard/documents'
+    | '/dashboard/echeances'
+    | '/dashboard/facturation'
+    | '/dashboard/journal'
+    | '/dashboard/locaux'
+    | '/dashboard/modeles'
+    | '/dashboard/non-conformites'
+    | '/dashboard/parametres'
+    | '/dashboard/personnel'
+    | '/dashboard/pointage'
+    | '/dashboard/preparations'
+    | '/dashboard/securite'
+    | '/dashboard/stock'
+    | '/dashboard/stupefiants'
+    | '/dashboard/temperatures'
+    | '/dashboard/vente'
+    | '/dashboard'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/inscription'
+    | '/_authenticated/dashboard'
     | '/_authenticated/app'
     | '/_authenticated/appareils'
     | '/_authenticated/auto-evaluation'
@@ -340,6 +615,28 @@ export interface FileRouteTypes {
     | '/_authenticated/stock'
     | '/_authenticated/stupefiants'
     | '/_authenticated/temperatures'
+    | '/_authenticated/dashboard/appareils'
+    | '/_authenticated/dashboard/auto-evaluation'
+    | '/_authenticated/dashboard/comptabilite'
+    | '/_authenticated/dashboard/compte'
+    | '/_authenticated/dashboard/dispensation'
+    | '/_authenticated/dashboard/documents'
+    | '/_authenticated/dashboard/echeances'
+    | '/_authenticated/dashboard/facturation'
+    | '/_authenticated/dashboard/journal'
+    | '/_authenticated/dashboard/locaux'
+    | '/_authenticated/dashboard/modeles'
+    | '/_authenticated/dashboard/non-conformites'
+    | '/_authenticated/dashboard/parametres'
+    | '/_authenticated/dashboard/personnel'
+    | '/_authenticated/dashboard/pointage'
+    | '/_authenticated/dashboard/preparations'
+    | '/_authenticated/dashboard/securite'
+    | '/_authenticated/dashboard/stock'
+    | '/_authenticated/dashboard/stupefiants'
+    | '/_authenticated/dashboard/temperatures'
+    | '/_authenticated/dashboard/vente'
+    | '/_authenticated/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -419,6 +716,13 @@ declare module '@tanstack/react-router' {
       path: '/compte'
       fullPath: '/compte'
       preLoaderRoute: typeof AuthenticatedCompteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dispensation': {
@@ -533,10 +837,230 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemperaturesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/': {
+      id: '/_authenticated/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/appareils': {
+      id: '/_authenticated/dashboard/appareils'
+      path: '/appareils'
+      fullPath: '/dashboard/appareils'
+      preLoaderRoute: typeof AuthenticatedDashboardAppareilsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/auto-evaluation': {
+      id: '/_authenticated/dashboard/auto-evaluation'
+      path: '/auto-evaluation'
+      fullPath: '/dashboard/auto-evaluation'
+      preLoaderRoute: typeof AuthenticatedDashboardAutoEvaluationRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/comptabilite': {
+      id: '/_authenticated/dashboard/comptabilite'
+      path: '/comptabilite'
+      fullPath: '/dashboard/comptabilite'
+      preLoaderRoute: typeof AuthenticatedDashboardComptabiliteRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/compte': {
+      id: '/_authenticated/dashboard/compte'
+      path: '/compte'
+      fullPath: '/dashboard/compte'
+      preLoaderRoute: typeof AuthenticatedDashboardCompteRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/dispensation': {
+      id: '/_authenticated/dashboard/dispensation'
+      path: '/dispensation'
+      fullPath: '/dashboard/dispensation'
+      preLoaderRoute: typeof AuthenticatedDashboardDispensationRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/documents': {
+      id: '/_authenticated/dashboard/documents'
+      path: '/documents'
+      fullPath: '/dashboard/documents'
+      preLoaderRoute: typeof AuthenticatedDashboardDocumentsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/echeances': {
+      id: '/_authenticated/dashboard/echeances'
+      path: '/echeances'
+      fullPath: '/dashboard/echeances'
+      preLoaderRoute: typeof AuthenticatedDashboardEcheancesRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/facturation': {
+      id: '/_authenticated/dashboard/facturation'
+      path: '/facturation'
+      fullPath: '/dashboard/facturation'
+      preLoaderRoute: typeof AuthenticatedDashboardFacturationRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/journal': {
+      id: '/_authenticated/dashboard/journal'
+      path: '/journal'
+      fullPath: '/dashboard/journal'
+      preLoaderRoute: typeof AuthenticatedDashboardJournalRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/locaux': {
+      id: '/_authenticated/dashboard/locaux'
+      path: '/locaux'
+      fullPath: '/dashboard/locaux'
+      preLoaderRoute: typeof AuthenticatedDashboardLocauxRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/modeles': {
+      id: '/_authenticated/dashboard/modeles'
+      path: '/modeles'
+      fullPath: '/dashboard/modeles'
+      preLoaderRoute: typeof AuthenticatedDashboardModelesRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/non-conformites': {
+      id: '/_authenticated/dashboard/non-conformites'
+      path: '/non-conformites'
+      fullPath: '/dashboard/non-conformites'
+      preLoaderRoute: typeof AuthenticatedDashboardNonConformitesRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/parametres': {
+      id: '/_authenticated/dashboard/parametres'
+      path: '/parametres'
+      fullPath: '/dashboard/parametres'
+      preLoaderRoute: typeof AuthenticatedDashboardParametresRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/personnel': {
+      id: '/_authenticated/dashboard/personnel'
+      path: '/personnel'
+      fullPath: '/dashboard/personnel'
+      preLoaderRoute: typeof AuthenticatedDashboardPersonnelRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/pointage': {
+      id: '/_authenticated/dashboard/pointage'
+      path: '/pointage'
+      fullPath: '/dashboard/pointage'
+      preLoaderRoute: typeof AuthenticatedDashboardPointageRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/preparations': {
+      id: '/_authenticated/dashboard/preparations'
+      path: '/preparations'
+      fullPath: '/dashboard/preparations'
+      preLoaderRoute: typeof AuthenticatedDashboardPreparationsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/securite': {
+      id: '/_authenticated/dashboard/securite'
+      path: '/securite'
+      fullPath: '/dashboard/securite'
+      preLoaderRoute: typeof AuthenticatedDashboardSecuriteRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/stock': {
+      id: '/_authenticated/dashboard/stock'
+      path: '/stock'
+      fullPath: '/dashboard/stock'
+      preLoaderRoute: typeof AuthenticatedDashboardStockRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/stupefiants': {
+      id: '/_authenticated/dashboard/stupefiants'
+      path: '/stupefiants'
+      fullPath: '/dashboard/stupefiants'
+      preLoaderRoute: typeof AuthenticatedDashboardStupefiantsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/temperatures': {
+      id: '/_authenticated/dashboard/temperatures'
+      path: '/temperatures'
+      fullPath: '/dashboard/temperatures'
+      preLoaderRoute: typeof AuthenticatedDashboardTemperaturesRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/vente': {
+      id: '/_authenticated/dashboard/vente'
+      path: '/vente'
+      fullPath: '/dashboard/vente'
+      preLoaderRoute: typeof AuthenticatedDashboardVenteRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
   }
 }
 
+interface AuthenticatedDashboardRouteRouteChildren {
+  AuthenticatedDashboardAppareilsRoute: typeof AuthenticatedDashboardAppareilsRoute
+  AuthenticatedDashboardAutoEvaluationRoute: typeof AuthenticatedDashboardAutoEvaluationRoute
+  AuthenticatedDashboardComptabiliteRoute: typeof AuthenticatedDashboardComptabiliteRoute
+  AuthenticatedDashboardCompteRoute: typeof AuthenticatedDashboardCompteRoute
+  AuthenticatedDashboardDispensationRoute: typeof AuthenticatedDashboardDispensationRoute
+  AuthenticatedDashboardDocumentsRoute: typeof AuthenticatedDashboardDocumentsRoute
+  AuthenticatedDashboardEcheancesRoute: typeof AuthenticatedDashboardEcheancesRoute
+  AuthenticatedDashboardFacturationRoute: typeof AuthenticatedDashboardFacturationRoute
+  AuthenticatedDashboardJournalRoute: typeof AuthenticatedDashboardJournalRoute
+  AuthenticatedDashboardLocauxRoute: typeof AuthenticatedDashboardLocauxRoute
+  AuthenticatedDashboardModelesRoute: typeof AuthenticatedDashboardModelesRoute
+  AuthenticatedDashboardNonConformitesRoute: typeof AuthenticatedDashboardNonConformitesRoute
+  AuthenticatedDashboardParametresRoute: typeof AuthenticatedDashboardParametresRoute
+  AuthenticatedDashboardPersonnelRoute: typeof AuthenticatedDashboardPersonnelRoute
+  AuthenticatedDashboardPointageRoute: typeof AuthenticatedDashboardPointageRoute
+  AuthenticatedDashboardPreparationsRoute: typeof AuthenticatedDashboardPreparationsRoute
+  AuthenticatedDashboardSecuriteRoute: typeof AuthenticatedDashboardSecuriteRoute
+  AuthenticatedDashboardStockRoute: typeof AuthenticatedDashboardStockRoute
+  AuthenticatedDashboardStupefiantsRoute: typeof AuthenticatedDashboardStupefiantsRoute
+  AuthenticatedDashboardTemperaturesRoute: typeof AuthenticatedDashboardTemperaturesRoute
+  AuthenticatedDashboardVenteRoute: typeof AuthenticatedDashboardVenteRoute
+  AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+}
+
+const AuthenticatedDashboardRouteRouteChildren: AuthenticatedDashboardRouteRouteChildren =
+  {
+    AuthenticatedDashboardAppareilsRoute: AuthenticatedDashboardAppareilsRoute,
+    AuthenticatedDashboardAutoEvaluationRoute:
+      AuthenticatedDashboardAutoEvaluationRoute,
+    AuthenticatedDashboardComptabiliteRoute:
+      AuthenticatedDashboardComptabiliteRoute,
+    AuthenticatedDashboardCompteRoute: AuthenticatedDashboardCompteRoute,
+    AuthenticatedDashboardDispensationRoute:
+      AuthenticatedDashboardDispensationRoute,
+    AuthenticatedDashboardDocumentsRoute: AuthenticatedDashboardDocumentsRoute,
+    AuthenticatedDashboardEcheancesRoute: AuthenticatedDashboardEcheancesRoute,
+    AuthenticatedDashboardFacturationRoute:
+      AuthenticatedDashboardFacturationRoute,
+    AuthenticatedDashboardJournalRoute: AuthenticatedDashboardJournalRoute,
+    AuthenticatedDashboardLocauxRoute: AuthenticatedDashboardLocauxRoute,
+    AuthenticatedDashboardModelesRoute: AuthenticatedDashboardModelesRoute,
+    AuthenticatedDashboardNonConformitesRoute:
+      AuthenticatedDashboardNonConformitesRoute,
+    AuthenticatedDashboardParametresRoute:
+      AuthenticatedDashboardParametresRoute,
+    AuthenticatedDashboardPersonnelRoute: AuthenticatedDashboardPersonnelRoute,
+    AuthenticatedDashboardPointageRoute: AuthenticatedDashboardPointageRoute,
+    AuthenticatedDashboardPreparationsRoute:
+      AuthenticatedDashboardPreparationsRoute,
+    AuthenticatedDashboardSecuriteRoute: AuthenticatedDashboardSecuriteRoute,
+    AuthenticatedDashboardStockRoute: AuthenticatedDashboardStockRoute,
+    AuthenticatedDashboardStupefiantsRoute:
+      AuthenticatedDashboardStupefiantsRoute,
+    AuthenticatedDashboardTemperaturesRoute:
+      AuthenticatedDashboardTemperaturesRoute,
+    AuthenticatedDashboardVenteRoute: AuthenticatedDashboardVenteRoute,
+    AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+  }
+
+const AuthenticatedDashboardRouteRouteWithChildren =
+  AuthenticatedDashboardRouteRoute._addFileChildren(
+    AuthenticatedDashboardRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRouteRoute: typeof AuthenticatedDashboardRouteRouteWithChildren
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedAppareilsRoute: typeof AuthenticatedAppareilsRoute
   AuthenticatedAutoEvaluationRoute: typeof AuthenticatedAutoEvaluationRoute
@@ -562,6 +1086,8 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRouteRoute:
+    AuthenticatedDashboardRouteRouteWithChildren,
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedAppareilsRoute: AuthenticatedAppareilsRoute,
   AuthenticatedAutoEvaluationRoute: AuthenticatedAutoEvaluationRoute,

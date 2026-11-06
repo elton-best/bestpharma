@@ -180,6 +180,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/stocks/{id}/quarantaine', [StockLotController::class, 'miseEnQuarantaine']);
     Route::post('/stocks/{id}/lever-quarantaine', [StockLotController::class, 'leverQuarantaine']);
     Route::put('/stocks/{id}/statut', [StockLotController::class, 'changerStatut']);
+    Route::get('/stocks/alertes-peremption', [StockLotController::class, 'alertesPeremption']);
     Route::get('/stocks/peremptions', [StockLotController::class, 'peremptions']);
     Route::get('/stocks/valorisation', [StockLotController::class, 'valorisation']);
     Route::get('/stocks/alertes', [StockLotController::class, 'alertes']);

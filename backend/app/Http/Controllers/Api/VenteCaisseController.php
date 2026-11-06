@@ -112,9 +112,7 @@ class VenteCaisseController extends Controller
                 // Récupération des lots disponibles selon FEFO strict (First Expired, First Out)
                 $lotsDisponibles = StockLot::where('officine_id', $officineId)
                     ->where('produit_id', $produit->id)
-                    ->where('statut', 'en_stock')
-                    ->where('quantite_disponible', '>', 0)
-                    ->where('date_peremption', '>=', Carbon::now()->startOfDay())
+                    ->vendables()
                     ->orderBy('date_peremption', 'asc')
                     ->lockForUpdate()
                     ->get();

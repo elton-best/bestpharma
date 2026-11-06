@@ -108,7 +108,7 @@ export function LandingPage() {
           <div className="flex items-center gap-2.5">
             {token && user ? (
               <Link
-                to="/app"
+                to="/dashboard"
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#023010] hover:bg-[#18AA38] px-4 py-2 font-display text-xs font-bold text-white shadow-sm transition-all hover:-translate-y-px"
               >
                 Accéder à l'officine
@@ -600,7 +600,7 @@ export function LandingPage() {
             <Link to="/inscription" className="hover:text-[#023010] transition-colors">
               Ouvrir une officine
             </Link>
-            <Link to="/app" className="hover:text-[#023010] transition-colors">
+            <Link to="/dashboard" className="hover:text-[#023010] transition-colors">
               Tableau de bord
             </Link>
           </div>

@@ -27,13 +27,28 @@ describe("canevas structurés", () => {
     expect(texteCanevas(contenu)).not.toContain("begpharma.canevas-rempli");
     expect(lireCanevas("Texte ancien")).toBeNull();
   });
+  it("ouvre les feuilles Excel et conserve la saisie lors du changement de feuille", async () => {
+    const excel: Canevas = { ...c, format: "xlsx", parties: [
+      { origine: "Plan", blocs: [{ cle: "p", type: "tableau", lignes: [[{ cle: "a", texte: "Formation", largeur: 2, hauteur: 1 }]] }] },
+      { origine: "Suivi", blocs: [{ cle: "s", type: "tableau", lignes: [[{ cle: "b", texte: "Intervention", largeur: 1, hauteur: 1 }]] }] },
+    ] };
+    const changer = vi.fn();
+    render(<ContenuCanevas canevas={excel} valeurs={{ b: "Réalisée" }} changer={changer} />);
+    expect(screen.getByDisplayValue("Formation")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("combobox"));
+    fireEvent.click(await screen.findByRole("button", { name: "Suivi" }));
+    expect(screen.getByDisplayValue("Réalisée")).toBeInTheDocument();
+    fireEvent.change(screen.getByDisplayValue("Réalisée"), {target: {value: "Contrôlée"}});
+    expect(changer).toHaveBeenCalledWith("b", "Contrôlée");
+    expect(screen.queryByDisplayValue("Formation")).not.toBeInTheDocument();
+  });
   it("enregistre la saisie dans le canevas choisi avec un processus confirmé", async () => {
     vi.spyOn(api, "get").mockImplementation(async url => url.endsWith("/canevas") ? [c] : c);
     const post = vi.spyOn(api, "post").mockResolvedValue({ mode_demo: true });
     render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><CanevasCatalogue officine="off1" /></QueryClientProvider>);
     fireEvent.click(screen.getByRole("combobox"));
     fireEvent.click(await screen.findByRole("button", { name: /PRO-Canevas témoin/ }));
-    const ouvrir = screen.getByRole("button", { name: "Ouvrir et compléter le canevas" });
+    const ouvrir = screen.getByRole("button", { name: "Compléter ce modèle" });
     await waitFor(() => expect(ouvrir).toBeEnabled()); fireEvent.click(ouvrir);
     expect(screen.getByRole("button", { name: "Enregistrer le brouillon" })).toBeDisabled();
     fireEvent.click(screen.getByRole("combobox", { name: /Choisir une section/ }));

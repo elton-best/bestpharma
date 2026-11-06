@@ -8,8 +8,8 @@ vi.mock("@/lib/officine-context", () => ({ useOfficine: () => ({ courante: { off
 globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 it.each(["modeles", "non-conformites", "appareils", "auto-evaluation", "caisse", "comptabilite", "dispensation", "documents", "facturation", "personnel", "preparations", "stock", "stupefiants", "temperatures"])("ouvre l’écran %s avec les réponses de démonstration", async nom => {
-  const fichiers = import.meta.glob("../routes/_authenticated/*.tsx");
-  const module: any = await fichiers[`../routes/_authenticated/${nom}.tsx`]();
+  const fichiers = import.meta.glob("../routes/_authenticated/dashboard/*.tsx");
+  const module: any = await fichiers[`../routes/_authenticated/dashboard/${nom === "caisse" ? "vente" : nom}.tsx`]();
   const reponses: Record<string, unknown> = reponsesDemo;
   vi.spyOn(api, "get").mockImplementation(async url => { const chemin = url.replace(/^\/api/, "").split("?")[0]; if (!(chemin in reponses)) throw new Error("Réponse de recette absente"); return reponses[chemin]; });
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });

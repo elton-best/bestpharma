@@ -38,7 +38,7 @@ export function RegistreDocumentaire({ officine, type }: { officine: string; typ
   const lignes = registre.data?.data ?? [];
   const valeur = (r: Suivi, c: ChampSuivi) => {
     const v = c.type === "equipement" ? r.donnees.equipement_nom : r.donnees[c.cle];
-    return v ? c.type === "date" ? formatDate(v) : v : "—";
+    return v ? c.type === "date" ? formatDate(v) : v : "Non renseigné";
   };
   return <section className="grid gap-4">
     <header className="flex flex-wrap justify-between gap-3"><div><h2 className="text-lg font-bold">{d.titre}</h2><p className="text-sm text-muted-foreground">{d.aide}</p></div>

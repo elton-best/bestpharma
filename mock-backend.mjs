@@ -1,3 +1,4 @@
+import { recalculerCanevas } from "./mock-data/calculs-canevas.mjs";
 import http from "http";
 import { readFileSync } from "node:fs";
 import { randomUUID, createHash, scryptSync } from "node:crypto";
@@ -456,7 +457,7 @@ const server = http.createServer(async (req, res) => {
         c.parties.forEach(p => visiter(p.blocs));
         if (Object.entries(b.valeurs).some(([k, v]) => !cles.has(k) || typeof v !== "string" || v.length > 30000)) return sendJson(res, 422, { message: "Zone du canevas invalide." });
         const doc = { id: randomUUID(), officine_id: m[1], titre: c.titre, code_document: "CAN-" + randomUUID().slice(0, 8), type_doc: b.type_doc, processus: b.processus,
-          contenu: JSON.stringify({ schema: "begpharma.canevas-rempli.v1", canevas: c, valeurs: b.valeurs }), statut: "brouillon", version: 1, indice_revision: 0, redacteur_nom: u.name, updated_at: new Date().toISOString(), mode_demo: true };
+          contenu: JSON.stringify({ schema: "begpharma.canevas-rempli.v1", canevas: c, valeurs: recalculerCanevas(c, b.valeurs) }), statut: "brouillon", version: 1, indice_revision: 0, redacteur_nom: u.name, updated_at: new Date().toISOString(), mode_demo: true };
         doc.empreinte_contenu = empreinteDocumentDemo(doc);
         DOCUMENTS.unshift(doc); return sendJson(res, 201, doc);
       }
@@ -1005,6 +1006,18 @@ const server = http.createServer(async (req, res) => {
       const doc = DOCUMENTS.find(d => d.id === m[2] && (d.officine_id || "off1") === m[1]);
       if (!doc) return sendJson(res, 404, { message: "Document introuvable" });
       if (b.empreinte_edition && b.empreinte_edition !== doc.empreinte_contenu) return sendJson(res, 409, { message: "Ce document a changé. Rechargez-le avant de reprendre les modifications." });
+      if (b.contenu !== undefined) {
+        let ancien; try { ancien = JSON.parse(doc.contenu || ""); } catch {}
+        if (ancien?.schema === "begpharma.canevas-rempli.v1") {
+          let nouveau; try { nouveau = JSON.parse(b.contenu); } catch {}
+          if (!b.empreinte_edition || !nouveau?.valeurs || Array.isArray(nouveau.valeurs) || nouveau.schema !== ancien.schema || JSON.stringify(nouveau.canevas) !== JSON.stringify(ancien.canevas)) return sendJson(res, 422, {message: "La structure du modèle doit être conservée. Rechargez le document."});
+          const cles = new Set();
+          const visiter = blocs => blocs.forEach(x => { if (x.type === "paragraphe") cles.add(x.cle); else x.lignes.forEach(l => l.forEach(c => { cles.add(c.cle); visiter(c.imbriques || []); })); });
+          ancien.canevas.parties.forEach(p => visiter(p.blocs));
+          if (Object.entries(nouveau.valeurs).some(([k,v]) => !cles.has(k) || typeof v !== "string" || v.length > 30000)) return sendJson(res, 422, {message:"Zone de saisie invalide."});
+          nouveau.valeurs = recalculerCanevas(ancien.canevas, nouveau.valeurs); b.contenu = JSON.stringify(nouveau);
+        }
+      }
       for (const cle of ["titre", "contenu", "type_doc", "processus", "statut", "motif_refus"]) {
         if (b[cle] !== undefined) doc[cle] = b[cle];
       }

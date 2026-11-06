@@ -35130,7 +35130,12 @@
                     "hauteur": 1,
                     "adresse": "S12",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "Q12",
+                      "operateur": "-",
+                      "droite": "R12"
+                    }
                   },
                   {
                     "cle": "x226",
@@ -35293,7 +35298,12 @@
                     "hauteur": 1,
                     "adresse": "S13",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "Q13",
+                      "operateur": "-",
+                      "droite": "R13"
+                    }
                   },
                   {
                     "cle": "x246",
@@ -35456,7 +35466,12 @@
                     "hauteur": 1,
                     "adresse": "S14",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "Q14",
+                      "operateur": "-",
+                      "droite": "R14"
+                    }
                   },
                   {
                     "cle": "x266",
@@ -35619,7 +35634,12 @@
                     "hauteur": 1,
                     "adresse": "S15",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "Q15",
+                      "operateur": "-",
+                      "droite": "R15"
+                    }
                   },
                   {
                     "cle": "x286",
@@ -35782,7 +35802,12 @@
                     "hauteur": 1,
                     "adresse": "S16",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "Q16",
+                      "operateur": "-",
+                      "droite": "R16"
+                    }
                   },
                   {
                     "cle": "x306",
@@ -35945,7 +35970,12 @@
                     "hauteur": 1,
                     "adresse": "S17",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "Q17",
+                      "operateur": "-",
+                      "droite": "R17"
+                    }
                   },
                   {
                     "cle": "x326",
@@ -36108,7 +36138,12 @@
                     "hauteur": 1,
                     "adresse": "S18",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "Q18",
+                      "operateur": "-",
+                      "droite": "R18"
+                    }
                   },
                   {
                     "cle": "x346",
@@ -142821,7 +142856,12 @@
                     "hauteur": 1,
                     "adresse": "H4",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F4",
+                      "operateur": "*",
+                      "droite": "G4"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -142903,7 +142943,12 @@
                     "hauteur": 1,
                     "adresse": "R4",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P4",
+                      "operateur": "*",
+                      "droite": "Q4"
+                    }
                   },
                   {
                     "cle": "x72",
@@ -143010,7 +143055,12 @@
                     "hauteur": 1,
                     "adresse": "H5",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F5",
+                      "operateur": "*",
+                      "droite": "G5"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -143198,7 +143248,12 @@
                     "hauteur": 1,
                     "adresse": "H6",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F6",
+                      "operateur": "*",
+                      "droite": "G6"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -143280,7 +143335,12 @@
                     "hauteur": 1,
                     "adresse": "R6",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P6",
+                      "operateur": "*",
+                      "droite": "Q6"
+                    }
                   },
                   {
                     "cle": "x118",
@@ -143395,7 +143455,12 @@
                     "hauteur": 1,
                     "adresse": "H7",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F7",
+                      "operateur": "*",
+                      "droite": "G7"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -143477,7 +143542,12 @@
                     "hauteur": 1,
                     "adresse": "R7",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P7",
+                      "operateur": "*",
+                      "droite": "Q7"
+                    }
                   },
                   {
                     "cle": "x142",
@@ -143584,7 +143654,12 @@
                     "hauteur": 1,
                     "adresse": "H8",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F8",
+                      "operateur": "*",
+                      "droite": "G8"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -143666,7 +143741,12 @@
                     "hauteur": 1,
                     "adresse": "R8",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P8",
+                      "operateur": "*",
+                      "droite": "Q8"
+                    }
                   },
                   {
                     "cle": "x165",
@@ -143773,7 +143853,12 @@
                     "hauteur": 1,
                     "adresse": "H9",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F9",
+                      "operateur": "*",
+                      "droite": "G9"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -143855,7 +143940,12 @@
                     "hauteur": 1,
                     "adresse": "R9",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P9",
+                      "operateur": "*",
+                      "droite": "Q9"
+                    }
                   },
                   {
                     "cle": "x188",
@@ -143962,7 +144052,12 @@
                     "hauteur": 1,
                     "adresse": "H10",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F10",
+                      "operateur": "*",
+                      "droite": "G10"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -144044,7 +144139,12 @@
                     "hauteur": 1,
                     "adresse": "R10",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P10",
+                      "operateur": "*",
+                      "droite": "Q10"
+                    }
                   },
                   {
                     "cle": "x211",
@@ -144159,7 +144259,12 @@
                     "hauteur": 1,
                     "adresse": "H11",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F11",
+                      "operateur": "*",
+                      "droite": "G11"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -144241,7 +144346,12 @@
                     "hauteur": 1,
                     "adresse": "R11",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P11",
+                      "operateur": "*",
+                      "droite": "Q11"
+                    }
                   },
                   {
                     "cle": "x235",
@@ -144348,7 +144458,12 @@
                     "hauteur": 1,
                     "adresse": "H12",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F12",
+                      "operateur": "*",
+                      "droite": "G12"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -144430,7 +144545,12 @@
                     "hauteur": 1,
                     "adresse": "R12",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P12",
+                      "operateur": "*",
+                      "droite": "Q12"
+                    }
                   },
                   {
                     "cle": "x258",
@@ -144537,7 +144657,12 @@
                     "hauteur": 1,
                     "adresse": "H13",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F13",
+                      "operateur": "*",
+                      "droite": "G13"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -144725,7 +144850,12 @@
                     "hauteur": 1,
                     "adresse": "H14",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F14",
+                      "operateur": "*",
+                      "droite": "G14"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -144807,7 +144937,12 @@
                     "hauteur": 1,
                     "adresse": "R14",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P14",
+                      "operateur": "*",
+                      "droite": "Q14"
+                    }
                   },
                   {
                     "cle": "x304",
@@ -144914,7 +145049,12 @@
                     "hauteur": 1,
                     "adresse": "H15",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F15",
+                      "operateur": "*",
+                      "droite": "G15"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -144996,7 +145136,12 @@
                     "hauteur": 1,
                     "adresse": "R15",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P15",
+                      "operateur": "*",
+                      "droite": "Q15"
+                    }
                   },
                   {
                     "cle": "x327",
@@ -145103,7 +145248,12 @@
                     "hauteur": 1,
                     "adresse": "H16",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F16",
+                      "operateur": "*",
+                      "droite": "G16"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -145291,7 +145441,12 @@
                     "hauteur": 1,
                     "adresse": "H17",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F17",
+                      "operateur": "*",
+                      "droite": "G17"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -145479,7 +145634,12 @@
                     "hauteur": 1,
                     "adresse": "H18",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F18",
+                      "operateur": "*",
+                      "droite": "G18"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -145675,7 +145835,12 @@
                     "hauteur": 1,
                     "adresse": "H19",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F19",
+                      "operateur": "*",
+                      "droite": "G19"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -145757,7 +145922,12 @@
                     "hauteur": 1,
                     "adresse": "R19",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P19",
+                      "operateur": "*",
+                      "droite": "Q19"
+                    }
                   },
                   {
                     "cle": "x420",
@@ -145864,7 +146034,12 @@
                     "hauteur": 1,
                     "adresse": "H20",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F20",
+                      "operateur": "*",
+                      "droite": "G20"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -146052,7 +146227,12 @@
                     "hauteur": 1,
                     "adresse": "H21",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F21",
+                      "operateur": "*",
+                      "droite": "G21"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -146134,7 +146314,12 @@
                     "hauteur": 1,
                     "adresse": "R21",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P21",
+                      "operateur": "*",
+                      "droite": "Q21"
+                    }
                   },
                   {
                     "cle": "x466",
@@ -146241,7 +146426,12 @@
                     "hauteur": 1,
                     "adresse": "H22",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F22",
+                      "operateur": "*",
+                      "droite": "G22"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -146429,7 +146619,12 @@
                     "hauteur": 1,
                     "adresse": "H23",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F23",
+                      "operateur": "*",
+                      "droite": "G23"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -146617,7 +146812,12 @@
                     "hauteur": 1,
                     "adresse": "H24",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F24",
+                      "operateur": "*",
+                      "droite": "G24"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -146699,7 +146899,12 @@
                     "hauteur": 1,
                     "adresse": "R24",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P24",
+                      "operateur": "*",
+                      "droite": "Q24"
+                    }
                   },
                   {
                     "cle": "x535",
@@ -146814,7 +147019,12 @@
                     "hauteur": 1,
                     "adresse": "H25",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F25",
+                      "operateur": "*",
+                      "droite": "G25"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -146896,7 +147106,12 @@
                     "hauteur": 1,
                     "adresse": "R25",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P25",
+                      "operateur": "*",
+                      "droite": "Q25"
+                    }
                   },
                   {
                     "cle": "x559",
@@ -147003,7 +147218,12 @@
                     "hauteur": 1,
                     "adresse": "H26",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F26",
+                      "operateur": "*",
+                      "droite": "G26"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -147085,7 +147305,12 @@
                     "hauteur": 1,
                     "adresse": "R26",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P26",
+                      "operateur": "*",
+                      "droite": "Q26"
+                    }
                   },
                   {
                     "cle": "x582",
@@ -147201,7 +147426,12 @@
                     "hauteur": 1,
                     "adresse": "H27",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F27",
+                      "operateur": "*",
+                      "droite": "G27"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -147283,7 +147513,12 @@
                     "hauteur": 1,
                     "adresse": "R27",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P27",
+                      "operateur": "*",
+                      "droite": "Q27"
+                    }
                   },
                   {
                     "cle": "x606",
@@ -147390,7 +147625,12 @@
                     "hauteur": 1,
                     "adresse": "H28",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F28",
+                      "operateur": "*",
+                      "droite": "G28"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -147472,7 +147712,12 @@
                     "hauteur": 1,
                     "adresse": "R28",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P28",
+                      "operateur": "*",
+                      "droite": "Q28"
+                    }
                   },
                   {
                     "cle": "x629",
@@ -147579,7 +147824,12 @@
                     "hauteur": 1,
                     "adresse": "H29",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F29",
+                      "operateur": "*",
+                      "droite": "G29"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -147661,7 +147911,12 @@
                     "hauteur": 1,
                     "adresse": "R29",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P29",
+                      "operateur": "*",
+                      "droite": "Q29"
+                    }
                   },
                   {
                     "cle": "x652",
@@ -147768,7 +148023,12 @@
                     "hauteur": 1,
                     "adresse": "H30",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F30",
+                      "operateur": "*",
+                      "droite": "G30"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -147850,7 +148110,12 @@
                     "hauteur": 1,
                     "adresse": "R30",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P30",
+                      "operateur": "*",
+                      "droite": "Q30"
+                    }
                   },
                   {
                     "cle": "x675",
@@ -147966,7 +148231,12 @@
                     "hauteur": 1,
                     "adresse": "H31",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F31",
+                      "operateur": "*",
+                      "droite": "G31"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -148048,7 +148318,12 @@
                     "hauteur": 1,
                     "adresse": "R31",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P31",
+                      "operateur": "*",
+                      "droite": "Q31"
+                    }
                   },
                   {
                     "cle": "x699",
@@ -148155,7 +148430,12 @@
                     "hauteur": 1,
                     "adresse": "H32",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F32",
+                      "operateur": "*",
+                      "droite": "G32"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -148343,7 +148623,12 @@
                     "hauteur": 1,
                     "adresse": "H33",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F33",
+                      "operateur": "*",
+                      "droite": "G33"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -148425,7 +148710,12 @@
                     "hauteur": 1,
                     "adresse": "R33",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P33",
+                      "operateur": "*",
+                      "droite": "Q33"
+                    }
                   },
                   {
                     "cle": "x745",
@@ -148541,7 +148831,12 @@
                     "hauteur": 1,
                     "adresse": "H34",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F34",
+                      "operateur": "*",
+                      "droite": "G34"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -148623,7 +148918,12 @@
                     "hauteur": 1,
                     "adresse": "R34",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P34",
+                      "operateur": "*",
+                      "droite": "Q34"
+                    }
                   },
                   {
                     "cle": "x769",
@@ -148730,7 +149030,12 @@
                     "hauteur": 1,
                     "adresse": "H35",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F35",
+                      "operateur": "*",
+                      "droite": "G35"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -148812,7 +149117,12 @@
                     "hauteur": 1,
                     "adresse": "R35",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P35",
+                      "operateur": "*",
+                      "droite": "Q35"
+                    }
                   },
                   {
                     "cle": "x792",
@@ -148919,7 +149229,12 @@
                     "hauteur": 1,
                     "adresse": "H36",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F36",
+                      "operateur": "*",
+                      "droite": "G36"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -149001,7 +149316,12 @@
                     "hauteur": 1,
                     "adresse": "R36",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P36",
+                      "operateur": "*",
+                      "droite": "Q36"
+                    }
                   },
                   {
                     "cle": "x815",
@@ -149108,7 +149428,12 @@
                     "hauteur": 1,
                     "adresse": "H37",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F37",
+                      "operateur": "*",
+                      "droite": "G37"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -149190,7 +149515,12 @@
                     "hauteur": 1,
                     "adresse": "R37",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P37",
+                      "operateur": "*",
+                      "droite": "Q37"
+                    }
                   },
                   {
                     "cle": "x838",
@@ -149297,7 +149627,12 @@
                     "hauteur": 1,
                     "adresse": "H38",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F38",
+                      "operateur": "*",
+                      "droite": "G38"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -149379,7 +149714,12 @@
                     "hauteur": 1,
                     "adresse": "R38",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P38",
+                      "operateur": "*",
+                      "droite": "Q38"
+                    }
                   },
                   {
                     "cle": "x861",
@@ -149495,7 +149835,12 @@
                     "hauteur": 1,
                     "adresse": "H39",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F39",
+                      "operateur": "*",
+                      "droite": "G39"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -149577,7 +149922,12 @@
                     "hauteur": 1,
                     "adresse": "R39",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P39",
+                      "operateur": "*",
+                      "droite": "Q39"
+                    }
                   },
                   {
                     "cle": "x885",
@@ -149684,7 +150034,12 @@
                     "hauteur": 1,
                     "adresse": "H40",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F40",
+                      "operateur": "*",
+                      "droite": "G40"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -149881,7 +150236,12 @@
                     "hauteur": 1,
                     "adresse": "H41",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F41",
+                      "operateur": "*",
+                      "droite": "G41"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -149963,7 +150323,12 @@
                     "hauteur": 1,
                     "adresse": "R41",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P41",
+                      "operateur": "*",
+                      "droite": "Q41"
+                    }
                   },
                   {
                     "cle": "x932",
@@ -150070,7 +150435,12 @@
                     "hauteur": 1,
                     "adresse": "H42",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F42",
+                      "operateur": "*",
+                      "droite": "G42"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -150152,7 +150522,12 @@
                     "hauteur": 1,
                     "adresse": "R42",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P42",
+                      "operateur": "*",
+                      "droite": "Q42"
+                    }
                   },
                   {
                     "cle": "x955",
@@ -150259,7 +150634,12 @@
                     "hauteur": 1,
                     "adresse": "H43",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F43",
+                      "operateur": "*",
+                      "droite": "G43"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -150341,7 +150721,12 @@
                     "hauteur": 1,
                     "adresse": "R43",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P43",
+                      "operateur": "*",
+                      "droite": "Q43"
+                    }
                   },
                   {
                     "cle": "x978",
@@ -150457,7 +150842,12 @@
                     "hauteur": 1,
                     "adresse": "H44",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F44",
+                      "operateur": "*",
+                      "droite": "G44"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -150539,7 +150929,12 @@
                     "hauteur": 1,
                     "adresse": "R44",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P44",
+                      "operateur": "*",
+                      "droite": "Q44"
+                    }
                   },
                   {
                     "cle": "x1002",
@@ -150646,7 +151041,12 @@
                     "hauteur": 1,
                     "adresse": "H45",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F45",
+                      "operateur": "*",
+                      "droite": "G45"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -150728,7 +151128,12 @@
                     "hauteur": 1,
                     "adresse": "R45",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P45",
+                      "operateur": "*",
+                      "droite": "Q45"
+                    }
                   },
                   {
                     "cle": "x1025",
@@ -150844,7 +151249,12 @@
                     "hauteur": 1,
                     "adresse": "H46",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F46",
+                      "operateur": "*",
+                      "droite": "G46"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -150926,7 +151336,12 @@
                     "hauteur": 1,
                     "adresse": "R46",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P46",
+                      "operateur": "*",
+                      "droite": "Q46"
+                    }
                   },
                   {
                     "cle": "x1049",
@@ -151033,7 +151448,12 @@
                     "hauteur": 1,
                     "adresse": "H47",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F47",
+                      "operateur": "*",
+                      "droite": "G47"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -151115,7 +151535,12 @@
                     "hauteur": 1,
                     "adresse": "R47",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P47",
+                      "operateur": "*",
+                      "droite": "Q47"
+                    }
                   },
                   {
                     "cle": "x1072",
@@ -151231,7 +151656,12 @@
                     "hauteur": 1,
                     "adresse": "H48",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F48",
+                      "operateur": "*",
+                      "droite": "G48"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -151313,7 +151743,12 @@
                     "hauteur": 1,
                     "adresse": "R48",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P48",
+                      "operateur": "*",
+                      "droite": "Q48"
+                    }
                   },
                   {
                     "cle": "x1096",
@@ -151420,7 +151855,12 @@
                     "hauteur": 1,
                     "adresse": "H49",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F49",
+                      "operateur": "*",
+                      "droite": "G49"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -151502,7 +151942,12 @@
                     "hauteur": 1,
                     "adresse": "R49",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P49",
+                      "operateur": "*",
+                      "droite": "Q49"
+                    }
                   },
                   {
                     "cle": "x1119",
@@ -151618,7 +152063,12 @@
                     "hauteur": 1,
                     "adresse": "H50",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F50",
+                      "operateur": "*",
+                      "droite": "G50"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -151700,7 +152150,12 @@
                     "hauteur": 1,
                     "adresse": "R50",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P50",
+                      "operateur": "*",
+                      "droite": "Q50"
+                    }
                   },
                   {
                     "cle": "x1143",
@@ -151816,7 +152271,12 @@
                     "hauteur": 1,
                     "adresse": "H51",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F51",
+                      "operateur": "*",
+                      "droite": "G51"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -151898,7 +152358,12 @@
                     "hauteur": 1,
                     "adresse": "R51",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P51",
+                      "operateur": "*",
+                      "droite": "Q51"
+                    }
                   },
                   {
                     "cle": "x1167",
@@ -152005,7 +152470,12 @@
                     "hauteur": 1,
                     "adresse": "H52",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F52",
+                      "operateur": "*",
+                      "droite": "G52"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -152087,7 +152557,12 @@
                     "hauteur": 1,
                     "adresse": "R52",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P52",
+                      "operateur": "*",
+                      "droite": "Q52"
+                    }
                   },
                   {
                     "cle": "x1190",
@@ -152203,7 +152678,12 @@
                     "hauteur": 1,
                     "adresse": "H53",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F53",
+                      "operateur": "*",
+                      "droite": "G53"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -152285,7 +152765,12 @@
                     "hauteur": 1,
                     "adresse": "R53",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P53",
+                      "operateur": "*",
+                      "droite": "Q53"
+                    }
                   },
                   {
                     "cle": "x1214",
@@ -152392,7 +152877,12 @@
                     "hauteur": 1,
                     "adresse": "H54",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F54",
+                      "operateur": "*",
+                      "droite": "G54"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -152474,7 +152964,12 @@
                     "hauteur": 1,
                     "adresse": "R54",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P54",
+                      "operateur": "*",
+                      "droite": "Q54"
+                    }
                   },
                   {
                     "cle": "x1237",
@@ -152581,7 +153076,12 @@
                     "hauteur": 1,
                     "adresse": "H55",
                     "gras": false,
-                    "calcul_a_verifier": true,
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "F55",
+                      "operateur": "*",
+                      "droite": "G55"
+                    },
                     "fond": "#F7F7F7"
                   },
                   {
@@ -152663,7 +153163,12 @@
                     "hauteur": 1,
                     "adresse": "R55",
                     "gras": false,
-                    "calcul_a_verifier": true
+                    "calcul_a_verifier": false,
+                    "calcul": {
+                      "gauche": "P55",
+                      "operateur": "*",
+                      "droite": "Q55"
+                    }
                   },
                   {
                     "cle": "x1260",

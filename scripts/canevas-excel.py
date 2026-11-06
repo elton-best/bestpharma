@@ -1,7 +1,7 @@
 """Transposition des feuilles modèles Excel, sans exécuter leurs formules."""
 from datetime import date, datetime
 from pathlib import Path
-import hashlib, warnings
+import hashlib, warnings, re
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 FEUILLES = {
@@ -59,7 +59,12 @@ def extraire(source):
                     else: value=str(value)
                     compteur+=1; hauteur,largeur=ancres.get((row,col),(1,1))
                     c={'cle':f'x{compteur}', 'texte':value, 'largeur':largeur, 'hauteur':min(hauteur,limite-row+1), 'adresse':cell.coordinate, 'gras':bool(cell.font.bold)}
-                    if cell.data_type=='f': c['calcul_a_verifier']=True
+                    if cell.data_type=='f':
+                        c['calcul_a_verifier']=True
+                        simple=re.fullmatch(r'=([A-Z]+[0-9]+)([+*/-])([A-Z]+[0-9]+)',cell.value or '')
+                        if simple:
+                            c['calcul']={'gauche':simple[1],'operateur':simple[2],'droite':simple[3]}
+                            c['calcul_a_verifier']=False
                     if cell.fill.fgColor.type=='rgb' and cell.fill.fgColor.rgb and cell.fill.fgColor.rgb!='00000000': c['fond']='#'+cell.fill.fgColor.rgb[-6:]
                     ligne.append(c)
                 lignes.append(ligne)

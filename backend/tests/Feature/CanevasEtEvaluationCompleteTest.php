@@ -73,6 +73,29 @@ class CanevasEtEvaluationCompleteTest extends TestCase
         $this->assertSame($odt['sha256'], $contenu['canevas']['sha256']);
         $this->assertSame('Liste adaptée pour notre officine', $contenu['valeurs'][$cle]);
     }
+    public function test_cotation_recalculee_a_la_creation_et_a_la_modification(): void
+    {
+        $sources = app(\App\Services\CatalogueCanevasService::class)->tous();
+        $source = array_values(array_filter($sources, fn ($c) => str_ends_with($c['fichier'], 'Tableau de maîtrise des risques et opportunités.xlsx')))[0];
+        foreach ($source['parties'] as $p) {
+            $cellules = [];
+            foreach ($p['blocs'] as $b) foreach ($b['lignes'] ?? [] as $l) foreach ($l as $c) $cellules[] = $c;
+            $calculs = array_values(array_filter($cellules, fn ($c) => isset($c['calcul'])));
+            if (!$calculs) continue;
+            $c = $calculs[0]; $adresses = array_column($cellules, null, 'adresse');
+            $gauche = $adresses[$c['calcul']['gauche']]['cle']; $droite = $adresses[$c['calcul']['droite']]['cle']; break;
+        }
+        $r = $this->actingAs($this->titulaire)->postJson("/api/officines/{$this->officine->id}/canevas/{$source['id']}/documents", [
+            'valeurs' => [$gauche => '2', $droite => '3', $c['cle'] => '999'], 'type_doc'=>'enregistrement', 'processus'=>'QAM',
+        ])->assertCreated();
+        $contenu = json_decode($r->json('contenu'), true);
+        $this->assertSame('6', $contenu['valeurs'][$c['cle']]);
+        $contenu['valeurs'][$gauche] = '4'; $contenu['valeurs'][$c['cle']] = '999';
+        $modifie = $this->actingAs($this->titulaire)->putJson("/api/officines/{$this->officine->id}/documents/{$r->json('id')}", [
+            'contenu'=>json_encode($contenu), 'empreinte_edition'=>$r->json('empreinte_contenu'),
+        ])->assertOk();
+        $this->assertSame('12', json_decode($modifie->json('contenu'), true)['valeurs'][$c['cle']]);
+    }
     public function test_grille_complete_et_actions_sans_fausses_notes(): void
     {
         $base = "/api/officines/{$this->officine->id}/auto-evaluation";

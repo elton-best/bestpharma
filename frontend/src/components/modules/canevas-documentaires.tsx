@@ -1,3 +1,4 @@
+import { recalculerCanevas, type CelluleCalcul } from "@/lib/calculs-canevas";
 import { ConnexionDonnees } from "@/components/connexion-donnees";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { SelecteurFiltrable } from "@/components/ui/selecteur-filtrable";
 import { Dialog } from "@/components/ui/dialog";
 import { ModaleFiche, ColonneFiche } from "@/components/modules/modale";
-interface Cellule { cle: string; texte: string; largeur: number; hauteur: number; fond?: string; gras?: boolean; images?: string[]; imbriques?: Bloc[] }
+interface Cellule extends CelluleCalcul { cle: string; texte: string; largeur: number; hauteur: number; fond?: string; gras?: boolean; images?: string[]; imbriques?: Bloc[] }
 interface Bloc { cle: string; type: "paragraphe" | "tableau"; texte?: string; gras?: boolean; alignement?: string; images?: string[]; lignes?: Cellule[][]; largeurs?: number[] }
 export interface Canevas { usage?: "reference"; format?: string; id: string; titre: string; rubrique: string; fichier: string; sha256: string; parties: { origine: string; blocs: Bloc[] }[]; images: Record<string, string> }
 interface Rempli { schema: string; canevas: Canevas; valeurs: Record<string, string> }
@@ -20,8 +21,10 @@ export function lireCanevas(contenu: string): Rempli | null {
 export function ContenuCanevas({ canevas, valeurs, changer }: { canevas: Canevas; valeurs: Record<string, string>; changer?: (cle: string, valeur: string) => void }) {
   const [feuille, setFeuille] = useState(canevas.parties[0]?.origine ?? "");
   const feuilleCourante = canevas.parties.some(p => p.origine === feuille) ? feuille : canevas.parties[0]?.origine;
-  const texte = (cle: string, original = "") => valeurs[cle] ?? original;
-  const zone = (cle: string, original: string, label: string) => changer ? <textarea aria-label={label} className="min-h-12 w-full min-w-0 resize-y rounded border border-emerald-200 bg-white p-2 text-sm leading-relaxed focus:border-emerald-700" rows={Math.min(15, Math.max(2, original.split("\n").length))} value={texte(cle, original)} onChange={e => changer(cle, e.target.value)} /> : <span className="whitespace-pre-wrap">{texte(cle, original) || "\u00a0"}</span>;
+  const calculees = new Set(canevas.parties.flatMap(p => p.blocs.flatMap(b => b.lignes?.flat().filter(c => c.calcul).map(c => c.cle) ?? [])));
+  const valeursCalculees = recalculerCanevas(canevas, valeurs);
+  const texte = (cle: string, original = "") => valeursCalculees[cle] ?? original;
+  const zone = (cle: string, original: string, label: string) => changer && !calculees.has(cle) ? <textarea aria-label={label} className="min-h-12 w-full min-w-0 resize-y rounded border border-emerald-200 bg-white p-2 text-sm leading-relaxed focus:border-emerald-700" rows={Math.min(15, Math.max(2, original.split("\n").length))} value={texte(cle, original)} onChange={e => changer(cle, e.target.value)} /> : <span className="whitespace-pre-wrap">{texte(cle, original) || "\u00a0"}</span>;
   const blocs = (liste: Bloc[]) => liste.map((b, i) => b.type === "tableau" ? <div key={b.cle} className="max-w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-300 text-sm"><colgroup>{b.largeurs?.map((largeur, i) => <col key={i} style={{ width: `${largeur / b.largeurs!.reduce((a, v) => a + v, 0) * 100}%` }} />)}</colgroup><tbody>{b.lignes?.map((ligne, l) => <tr key={l}>{ligne.map((cell, c) => <td key={cell.cle} colSpan={cell.largeur} rowSpan={cell.hauteur} className="min-w-32 border border-slate-300 p-2 align-top" style={{ backgroundColor: /^#[a-fA-F0-9]{6}$/.test(cell.fond ?? "") ? cell.fond : undefined, fontWeight: cell.gras ? "bold" : undefined }}>
     {cell.images?.map(image => canevas.images[image] && <img key={image} src={canevas.images[image]} alt="Illustration du modèle source" className="max-h-32 max-w-full object-contain" />)}
     {zone(cell.cle, cell.texte, `Cellule du tableau, ligne ${l + 1}, colonne ${c + 1}`)}{cell.imbriques && blocs(cell.imbriques)}
@@ -65,7 +68,7 @@ export function CanevasCatalogue({ officine, filtre = "tous", creer = true }: { 
     {modele.isError && <ConnexionDonnees erreur={modele.error} reessayer={() => modele.refetch()} titre="Le modèle ne peut pas être ouvert" />}
     {message && <p role="status">{message}</p>}
     <Dialog open={ouvert} onOpenChange={o => { if (!enCours) setOuvert(o); }}><ModaleFiche titre={modele.data?.titre ?? "Canevas"} sousTitre={modele.data?.usage === "reference" ? "Les annotations du document source sont conservées pour consultation, sans validation réglementaire implicite." : "Complétez le modèle avant de l’enregistrer comme brouillon."} pied={<div className="flex flex-wrap justify-end gap-3"><Button variant="outline" className="min-h-12" disabled={enCours} onClick={() => setOuvert(false)}>Fermer</Button>{peutCompleter && <Button className="min-h-12" disabled={enCours || !processus} onClick={enregistrer}>{enCours ? "Enregistrement…" : "Enregistrer le brouillon"}</Button>}</div>}>
-      {modele.data && <div className="grid min-w-0 gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,3fr)]"><ColonneFiche titre="Document source">{peutCompleter && <><SelecteurFiltrable etiquette="Nature du document" valeur={typeDoc} onChange={setTypeDoc} options={[{ valeur: "procedure", libelle: "Procédure" }, { valeur: "enregistrement", libelle: "Formulaire ou enregistrement" }, { valeur: "fiche_poste", libelle: "Fiche de poste" }]} /><SelecteurFiltrable etiquette="Processus à confirmer" valeur={processus} onChange={setProcessus} options={[{ valeur: "TAM", libelle: "Management" }, { valeur: "QAM", libelle: "Qualité et amélioration" }, { valeur: "GAD", libelle: "Dispensation" }, { valeur: "GAC", libelle: "Approvisionnement et stocks" }, { valeur: "GAR", libelle: "Ressources et locaux" }]} /></>}<p className="break-words text-sm">{modele.data.fichier}</p>{modele.data.format === "xlsx" && <p className="text-xs text-amber-800">Les calculs du classeur doivent être vérifiés après la saisie.</p>}<p className="text-xs text-muted-foreground">{modele.data.usage === "reference" ? "Le texte et les annotations sont présentés pour consultation." : "Les zones et tableaux du modèle sont repris pour la saisie. La présentation s’adapte à l’écran."}</p>{message && <p role="alert">{message}</p>}</ColonneFiche><ColonneFiche titre={modele.data.usage === "reference" ? "Contenu et annotations" : "Zones du canevas"}><ContenuCanevas canevas={modele.data} valeurs={valeurs} changer={peutCompleter ? (cle, valeur) => setValeurs(v => ({ ...v, [cle]: valeur })) : undefined} /></ColonneFiche></div>}
+      {modele.data && <div className="grid min-w-0 gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,3fr)]"><ColonneFiche titre="Document source">{peutCompleter && <><SelecteurFiltrable etiquette="Nature du document" valeur={typeDoc} onChange={setTypeDoc} options={[{ valeur: "procedure", libelle: "Procédure" }, { valeur: "enregistrement", libelle: "Formulaire ou enregistrement" }, { valeur: "fiche_poste", libelle: "Fiche de poste" }]} /><SelecteurFiltrable etiquette="Processus à confirmer" valeur={processus} onChange={setProcessus} options={[{ valeur: "TAM", libelle: "Management" }, { valeur: "QAM", libelle: "Qualité et amélioration" }, { valeur: "GAD", libelle: "Dispensation" }, { valeur: "GAC", libelle: "Approvisionnement et stocks" }, { valeur: "GAR", libelle: "Ressources et locaux" }]} /></>}<p className="break-words text-sm">{modele.data.fichier}</p>{modele.data.format === "xlsx" && <p className="text-xs text-amber-800">Les soldes de congés et les produits de cotation des risques sont recalculés. Les autres calculs et les codes restent à vérifier.</p>}<p className="text-xs text-muted-foreground">{modele.data.usage === "reference" ? "Le texte et les annotations sont présentés pour consultation." : "Les zones et tableaux du modèle sont repris pour la saisie. La présentation s’adapte à l’écran."}</p>{message && <p role="alert">{message}</p>}</ColonneFiche><ColonneFiche titre={modele.data.usage === "reference" ? "Contenu et annotations" : "Zones du canevas"}><ContenuCanevas canevas={modele.data} valeurs={valeurs} changer={peutCompleter ? (cle, valeur) => setValeurs(v => ({ ...v, [cle]: valeur })) : undefined} /></ColonneFiche></div>}
     </ModaleFiche></Dialog>
   </section>;
 }
@@ -76,6 +79,7 @@ export function PageCatalogueCanevas() {
 export const echapperCanevas = (s: string) => s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 export function htmlCanevas(contenu: string): string {
   const r = lireCanevas(contenu);
+  if (r) r.valeurs = recalculerCanevas(r.canevas, r.valeurs);
   if (!r) return `<p style="white-space:pre-wrap">${echapperCanevas(contenu)}</p>`;
   const images = (ids: string[] = []) => ids.map(id => {
     const data = r.canevas.images[id];
@@ -87,6 +91,7 @@ export function htmlCanevas(contenu: string): string {
 export function texteCanevas(contenu: string): string {
   const r = lireCanevas(contenu);
   if (!r) return contenu;
+  r.valeurs = recalculerCanevas(r.canevas, r.valeurs);
   const blocs = (liste: Bloc[]): string => liste.map(b => b.type === "tableau" ? b.lignes?.map(l => l.map(c => (r.valeurs[c.cle] ?? c.texte) + (c.imbriques ? blocs(c.imbriques) : "")).join(" | ")).join("\n") : r.valeurs[b.cle] ?? b.texte ?? "").join("\n");
   return r.canevas.parties.map(p => blocs(p.blocs)).join("\n");
 }

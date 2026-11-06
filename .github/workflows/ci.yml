@@ -111,7 +111,9 @@ jobs:
 
       - name: Vérification des types
         working-directory: frontend
-        run: npm run typecheck
+        run: |
+          npm run typecheck
+          node ../scripts/generer-calculs-demo.mjs --check
 
       - name: Compilation de production et démarrage sans session serveur
         working-directory: frontend

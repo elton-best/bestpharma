@@ -140,6 +140,8 @@ class DocumentController extends Controller
                     $cles = app(\App\Services\CatalogueCanevasService::class)->champs($structure['canevas']);
                     abort_if(array_diff(array_keys($nouvelle['valeurs']), $cles), 422, 'Zone de saisie inconnue.');
                     foreach ($nouvelle['valeurs'] as $texte) abort_unless(is_string($texte) && mb_strlen($texte) <= 30000, 422, 'Zone de saisie invalide.');
+                    $nouvelle['valeurs'] = app(\App\Services\CalculsCanevasService::class)->recalculer($structure['canevas'], $nouvelle['valeurs']);
+                    $validated['contenu'] = json_encode($nouvelle, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
                 }
             }
 

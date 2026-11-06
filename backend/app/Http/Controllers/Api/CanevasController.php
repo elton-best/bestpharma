@@ -31,6 +31,7 @@ class CanevasController extends Controller
         $cles = $service->champs($canevas);
         $v = $request->validate(['valeurs' => 'present|array', 'valeurs.*' => 'nullable|string|max:30000', 'type_doc' => 'required|in:procedure,enregistrement,fiche_poste', 'processus' => 'required|in:TAM,QAM,GAD,GAC,GAR']);
         abort_if(array_diff(array_keys($v['valeurs']), $cles), 422, 'Une zone de saisie ne correspond pas au canevas.');
+        $v['valeurs'] = app(\App\Services\CalculsCanevasService::class)->recalculer($canevas, $v['valeurs']);
         // Copie structurée du modèle dans le document : les évolutions du catalogue
         // ne modifient jamais les brouillons et approbations déjà enregistrés.
         $contenu = json_encode(['schema' => 'begpharma.canevas-rempli.v1', 'canevas' => $canevas, 'valeurs' => $v['valeurs']], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);

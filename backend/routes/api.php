@@ -95,6 +95,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/officines/{officineId}/documents', [DocumentController::class, 'store']);
     Route::get('/officines/{officineId}/documents/{id}', [DocumentController::class, 'show']);
     Route::get('/officines/{officineId}/documents/{id}/approbations', [DocumentController::class, 'approbations']);
+    Route::get('/officines/{officineId}/documents/{id}/fichiers', [\App\Http\Controllers\Api\FichierDocumentController::class, 'index']);
+    Route::post('/officines/{officineId}/documents/{id}/fichiers', [\App\Http\Controllers\Api\FichierDocumentController::class, 'store'])->middleware('throttle:20,1');
+    Route::get('/officines/{officineId}/documents/{id}/fichiers/{fichierId}/telecharger', [\App\Http\Controllers\Api\FichierDocumentController::class, 'telecharger']);
     Route::put('/officines/{officineId}/documents/{id}', [DocumentController::class, 'update']);
 
     // Bibliothèque des modèles BPD types de l'ABMed (BPD-C02)

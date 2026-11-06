@@ -4,7 +4,7 @@ namespace App\Services;
 
 class EmpreinteDocumentService
 {
-    /** Copie textuelle déterministe : les fichiers joints seront traités par la GED versionnée. */
+    /** Copie déterministe du texte et du manifeste de fichiers de cette version. */
     public function contenuSigne(object $doc): string
     {
         return json_encode([
@@ -13,6 +13,7 @@ class EmpreinteDocumentService
             'type_doc' => $doc->type_doc, 'processus' => $doc->processus,
             'version' => (int) $doc->version, 'indice_revision' => (int) $doc->indice_revision,
             'contenu' => $doc->contenu ?? '',
+            'fichiers' => $doc->fichiers ?? [],
         ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 

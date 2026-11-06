@@ -25,7 +25,7 @@ Les copies approuvées interdisent UPDATE/DELETE/TRUNCATE ; leurs clés étrang�
 
 Un trigger sur les documents interdit la modification directe/suppression d'une fiche validée, impose l'ouverture d'une révision et vérifie qu'une approbation correspond exactement au contenu lors du passage en validation. Les versions historiques antérieures au déploiement ne reçoivent pas de fausse preuve rétroactive.
 
-Les droits d'administration de base restent une frontière de confiance : ces triggers ne protègent pas contre un superutilisateur qui les désactive. Les fichiers joints ne sont pas couverts par cette copie textuelle ; la GED de fichiers versionnés est un chantier distinct.
+Les droits d'administration de base restent une frontière de confiance : ces triggers ne protègent pas contre un superutilisateur qui les désactive. Depuis le lot GED de fichiers, les nouvelles approbations couvrent aussi le manifeste des pièces de la version : voir `GED-FICHIERS.md`. Les anciennes copies ne sont pas réécrites.
 
 ## Frontend
 

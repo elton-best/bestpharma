@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use App\Services\EmpreinteDocumentService;
+use App\Services\FichiersDocumentService;
 use Illuminate\Support\Str;
 
 class DocumentController extends Controller
@@ -127,6 +128,7 @@ class DocumentController extends Controller
             $fields = array_intersect_key($validated, array_flip([
                 'titre', 'contenu', 'type_doc', 'processus', 'statut', 'motif_refus',
             ]));
+            $doc->fichiers = app(FichiersDocumentService::class)->manifeste($doc);
             $empreintes = app(EmpreinteDocumentService::class);
             if ($valider) {
                 abort_if($doc->statut === 'valide' || $doc->statut === 'retire', 409,
@@ -177,6 +179,7 @@ class DocumentController extends Controller
 
     private function avecEmpreinte(object $doc): object
     {
+        $doc->fichiers = app(FichiersDocumentService::class)->manifeste($doc);
         $doc->empreinte_contenu = app(EmpreinteDocumentService::class)->empreinte($doc);
         return $doc;
     }

@@ -28,6 +28,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
+import { FichiersDocumentaires } from "@/components/modules/fichiers-documentaires";
 import { ApprobationDocument, HistoriqueApprobations } from "@/components/modules/approbation-document";
 import { api } from "@/lib/api-client";
 import { telechargerTexte, telechargerCsv, imprimerFicheOfficielle } from "@/lib/export-utils";
@@ -385,6 +386,9 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
             </Card>
           </div>
         </div>
+
+        {id && <FichiersDocumentaires officine={id} document={docActif.id} version={docActif.version} indice={docActif.indice_revision} statut={docActif.statut}
+          actualiser={async () => { const fiche = await api.get<DocumentBpd>(`/officines/${id}/documents/${docActif.id}`); setDocActif(fiche); }} />}
 
         {id && <HistoriqueApprobations officine={id} document={docActif.id} />}
 

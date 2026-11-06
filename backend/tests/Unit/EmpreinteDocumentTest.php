@@ -22,5 +22,8 @@ class EmpreinteDocumentTest extends TestCase
         $doc->contenu = 'Texte témoin éàç';
         $doc->version = 2;
         $this->assertNotSame($original, $service->empreinte($doc));
+        $doc->version = 1;
+        $doc->fichiers = [['id' => 'piece-test', 'sha256' => str_repeat('a', 64)]];
+        $this->assertNotSame($original, $service->empreinte($doc));
     }
 }

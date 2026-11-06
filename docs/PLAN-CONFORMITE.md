@@ -56,3 +56,7 @@ Chaînage et vérification PostgreSQL implémentés, contrôleur protégé par r
 ## Lot approbation documentaire
 
 Frontend et backend liés par une empreinte serveur et une confirmation du mot de passe du compte (pas un PIN non provisionné). Copie textuelle et métadonnées d'approbation conservées, limitation des tentatives, historique et révision sans perte de copie. Triggers testés sur PostgreSQL natif ; tests de modale ajoutés. Faux émargements/diffusion retirés. Voir `APPROBATION-DOCUMENTAIRE.md` pour les limites, notamment l'absence de signature qualifiée et la validation API Laravel encore attendue.
+
+## Lot GED de fichiers
+
+Stockage privé dédié, pièces conservées par version, historique, téléchargement authentifié avec vérification de l’empreinte et manifeste inclus dans les nouvelles approbations. Tests frontend et SQL PostgreSQL exécutés ; tests HTTP Laravel écrits mais non exécutés localement. Import du corpus, antivirus, conversion PDF/A, diffusion et sauvegardes restent distincts. Voir `GED-FICHIERS.md`.

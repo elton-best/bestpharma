@@ -167,6 +167,18 @@ class ApiClient {
     return res.json();
   }
 
+  async telechargerFichier(url: string): Promise<Blob> {
+    const token = this.getToken();
+    const res = await fetch(this.formatUrl(url), {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: "Téléchargement impossible." }));
+      throw new Error(err.message || "Téléchargement impossible.");
+    }
+    return res.blob();
+  }
+
   logout() {
     this.setToken(null);
     this.setUser(null);

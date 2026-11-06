@@ -101,6 +101,31 @@ try {
   assert.equal((await verifier(doc.officine_id)).verifiees, '1');
   console.log('✓ Révision sans perte de la copie approuvée, audit attribué à la bonne officine');
 
+  await client.query(`ALTER TABLE documents ADD COLUMN archived boolean DEFAULT false;
+    CREATE TABLE fichiers_documents (id uuid PRIMARY KEY, officine_id uuid, document_id uuid, version_document integer,
+      indice_revision integer, numero integer, nom_original text, mime text, octets bigint, sha256 text,
+      chemin text, depose_par uuid, depose_le timestamptz, conserver_jusqu_au date,
+      UNIQUE(document_id, numero));`);
+  const migrationFichiers = readFileSync(new URL('../backend/database/migrations/2026_11_06_170000_create_fichiers_documents.php', import.meta.url), 'utf8');
+  const blocs = [...migrationFichiers.matchAll(/DB::unprepared\(<<<'SQL'\n([\s\S]*?)\n        SQL\);/g)];
+  await client.query(blocs[0][1]); await client.query(blocs[1][1]);
+  const fichier = { id: randomUUID(), numero: 1, nom_original: 'preuve.pdf', mime: 'application/pdf', octets: 123, sha256: 'a'.repeat(64) };
+  await client.query(`INSERT INTO fichiers_documents (id, officine_id, document_id, version_document, indice_revision,
+    numero, nom_original, mime, octets, sha256) VALUES ($1,$2,$3,2,1,1,$4,$5,$6,$7)`,
+    [fichier.id, doc.officine_id, doc.id, fichier.nom_original, fichier.mime, fichier.octets, fichier.sha256]);
+  const snapshotAvecFichier = JSON.stringify({ ...doc, version: 2, indice_revision: 1, contenu: 'Nouvelle révision', fichiers: [fichier] });
+  await client.query(`INSERT INTO approbations_documents (id, officine_id, document_id, version, indice_revision,
+    signataire_id, signataire_nom, contenu_signe, empreinte_contenu, approuve_le) VALUES
+    ($1,$2,$3,2,1,$4,'Recette',$5,encode(sha256(convert_to($5,'UTF8')),'hex'),now())`,
+    [randomUUID(), doc.officine_id, doc.id, randomUUID(), snapshotAvecFichier]);
+  await client.query("UPDATE documents SET statut='valide' WHERE id=$1", [doc.id]);
+  await assert.rejects(client.query(`INSERT INTO fichiers_documents (id, officine_id, document_id, version_document,
+    indice_revision, numero) VALUES ($1,$2,$3,2,1,2)`, [randomUUID(), doc.officine_id, doc.id]));
+  await assert.rejects(client.query("UPDATE fichiers_documents SET sha256='altéré' WHERE id=$1", [fichier.id]));
+  await assert.rejects(client.query('DELETE FROM fichiers_documents WHERE id=$1', [fichier.id]));
+  await assert.rejects(client.query('TRUNCATE fichiers_documents'));
+  console.log('✓ Manifeste de pièces inclus dans l’approbation ; ajout postérieur et modification des métadonnées bloqués');
+
 } finally {
   if (client) await client.end();
   if (cree) await admin.query(`DROP DATABASE "${db}" WITH (FORCE)`);

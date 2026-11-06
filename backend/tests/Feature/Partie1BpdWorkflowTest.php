@@ -181,4 +181,38 @@ class Partie1BpdWorkflowTest extends TestCase
         $this->assertDatabaseMissing('approbations_documents', ['document_id' => $creation->json('id')]);
         \Illuminate\Support\Facades\RateLimiter::clear('approbation-document:'.$this->titulaire->id);
     }
+    public function test_fichier_prive_versionne_lie_a_lapprobation(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('ged');
+        $creation = $this->actingAs($this->titulaire)->postJson("/api/officines/{$this->officine->id}/documents", [
+            'titre' => 'Procédure de recette avec pièce privée',
+        ])->assertCreated();
+        $url = "/api/officines/{$this->officine->id}/documents/".$creation->json('id');
+        $pdf = fn () => \Illuminate\Http\UploadedFile::fake()->createWithContent('preuve.pdf', "%PDF-1.4\nDocument de recette\n%%EOF");
+        $depot = $this->actingAs($this->titulaire)->post($url.'/fichiers', [
+            'file' => $pdf(), 'version_document' => 1, 'indice_revision' => 0,
+        ], ['Accept' => 'application/json'])->assertCreated();
+        $this->assertArrayNotHasKey('chemin', $depot->json());
+        $this->actingAs($this->titulaire)->post($url.'/fichiers', [
+            'file' => $pdf(), 'version_document' => 1, 'indice_revision' => 0,
+        ], ['Accept' => 'application/json'])->assertOk()->assertJsonPath('id', $depot->json('id'));
+        $fiche = $this->actingAs($this->titulaire)->getJson($url)->assertOk();
+        $this->assertNotSame($creation->json('empreinte_contenu'), $fiche->json('empreinte_contenu'));
+        $preuve = ['statut' => 'valide', 'password' => 'Secret123456!', 'intention' => 'approbation_documentaire',
+            'empreinte_attendue' => $creation->json('empreinte_contenu')];
+        $this->actingAs($this->titulaire)->putJson($url, $preuve)->assertConflict();
+        $preuve['empreinte_attendue'] = $fiche->json('empreinte_contenu');
+        $this->actingAs($this->titulaire)->putJson($url, $preuve)->assertOk();
+        $this->actingAs($this->titulaire)->post($url.'/fichiers', [
+            'file' => $pdf(), 'version_document' => 1, 'indice_revision' => 0,
+        ], ['Accept' => 'application/json'])->assertConflict();
+        $telechargement = $url.'/fichiers/'.$depot->json('id').'/telecharger';
+        $this->actingAs($this->titulaire)->get($telechargement)->assertDownload('preuve.pdf')
+            ->assertHeader('X-Content-Type-Options', 'nosniff');
+        $chemin = DB::table('fichiers_documents')->where('id', $depot->json('id'))->value('chemin');
+        \Illuminate\Support\Facades\Storage::disk('ged')->put($chemin, 'Fichier volontairement altéré');
+        $this->actingAs($this->titulaire)->getJson($telechargement)->assertConflict();
+        $autre = (string) Str::uuid();
+        $this->actingAs($this->titulaire)->getJson("/api/officines/{$autre}/documents/".$creation->json('id').'/fichiers')->assertForbidden();
+    }
 }

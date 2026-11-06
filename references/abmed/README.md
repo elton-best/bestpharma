@@ -47,3 +47,23 @@ Le script n’enlève que les lignes vides et les numéros de page isolés. Des 
 - Calculer les compteurs depuis la version effectivement importée, sans assimiler couverture documentaire et conformité de l’officine.
 
 La signature serveur et la chaîne d’audit réelle constituent un lot distinct, encore à réaliser. Cette extraction ne vaut pas certification du logiciel.
+
+## Préparation en base Laravel (sans activation)
+
+Après application des migrations, depuis `backend/` :
+
+```sh
+php artisan bpd:preparer ../references/abmed/extraction/articles-a-relire.json ../references/abmed/guide-bpdisp.pdf --verifier
+php artisan bpd:preparer ../references/abmed/extraction/articles-a-relire.json ../references/abmed/guide-bpdisp.pdf
+```
+
+La première commande n’écrit rien. La seconde enregistre un instantané au statut `a_relire` dans `versions_referentiel_bpd`, identifié par le SHA-256 du fichier JSON. Répéter la commande avec le même fichier ne crée pas de doublon et ne met pas à jour l’instantané. Toute modification du fichier produit une autre identité. Ce mécanisme n’est ni une signature, ni un horodatage opposable, ni une protection contre un administrateur de base malveillant.
+
+Les campagnes historiques conservent leurs articles, cotations et liens CAPA ; leur nouvelle colonne `referentiel_version_id` reste NULL, ce qui signifie ancien référentiel non rapproché. Le service de campagne courant n’active pas les instantanés en relecture. Il n’existe à ce stade aucune commande de validation/activation : elle devra enregistrer la relecture métier et créer de nouvelles campagnes sans recopier de scores.
+
+### Vérifications effectuées
+
+- Contrôle reproductible Python de l’extraction : réussi.
+- Analyse syntaxique PHP des nouveaux fichiers : réussie avec PHP WebAssembly.
+- Exécution PHP du vérificateur pur : source complète acceptée ; PDF différent, numéro dupliqué, texte vide et statut de validation injustifié refusés.
+- Tests PHPUnit écrits pour ces cas, ainsi qu’un test d’import répété et de conservation des campagnes et évaluations. Le test d’intégration et la migration PostgreSQL restent à exécuter dans la CI ; ils ne sont pas déclarés réussis localement.

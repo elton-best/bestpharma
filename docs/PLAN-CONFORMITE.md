@@ -44,3 +44,7 @@ Aucune déclaration de certification ABMed ne découle de ces travaux.
 ## Prochain lot
 
 Faire exécuter les tests backend en CI, puis sécuriser les réponses d’audit et les validations documentaires. Le journal contient encore des calculs de preuve simulés : le succès de la compilation ne vaut pas validation de l’intégrité. L’import du référentiel complet reste conditionné à sa relecture métier et à une stratégie préservant les anciennes cotations.
+
+## Lot de préparation versionnée
+
+Migration et commande `bpd:preparer` ajoutées : instantané en relecture, identité de contenu, import sans doublon et lien nullable depuis les campagnes. Aucun référentiel actif remplacé. Vérificateur pur exécuté avec PHP WebAssembly sur la source et sur quatre cas de refus ; syntaxe des nouveaux fichiers contrôlée. Validation de la migration et du comportement transactionnel PostgreSQL encore attendue en CI.

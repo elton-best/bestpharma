@@ -163362,19 +163362,19 @@
               "gras": false
             },
             {
-              "cle": "a12",
+              "cle": "a14",
               "type": "tableau",
               "lignes": [
                 [
                   {
                     "cle": "a2",
-                    "texte": "Procédure de gestion des approvisionnements\n",
+                    "texte": "Procédures",
                     "largeur": 1,
                     "hauteur": 1
                   },
                   {
                     "cle": "a3",
-                    "texte": "Commande/achats : Evaluation des besoins, Sélection des fournisseurs, Passation de la commande\nRéception : Vérification de la conformité entre le bordereau de livraison et les colis, Vérification de la quantité et la qualité : cas des fournitures ou équipements, Signature des documents\nDépouillement et étiquetage des produits livrés : Vérifier la conformité des produits par apport aux exigences, Inscription des codes, Etiquetage",
+                    "texte": "Activités de couverture",
                     "largeur": 1,
                     "hauteur": 1
                   }
@@ -163382,13 +163382,13 @@
                 [
                   {
                     "cle": "a4",
-                    "texte": "Procédure de gestion de stock et de la sécurité des produits\n",
+                    "texte": "Procédure de gestion des approvisionnements\n",
                     "largeur": 1,
                     "hauteur": 1
                   },
                   {
                     "cle": "a5",
-                    "texte": "Stockage des différentes catégories des produits de santé : Entrée en stock (virtuel), Rangement (entrée en stock physique) \nSuivi de stock des produits de santé : Mini-inventaire, Inventaire général, Gestion des produits à date de péremption proche, Gestion des produits périmés et avariés, Mise en quarantaine de produits et rappel de lot\nGestion de la sécurité des produits de santé : Surveillance et conservation des produits de la chaine de froid, Surveillance et conservation des autres produits pharmaceutiques et autres produits de santé, Prévention et gestion de la rupture de la chaîne de froid",
+                    "texte": "Commande/achats : Evaluation des besoins, Sélection des fournisseurs, Passation de la commande\nRéception : Vérification de la conformité entre le bordereau de livraison et les colis, Vérification de la quantité et la qualité : cas des fournitures ou équipements, Signature des documents\nDépouillement et étiquetage des produits livrés : Vérifier la conformité des produits par apport aux exigences, Inscription des codes, Etiquetage",
                     "largeur": 1,
                     "hauteur": 1
                   }
@@ -163396,13 +163396,13 @@
                 [
                   {
                     "cle": "a6",
-                    "texte": "Procédure de dispensation, conseils et de la caisse\n",
+                    "texte": "Procédure de gestion de stock et de la sécurité des produits\n",
                     "largeur": 1,
                     "hauteur": 1
                   },
                   {
                     "cle": "a7",
-                    "texte": "Accueil et orientation : Accueil des usagers, Orientation des usagers\nGestion des conseils : Promulgation de conseil & d’éducation sanitaire, Suivi des conseils\nGestion de la vente : Dispensation des produits de santé sans prescription (absence d’ordonnance), Dispensation des produits de santé prescrits, Analyse pharmaceutique d'une ordonnance, Substitution d’un produit de sante\nGestion de la caisse : Encaissement, Passation de service, Prise de service, Transformation d’un ticket en facture & impression d’une facture normalisée, Gestion des avoirs, Encaissement caisse mini-dépense, Décaissement caisse mini-dépense",
+                    "texte": "Stockage des différentes catégories des produits de santé : Entrée en stock (virtuel), Rangement (entrée en stock physique) \nSuivi de stock des produits de santé : Mini-inventaire, Inventaire général, Gestion des produits à date de péremption proche, Gestion des produits périmés et avariés, Mise en quarantaine de produits et rappel de lot\nGestion de la sécurité des produits de santé : Surveillance et conservation des produits de la chaine de froid, Surveillance et conservation des autres produits pharmaceutiques et autres produits de santé, Prévention et gestion de la rupture de la chaîne de froid",
                     "largeur": 1,
                     "hauteur": 1
                   }
@@ -163410,13 +163410,13 @@
                 [
                   {
                     "cle": "a8",
-                    "texte": "Procédure de gestion des ressources et des collaborations\n",
+                    "texte": "Procédure de dispensation, conseils et de la caisse\n",
                     "largeur": 1,
                     "hauteur": 1
                   },
                   {
                     "cle": "a9",
-                    "texte": "Gestion de garde, des équipements et d'entretien des locaux : Ouverture et fermeture quotidienne, Maintenance et entretien des appareils et équipements, Entretien des locaux\nGestion des ressources humaines : Recrutement, Gestion de dossier du personnel, Gestion des congés et des absences au poste, Gestion des conflits, Gestion des compétences\n\nCollaboration avec les prestataires externes : Constitution d’une base de données, Sélection des prestataires externes, Paiement des prestataires externes",
+                    "texte": "Accueil et orientation : Accueil des usagers, Orientation des usagers\nGestion des conseils : Promulgation de conseil & d’éducation sanitaire, Suivi des conseils\nGestion de la vente : Dispensation des produits de santé sans prescription (absence d’ordonnance), Dispensation des produits de santé prescrits, Analyse pharmaceutique d'une ordonnance, Substitution d’un produit de sante\nGestion de la caisse : Encaissement, Passation de service, Prise de service, Transformation d’un ticket en facture & impression d’une facture normalisée, Gestion des avoirs, Encaissement caisse mini-dépense, Décaissement caisse mini-dépense",
                     "largeur": 1,
                     "hauteur": 1
                   }
@@ -163424,12 +163424,26 @@
                 [
                   {
                     "cle": "a10",
-                    "texte": "Procédure de gestion de la surveillance et des actions d'amélioration ",
+                    "texte": "Procédure de gestion des ressources et des collaborations\n",
                     "largeur": 1,
                     "hauteur": 1
                   },
                   {
                     "cle": "a11",
+                    "texte": "Gestion de garde, des équipements et d'entretien des locaux : Ouverture et fermeture quotidienne, Maintenance et entretien des appareils et équipements, Entretien des locaux\nGestion des ressources humaines : Recrutement, Gestion de dossier du personnel, Gestion des congés et des absences au poste, Gestion des conflits, Gestion des compétences\n\nCollaboration avec les prestataires externes : Constitution d’une base de données, Sélection des prestataires externes, Paiement des prestataires externes",
+                    "largeur": 1,
+                    "hauteur": 1
+                  }
+                ],
+                [
+                  {
+                    "cle": "a12",
+                    "texte": "Procédure de gestion de la surveillance et des actions d'amélioration ",
+                    "largeur": 1,
+                    "hauteur": 1
+                  },
+                  {
+                    "cle": "a13",
                     "texte": "Gestion des risques et opportunités\t: Identification du risque, Analyse & Evaluation du risque, Traitement du risque, Suivi du risque\nTraitement des réclamations : Préalable & Communication, Réception et traitement des réclamations, Clôture de la réclamation, Mesure de la satisfaction des réclamants\nGestion des évaluations de performance et de satisfaction : Evaluation de la performance du personnel, Evaluation de la performance des prestataires externes, Evaluation de la satisfaction client et autres PIP\nOrganisation des auto-inspections : Sélection des inspecteurs, Planification des auto-inspection, Préparation d’auto-inspection, Déroulement de la mission d’auto-inspection, Evaluation des inspecteurs, Mise en œuvre d’action, Suivi et clôture d’inspection\nGestion des non-conformités et d'actions d'amélioration : Identification de l’écart et ou constatation de la non-conformité, Analyse et traitement de l’écart ou de la non-conformité, Suivi et Evaluation de l’efficacité des actions et clôture de l’écart ou de la non-conformité",
                     "largeur": 1,
                     "hauteur": 1
@@ -163438,7 +163452,7 @@
               ]
             },
             {
-              "cle": "a13",
+              "cle": "a15",
               "type": "paragraphe",
               "texte": "",
               "gras": false

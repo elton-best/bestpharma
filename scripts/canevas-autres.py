@@ -11,6 +11,11 @@ def texte(n):
     if local(n)=='tab': return '\t'
     if local(n)=='line-break': return '\n'
     return (n.text or '')+''.join(texte(c)+(c.tail or '') for c in n)
+def lignes_de_table(table):
+    for enfant in table:
+        if local(enfant) == 'table-row': yield enfant
+        elif local(enfant) in ['table-header-rows', 'table-rows', 'table-row-group']:
+            yield from lignes_de_table(enfant)
 def extraire(source):
     result=[]
     for f in sorted(source.rglob('*')):
@@ -33,7 +38,7 @@ def extraire(source):
                         blocs.append({'cle':cle(),'type':'paragraphe','texte':texte(n),'gras':t=='h'})
                     elif t=='table':
                         lignes=[]
-                        for row in n.findall('table:table-row',NS):
+                        for row in lignes_de_table(n):
                             for _ in range(int(row.get('{'+NS['table']+'}number-rows-repeated','1'))):
                                 cellules=[]
                                 for cell in row:

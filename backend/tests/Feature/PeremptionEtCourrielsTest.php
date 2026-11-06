@@ -48,6 +48,21 @@ class PeremptionEtCourrielsTest extends TestCase
         $this->assertContains($demain->produit_id, array_column($r->json('data'), 'id'));
         $this->actingAs($this->titulaire)->postJson('/api/dispensations', ['type_dispensation' => 'conseil_sans_ordonnance', 'patient_nom' => 'Patient de recette',
             'lignes' => [['produit_id' => $lot->produit_id, 'quantite' => 1]]])->assertUnprocessable();
+        $this->actingAs($this->titulaire)->postJson('/api/caisse/ouvrir', ['fond_caisse_ouverture' => 0])->assertCreated();
+        $this->actingAs($this->titulaire)->postJson('/api/caisse/ventes', ['mode_paiement' => 'especes', 'montant_recu' => 500,
+            'lignes' => [['produit_id' => $lot->produit_id, 'quantite' => 1]]])->assertUnprocessable()->assertJsonPath('message', 'Stock insuffisant pour Produit de recette. Demandé: 1, Dispo: 0');
+        $this->assertSame(10, $lot->fresh()->quantite_disponible);
+    }
+    public function test_le_changement_de_jour_est_celui_du_benin(): void
+    {
+        try {
+            \Carbon\Carbon::setTestNow(\Carbon\Carbon::parse('2026-11-06T22:59:58Z'));
+            $lot = $this->lot(1);
+            $this->assertTrue($lot->est_vendable);
+            \Carbon\Carbon::setTestNow(\Carbon\Carbon::parse('2026-11-06T23:00:00Z'));
+            $this->assertFalse($lot->fresh()->est_vendable);
+            $this->assertFalse(\App\Models\StockLot::vendables()->where('id', $lot->id)->exists());
+        } finally { \Carbon\Carbon::setTestNow(); }
     }
     public function test_tous_les_paliers_sont_prepares_sans_envoi_fictif_et_sans_doublons(): void
     {

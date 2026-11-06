@@ -76,6 +76,13 @@ class PeremptionEtCourrielsTest extends TestCase
         $this->assertSame(5, DB::table('alertes_peremption')->where('officine_id', $this->officine->id)->count());
         $this->assertSame(0, DB::table('alertes_peremption')->where('officine_id', $this->officine->id)->whereNotNull('envoye_le')->count());
     }
+    public function test_un_secours_vers_le_journal_ne_compte_pas_comme_un_envoi_reel(): void
+    {
+        config(['mail.default' => 'failover']);
+        $this->assertFalse(\App\Services\SurveillancePeremptionService::courrielConfigure());
+        config(['mail.default' => 'journal_personnalise', 'mail.mailers.journal_personnalise.transport' => 'log']);
+        $this->assertFalse(\App\Services\SurveillancePeremptionService::courrielConfigure());
+    }
     public function test_envoi_au_responsable_actif_uniquement(): void
     {
         \Illuminate\Support\Facades\Mail::fake(); config(['mail.default' => 'smtp']);

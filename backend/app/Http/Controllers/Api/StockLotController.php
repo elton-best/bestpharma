@@ -415,7 +415,7 @@ class StockLotController extends Controller
     {
         $officine = $request->user()->officine_id;
         $envois = DB::table('alertes_peremption')->where('officine_id', $officine)->select('statut', DB::raw('count(*) as total'))->groupBy('statut')->pluck('total', 'statut');
-        return response()->json(['courriel_configure' => !in_array(config('mail.default'), ['log','array']),
+        return response()->json(['courriel_configure' => \App\Services\SurveillancePeremptionService::courrielConfigure(),
             'seuils_jours' => [90,45,10,1], 'envois' => $envois]);
     }
 

@@ -8,10 +8,16 @@ use Illuminate\Support\Str;
 class SurveillancePeremptionService
 {
     public const SEUILS = [90,45,10,1,0];
+    public static function courrielConfigure(): bool
+    {
+        // Un secours vers le journal ne doit jamais compter comme un courriel envoyé.
+        $nom = config('mail.default');
+        return in_array(config("mail.mailers.$nom.transport"), ['smtp','sendmail','ses','ses-v2','postmark','resend','mailgun'], true);
+    }
     public function executer(): array
     {
         $jour = now('Africa/Porto-Novo')->startOfDay();
-        $bilan = ['bloques' => 0, 'prepares' => 0, 'envoyes' => 0, 'erreurs' => 0, 'courriel_configure' => !in_array(config('mail.default'), ['log','array'], true)];
+        $bilan = ['bloques' => 0, 'prepares' => 0, 'envoyes' => 0, 'erreurs' => 0, 'courriel_configure' => self::courrielConfigure()];
         // Le filtrage de vente reste immédiat même si le planificateur est arrêté.
         StockLot::whereDate('date_peremption', '<=', $jour->toDateString())->where('quantite_disponible', '>', 0)
             ->where(fn ($q) => $q->where('statut_detail', 'commercialisable')->orWhere(fn ($q) => $q->whereNull('statut_detail')->where('statut', 'en_stock')))

@@ -36,6 +36,7 @@ class ApiClient {
     };
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
+      headers["X-Session-Begpharma"] = token;
     }
     const officine = typeof window !== "undefined" ? localStorage.getItem("begpharma.officine") : null;
     if (!sansOfficine && officine && this.getOfficines().some(o => o.id === officine)) headers["X-Officine-Id"] = officine;
@@ -178,6 +179,7 @@ class ApiClient {
     };
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
+      headers["X-Session-Begpharma"] = token;
     }
     const res = await fetch(formatted, {
       method: "POST",
@@ -194,7 +196,7 @@ class ApiClient {
   async telechargerFichier(url: string): Promise<Blob> {
     const token = this.getToken();
     const res = await fetch(this.formatUrl(url), {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: token ? { Authorization: `Bearer ${token}`, "X-Session-Begpharma": token } : {},
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ message: "Téléchargement impossible." }));

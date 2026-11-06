@@ -115,6 +115,7 @@ function PageConnexion() {
           "Content-Type": "application/json",
           "Accept": "application/json",
           "Authorization": tempToken ? `Bearer ${tempToken}` : "",
+          ...(tempToken ? { "X-Session-Begpharma": tempToken } : {}),
         },
         body: JSON.stringify({ temp_token: tempToken, code: codeTOTP, email: emailMFA }),
       });

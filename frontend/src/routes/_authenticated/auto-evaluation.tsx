@@ -54,10 +54,10 @@ export const Route = createFileRoute("/_authenticated/auto-evaluation")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Auto-évaluation Qualité BPD (267 articles) — BestPharma" },
+      { title: "Auto-évaluation qualité — BestPharma" },
       {
         name: "description",
-        content: "Grille d'auto-évaluation et calcul du score de conformité aux 267 articles du Guide BPD ABMed.",
+        content: "Grille complète d’auto-évaluation, constats et suivi des actions correctives.",
       },
     ],
   }),
@@ -189,7 +189,7 @@ function PageAutoEvaluation() {
           Établissement : <strong>${courante?.officine?.nom || "Officine BestPharma"}</strong> · Licence : <strong>${courante?.officine?.numero_licence || "En cours"}</strong> · Ville : <strong>${courante?.officine?.ville || "Cotonou"}</strong>
         </p>
         <p style="margin: 4px 0 0 0; font-size: 13px; color: #475C50;">
-          Date de l'audit : <strong>${formatDate(new Date())}</strong> · Référentiel : <strong>Guide BPD ABMed (267 Articles)</strong>
+          Date de l'audit : <strong>${formatDate(new Date())}</strong> · Référentiel : <strong>Guide fourni</strong>
         </p>
       </div>
 
@@ -200,7 +200,7 @@ function PageAutoEvaluation() {
         </div>
         <div style="flex: 1; padding: 16px; border: 1px solid #CFF1D2; border-radius: 8px; text-align: center; background: #ffffff;">
           <div style="font-size: 12px; color: #475C50; text-transform: uppercase;">Articles Audités</div>
-          <div style="font-size: 36px; font-weight: 900; color: #0F3B27; margin-top: 4px;">${evaluations.length} / 267</div>
+          <div style="font-size: 36px; font-weight: 900; color: #0F3B27; margin-top: 4px;">${evaluations.length}</div>
         </div>
       </div>
 
@@ -224,7 +224,7 @@ function PageAutoEvaluation() {
     `;
 
     imprimerFicheOfficielle("Rapport d'Auto-Inspection Qualité BPD — BestPharma", html);
-    toast.success("Rapport officiel prêt pour impression !");
+    toast.success("Rapport prêt pour impression.");
   };
 
   return (
@@ -244,7 +244,7 @@ function PageAutoEvaluation() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
-              Auto-évaluation Qualité BPD
+              Auto-évaluation qualité
             </h1>
 
           </div>
@@ -293,8 +293,8 @@ function PageAutoEvaluation() {
                 </Badge>
               </div>
               <p className="text-xs text-[#475C50] mt-1.5 max-w-xl font-medium leading-relaxed">
-                Calcul officiel Guide BPD ABMed : Conforme = 1 pt, Écart mineur = 0.5 pt, Écart majeur = 0 pt.
-                Les articles non applicables sont exclus du dénominateur (267 articles de référence).
+                Le score tient compte des exigences satisfaites et des écarts constatés.
+                Les articles non applicables ou non évalués sont exclus du calcul.
               </p>
             </div>
           </div>
@@ -304,12 +304,12 @@ function PageAutoEvaluation() {
             <div className="p-3 rounded-[10px] border border-emerald-200 bg-emerald-50/60 text-center">
               <span className="text-emerald-800 text-[11px] font-bold block">Conformes</span>
               <p className="font-display font-black text-2xl text-emerald-700">{stats?.total_conformes ?? 0}</p>
-              <span className="text-[10px] text-emerald-800 font-medium">100% conformité</span>
+              <span className="text-[10px] text-emerald-800 font-medium">Exigence satisfaite</span>
             </div>
             <div className="p-3 rounded-[10px] border border-amber-200 bg-amber-50/60 text-center">
               <span className="text-amber-800 text-[11px] font-bold block">Écarts min.</span>
               <p className="font-display font-black text-2xl text-amber-700">{stats?.total_ecarts_mineurs ?? 0}</p>
-              <span className="text-[10px] text-amber-800 font-medium">0.5 pt pondéré</span>
+              <span className="text-[10px] text-amber-800 font-medium">Conformité partielle</span>
             </div>
             <div className="p-3 rounded-[10px] border border-red-200 bg-red-50/60 text-center">
               <span className="text-red-800 text-[11px] font-bold block">Écarts maj.</span>
@@ -336,7 +336,7 @@ function PageAutoEvaluation() {
               </h3>
             </div>
             <p className="text-xs text-[#475C50] mt-0.5">
-              Comparatif des 10 chapitres réglementaires. Cliquez sur une barre ou une carte pour filtrer les articles.
+              Comparatif des chapitres. Cliquez sur une barre ou une carte pour filtrer les articles.
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs font-bold shrink-0">
@@ -429,7 +429,7 @@ function PageAutoEvaluation() {
                 {
                   valeur: "tous",
                   libelle: "Tous les chapitres",
-                  description: "Afficher l'ensemble de la grille d'évaluation officielle du Guide BPD ABMed.",
+                  description: "Afficher l’ensemble des exigences de la grille.",
                   icone: <Award className="size-4 text-[#0F3B27]" />,
                   motsCles: ["tous", "complet", "grille", "global", "267"],
                 },
@@ -511,7 +511,7 @@ function PageAutoEvaluation() {
               Grille d'évaluation des articles ({articlesFiltres.length} affichés)
             </CardTitle>
             <CardDescription className="text-xs text-slate-500">
-              Tableau réglementaire d'inspection ABMed : cotation 1-clic et rattachement des plans CAPA.
+              Consignez vos constats, cotez les exigences et suivez les actions correctives liées.
             </CardDescription>
           </div>
           <Badge variant="secondary" className="font-mono text-xs w-fit rounded-[6px]">ABMed QAM-FI-003</Badge>
@@ -522,7 +522,7 @@ function PageAutoEvaluation() {
               <thead className="bg-[#F7F9F7] text-[#0F3B27] border-b border-slate-200 font-bold">
                 <tr>
                   <th className="py-3 px-3.5 w-28">Réf. Article</th>
-                  <th className="py-3 px-3.5 min-w-[280px]">Exigence réglementaire BPD & Preuve attendue</th>
+                  <th className="py-3 px-3.5 min-w-[280px]">Exigence et éléments observés</th>
                   <th className="py-3 px-3.5 w-36">Statut actuel</th>
                   <th className="py-3 px-3.5 text-center min-w-[340px]">Cotation en 1 clic</th>
                   <th className="py-3 px-3.5 text-right w-28">Action CAPA</th>
@@ -570,7 +570,7 @@ function PageAutoEvaluation() {
                           </p>
                           {art.preuve && (
                             <p className="text-[11px] text-emerald-800 font-medium italic">
-                              Preuve attendue : {art.preuve}
+                              Élément observé : {art.preuve}
                             </p>
                           )}
                         </td>
@@ -689,7 +689,7 @@ function PageAutoEvaluation() {
       <Dialog open={!!dialogCapa} onOpenChange={(o) => !o && setDialogCapa(null)}>
         <ModaleFiche
           titre="Ouvrir une action corrective"
-          sousTitre="Cette exigence non satisfaite devient une non-conformité suivie, avec un responsable et une échéance."
+          sousTitre="Cet écart devient une non-conformité liée, dont vous pourrez préciser le suivi."
           badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Plan d'action qualité</Badge>}
           pied={
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -767,7 +767,7 @@ function PageAutoEvaluation() {
                   Fermer
                 </Button>
                 <Button onClick={imprimerRapportOfficielBpd} className="h-12 gap-2 rounded-xl bg-[#0F3B27] font-bold text-[#92FF5F] sm:h-11">
-                  <Printer className="size-4" /> Imprimer le rapport officiel (PDF)
+                  <Printer className="size-4" /> Imprimer le rapport
                 </Button>
               </div>
             </div>

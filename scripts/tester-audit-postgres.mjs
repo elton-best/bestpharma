@@ -63,6 +63,44 @@ try {
   await inserer(historique);
   assert.equal((await verifier(historique)).historiques, '1');
   console.log('✓ Historique non chaîné identifié sans réécriture');
+  // Schéma minimal pour exécuter les triggers documentaires réels de la migration.
+  // Les tests Laravel restent responsables de la migration complète et des contrôles HTTP.
+  await client.query(`CREATE FUNCTION public.user_officines() RETURNS SETOF uuid LANGUAGE sql AS $$ SELECT NULL::uuid WHERE false $$;
+    CREATE TABLE documents (id uuid PRIMARY KEY, officine_id uuid, titre text, contenu text, code_document text,
+      type_doc text, processus text, version integer, indice_revision integer, statut text);
+    CREATE TABLE approbations_documents (id uuid PRIMARY KEY, officine_id uuid, document_id uuid,
+      version integer, indice_revision integer, signataire_id uuid, signataire_nom text, role_code text,
+      methode text, intention text, contenu_signe text, empreinte_contenu text, approuve_le timestamptz,
+      UNIQUE(document_id, version, indice_revision));`);
+  const approbations = readFileSync(new URL('../backend/database/migrations/2026_11_06_160000_create_approbations_documents.php', import.meta.url), 'utf8');
+  await client.query(approbations.match(/DB::unprepared\(<<<'SQL'\n([\s\S]*?)\n        SQL\);/)[1]);
+  const doc = { id: randomUUID(), officine_id: randomUUID(), titre: 'Procédure de recette',
+    code_document: 'RECETTE-PR', type_doc: 'procedure', processus: 'QAM', version: 1, indice_revision: 0, contenu: 'Texte de recette éàç' };
+  await client.query(`INSERT INTO documents (id, officine_id, titre, code_document, type_doc, processus, version, indice_revision, contenu, statut)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'brouillon')`, Object.values(doc));
+  await assert.rejects(client.query("UPDATE documents SET statut='valide' WHERE id=$1", [doc.id]));
+  console.log('✓ Approbation sans copie enregistrée refusée par PostgreSQL');
+  const copie = JSON.stringify(doc);
+  await client.query(`INSERT INTO approbations_documents (id, officine_id, document_id, version, indice_revision,
+    signataire_id, signataire_nom, role_code, methode, intention, contenu_signe, empreinte_contenu, approuve_le)
+    VALUES ($1,$2,$3,1,0,$4,'Responsable de recette','pharmacien_titulaire','mot_de_passe_compte','approbation_documentaire',
+      $5,encode(sha256(convert_to($5,'UTF8')),'hex'),now())`, [randomUUID(), doc.officine_id, doc.id, randomUUID(), copie]);
+  await client.query("UPDATE documents SET contenu='Texte changé' WHERE id=$1", [doc.id]);
+  await assert.rejects(client.query("UPDATE documents SET statut='valide' WHERE id=$1", [doc.id]));
+  await client.query("UPDATE documents SET contenu=$1 WHERE id=$2", [doc.contenu, doc.id]);
+  await client.query("UPDATE documents SET statut='valide' WHERE id=$1", [doc.id]);
+  await assert.rejects(client.query("UPDATE documents SET contenu='Altération' WHERE id=$1", [doc.id]));
+  await assert.rejects(client.query('DELETE FROM documents WHERE id=$1', [doc.id]));
+  await assert.rejects(client.query("UPDATE approbations_documents SET signataire_nom='Altéré' WHERE document_id=$1", [doc.id]));
+  await assert.rejects(client.query('DELETE FROM approbations_documents WHERE document_id=$1', [doc.id]));
+  await assert.rejects(client.query('TRUNCATE approbations_documents'));
+  console.log('✓ Copie liée au contenu ; document et approbation protégés');
+  await client.query("UPDATE documents SET statut='brouillon', version=2, indice_revision=1 WHERE id=$1", [doc.id]);
+  await client.query("UPDATE documents SET contenu='Nouvelle révision' WHERE id=$1", [doc.id]);
+  assert.equal((await client.query('SELECT contenu_signe FROM approbations_documents WHERE document_id=$1', [doc.id])).rows[0].contenu_signe, copie);
+  assert.equal((await verifier(doc.officine_id)).verifiees, '1');
+  console.log('✓ Révision sans perte de la copie approuvée, audit attribué à la bonne officine');
+
 } finally {
   if (client) await client.end();
   if (cree) await admin.query(`DROP DATABASE "${db}" WITH (FORCE)`);

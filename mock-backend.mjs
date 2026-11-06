@@ -835,12 +835,23 @@ const server = http.createServer(async (req, res) => {
     }
   }
   {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/documents\/([^/]+)\/approbations$/);
+    if (m && method === "GET") return sendJson(res, 503, {
+      message: "Historique vérifiable indisponible sur le serveur de démonstration. Connectez Laravel.",
+    });
+  }
+  {
     const m = path.match(/^\/api\/officines\/([^/]+)\/documents\/([^/]+)$/);
     if (m && method === "PUT") {
       const b = await parseBody(req);
+      if (b.statut === "valide" || b.password !== undefined) return sendJson(res, 503, {
+        message: "L’approbation sécurisée nécessite Laravel. Aucun mot de passe ni preuve d’approbation n’est conservé par la démonstration.",
+      });
       const doc = DOCUMENTS.find(d => d.id === m[2]);
       if (!doc) return sendJson(res, 404, { message: "Document introuvable" });
-      Object.assign(doc, b);
+      for (const cle of ["titre", "contenu", "type_doc", "processus", "statut", "motif_refus"]) {
+        if (b[cle] !== undefined) doc[cle] = b[cle];
+      }
       doc.version = (doc.version || 1) + 1;
       doc.updated_at = new Date().toISOString();
       return sendJson(res, 200, doc);

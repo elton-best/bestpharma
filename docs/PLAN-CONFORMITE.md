@@ -52,3 +52,7 @@ Migration et commande `bpd:preparer` ajoutées : instantané en relecture, ident
 ## Lot audit réel
 
 Chaînage et vérification PostgreSQL implémentés, contrôleur protégé par rôle/officine, écran débarrassé des scellés simulés. Recette SQL exécutée avec succès sur PostgreSQL natif 16.14, y compris insertions concurrentes et altération. Voir `RECETTE-AUDIT.md`. Ne pas confondre cette recette avec un backend Laravel en exploitation : API PHP complète et droits applicatifs encore à valider.
+
+## Lot approbation documentaire
+
+Frontend et backend liés par une empreinte serveur et une confirmation du mot de passe du compte (pas un PIN non provisionné). Copie textuelle et métadonnées d'approbation conservées, limitation des tentatives, historique et révision sans perte de copie. Triggers testés sur PostgreSQL natif ; tests de modale ajoutés. Faux émargements/diffusion retirés. Voir `APPROBATION-DOCUMENTAIRE.md` pour les limites, notamment l'absence de signature qualifiée et la validation API Laravel encore attendue.

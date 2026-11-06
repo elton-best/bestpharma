@@ -88,15 +88,32 @@ class Partie1BpdWorkflowTest extends TestCase
 
         $approveRes->assertStatus(403);
 
-        // 3. Le pharmacien titulaire valide le document -> Doit réussir (200)
-        $titulaireApproveRes = $this->actingAs($this->titulaire)
-            ->putJson("/api/officines/{$this->officine->id}/documents/{$docId}", [
-                'statut' => 'valide',
-            ]);
+        // Sans confirmation du mot de passe : refus, aucune approbation créée.
+        $url = "/api/officines/{$this->officine->id}/documents/{$docId}";
+        $preuve = [
+            'statut' => 'valide', 'password' => 'Secret123456!',
+            'empreinte_attendue' => $createRes->json('empreinte_contenu'),
+            'intention' => 'approbation_documentaire',
+        ];
+        $this->actingAs($this->titulaire)->putJson($url, ['statut' => 'valide'])->assertUnprocessable();
+        $this->actingAs($this->titulaire)->putJson($url, array_merge($preuve, ['password' => 'incorrect']))->assertUnprocessable();
+        $this->actingAs($this->titulaire)->putJson($url, array_merge($preuve, ['empreinte_attendue' => str_repeat('0', 64)]))->assertConflict();
+        $this->assertDatabaseMissing('approbations_documents', ['document_id' => $docId]);
+        $titulaireApproveRes = $this->actingAs($this->titulaire)->putJson($url, $preuve);
 
         $titulaireApproveRes->assertStatus(200);
         $this->assertEquals('valide', $titulaireApproveRes->json('statut'));
         $this->assertEquals($this->titulaire->name, $titulaireApproveRes->json('approbateur_nom'));
+        $this->assertDatabaseHas('approbations_documents', ['document_id' => $docId, 'signataire_id' => $this->titulaire->id]);
+        $this->actingAs($this->titulaire)->putJson($url, ['contenu' => 'Modification interdite'])->assertConflict();
+        $historique = $this->actingAs($this->titulaire)->getJson($url.'/approbations')->assertOk();
+        $this->assertTrue($historique->json('0.empreinte_verifiee'));
+        $this->assertStringContainsString('Contenu test', $historique->json('0.contenu_signe'));
+        $this->actingAs($this->titulaire)->putJson($url, ['statut' => 'brouillon'])->assertOk()->assertJsonPath('version', 2);
+        $this->actingAs($this->titulaire)->putJson($url, ['contenu' => 'Texte révisé'])->assertOk();
+        $historiqueApres = $this->actingAs($this->titulaire)->getJson($url.'/approbations')->assertOk();
+        $this->assertSame($historique->json('0.contenu_signe'), $historiqueApres->json('0.contenu_signe'));
+
     }
 
     public function test_pointage_pharmacien_presence_status(): void
@@ -147,5 +164,21 @@ class Partie1BpdWorkflowTest extends TestCase
         $autre = (string) Str::uuid();
         $this->actingAs($this->titulaire)
             ->getJson("/api/officines/{$autre}/audit-logs/verifier-integrite")->assertForbidden();
+    }
+    public function test_approbation_limitee_en_nombre_de_tentatives(): void
+    {
+        \Illuminate\Support\Facades\RateLimiter::clear('approbation-document:'.$this->titulaire->id);
+        $creation = $this->actingAs($this->titulaire)->postJson("/api/officines/{$this->officine->id}/documents", [
+            'titre' => 'Recette de limitation des tentatives',
+        ])->assertCreated();
+        $url = "/api/officines/{$this->officine->id}/documents/".$creation->json('id');
+        $preuve = ['statut' => 'valide', 'password' => 'incorrect', 'intention' => 'approbation_documentaire',
+            'empreinte_attendue' => $creation->json('empreinte_contenu')];
+        for ($i = 0; $i < 5; $i++) {
+            $this->actingAs($this->titulaire)->putJson($url, $preuve)->assertUnprocessable();
+        }
+        $this->actingAs($this->titulaire)->putJson($url, $preuve)->assertStatus(429);
+        $this->assertDatabaseMissing('approbations_documents', ['document_id' => $creation->json('id')]);
+        \Illuminate\Support\Facades\RateLimiter::clear('approbation-document:'.$this->titulaire->id);
     }
 }

@@ -274,29 +274,19 @@ class Partie1BpdSeeder extends Seeder
                 ])
             );
 
-            // Instancier directement ces modèles comme documents officiels de l'officine A
-            DB::table('documents')->updateOrInsert(
-                ['officine_id' => $officineA->id, 'code_document' => $m['code_ref']],
-                [
-                    'id' => (string) Str::uuid(),
-                    'titre' => $m['titre'],
-                    'categorie' => $m['type_document'],
-                    'type_doc' => $m['type_document'],
-                    'processus' => $m['processus'],
-                    'contenu' => $m['contenu_modele'],
-                    'version' => 1,
-                    'indice_revision' => 0,
-                    'statut' => 'valide',
-                    'modele' => false,
-                    'redacteur_nom' => 'Marcelle SOSSOU (RMQ)',
-                    'approbateur_nom' => 'Dr Félicien AGBO (Titulaire)',
-                    'approuve_le' => now(),
-                    'valide_le' => now(),
-                    'archived' => false,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
+            // Les exemples restent des brouillons, sans inventer une approbation.
+            // Ne pas écraser une procédure déjà travaillée ou approuvée lors d'un nouveau seed.
+            if (!DB::table('documents')->where('officine_id', $officineA->id)->where('code_document', $m['code_ref'])->exists()) {
+                DB::table('documents')->insert([
+                    'id' => (string) Str::uuid(), 'officine_id' => $officineA->id,
+                    'code_document' => $m['code_ref'], 'titre' => $m['titre'],
+                    'categorie' => $m['type_document'], 'type_doc' => $m['type_document'],
+                    'processus' => $m['processus'], 'contenu' => $m['contenu_modele'],
+                    'version' => 1, 'indice_revision' => 0, 'statut' => 'brouillon',
+                    'modele' => false, 'redacteur_nom' => 'Exemple de recette à adapter',
+                    'archived' => false, 'created_at' => now(), 'updated_at' => now(),
+                ]);
+            }
         }
 
         // 3. Fiches de Non-conformités et CAPA de départ

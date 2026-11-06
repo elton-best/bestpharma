@@ -28,6 +28,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
+import { ApprobationDocument, HistoriqueApprobations } from "@/components/modules/approbation-document";
 import { api } from "@/lib/api-client";
 import { telechargerTexte, telechargerCsv, imprimerFicheOfficielle } from "@/lib/export-utils";
 import { useOfficine } from "@/lib/officine-context";
@@ -37,7 +38,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SelecteurFiltrable, type OptionSection } from "@/components/ui/selecteur-filtrable";
 import {
   Dialog,
@@ -48,10 +48,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  ModaleSignatureCode,
   BoutonCreerNC,
   LienReglementaireBpd,
-  SignatureData,
 } from "@/components/modules/bpd-communs";
 
 export const Route = createFileRoute("/_authenticated/documents")({
@@ -85,6 +83,7 @@ interface DocumentBpd {
   approuve_le?: string;
   valide_le?: string;
   updated_at: string;
+  empreinte_contenu: string;
 }
 
 function PageDocuments() {
@@ -114,7 +113,7 @@ function PageDocuments() {
   const [modaleSignOuverte, setModaleSignOuverte] = useState(false);
   const [docASigner, setDocASigner] = useState<DocumentBpd | null>(null);
 
-  const { data: documents = [] } = useQuery<DocumentBpd[]>({
+  const { data: documents = [], isError: erreurDocuments, isLoading: chargementDocuments } = useQuery<DocumentBpd[]>({
     queryKey: ["documents", id, filtreStatut, filtreProcessus],
     enabled: !!id,
     queryFn: async () => {
@@ -169,26 +168,18 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
     }
   }
 
-  async function validerEtApprouverDoc(sig: SignatureData) {
-    if (!id || !docASigner) return;
-
-    try {
-      await api.put(`/api/officines/${id}/documents/${docASigner.id}`, {
-        statut: "valide",
-        approbateur_nom: sig.signataire,
-        approuve_le: sig.horodatage_serveur,
-      });
-
-      toast.success(
-        `Document ${docASigner.code_document || "qualité"} approuvé et diffusé en vigueur.`,
-        { description: `Signé par ${sig.signataire} (${sig.date_heure}).` }
-      );
-      setDocASigner(null);
-      setDocActif(null);
-      qc.invalidateQueries({ queryKey: ["documents"] });
-    } catch (err: any) {
-      toast.error(err?.message || "Erreur lors de l'approbation du document.");
-    }
+  async function validerEtApprouverDoc(motDePasse: string) {
+    if (!id || !docASigner?.empreinte_contenu) throw new Error("Rechargez le document pour obtenir son empreinte serveur.");
+    await api.put(`/api/officines/${id}/documents/${docASigner.id}`, {
+      statut: "valide", password: motDePasse,
+      empreinte_attendue: docASigner.empreinte_contenu,
+      intention: "approbation_documentaire",
+    });
+    toast.success("Approbation enregistrée par le serveur. La diffusion reste à organiser.");
+    setDocASigner(null);
+    setDocActif(null);
+    qc.invalidateQueries({ queryKey: ["documents"] });
+    qc.invalidateQueries({ queryKey: ["approbations-document"] });
   }
 
   // Filtrage local
@@ -318,16 +309,30 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
             >
               <Download className="size-3.5" /> Télécharger TXT
             </Button>
-            {docActif.statut !== "valide" && (
+            {["brouillon", "a_valider"].includes(docActif.statut) && aRole("promoteur", "pharmacien_titulaire") && (
               <Button
+                disabled={!docActif.empreinte_contenu}
+                title={!docActif.empreinte_contenu ? "L’approbation nécessite une empreinte fournie par Laravel." : undefined}
                 onClick={() => {
                   setDocASigner(docActif);
                   setModaleSignOuverte(true);
                 }}
                 className="bg-[#0F3B27] hover:bg-[#0F3B27]/90 text-[#92FF5F] font-bold text-xs gap-1.5 rounded-[10px]"
               >
-                <CheckCircle2 className="size-4" /> Approuver par Code PIN
+                <CheckCircle2 className="size-4" /> Confirmer l’approbation
               </Button>
+            )}
+            {["valide", "retire"].includes(docActif.statut) && aRole("promoteur", "pharmacien_titulaire", "rmq") && (
+              <Button variant="outline" className="min-h-12" disabled={enCours || !docActif.empreinte_contenu} onClick={async () => {
+                setEnCours(true);
+                try {
+                  const revision = await api.put<DocumentBpd>(`/officines/${id}/documents/${docActif.id}`, { statut: "brouillon" });
+                  setDocActif(revision);
+                  qc.invalidateQueries({ queryKey: ["documents"] });
+                  toast.success("Nouvelle révision ouverte. La copie approuvée reste conservée.");
+                } catch (e) { toast.error(e instanceof Error ? e.message : "Ouverture de révision refusée."); }
+                finally { setEnCours(false); }
+              }}>Ouvrir une nouvelle révision</Button>
             )}
           </div>
         </div>
@@ -381,14 +386,14 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
           </div>
         </div>
 
+        {id && <HistoriqueApprobations officine={id} document={docActif.id} />}
+
         {/* MODALE SIGNATURE CODE PIN SI APPROBATION */}
-        <ModaleSignatureCode
+        <ApprobationDocument
           ouvert={modaleSignOuverte}
           onFermer={() => setModaleSignOuverte(false)}
           titreAction={`Approbation officielle de ${docASigner?.code_document || "la procédure"}`}
-          descriptionAction="Votre code PIN personnel appose la signature certifiée inaltérable du Pharmacien Titulaire pour mise en vigueur."
           onSigner={validerEtApprouverDoc}
-          articleBpd="BPD-3 / Art. 3.01"
         />
       </div>
     );
@@ -538,7 +543,7 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
             </h1>
           </div>
           <p className="mt-1 text-xs text-[#475C50]">
-            Cycle de vie documentaire : Brouillon &rarr; Vérifié &rarr; Approuvé &rarr; Diffusé &rarr; Archivé. Suivi des versions et signatures certifiées.
+            Cycle de vie documentaire : Brouillon &rarr; Vérifié &rarr; Approuvé &rarr; Diffusé &rarr; Archivé. Suivi des versions et approbations enregistrées.
           </p>
         </div>
 
@@ -621,10 +626,12 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
       </div>
 
       {/* TABS DE LA GED */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <div className="space-y-4">
+        {chargementDocuments && <p role="status">Chargement des documents…</p>}
+        {erreurDocuments && <p role="alert">Les documents ne peuvent pas être chargés. Les listes et compteurs sont indisponibles.</p>}
 
         {/* 1. BIBLIOTHÈQUE DOCUMENTAIRE */}
-        <TabsContent value="bibliotheque" className="space-y-4">
+        {activeTab === "bibliotheque" && <div className="space-y-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-[#CFF1D2]">
             <div className="relative flex-1">
               <Search className="size-4 absolute left-3 top-2.5 text-muted-foreground" />
@@ -706,169 +713,48 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
               );
             })}
           </div>
-        </TabsContent>
+        </div>}
 
         {/* 2. MES TÂCHES & LECTURES (DOC-07) */}
-        <TabsContent value="taches" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
-            <CardTitle className="text-base text-[#0F3B27] font-bold">
-              Mes Tâches Documentaires & Documents à Lire
-            </CardTitle>
-            <CardDescription className="text-xs text-[#475C50]">
-              Émargements et accusés de lecture obligatoires lors de la mise en vigueur d'une nouvelle procédure.
-            </CardDescription>
-
-            <div className="space-y-2 pt-2 text-xs">
-              <div className="p-3 rounded-xl border border-amber-300 bg-amber-50/50 flex justify-between items-center">
-                <div className="space-y-0.5">
-                  <span className="font-bold text-amber-950">GAC-PR-001 · Procédure de réception des livraisons fraîches</span>
-                  <p className="text-amber-800 text-[11px]">Version 2.0 mise en vigueur · Lecture et visa requis sous 7 jours</p>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    toast.success("Accusé de lecture signé électroniquement.");
-                  }}
-                  className="bg-[#0F3B27] text-[#92FF5F] text-xs font-bold gap-1"
-                >
-                  <CheckCircle2 className="size-3.5" /> Émarger lecture
-                </Button>
-              </div>
-            </div>
+        {activeTab === "taches" && <div className="space-y-4">
+          <Card className="rounded-xl border p-4"><CardTitle className="text-base">Tâches documentaires</CardTitle>
+            <p className="mt-3 text-sm text-muted-foreground">Les affectations et accusés de lecture ne sont pas encore enregistrés par ce module. Aucune lecture ne peut être émargée ici pour le moment.</p>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 3. VERSIONS & ARCHIVES (DOC-06 & DOC-09) */}
-        <TabsContent value="versions" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
-            <CardTitle className="text-base text-[#0F3B27] font-bold">
-              Historique des Versions & Archives Immuables
-            </CardTitle>
-            <CardDescription className="text-xs text-[#475C50]">
-              Toute modification crée une version formelle avec comparaison. Les anciennes versions sont retirées et conservées au moins 5 ans (verrou de suppression BPD-C07).
-            </CardDescription>
-
-            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] text-xs space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-[#0F3B27]">Verrou d'intégrité SHA-256 actif</span>
-                <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Archivage 5 ans garanti</Badge>
-              </div>
-              <p className="text-muted-foreground">
-                Les documents approuvés ne sont jamais supprimés : une archive horodatée est générée à chaque passage de révision.
-              </p>
-            </div>
+        {activeTab === "versions" && <div className="space-y-4">
+          <Card className="rounded-xl border p-4"><CardTitle className="text-base">Historique des approbations</CardTitle>
+            <p className="mt-3 text-sm text-muted-foreground">Ouvrez une fiche documentaire pour consulter les copies textuelles approuvées et leurs empreintes serveur. Les fichiers versionnés et les règles de conservation restent à mettre en service.</p>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 4. DIFFUSION & ÉMARGEMENT (DOC-07) */}
-        <TabsContent value="diffusion" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle className="text-base text-[#0F3B27] font-bold">
-                  Listes de Diffusion Contrôlée & Accusés de Lecture (QAM-LI-002)
-                </CardTitle>
-                <CardDescription className="text-xs text-[#475C50]">
-                  Garantit que seuls les documents en vigueur sont visibles et que chaque agent a attesté de leur bonne compréhension.
-                </CardDescription>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  const html = `
-                    <p style="font-size: 12px; color: #475C50; margin-bottom: 12px;">
-                      Registre officiel des émargements et accusés de lecture des procédures opératoires normalisées (BPD Chapitre 2 & QAM-LI-002).
-                    </p>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Code Doc</th>
-                          <th>Titre de la Procédure</th>
-                          <th>Collaborateur</th>
-                          <th>Rôle</th>
-                          <th>Date Lecture</th>
-                          <th>Statut</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${(documents || []).slice(0, 20).map((d: any) => `
-                          <tr>
-                            <td style="font-family: monospace; font-weight: bold;">${d.code_document || "BPD-DOC"}</td>
-                            <td>${d.titre}</td>
-                            <td>Équipe Officine</td>
-                            <td>Tous postes</td>
-                            <td>${d.date_creation || "Novembre 2026"}</td>
-                            <td><span style="color: #0F3B27; font-weight: bold;">Émargé</span></td>
-                          </tr>
-                        `).join("")}
-                      </tbody>
-                    </table>
-                  `;
-                  imprimerFicheOfficielle("REGISTRE DES ÉMARGEMENTS & DIFFUSION CONTRÔLÉE", html, "registre_emargements_procedures.pdf");
-                }}
-                className="text-xs border-[#CFF1D2] text-[#0F3B27] gap-1"
-              >
-                <Download className="size-3.5" /> Registre des émargements PDF
-              </Button>
-            </div>
-
-            <div className="p-3 rounded-xl border border-[#CFF1D2] bg-[#F7F9F7] text-xs">
-              Taux d'émargement global de l'officine sur les documents diffusés : <strong>92.8%</strong>.
-            </div>
+        {activeTab === "diffusion" && <div className="space-y-4">
+          <Card className="rounded-xl border p-4"><CardTitle className="text-base">Diffusion contrôlée</CardTitle>
+            <p className="mt-3 text-sm text-muted-foreground">Le registre de diffusion et les accusés de lecture ne sont pas encore disponibles. Aucun taux de lecture ni registre signé ne peut être produit.</p>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 5. RÉVISIONS DUES (DOC-08) */}
-        <TabsContent value="revisions" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
-            <CardTitle className="text-base text-[#0F3B27] font-bold">
-              Échéancier de Révision Périodique des Procédures (DOC-08)
-            </CardTitle>
-            <CardDescription className="text-xs text-[#475C50]">
-              Révision obligatoire tous les 2 ans ou immédiatement en cas d'évolution de la réglementation ou des pratiques officinales.
-            </CardDescription>
-
-            <div className="space-y-2 text-xs pt-1">
-              <div className="p-3 rounded-xl border border-blue-300 bg-blue-50/50 flex justify-between items-center">
-                <div>
-                  <span className="font-bold text-blue-950">QAM-PR-001 · Traitement des Non-Conformités & CAPA</span>
-                  <p className="text-blue-800 text-[11px]">Prochaine révision due le : 15/01/2027 · Périodicité : 24 mois</p>
-                </div>
-                <Badge className="bg-blue-600 text-white text-[10px]">À jour</Badge>
-              </div>
-            </div>
+        {activeTab === "revisions" && <div className="space-y-4">
+          <Card className="rounded-xl border p-4"><CardTitle className="text-base">Révisions documentaires</CardTitle>
+            <p className="mt-3 text-sm text-muted-foreground">Les dates de révision propres à chaque procédure doivent être définies et suivies dans les échéances. Aucune date fictive n’est présentée comme une échéance réelle.</p>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 6. DEMANDES DE MODIFICATION (DOC-11) */}
-        <TabsContent value="modifications" className="space-y-4">
-          <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle className="text-base text-[#0F3B27] font-bold">
-                  Demandes d'Évolution & Fiches de Modification (QAM-FI-002)
-                </CardTitle>
-                <CardDescription className="text-xs text-[#475C50]">
-                  Formulaire d'initiative pour adapter une procédure de travail aux réalités du comptoir ou du stock.
-                </CardDescription>
-              </div>
-              <Button size="sm" className="bg-[#0F3B27] text-[#92FF5F] text-xs font-bold gap-1">
-                <Plus className="size-3.5" /> Nouvelle demande
-              </Button>
-            </div>
-
-            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#CFF1D2] text-xs text-muted-foreground text-center">
-              Aucune demande de modification en cours d'arbitrage.
-            </div>
+        {activeTab === "modifications" && <div className="space-y-4">
+          <Card className="rounded-xl border p-4"><CardTitle className="text-base">Demandes de modification</CardTitle>
+            <p className="mt-3 text-sm text-muted-foreground">Les demandes documentaires ne sont pas encore gérées ici. Consignez les changements nécessaires dans votre circuit qualité avant de réviser une procédure.</p>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 7. CARTOGRAPHIE DES PROCESSUS (DOC-12) */}
-        <TabsContent value="processus" className="space-y-4">
+        {activeTab === "processus" && <div className="space-y-4">
           <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
             <CardTitle className="text-base text-[#0F3B27] font-bold">
-              Cartographie des 5 Macro-Processus BPD (BPD1-F06)
+              Repères pour la cartographie des processus
             </CardTitle>
             <CardDescription className="text-xs text-[#475C50]">
               L'organisation de l'officine repose sur 5 processus directeurs conformes à la norme ABMed.
@@ -902,10 +788,10 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
               </div>
             </div>
           </Card>
-        </TabsContent>
+        </div>}
 
         {/* 8. POLITIQUE & REVUE DE DIRECTION (DOC-13 & DOC-15) */}
-        <TabsContent value="politique" className="space-y-4">
+        {activeTab === "politique" && <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="rounded-2xl border border-[#CFF1D2] bg-white shadow-sm p-4 space-y-3">
               <div className="flex justify-between items-center">
@@ -973,19 +859,17 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
               </Button>
             </Card>
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>}
+      </div>
 
 
 
       {/* MODALE SIGNATURE CODE PIN (BPD-C10) */}
-      <ModaleSignatureCode
+      <ApprobationDocument
         ouvert={modaleSignOuverte}
         onFermer={() => setModaleSignOuverte(false)}
         titreAction={`Approbation officielle de ${docASigner?.code_document || "la procédure"}`}
-        descriptionAction="Votre code PIN personnel appose la signature certifiée inaltérable du Pharmacien Titulaire pour mise en vigueur."
         onSigner={validerEtApprouverDoc}
-        articleBpd="BPD-3 / Art. 3.01"
       />
     </div>
   );

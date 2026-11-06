@@ -417,6 +417,15 @@ const server = http.createServer(async (req, res) => {
   console.log(`[MOCK] ${method} ${path}`);
 
   // AUTH — login
+  if (path === "/api/demo/access" && method === "GET") {
+    return sendJson(res, 200, {
+      demonstration: true,
+      password: "Begpharma2026!",
+      code_mfa: "123456",
+      comptes: Object.values(DEMO_USERS).map(u => ({ email: u.email, nom: u.name,
+        role: ({ promoteur: "Promoteur", pharmacien_titulaire: "Pharmacien titulaire", dispensateur: "Dispensateur" })[u.role] || "Équipe officinale" })),
+    });
+  }
   if (path === "/api/auth/login" && method === "POST") {
     const body = await parseBody(req);
     const user = DEMO_USERS[body.email];

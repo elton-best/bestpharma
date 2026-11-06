@@ -128,6 +128,21 @@ class DocumentController extends Controller
             $doc = DB::table('documents')->where('officine_id', $officineId)->where('id', $id)
                 ->where('archived', false)->lockForUpdate()->first();
             abort_unless($doc, 404, 'Document introuvable.');
+            $structure = json_decode($doc->contenu ?? '', true);
+            if (is_array($structure) && ($structure['schema'] ?? null) === 'begpharma.canevas-rempli.v1') {
+                abort_unless(in_array($role, ['promoteur', 'pharmacien_titulaire', 'pharmacien_adjoint', 'rmq']), 403);
+                if (array_key_exists('contenu', $validated)) {
+                    abort_unless(isset($validated['empreinte_edition']), 422, 'Rechargez le canevas avant de le modifier.');
+                    $nouvelle = json_decode($validated['contenu'] ?? '', true);
+                    abort_unless(is_array($nouvelle) && ($nouvelle['schema'] ?? null) === $structure['schema']
+                        && ($nouvelle['canevas'] ?? null) === $structure['canevas'] && is_array($nouvelle['valeurs'] ?? null), 422,
+                        'La structure source du canevas ne peut pas être remplacée.');
+                    $cles = app(\App\Services\CatalogueCanevasService::class)->champs($structure['canevas']);
+                    abort_if(array_diff(array_keys($nouvelle['valeurs']), $cles), 422, 'Zone de saisie inconnue.');
+                    foreach ($nouvelle['valeurs'] as $texte) abort_unless(is_string($texte) && mb_strlen($texte) <= 30000, 422, 'Zone de saisie invalide.');
+                }
+            }
+
             $fields = array_intersect_key($validated, array_flip([
                 'titre', 'contenu', 'type_doc', 'processus', 'statut', 'motif_refus', 'code_document',
             ]));

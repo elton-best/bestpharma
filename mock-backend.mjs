@@ -460,6 +460,13 @@ const server = http.createServer(async (req, res) => {
       }
     }
   }
+  if (/^\/api\/officines\/[^/]+\/documents(?:\/|$)/.test(path)) {
+    const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+    const utilisateur = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
+    if (!utilisateur) return sendJson(res, 401, { message: "Connexion requise." });
+    if (!utilisateur.officines.includes(path.split("/")[3])) return sendJson(res, 403, { message: "Officine non autorisée." });
+    if (method !== "GET" && !["promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq"].includes(utilisateur.role)) return sendJson(res, 403, { message: "Modification réservée aux responsables habilités." });
+  }
   // AUTH — login
   {
     const m = path.match(/^\/api\/officines\/([^/]+)\/suivis-documentaires\/(formations|maintenance)(?:\/(definition|[a-f0-9-]+))?$/);

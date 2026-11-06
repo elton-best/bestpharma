@@ -109,9 +109,11 @@ jobs:
         working-directory: frontend
         run: npm run typecheck
 
-      - name: Compilation de production
+      - name: Compilation de production et démarrage sans session serveur
         working-directory: frontend
-        run: npm run build
+        run: |
+          npm run build
+          node ../scripts/tester-demarrage-spa.mjs
 
   referentiel-source:
     name: Vérification de l’extraction du guide ABMed

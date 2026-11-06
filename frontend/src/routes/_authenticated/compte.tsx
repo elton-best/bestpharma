@@ -66,7 +66,7 @@ export const Route = createFileRoute("/_authenticated/compte")({
   component: PageCompte,
 });
 
-export function PageCompte() {
+function PageCompte() {
   const { courante, rattachements, choisir, aRole } = useOfficine();
   const queryClient = useQueryClient();
   const user = api.getUser();

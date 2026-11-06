@@ -83,4 +83,87 @@ class ComptabiliteController extends Controller
             'data' => $clotures,
         ]);
     }
+
+    /**
+     * Saisie manuelle d'une écriture comptable (OD)
+     */
+    public function storeEcriture(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'date_piece' => 'required|date',
+            'numero_piece' => 'required|string|max:50',
+            'libelle_ecriture' => 'required|string|max:255',
+            'journal_code' => 'nullable|string|max:20',
+            'lignes' => 'required|array|min:2',
+            'lignes.*.numero_compte' => 'required|string|max:20',
+            'lignes.*.libelle_compte' => 'required|string|max:255',
+            'lignes.*.debit' => 'nullable|numeric|min:0',
+            'lignes.*.credit' => 'nullable|numeric|min:0',
+        ]);
+
+        $user = $request->user();
+        $officineId = $user->officine_id ?: $user->officines()->first()?->id;
+
+        $totalDebit = collect($validated['lignes'])->sum('debit');
+        $totalCredit = collect($validated['lignes'])->sum('credit');
+
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            return response()->json([
+                'message' => 'L\'écriture comptable doit être équilibrée : Total Débit (' . $totalDebit . ') ≠ Total Crédit (' . $totalCredit . ').',
+            ], 422);
+        }
+
+        $journalCode = $validated['journal_code'] ?? 'OD';
+        $creees = [];
+
+        foreach ($validated['lignes'] as $ligne) {
+            $creees[] = EcritureSyscohada::create([
+                'officine_id' => $officineId,
+                'date_piece' => $validated['date_piece'],
+                'numero_piece' => $validated['numero_piece'],
+                'numero_compte' => $ligne['numero_compte'],
+                'libelle_compte' => $ligne['libelle_compte'],
+                'libelle_ecriture' => $validated['libelle_ecriture'],
+                'debit' => $ligne['debit'] ?? 0,
+                'credit' => $ligne['credit'] ?? 0,
+                'journal_code' => $journalCode,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Écriture comptable enregistrée avec succès.',
+            'data' => $creees,
+        ], 201);
+    }
+
+    /**
+     * Extourne d'une écriture comptable (CS-01)
+     */
+    public function extourneEcriture(Request $request, string $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'motif' => 'required|string|max:255',
+        ]);
+
+        $originale = EcritureSyscohada::findOrFail($id);
+        $user = $request->user();
+        $officineId = $user->officine_id ?: $user->officines()->first()?->id;
+
+        $extourne = EcritureSyscohada::create([
+            'officine_id' => $officineId,
+            'date_piece' => now()->toDateString(),
+            'numero_piece' => 'EXT-' . $originale->numero_piece,
+            'numero_compte' => $originale->numero_compte,
+            'libelle_compte' => $originale->libelle_compte,
+            'libelle_ecriture' => 'EXTOURNE : ' . $originale->libelle_ecriture . ' (Motif : ' . $validated['motif'] . ')',
+            'debit' => $originale->credit,
+            'credit' => $originale->debit,
+            'journal_code' => $originale->journal_code,
+        ]);
+
+        return response()->json([
+            'message' => 'Écriture extournée avec succès.',
+            'data' => $extourne,
+        ]);
+    }
 }

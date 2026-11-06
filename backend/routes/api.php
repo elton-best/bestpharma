@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AppareilAutoriseController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AutoEvaluationController;
@@ -55,6 +56,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/auth/devices/{tokenId}', [AuthController::class, 'revokeDevice']);
     Route::post('/auth/devices/revoke-others', [AuthController::class, 'revokeOtherDevices']);
 
+    // Appareils autorisés et bornes (APP-01 à APP-13)
+    Route::get('/officines/{officineId}/appareils-autorises', [AppareilAutoriseController::class, 'index']);
+    Route::get('/appareils-autorises', [AppareilAutoriseController::class, 'index']);
+    Route::post('/officines/{officineId}/appareils-autorises', [AppareilAutoriseController::class, 'store']);
+    Route::post('/appareils-autorises', [AppareilAutoriseController::class, 'store']);
+    Route::post('/appareils-autorises/{id}/revoquer', [AppareilAutoriseController::class, 'revoquer']);
+    Route::post('/appareils-autorises/{id}/reactiver', [AppareilAutoriseController::class, 'reactiver']);
+    Route::delete('/appareils-autorises/{id}', [AppareilAutoriseController::class, 'destroy']);
+
     // Gestion des officines (multi-tenant E0-S2)
     Route::get('/officines', [OfficineController::class, 'index']);
     Route::post('/officines', [OfficineController::class, 'store']);
@@ -70,6 +80,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Journal d'audit inaltérable (E0-S4)
     Route::get('/officines/{officineId}/audit-logs', [AuditController::class, 'index']);
+    Route::get('/officines/{officineId}/audit-logs/verifier-integrite', [AuditController::class, 'verifierIntegrite']);
+    Route::get('/audit-logs/verifier-integrite', [AuditController::class, 'verifierIntegrite']);
 
     // File de synchronisation hors-ligne (E0-S7)
     Route::post('/sync/push', [SyncController::class, 'push']);
@@ -226,5 +238,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Comptabilité & Clôtures SYSCOHADA
     Route::get('/comptabilite/journal-ventes', [ComptabiliteController::class, 'journalVentes']);
+    Route::post('/comptabilite/ecritures', [ComptabiliteController::class, 'storeEcriture']);
+    Route::post('/comptabilite/ecritures/{id}/extourne', [ComptabiliteController::class, 'extourneEcriture']);
     Route::get('/comptabilite/clotures', [ComptabiliteController::class, 'cloturesCaisse']);
 });

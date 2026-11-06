@@ -71,7 +71,7 @@ interface Parametre {
   updated_at: string | null;
 }
 
-export function PageParametres() {
+function PageParametres() {
   const { courante, aRole, chargement } = useOfficine();
   const queryClient = useQueryClient();
   const promoteur = aRole("promoteur", "pharmacien_titulaire");

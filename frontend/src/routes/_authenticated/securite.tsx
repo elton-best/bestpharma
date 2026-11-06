@@ -75,7 +75,7 @@ interface AppareilSession {
   created_at: string;
 }
 
-export function PageSecurite() {
+function PageSecurite() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { courante, aRole } = useOfficine();

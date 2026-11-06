@@ -1,3 +1,5 @@
+import { lireEtatDemo, ecrireEtatDemo } from "./mock-data/persistance-demo.mjs";
+import { fileURLToPath } from "node:url";
 import { recalculerCanevas } from "./mock-data/calculs-canevas.mjs";
 import http from "http";
 import { readFileSync } from "node:fs";
@@ -362,6 +364,10 @@ function filtrerJournal(url) {
 }
 
 function sendJson(res, status, data) {
+  if (status >= 200 && status < 300 && !["GET", "HEAD", "OPTIONS"].includes(res.req?.method)) {
+    try { conserverDemo(); }
+    catch (e) { console.error("Conservation locale de démonstration impossible", e); status = 503; data = {message: "L’enregistrement local de l’aperçu n’a pas pu être confirmé. Réessayez avant de fermer la page."}; }
+  }
   if (status >= 400) console.warn(`[MOCK] Réponse ${status} : ${(res.req?.url || "").split("?")[0]}`);
   const body = JSON.stringify(data);
   res.writeHead(status, {
@@ -405,6 +411,18 @@ function paginer(lignes, page = 1, parPage = 30) {
     to: Math.min(debut + parPage, lignes.length),
     total: lignes.length,
   };
+}
+
+// Conservation locale de l’aperçu uniquement, sans valeur de conservation réglementaire.
+const FICHIER_DEMO = fileURLToPath(new URL('./.demo-state/session.json', import.meta.url));
+const etatDemo = lireEtatDemo(FICHIER_DEMO);
+if (etatDemo) {
+  for (const u of etatDemo.utilisateurs) DEMO_USERS[u.email] = u;
+  OFFICINES.splice(0, OFFICINES.length, ...etatDemo.officines);
+  DOCUMENTS.push(...etatDemo.documents);
+}
+function conserverDemo() {
+  ecrireEtatDemo(FICHIER_DEMO, {utilisateurs: Object.values(DEMO_USERS), officines: OFFICINES, documents: DOCUMENTS.filter(d => d.mode_demo)});
 }
 
 const server = http.createServer(async (req, res) => {

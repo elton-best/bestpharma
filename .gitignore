@@ -50,3 +50,6 @@ frontend/.tanstack/
 # Cache des outils Python
 __pycache__/
 *.pyc
+
+# Données locales de démonstration, jamais versionnées
+/.demo-state/

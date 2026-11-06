@@ -55,7 +55,7 @@ export function CanevasCatalogue({ officine, filtre = "tous", creer = true }: { 
       const resultat = await api.post<{ mode_demo?: boolean }>(`/officines/${officine}/canevas/${choix}/documents`, { valeurs, processus, type_doc: typeDoc });
       await qc.invalidateQueries({ queryKey: ["documents"] });
       await qc.invalidateQueries({ queryKey: ["documents-adoptions"] });
-      setOuvert(false); setValeurs({}); setMessage(resultat.mode_demo ? "Brouillon de démonstration enregistré temporairement. Il sera perdu au redémarrage de l’aperçu." : "Brouillon enregistré dans les documents de l’officine. Vous pouvez le relire puis demander son approbation.");
+      setOuvert(false); setValeurs({}); setMessage(resultat.mode_demo ? "Brouillon de démonstration conservé localement dans l’aperçu. Ce n’est pas un registre de production." : "Brouillon enregistré dans les documents de l’officine. Vous pouvez le relire puis demander son approbation.");
     } catch (e) { setMessage(e instanceof Error ? e.message : "Enregistrement impossible."); }
     finally { setEnCours(false); }
   }

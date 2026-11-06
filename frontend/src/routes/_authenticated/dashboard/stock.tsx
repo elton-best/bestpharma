@@ -54,7 +54,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/stock")({
   head: () => ({
     meta: [
       { title: "Magasin & Stocks : BestPharma" },
-      { name: "description", content: "Le magasin raconté simplement : chaque boîte garde son lot, son emplacement et son statut. FEFO, quarantaine, inventaires et valorisation : BPD-5 / BPD-8 / BPD-9." },
+      { name: "description", content: "Le magasin raconté simplement : chaque boîte garde son lot, son emplacement et son statut. Gestion des péremptions, quarantaine, inventaires et valorisation." },
     ],
   }),
   component: PageStockMagasin,
@@ -637,12 +637,7 @@ function PageStockMagasin() {
           {/* En-tête avec charte BestPharma */}
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
             <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                  Chaque statut, expliqué en clair
-                </span>
-              </div>
+
               <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
                 Vue d’ensemble du Stock & Magasin
               </h1>
@@ -651,17 +646,7 @@ function PageStockMagasin() {
                 emplacement et son statut. La caisse ne vend que ce qui est vendable, dans l’ordre de péremption ;
                 la dispensation pioche au bon endroit ; la comptabilité suit le coût moyen et les pertes.
               </p>
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
-                  <Thermometer className="w-3.5 h-3.5 text-[#92FF5F]" /> Chaîne du froid 2–8 °C
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
-                  <Verified className="w-3.5 h-3.5" /> Lot unique (INT-01)
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
-                  FCFA sans décimale · JJ/MM/AAAA
-                </span>
-              </div>
+
             </div>
             <div className="flex flex-col gap-2 shrink-0">
               <Button
@@ -893,12 +878,7 @@ function PageStockMagasin() {
             {/* En-tête dédié Produits BPD-5 */}
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
               <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                    Catalogue & Nomenclature Officinale
-                  </span>
-                </div>
+
                 <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
                   Catalogue & Référentiel des Médicaments
                 </h1>
@@ -906,14 +886,7 @@ function PageStockMagasin() {
                   Gestion centralisée du référentiel pharmaceutique : codes CIP, DCI, formes galéniques, dosages,
                   seuils d'alerte de réassort, et classification réglementaire (thermolabiles 2–8 °C, stupéfiants, TVA).
                 </p>
-                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
-                    <Package className="w-3.5 h-3.5 text-[#92FF5F]" /> Nomenclature Nationale Bénin
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
-                    <Verified className="w-3.5 h-3.5" /> DCI & Codes CIP Uniques
-                  </span>
-                </div>
+
               </div>
               <div className="flex flex-col gap-2 shrink-0">
                 <Button
@@ -1284,8 +1257,8 @@ function PageStockMagasin() {
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  
-                  
+
+
                 </div>
                 <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
                   Lots & Traçabilité FEFO
@@ -1294,14 +1267,7 @@ function PageStockMagasin() {
                   Suivi unitaire de chaque lot de médicament en stock : numéro de lot fabricant, date de péremption,
                   quantité physique, affectation d'emplacement et sortie prioritaire du lot le plus ancien (FEFO).
                 </p>
-                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
-                    <Verified className="w-3.5 h-3.5" /> Règle FEFO Appliquée
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
-                    <Clock className="w-3.5 h-3.5 text-[#92FF5F]" /> Péremptions Échelonnées
-                  </span>
-                </div>
+
               </div>
               <div className="flex flex-col gap-2 shrink-0">
                 <Button
@@ -1783,27 +1749,15 @@ function PageStockMagasin() {
             {/* En-tête dédié Emplacements BPD-4/BPD-5 */}
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
               <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                    Organisation Spatiale & Stockage
-                  </span>
-                </div>
+
                 <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
-                  Emplacements & Rangement Magasin
+                  Emplacements
                 </h1>
                 <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
                   Cartographie et zonage réglementaire des locaux de l'officine : comptoir de délivrance, réserve principale,
                   armoire sécurisée sous clé pour stupéfiants, réfrigérateur 2–8 °C et zones d'isolement sanitaire.
                 </p>
-                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
-                    <MapPin className="w-3.5 h-3.5" /> 7 Zones BPD Homologuées
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
-                    <Thermometer className="w-3.5 h-3.5 text-[#92FF5F]" /> Sonde Frigo 24h/24
-                  </span>
-                </div>
+
               </div>
             </div>
 
@@ -1941,27 +1895,15 @@ function PageStockMagasin() {
             {/* En-tête dédié Mouvements BPD-8 */}
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
               <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  
-                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                    Inaltérabilité & Traçabilité Complète
-                  </span>
-                </div>
+
                 <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
-                  Journal des Mouvements & Audit Trail
+                  Mouvements de stock
                 </h1>
                 <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
                   Registre chronologique inaltérable de tous les flux physiques : entrées réceptions, sorties caisse,
                   ajustements d'inventaire, transferts de zones et blocages sanitaires. Aucune suppression autorisée, contre-passation obligatoire.
                 </p>
-                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
-                    <History className="w-3.5 h-3.5" /> Piste d’Audit Inaltérable
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
-                    Signature & Pièce Justificative Requise
-                  </span>
-                </div>
+
               </div>
             </div>
 
@@ -2096,27 +2038,14 @@ function PageStockMagasin() {
           {/* En-tête dédié Réception BPD-5 */}
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
             <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                  Arrivages & Contrôles Obligatoires
-                </span>
-              </div>
+
               <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
-                Réception des Livraisons & Contrôle BPD-5
+                Réception des livraisons
               </h1>
               <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
-                Point de contrôle obligatoire des arrivages grossistes-répartiteurs (CAMEG, UBIPHARM, LABOREX).
-                Rapprochement bon de livraison / commande, inspection visuelle des conditionnements et vérification stricte de la chaîne du froid 2–8 °C.
+                Vérifiez les produits reçus, le bon de livraison et les conditions de transport avant leur mise en stock.
               </p>
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
-                  <ScanLine className="w-3.5 h-3.5" /> Contrôle Rapprochement BL
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
-                  <Thermometer className="w-3.5 h-3.5 text-[#92FF5F]" /> Chaîne du Froid 2–8 °C
-                </span>
-              </div>
+
             </div>
             <div className="flex flex-col gap-2 shrink-0">
               <Button
@@ -2132,7 +2061,7 @@ function PageStockMagasin() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="border-[#CFF1D2] bg-white shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-bold text-[#475C50]">Protocole BPD-5</CardTitle>
+                <CardTitle className="text-sm font-bold text-[#475C50]">Contrôles à la réception</CardTitle>
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               </CardHeader>
               <CardContent>
@@ -2237,14 +2166,7 @@ function PageStockMagasin() {
           {/* En-tête dédié Inventaires BPD-5 */}
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
             <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
-                  Contrôle Physique des Stocks
-                </span>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                  Campagnes de Comptage & Rapprochement
-                </span>
-              </div>
+
               <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
                 Inventaires & Campagnes de Comptage
               </h1>
@@ -2252,14 +2174,7 @@ function PageStockMagasin() {
                 Comptage physique périodique et tournant des stocks, confrontation avec les écritures théoriques,
                 justification contradictoire de chaque écart constaté et double validation obligatoire du titulaire.
               </p>
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
-                  <ClipboardList className="w-3.5 h-3.5" /> Inventaire Conforme
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
-                  Justification Obligatoire des Écarts
-                </span>
-              </div>
+
             </div>
           </div>
           <InventairesStock />
@@ -2272,28 +2187,14 @@ function PageStockMagasin() {
           {/* En-tête dédié Péremptions */}
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
             <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
-                  Veille Sanitaire & Expirations
-                </span>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                  Retrait Systématique avant Expiration
-                </span>
-              </div>
+
               <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
-                Surveillance & Retrait des Péremptions
+                Péremptions
               </h1>
               <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
                 Retrouvez les lots à surveiller et ceux qui ne peuvent plus être vendus. Le retrait intervient dès la date de péremption.
               </p>
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
-                  <Calendar className="w-3.5 h-3.5" /> Surveillance Échelonnée
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/20 border border-red-400/40 text-red-200 px-3 py-1">
-                  <ShieldAlert className="w-3.5 h-3.5 text-red-400" /> Vente Interdite après Expiration
-                </span>
-              </div>
+
             </div>
           </div>
           <CourrielsPeremption />
@@ -2366,16 +2267,9 @@ function PageStockMagasin() {
           {/* En-tête dédié Quarantaine */}
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
             <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
-                  Sécurité Sanitaire
-                </span>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                  Rappels Sanitaires & Isolement
-                </span>
-              </div>
+
               <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
-                Quarantaine & Rappels Sanitaires des Lots
+                Lots isolés et rappels sanitaires
               </h1>
               <p className="text-sm text-[#CFF1D2]/90 max-w-2xl font-sans">
                 Consultez les lots retirés de la vente et les interventions à effectuer.
@@ -2393,14 +2287,7 @@ function PageStockMagasin() {
           {/* En-tête dédié Déchets */}
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
             <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
-                  Filière Écologique & Rebuts
-                </span>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                  Destruction Sécurisée & Rebuts
-                </span>
-              </div>
+
               <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
                 Déchets Pharmaceutiques & Rebuts
               </h1>
@@ -2408,14 +2295,7 @@ function PageStockMagasin() {
                 Filière d'élimination et destruction des médicaments périmés, altérés ou cassés. Établissement du
                 bordereau officiel contradictoire signé pour transmission à l'inspection pharmaceutique et filière agréée.
               </p>
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
-                  <Trash2 className="w-3.5 h-3.5" /> Bordereau Contradictoire
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
-                  Conservation Sécurisée 5 Ans
-                </span>
-              </div>
+
             </div>
           </div>
           <DechetsStock />
@@ -2428,14 +2308,7 @@ function PageStockMagasin() {
           {/* En-tête dédié Valorisation */}
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between rounded-3xl border-2 border-[#0F3B27]/20 bg-gradient-to-br from-[#0F3B27] via-[#144730] to-[#0B2E1E] p-6 text-white shadow-lg">
             <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[#92FF5F] px-3 py-1 text-xs font-black text-[#0F3B27] uppercase tracking-wider">
-                  SYSCOHADA · COMPTABILITÉ MATIÈRE · STO-18/19
-                </span>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#CFF1D2] border border-white/15">
-                  Coût Moyen Pondéré & Analyse Pareto ABC
-                </span>
-              </div>
+
               <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight text-white">
                 Valorisation Financière du Stock & Analyse ABC
               </h1>
@@ -2443,14 +2316,7 @@ function PageStockMagasin() {
                 Valorisation comptable au Coût Moyen Pondéré (CMP), suivi de la rotation des stocks, classement ABC des
                 familles de médicaments et calcul du taux de couverture en jours pour éviter tout surstock dormant.
               </p>
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs font-bold">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#92FF5F] text-[#0F3B27] px-3 py-1">
-                  <TrendingUp className="w-3.5 h-3.5" /> Valorisation CMP Temps Réel
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-white">
-                  Rapprochement Compte de Stock SYSCOHADA
-                </span>
-              </div>
+
             </div>
           </div>
 

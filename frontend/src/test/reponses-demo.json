@@ -17,15 +17,15 @@
         "est_thermolabile": false,
         "prix_public_ttc": 1500,
         "prix_achat_moyen": 900,
-        "stock_total": 120,
+        "stock_total": 57,
         "seuil_stock_min": 10,
         "prochain_lot_fefo": {
-          "id": "l1",
-          "numero_lot": "LOT-2026-001",
-          "date_peremption": "2027-06-15",
-          "quantite_disponible": 45,
-          "jours_avant_peremption": 210,
-          "statut_peremption": "normal"
+          "id": "l2",
+          "numero_lot": "LOT-2026-002",
+          "date_peremption": "2026-12-10",
+          "quantite_disponible": 12,
+          "jours_avant_peremption": 34,
+          "statut_peremption": "alerte_3m"
         }
       },
       {
@@ -41,9 +41,10 @@
         "groupe_taxation": "B_TAXABLE",
         "est_thermolabile": false,
         "prix_public_ttc": 3200,
-        "stock_total": 8,
+        "stock_total": 0,
         "seuil_stock_min": 10,
-        "alerte_rupture": true
+        "alerte_rupture": true,
+        "prochain_lot_fefo": null
       },
       {
         "id": "p3",
@@ -58,7 +59,15 @@
         "est_thermolabile": true,
         "prix_public_ttc": 12500,
         "stock_total": 15,
-        "seuil_stock_min": 5
+        "seuil_stock_min": 5,
+        "prochain_lot_fefo": {
+          "id": "l4",
+          "numero_lot": "LOT-2026-004",
+          "date_peremption": "2027-01-20",
+          "quantite_disponible": 15,
+          "jours_avant_peremption": 75,
+          "statut_peremption": "alerte_3m"
+        }
       },
       {
         "id": "p4",
@@ -72,7 +81,8 @@
         "classe_produit": "stupefiant",
         "est_thermolabile": false,
         "prix_public_ttc": 4500,
-        "stock_total": 30
+        "stock_total": 0,
+        "prochain_lot_fefo": null
       },
       {
         "id": "p5",
@@ -86,7 +96,8 @@
         "classe_produit": "psychotrope",
         "est_thermolabile": false,
         "prix_public_ttc": 2800,
-        "stock_total": 22
+        "stock_total": 0,
+        "prochain_lot_fefo": null
       }
     ]
   },
@@ -1025,15 +1036,15 @@
           "date_reception": "2026-09-15",
           "quantite_disponible": 8,
           "quantite_initiale": 20,
-          "emplacement": "Réserve — Stock principal",
+          "emplacement": "Réserve  :  Stock principal",
           "fournisseur_nom": "CAMEG BÉNIN",
           "bon_livraison_ref": "BL-2026-1047",
           "statut": "quarantaine",
           "statut_detail": "quarantaine",
           "statut_effectif": "quarantaine",
           "est_vendable": false,
-          "motif_quarantaine": "Rappel lot fabricant — vérification ABMed",
-          "jours_avant_peremption": 18,
+          "motif_quarantaine": "Rappel lot fabricant  :  vérification ABMed",
+          "jours_avant_peremption": 24,
           "statut_peremption": "critique_1m",
           "produit": {
             "id": "p2",
@@ -1048,9 +1059,10 @@
             "groupe_taxation": "B_TAXABLE",
             "est_thermolabile": false,
             "prix_public_ttc": 3200,
-            "stock_total": 8,
+            "stock_total": 0,
             "seuil_stock_min": 10,
-            "alerte_rupture": true
+            "alerte_rupture": true,
+            "prochain_lot_fefo": null
           }
         }
       ],
@@ -1063,15 +1075,15 @@
           "date_reception": "2026-11-01",
           "quantite_disponible": 12,
           "quantite_initiale": 30,
-          "emplacement": "Comptoir — Délivrance",
+          "emplacement": "Comptoir  :  Délivrance",
           "fournisseur_nom": "UBIPHARM BÉNIN",
           "bon_livraison_ref": "BL-2026-1046",
           "statut": "en_stock",
           "statut_detail": "commercialisable",
           "statut_effectif": "commercialisable",
           "est_vendable": true,
-          "jours_avant_peremption": 28,
-          "statut_peremption": "critique_1m",
+          "jours_avant_peremption": 34,
+          "statut_peremption": "alerte_3m",
           "produit": {
             "id": "p1",
             "code_cip": "6170123456789",
@@ -1087,15 +1099,15 @@
             "est_thermolabile": false,
             "prix_public_ttc": 1500,
             "prix_achat_moyen": 900,
-            "stock_total": 120,
+            "stock_total": 57,
             "seuil_stock_min": 10,
             "prochain_lot_fefo": {
-              "id": "l1",
-              "numero_lot": "LOT-2026-001",
-              "date_peremption": "2027-06-15",
-              "quantite_disponible": 45,
-              "jours_avant_peremption": 210,
-              "statut_peremption": "normal"
+              "id": "l2",
+              "numero_lot": "LOT-2026-002",
+              "date_peremption": "2026-12-10",
+              "quantite_disponible": 12,
+              "jours_avant_peremption": 34,
+              "statut_peremption": "alerte_3m"
             }
           }
         },
@@ -1114,7 +1126,7 @@
           "statut_detail": "commercialisable",
           "statut_effectif": "commercialisable",
           "est_vendable": true,
-          "jours_avant_peremption": 68,
+          "jours_avant_peremption": 75,
           "statut_peremption": "alerte_3m",
           "produit": {
             "id": "p3",
@@ -1129,7 +1141,15 @@
             "est_thermolabile": true,
             "prix_public_ttc": 12500,
             "stock_total": 15,
-            "seuil_stock_min": 5
+            "seuil_stock_min": 5,
+            "prochain_lot_fefo": {
+              "id": "l4",
+              "numero_lot": "LOT-2026-004",
+              "date_peremption": "2027-01-20",
+              "quantite_disponible": 15,
+              "jours_avant_peremption": 75,
+              "statut_peremption": "alerte_3m"
+            }
           }
         }
       ],
@@ -4863,6 +4883,13 @@
       "sha256": "279cd12f27614aed1e6cf52de29eb6a316cd1cf8e8945c24f9fb81d1854f0e8f"
     },
     {
+      "id": "8cd6f23f49d35bd1ec8e1c20",
+      "titre": "Inventaire documentaire  PHARMACIE OKPE OLUWA",
+      "rubrique": "1.MAITRISE DOCUMENTAIRE",
+      "fichier": "1.MAITRISE DOCUMENTAIRE/Inventaire documentaire  PHARMACIE OKPE OLUWA.xlsx",
+      "sha256": "7aa190d152b136eec1017172fc00c4711442b09aed7189a1c43fc66a61e7a8ac"
+    },
+    {
       "id": "cadf973180ea5205ac7963a8",
       "titre": "PRO- Procédure de gestion des informations documentées et des modifications",
       "rubrique": "1.MAITRISE DOCUMENTAIRE",
@@ -4875,6 +4902,41 @@
       "rubrique": "2.RESSOURCES ET COLLABORATION",
       "fichier": "2.RESSOURCES ET COLLABORATION/FICHE de Retrait d'Equipement.doc",
       "sha256": "9596084e8508eee7bd1322bdc62c333d2c2f27aef808c16b943ee1a49d227d04"
+    },
+    {
+      "id": "fef5a7afc97c084019536649",
+      "titre": "FOR & ENR  Plan de Formation",
+      "rubrique": "2.RESSOURCES ET COLLABORATION",
+      "fichier": "2.RESSOURCES ET COLLABORATION/FOR & ENR  Plan de Formation.xlsx",
+      "sha256": "e585f5c7bc5a7557480b060d43fd93adc7a32e46e94f003a24041c5924f7dc4f"
+    },
+    {
+      "id": "098947daa309ce29c497e90a",
+      "titre": "FOR & ENR-Gestion des Congés",
+      "rubrique": "2.RESSOURCES ET COLLABORATION",
+      "fichier": "2.RESSOURCES ET COLLABORATION/FOR & ENR-Gestion des Congés.xlsx",
+      "sha256": "2d40733f00fa9da8b9d9f8a4a65bbff0e584d03e1a8060f3e219fde1217a8fda"
+    },
+    {
+      "id": "256eaa360e6339bb90029134",
+      "titre": "FOR & ENR-Plan de Nettoyage et d'Entretien .",
+      "rubrique": "2.RESSOURCES ET COLLABORATION",
+      "fichier": "2.RESSOURCES ET COLLABORATION/FOR & ENR-Plan de Nettoyage et d'Entretien ..xlsx",
+      "sha256": "abb5fb8b5a3adb51dd1c7648a08527d1fef771100a5e5f6858c6922cc3f37ad6"
+    },
+    {
+      "id": "ea65c149e7fcc81c36743927",
+      "titre": "FOR &ENR Inventaire des équipements",
+      "rubrique": "2.RESSOURCES ET COLLABORATION",
+      "fichier": "2.RESSOURCES ET COLLABORATION/FOR &ENR Inventaire des équipements.xlsx",
+      "sha256": "1ea9d8d5518c782056d7596f5b4635ee9260f5397c66a077e92ebe9b2a94529e"
+    },
+    {
+      "id": "97c7ac830455cfb3a2e9a767",
+      "titre": "FOR &ENR Plan de Maintenance et d'étalonnage des équipements",
+      "rubrique": "2.RESSOURCES ET COLLABORATION",
+      "fichier": "2.RESSOURCES ET COLLABORATION/FOR &ENR Plan de Maintenance et d'étalonnage des équipements.xlsx",
+      "sha256": "d991844876eafbc3b18fcef3117d32f46fac16c3cbfe0087f679617c9a607508"
     },
     {
       "id": "adf7fd675cb19c104d85c253",
@@ -5017,6 +5079,13 @@
       "sha256": "ab6f50b4f1c649723bd3c75512cb960d2807cafa4b41e38ac2872b19bb0c63e3"
     },
     {
+      "id": "a9e5d56c05b27f70260e380b",
+      "titre": "Plan de continuité_Pharmacie",
+      "rubrique": "2.RESSOURCES ET COLLABORATION",
+      "fichier": "2.RESSOURCES ET COLLABORATION/Plan de continuité_Pharmacie.xlsx",
+      "sha256": "decab62c484ec8a0b1efb60e9564f705c900b33b1674a11ad968b3fbd38a095a"
+    },
+    {
       "id": "98c63129c635fd66637e420e",
       "titre": "Rapport d'Evaluation des Performances",
       "rubrique": "2.RESSOURCES ET COLLABORATION",
@@ -5031,11 +5100,32 @@
       "sha256": "a607ffb83602d7a33992e26bc6e253b3dc253d60ea1ce1438c28ed2910ceef9e"
     },
     {
+      "id": "3e70a0529ba85e8384fa451d",
+      "titre": "Registre de Maintenance & Tests 2025",
+      "rubrique": "2.RESSOURCES ET COLLABORATION",
+      "fichier": "2.RESSOURCES ET COLLABORATION/Registre de Maintenance & Tests 2025.xlsx",
+      "sha256": "e3f85e871000ecea9153a342b7100427556cca295791ceeac276f73a366087a7"
+    },
+    {
+      "id": "97b2da36ed335908c2460b9d",
+      "titre": "Registre de Maintenance & Tests 2026",
+      "rubrique": "2.RESSOURCES ET COLLABORATION",
+      "fichier": "2.RESSOURCES ET COLLABORATION/Registre de Maintenance & Tests 2026.xlsx",
+      "sha256": "541ae5bd67ce2bada62b5f8e7c929306e6bbfe9969b61c2cff59e4a7577f7454"
+    },
+    {
       "id": "cae31039b7e2e0d862616bef",
       "titre": "Affiche Gestion Plaintes Et Réclamations",
       "rubrique": "3.SURVEILLANCE ET AMELIORATION",
       "fichier": "3.SURVEILLANCE ET AMELIORATION/Affiche Gestion Plaintes Et Réclamations.docx",
       "sha256": "7ee66b765b9c3aeb24e5cb58c1b3f59a43658ffdc65bf475d704e8cbecf740d1"
+    },
+    {
+      "id": "b6a6e95e02cd82cc80803430",
+      "titre": "FOR &ENR-Plan d'Actions du SMQ",
+      "rubrique": "3.SURVEILLANCE ET AMELIORATION",
+      "fichier": "3.SURVEILLANCE ET AMELIORATION/FOR &ENR-Plan d'Actions du SMQ.xlsx",
+      "sha256": "0518a617c2ff3d8a93a006e8f819008952acc401845bbce3a0a18aba0d77ff7c"
     },
     {
       "id": "1ce1dcab3de3102b7fcbc956",
@@ -5059,11 +5149,25 @@
       "sha256": "21360691059f4603625de2ade0de0666c40001e7cd4faaf927dde888445636dc"
     },
     {
+      "id": "192e1d63eef1aa8030168cac",
+      "titre": "FOR-Plan de Maîtrise des Risques et Opportunités",
+      "rubrique": "3.SURVEILLANCE ET AMELIORATION",
+      "fichier": "3.SURVEILLANCE ET AMELIORATION/FOR-Plan de Maîtrise des Risques et Opportunités.xlsx",
+      "sha256": "eceb368434b969d9b34e78914bfdbe9aa2a86c9b5ad8c6ec5e289efe9b0490ff"
+    },
+    {
       "id": "7cd67b1f1e39e251ac803075",
       "titre": "FOR-Rapport D'Auto-inspection",
       "rubrique": "3.SURVEILLANCE ET AMELIORATION",
       "fichier": "3.SURVEILLANCE ET AMELIORATION/FOR-Rapport D'Auto-inspection.doc",
       "sha256": "2ccba6acdb65e8163a3dbd9e40d1fc6a0cafe3637f26740b1e2c12649e0d356a"
+    },
+    {
+      "id": "506f22bd97b975b324c57f7f",
+      "titre": "FOR-Tableau de Suivi des Améliorations du SMQ",
+      "rubrique": "3.SURVEILLANCE ET AMELIORATION",
+      "fichier": "3.SURVEILLANCE ET AMELIORATION/FOR-Tableau de Suivi des Améliorations du SMQ.xlsx",
+      "sha256": "1ae08fd1e99dffb0230d1c3f359a362fbc81f1bd8eaf5ba7911bb3bf60337cc6"
     },
     {
       "id": "9be9dc1d09aef3199aef6691",
@@ -5115,6 +5219,20 @@
       "sha256": "739f8c42424322bcca2e66c67ddcca88e8bc019ae17ff19edbaa23925560bc6f"
     },
     {
+      "id": "de6dd37ca9d495fc4157dc77",
+      "titre": "Plan de continuité_Pharmacie",
+      "rubrique": "3.SURVEILLANCE ET AMELIORATION",
+      "fichier": "3.SURVEILLANCE ET AMELIORATION/Plan de continuité_Pharmacie.xlsx",
+      "sha256": "38e99ac7f22485c3526514b369a6082f9ded6957e685f873f098de06718fcba6"
+    },
+    {
+      "id": "eeeb282941ebd0771740d73e",
+      "titre": "Tableau de maîtrise des risques et opportunités",
+      "rubrique": "3.SURVEILLANCE ET AMELIORATION",
+      "fichier": "3.SURVEILLANCE ET AMELIORATION/Tableau de maîtrise des risques et opportunités.xlsx",
+      "sha256": "d5d8510bd2f57b3370ba71f87c0207c7956529be346c847ea5802dc28eca7eae"
+    },
+    {
       "id": "41c18e026f0ad712f05616ac",
       "titre": "PRO- Gestion de Stock et Sécurité des Produits",
       "rubrique": "4. PROCEDURES OPERATIONNELLES",
@@ -5150,11 +5268,36 @@
       "sha256": "16032314be8003351fdd54822bfe0374dfd6964b3968309265aedec2f451ad1b"
     },
     {
+      "id": "5dad621658c3acd0d81771bf",
+      "titre": "PLANNING DU PERSONNEL MODEL",
+      "rubrique": "Document en cours et autres",
+      "fichier": "Document en cours et autres/PLANNING DU PERSONNEL MODEL.xlsx",
+      "sha256": "ecc48ebd526e2b322a8728068da7be9bbfc8dff16e41d81cc5ce4e16c4f14606"
+    },
+    {
       "id": "1474bc279595b35788543b59",
       "titre": "POINTS DES PROCEDURES ET ACTIVITES DE COUVERTURE OKPE",
       "rubrique": "Document en cours et autres",
       "fichier": "Document en cours et autres/POINTS DES PROCEDURES ET ACTIVITES DE COUVERTURE OKPE.docx",
       "sha256": "9daa4b6180095e37868d12afa0c19b1e041e4149244b27cf839a628b269fc975"
+    },
+    {
+      "id": "f21be93c9082dd9ef478ffad",
+      "titre": "Quelques plans de la pharmacie OKPE OLUWA",
+      "rubrique": "Document en cours et autres",
+      "fichier": "Document en cours et autres/Quelques plans de la pharmacie OKPE OLUWA.xlsx",
+      "sha256": "defedecf513696145d5f3810affc97624e4cd74c1098824d23d233ca4838b397"
     }
-  ]
+  ],
+  "/stocks/alertes-peremption": {
+    "mode_demo": true,
+    "courriel_configure": false,
+    "seuils_jours": [
+      90,
+      45,
+      10,
+      1
+    ],
+    "envois": {}
+  }
 }

@@ -49,7 +49,7 @@ class PeremptionEtCourrielsTest extends TestCase
         $this->actingAs($this->titulaire)->postJson('/api/dispensations', ['type_dispensation' => 'conseil_sans_ordonnance', 'patient_nom' => 'Patient de recette',
             'lignes' => [['produit_id' => $lot->produit_id, 'quantite' => 1]]])->assertUnprocessable();
         $this->actingAs($this->titulaire)->postJson('/api/caisse/ouvrir', ['fond_caisse_ouverture' => 0])->assertCreated();
-        $this->actingAs($this->titulaire)->postJson('/api/caisse/ventes', ['mode_paiement' => 'especes', 'montant_recu' => 500,
+        $this->actingAs($this->titulaire)->postJson('/api/caisse/ventes', ['mode_reglement' => 'especes', 'montant_recu' => 500,
             'lignes' => [['produit_id' => $lot->produit_id, 'quantite' => 1]]])->assertUnprocessable()->assertJsonPath('message', 'Stock insuffisant pour Produit de recette. Demandé: 1, Dispo: 0');
         $this->assertSame(10, $lot->fresh()->quantite_disponible);
     }

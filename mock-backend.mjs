@@ -362,6 +362,7 @@ function filtrerJournal(url) {
 }
 
 function sendJson(res, status, data) {
+  if (status >= 400) console.warn(`[MOCK] Réponse ${status} : ${(res.req?.url || "").split("?")[0]}`);
   const body = JSON.stringify(data);
   res.writeHead(status, {
     "Content-Type": "application/json",

@@ -74,6 +74,7 @@ interface Parametre {
 function PageParametres() {
   const { courante, aRole, chargement } = useOfficine();
   const queryClient = useQueryClient();
+  const { data: user } = useQuery({ queryKey: ["profil-parametres"], queryFn: () => api.get<{ user: { name: string } }>("/auth/me") });
   const promoteur = aRole("promoteur", "pharmacien_titulaire");
 
   // Navigation par SelecteurFiltrable
@@ -154,7 +155,7 @@ function PageParametres() {
           libelle: paramEnCoursModif.libelle,
           ancienne: paramEnCoursModif.ancienne || "Valeur précédente",
           nouvelle: String(paramEnCoursModif.valeur),
-          auteur: user?.name || "Dr Titulaire",
+          auteur: user?.user.name || "Utilisateur connecté",
           date: new Date().toLocaleDateString("fr-FR") + " à " + new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
           motif: motifModif.trim(),
         },

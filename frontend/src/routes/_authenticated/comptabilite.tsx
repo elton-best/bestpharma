@@ -131,50 +131,19 @@ function PageComptabilite() {
   const [odPieceJointe, setOdPieceJointe] = useState<string>("");
 
   // Requêtes API
-  const { data: journalData, isLoading: loadingJournal } = useQuery<{
+  const { data: journalData, isLoading: loadingJournal, isError: erreurJournal } = useQuery<{
     data: { data: EcritureItem[]; total: number };
     balance: BalanceCompte[];
   }>({
     queryKey: ["journal-ventes"],
-    queryFn: () => api.get("/comptabilite/journal-ventes").catch(() => ({
-      data: {
-        data: [
-          { id: "ecr-1", date_piece: "2026-11-06", numero_piece: "VT-2026-0042", numero_compte: "5711", libelle_compte: "Caisse principale", libelle_ecriture: "Vente comptoir reçu normalisé e-MECeF", debit: 34500, credit: 0, journal_code: "VT" },
-          { id: "ecr-2", date_piece: "2026-11-06", numero_piece: "VT-2026-0042", numero_compte: "7011", libelle_compte: "Ventes de médicaments essentiels", libelle_ecriture: "Vente comptoir reçu normalisé e-MECeF", debit: 0, credit: 34500, journal_code: "VT" },
-          { id: "ecr-3", date_piece: "2026-11-05", numero_piece: "AC-2026-0018", numero_compte: "6011", libelle_compte: "Achats médicaments spécialités", libelle_ecriture: "Facture UBIPHARM BL-9921", debit: 450000, credit: 0, journal_code: "AC" },
-          { id: "ecr-4", date_piece: "2026-11-05", numero_piece: "AC-2026-0018", numero_compte: "4011", libelle_compte: "Fournisseurs grossistes répartiteurs", libelle_ecriture: "Facture UBIPHARM BL-9921", debit: 0, credit: 450000, journal_code: "AC" },
-          { id: "ecr-5", date_piece: "2026-11-04", numero_piece: "CA-2026-0031", numero_compte: "5211", libelle_compte: "Banque BOA Bénin", libelle_ecriture: "Versement espèces caisse en banque", debit: 500000, credit: 0, journal_code: "BQ" },
-          { id: "ecr-6", date_piece: "2026-11-04", numero_piece: "CA-2026-0031", numero_compte: "5711", libelle_compte: "Caisse principale", libelle_ecriture: "Versement espèces caisse en banque", debit: 0, credit: 500000, journal_code: "CA" },
-        ],
-        total: 6,
-      },
-      balance: [
-        { numero_compte: "3111", libelle_compte: "Stocks de médicaments", total_debit: 14500000, total_credit: 3200000 },
-        { numero_compte: "4011", libelle_compte: "Fournisseurs locaux", total_debit: 5200000, total_credit: 8900000 },
-        { numero_compte: "4111", libelle_compte: "Clients particuliers & mutuelles", total_debit: 1250000, total_credit: 950000 },
-        { numero_compte: "4431", libelle_compte: "TVA facturée (Groupe B 18%)", total_debit: 0, total_credit: 420000 },
-        { numero_compte: "4452", libelle_compte: "TVA récupérable sur achats", total_debit: 215000, total_credit: 0 },
-        { numero_compte: "5211", libelle_compte: "Banque BOA Bénin", total_debit: 18500000, total_credit: 12400000 },
-        { numero_compte: "5711", libelle_compte: "Caisse principale officine", total_debit: 9450000, total_credit: 8100000 },
-        { numero_compte: "6011", libelle_compte: "Achats de médicaments", total_debit: 12400000, total_credit: 0 },
-        { numero_compte: "7011", libelle_compte: "Ventes de médicaments", total_debit: 0, total_credit: 18950000 },
-      ],
-    })),
+    queryFn: () => api.get<{ data: { data: EcritureItem[]; total: number }; balance: BalanceCompte[] }>("/comptabilite/journal-ventes"),
   });
 
-  const { data: cloturesData } = useQuery<{
+  const { data: cloturesData, isError: erreurClotures } = useQuery<{
     data: { data: ClotureItem[]; total: number };
   }>({
     queryKey: ["clotures-caisse"],
-    queryFn: () => api.get("/comptabilite/clotures").catch(() => ({
-      data: {
-        data: [
-          { id: "clot-1", numero_session: "SESS-2026-11-05-01", fond_caisse_ouverture: 50000, total_encaisse_especes: 485000, total_encaisse_mobile_money: 120000, total_encaisse_carte: 45000, fond_caisse_fermeture_reel: 535000, ecart_caisse: 0, opened_at: "2026-11-05T08:00:00", closed_at: "2026-11-05T21:00:00", caissier: { name: "Amina BELLO" }, notes_cloture: "Clôture conforme" },
-          { id: "clot-2", numero_session: "SESS-2026-11-04-01", fond_caisse_ouverture: 50000, total_encaisse_especes: 520000, total_encaisse_mobile_money: 95000, total_encaisse_carte: 30000, fond_caisse_fermeture_reel: 570000, ecart_caisse: 0, opened_at: "2026-11-04T08:00:00", closed_at: "2026-11-04T21:00:00", caissier: { name: "Amina BELLO" }, notes_cloture: "Conforme" },
-        ],
-        total: 2,
-      },
-    })),
+    queryFn: () => api.get<{ data: { data: ClotureItem[]; total: number } }>("/comptabilite/clotures"),
   });
 
   const ecritures = journalData?.data?.data || [];
@@ -303,6 +272,11 @@ function PageComptabilite() {
 
   return (
     <div className="space-y-6 font-sans">
+      {(erreurJournal || erreurClotures) && (
+        <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          Les données comptables ne peuvent pas toutes être chargées. Les montants affichés peuvent être incomplets ; ne les utilisez pas pour une clôture ou un export.
+        </p>
+      )}
       {/* En-tête BestPharma */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#CFF1D2]/60">
         <div>

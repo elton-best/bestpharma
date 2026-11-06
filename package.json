@@ -8,6 +8,10 @@
     "build": "npm run build --prefix frontend",
     "test": "npm test --prefix frontend",
     "test:backend": "cd backend && php artisan test",
-    "test:all": "npm test --prefix frontend && cd backend && php artisan test"
+    "test:all": "npm test --prefix frontend && cd backend && php artisan test",
+    "inventaire:corpus": "node scripts/inventorier-corpus.mjs"
+  },
+  "engines": {
+    "node": ">=22.12.0 <23"
   }
 }

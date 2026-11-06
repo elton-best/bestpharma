@@ -46,7 +46,7 @@ import { useOfficine } from "@/lib/officine-context";
 import { deconnecter } from "@/lib/session";
 import { fr } from "@/lib/i18n/fr";
 
-type Icon = ComponentType<{ className?: string; size?: number; color?: string; weight?: string }>;
+type Icon = ComponentType<{ className?: string; size?: number; color?: string }>;
 
 interface Leaf {
   to: string;

@@ -865,7 +865,7 @@ function PageStockMagasin() {
       {tab === "produits" && (() => {
         const countsProduits = {
           tous: produits.length,
-          rupture: produits.filter((p) => p.alerte_rupture || p.stock_total <= (p.stock_minimum || 0)).length,
+          rupture: produits.filter((p) => p.alerte_rupture || p.stock_total <= (p.seuil_stock_min || 0)).length,
           thermolabile: produits.filter((p) => p.est_thermolabile).length,
           stupefiant: produits.filter((p) => p.tableau_substance === "stupefiant" || p.tableau_substance === "liste_1" || p.tableau_substance === "liste_2").length,
           taxable: produits.filter((p) => p.groupe_taxation === "B_TAXABLE").length,
@@ -881,7 +881,7 @@ function PageStockMagasin() {
               (p.laboratoire || "").toLowerCase().includes(q);
             if (!match) return false;
           }
-          if (sousSectionProduit === "rupture") return p.alerte_rupture || p.stock_total <= (p.stock_minimum || 0);
+          if (sousSectionProduit === "rupture") return p.alerte_rupture || p.stock_total <= (p.seuil_stock_min || 0);
           if (sousSectionProduit === "thermolabile") return !!p.est_thermolabile;
           if (sousSectionProduit === "stupefiant") return p.tableau_substance === "stupefiant" || p.tableau_substance === "liste_1" || p.tableau_substance === "liste_2";
           if (sousSectionProduit === "taxable") return p.groupe_taxation === "B_TAXABLE";
@@ -1092,7 +1092,7 @@ function PageStockMagasin() {
             {modeAffichageProduits === "cartes" ? (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {produitsAffiches.map((p) => {
-                  const sousSeuil = p.alerte_rupture || p.stock_total <= (p.stock_minimum || 0);
+                  const sousSeuil = p.alerte_rupture || p.stock_total <= (p.seuil_stock_min || 0);
                   return (
                     <div
                       key={p.id}
@@ -1136,7 +1136,7 @@ function PageStockMagasin() {
                         {sousSeuil && (
                           <div className="rounded-xl bg-amber-50 border border-amber-300 p-2 text-amber-900 font-bold text-[11px] flex items-center gap-1.5">
                             <AlertTriangle className="size-3.5 text-amber-700 shrink-0" />
-                            <span>Stock sous le seuil d'alerte ({p.stock_minimum || 5} min)</span>
+                            <span>Stock sous le seuil d'alerte ({p.seuil_stock_min || 5} min)</span>
                           </div>
                         )}
                         {p.prochain_lot_fefo && (

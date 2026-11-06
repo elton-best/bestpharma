@@ -308,7 +308,7 @@ function PageJournal() {
         </div>
 
         <div style="background-color: #F7FBF8; border: 1px solid #CFF1D2; border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 12px;">
-          <p style="margin: 2px 0;"><strong>Officine :</strong> ${courante?.nom_officine ?? "Pharmacie de référence"} (CIP: ${courante?.registre_commerce ?? "BENIN-PHARMA-001"})</p>
+          <p style="margin: 2px 0;"><strong>Officine :</strong> ${courante?.officine.nom ?? "Pharmacie de référence"} (Licence : ${courante?.officine.numero_licence ?? "Non renseignée"})</p>
           <p style="margin: 2px 0;"><strong>Période auditée :</strong> Du ${dateDebutInspecteur} au ${dateFinInspecteur}</p>
           <p style="margin: 2px 0;"><strong>Empreinte Racine SHA-256 (Merkle Root) :</strong> <code style="font-size: 11px; word-break: break-all;">${integrite?.derniere_empreinte_racine ?? "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}</code></p>
           <p style="margin: 2px 0;"><strong>Statut cryptographique :</strong> 100% INTACT · Aucun maillon altéré ni supprimé</p>
@@ -473,9 +473,9 @@ function PageJournal() {
 
       {/* Sélecteur Filtrable déroulant unifié */}
       <SelecteurFiltrable
-        sections={SECTIONS_JOURNAL}
-        sectionCourante={section}
-        onChangerSection={(val) => {
+        options={SECTIONS_JOURNAL}
+        valeur={section}
+        onChange={(val) => {
           setSection(val);
           setPage(1);
         }}
@@ -627,7 +627,7 @@ function PageJournal() {
                     </div>
 
                     <div className="flex items-center gap-1 text-[10px] text-slate-400">
-                      <span>Chaîné avec #{l.id - 1}</span>
+                      <span>Chaînage à vérifier côté serveur</span>
                       <CheckCircle2 className="size-3 text-emerald-600" />
                     </div>
                   </div>
@@ -839,16 +839,12 @@ function PageJournal() {
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
-              <ZoneDepot
-                onFichiersAcceptes={traiterDepotArchive}
-                formatsAcceptes={{
-                  "text/csv": [".csv"],
-                  "application/json": [".json"],
-                  "application/zip": [".zip"],
-                }}
-                textePrincipal="Glissez-déposez l'archive ou l'export à contrôler"
-                texteSecondaire="Fichiers CSV scellés, JSON d'audit ou archives BestPharma"
-              />
+              <label className="grid gap-2 text-sm">
+                Choisir un export à examiner localement
+                <input type="file" accept=".csv,.json,.zip" className="min-h-12" onChange={(e) => {
+                  if (e.target.files) traiterDepotArchive(Array.from(e.target.files));
+                }} />
+              </label>
 
               {resultatScanArchive && (
                 <div className="rounded-[10px] border border-emerald-300 bg-[#F7FBF8] p-4 grid gap-2 text-xs">
@@ -987,7 +983,7 @@ function PageJournal() {
                       Operateur: l.user_email,
                       EmpreinteSHA256: l.empreinte_sha256,
                     })),
-                    `releve_abmed_${courante?.nom_officine ?? "officine"}_${dateDebutInspecteur}_${dateFinInspecteur}`
+                    `releve_abmed_${courante?.officine.nom ?? "officine"}_${dateDebutInspecteur}_${dateFinInspecteur}`
                   );
                   toast.success("Relevé CSV certifié pour l'inspecteur ABMed téléchargé !");
                 }}

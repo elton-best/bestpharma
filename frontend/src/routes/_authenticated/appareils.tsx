@@ -298,7 +298,7 @@ function PageAppareils() {
     const ticketHtml = `
       <div style="font-family: monospace; width: 300px; padding: 10px; font-size: 12px;">
         <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px;">
-          <strong>${courante?.nom_officine ?? "PHARMACIE BESTPHARMA"}</strong><br>
+          <strong>${courante?.officine.nom ?? "PHARMACIE BESTPHARMA"}</strong><br>
           IFU: 0202111245678 · Cotonou, Bénin<br>
           TEST IMPRESSION BILLET E-MECEF
         </div>
@@ -334,7 +334,7 @@ function PageAppareils() {
         </div>
 
         <div style="background-color: #F7FBF8; border: 1px solid #CFF1D2; border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 12px;">
-          <p style="margin: 2px 0;"><strong>Officine :</strong> ${courante?.nom_officine ?? "Pharmacie de référence"} (CIP: ${courante?.registre_commerce ?? "BENIN-PHARMA-001"})</p>
+          <p style="margin: 2px 0;"><strong>Officine :</strong> ${courante?.officine.nom ?? "Pharmacie de référence"} (Licence : ${courante?.officine.numero_licence ?? "Non renseignée"})</p>
           <p style="margin: 2px 0;"><strong>Date d'édition du registre :</strong> ${fmtDate.format(new Date())} (Heure de Porto-Novo)</p>
           <p style="margin: 2px 0;"><strong>Total appareils habilités :</strong> ${appareils.length} terminaux déclarés (${appareils.filter((a) => a.actif).length} en service actif)</p>
           <p style="margin: 2px 0;"><strong>Bornes de pointage H24 :</strong> ${appareils.filter((a) => a.est_borne_pointage).length} bornes supervisées</p>
@@ -478,9 +478,9 @@ function PageAppareils() {
 
       {/* Sélecteur Filtrable déroulant unifié */}
       <SelecteurFiltrable
-        sections={SECTIONS_APPAREILS}
-        sectionCourante={section}
-        onChangerSection={(val) => setSection(val)}
+        options={SECTIONS_APPAREILS}
+        valeur={section}
+        onChange={(val) => setSection(val)}
         placeholder="Choisir une vue de gestion du parc matériel..."
       />
 

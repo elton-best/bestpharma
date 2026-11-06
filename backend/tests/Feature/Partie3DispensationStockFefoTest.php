@@ -107,6 +107,13 @@ class Partie3DispensationStockFefoTest extends TestCase
                 'date_peremption' => Carbon::now()->addYear()->format('Y-m-d'),
                 'quantite' => 50,
                 'fournisseur_nom' => 'CAMEG BÉNIN',
+                'controles_reception' => [
+                    'alerte_sanitaire_verifiee' => true,
+                    'emballage_intact' => true,
+                    'conformite_livraison' => true,
+                    'dates_conformes' => true,
+                    'chaine_froid_respectee' => true,
+                ],
                 'bon_livraison_ref' => 'BL-2026-0044',
             ])->assertStatus(201);
 
@@ -118,8 +125,33 @@ class Partie3DispensationStockFefoTest extends TestCase
                 'date_peremption' => Carbon::now()->addMonths(3)->format('Y-m-d'),
                 'quantite' => 20,
                 'fournisseur_nom' => 'UBIPHARM BÉNIN',
+                'controles_reception' => [
+                    'alerte_sanitaire_verifiee' => true,
+                    'emballage_intact' => true,
+                    'conformite_livraison' => true,
+                    'dates_conformes' => true,
+                    'chaine_froid_respectee' => true,
+                ],
                 'bon_livraison_ref' => 'BL-2026-0055',
             ])->assertStatus(201);
+
+        // Un lot sans contrôles reste en quarantaine, même s'il expire avant les autres.
+        $sansControles = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/stocks', [
+                'produit_id' => $produitId,
+                'numero_lot' => 'LOT-NON-CONTROLE',
+                'bon_livraison_ref' => 'BL-NON-CONTROLE',
+                'date_peremption' => Carbon::now()->addMonth()->format('Y-m-d'),
+                'quantite' => 100,
+                'fournisseur_nom' => 'CAMEG BÉNIN',
+            ]);
+        $sansControles->assertStatus(201);
+        $this->assertDatabaseHas('stocks_lots', [
+            'produit_id' => $produitId,
+            'numero_lot' => 'LOT-NON-CONTROLE',
+            'statut' => 'quarantaine',
+            'statut_detail' => 'en_attente_controle',
+        ]);
 
         // 3. Vérifier que l'API catalogue identifie le lot le plus proche de la péremption (FEFO)
         $catResp = $this->withHeader('Authorization', "Bearer {$token}")
@@ -215,6 +247,13 @@ class Partie3DispensationStockFefoTest extends TestCase
                 'date_peremption' => Carbon::now()->addMonths(18)->format('Y-m-d'),
                 'quantite' => 20,
                 'fournisseur_nom' => 'CAMEG BÉNIN',
+                'controles_reception' => [
+                    'alerte_sanitaire_verifiee' => true,
+                    'emballage_intact' => true,
+                    'conformite_livraison' => true,
+                    'dates_conformes' => true,
+                    'chaine_froid_respectee' => true,
+                ],
                 'bon_livraison_ref' => 'BL-STUP-99',
             ])->assertStatus(201);
 

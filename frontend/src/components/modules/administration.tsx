@@ -15,6 +15,8 @@ export interface LigneJournal {
   new_data: Record<string, unknown> | null;
   ip_address: string | null;
   server_timestamp: string;
+  empreinte_sha256?: string | null;
+  empreinte_precedente?: string | null;
 }
 
 /**

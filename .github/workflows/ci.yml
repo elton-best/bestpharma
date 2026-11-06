@@ -2,7 +2,7 @@ name: CI BEGPHARMA (Backend + Frontend)
 
 on:
   push:
-    branches: [ "main", "master", "sprint-*" ]
+    branches: [ "main", "master", "sprint-*", "arena/**" ]
   pull_request:
     branches: [ "main", "master" ]
 
@@ -75,9 +75,17 @@ jobs:
       - name: Installation des dépendances NPM
         run: |
           cd frontend
-          npm install --legacy-peer-deps
+          npm ci
 
-      - name: Exécution de la suite de tests Vitest (7 tests)
+      - name: Exécution de la suite de tests Vitest
         run: |
           cd frontend
           npm test
+
+      - name: Vérification des types
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Compilation de production
+        working-directory: frontend
+        run: npm run build

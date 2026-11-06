@@ -64,6 +64,7 @@ interface FactureItem {
     client_nom: string;
     client_ifu?: string;
     montant_net_ttc: number;
+    montant_brut_ht?: number;
     mode_reglement: string;
     caissier?: { name: string };
     lignes?: any[];
@@ -116,13 +117,13 @@ function PageFacturation() {
           </tr>
           <tr>
             <td style="padding: 6px;">Vente produits pharmaceutiques</td>
-            <td style="padding: 6px; text-align: right; font-weight: bold;">${nombre(f.vente?.total_ttc ?? 0)} FCFA</td>
+            <td style="padding: 6px; text-align: right; font-weight: bold;">${nombre(f.vente?.montant_net_ttc ?? 0)} FCFA</td>
           </tr>
         </table>
         <div style="border-top: 1px dashed #0F3B27; padding-top: 8px; margin-top: 8px; font-size: 12px;">
           <div style="display: flex; justify-content: space-between;">
             <span>Total HT (Groupe A - 0%) :</span>
-            <strong>${nombre(f.vente?.total_ht ?? f.vente?.total_ttc ?? 0)} FCFA</strong>
+            <strong>${nombre(f.vente?.montant_brut_ht ?? f.vente?.montant_net_ttc ?? 0)} FCFA</strong>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span>Total TVA (0%) :</span>
@@ -130,7 +131,7 @@ function PageFacturation() {
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; color: #0F3B27; margin-top: 4px;">
             <span>TOTAL PAYÉ :</span>
-            <span>${nombre(f.vente?.total_ttc ?? 0)} FCFA</span>
+            <span>${nombre(f.vente?.montant_net_ttc ?? 0)} FCFA</span>
           </div>
         </div>
         <div style="margin-top: 14px; padding: 10px; background: #F7F9F7; border-radius: 6px; font-size: 11px; word-break: break-all;">
@@ -161,7 +162,7 @@ function PageFacturation() {
         ifu: f.ifu_officine,
         ticket: f.vente?.numero_ticket || "N/A",
         client: f.vente?.client_nom || "Client comptoir",
-        total_ttc: f.vente?.total_ttc || 0,
+        montant_net_ttc: f.vente?.montant_net_ttc || 0,
         statut: f.statut,
       })),
       `bestpharma_registre_dgi_${new Date().toISOString().split("T")[0]}`,
@@ -173,7 +174,7 @@ function PageFacturation() {
         { cle: "ifu", label: "IFU Officine" },
         { cle: "ticket", label: "N° Ticket" },
         { cle: "client", label: "Client" },
-        { cle: "total_ttc", label: "Total TTC (FCFA)" },
+        { cle: "montant_net_ttc", label: "Total TTC (FCFA)" },
         { cle: "statut", label: "Statut Fiscale" },
       ]
     );

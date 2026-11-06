@@ -26,6 +26,20 @@ jobs:
       - name: Récupération du code
         uses: actions/checkout@v4
 
+      - name: Configuration Node pour la recette PostgreSQL
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Test réel du chaînage PostgreSQL
+        env:
+          AUDIT_TEST_ADMIN_URL: postgres://postgres:password@127.0.0.1:5432/postgres
+        run: |
+          npm ci
+          npm run test:audit-postgres
+
       - name: Configuration de PHP 8.3
         uses: shivammathur/setup-php@v2
         with:

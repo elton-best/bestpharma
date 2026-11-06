@@ -43,3 +43,6 @@ Stardom_Complete/
 
 # Outils locaux
 frontend/.tanstack/
+
+# Dépendances des outils de recette à la racine
+/node_modules/

@@ -48,3 +48,7 @@ Faire exécuter les tests backend en CI, puis sécuriser les réponses d’audit
 ## Lot de préparation versionnée
 
 Migration et commande `bpd:preparer` ajoutées : instantané en relecture, identité de contenu, import sans doublon et lien nullable depuis les campagnes. Aucun référentiel actif remplacé. Vérificateur pur exécuté avec PHP WebAssembly sur la source et sur quatre cas de refus ; syntaxe des nouveaux fichiers contrôlée. Validation de la migration et du comportement transactionnel PostgreSQL encore attendue en CI.
+
+## Lot audit réel
+
+Chaînage et vérification PostgreSQL implémentés, contrôleur protégé par rôle/officine, écran débarrassé des scellés simulés. Recette SQL exécutée avec succès sur PostgreSQL natif 16.14, y compris insertions concurrentes et altération. Voir `RECETTE-AUDIT.md`. Ne pas confondre cette recette avec un backend Laravel en exploitation : API PHP complète et droits applicatifs encore à valider.

@@ -138,4 +138,14 @@ class Partie1BpdWorkflowTest extends TestCase
         $this->assertTrue($statusAfter->json('pharmacien_present'));
         $this->assertEquals('CONFORME_BPD', $statusAfter->json('statut_reglementaire'));
     }
+    public function test_journal_reserve_aux_responsables_de_lofficine(): void
+    {
+        $url = "/api/officines/{$this->officine->id}/audit-logs/verifier-integrite";
+        $this->actingAs($this->dispensateur)->getJson($url)->assertForbidden();
+        $this->actingAs($this->titulaire)->getJson($url)->assertOk()
+            ->assertJsonStructure(['status', 'integre', 'total_entrees_verifiees', 'message']);
+        $autre = (string) Str::uuid();
+        $this->actingAs($this->titulaire)
+            ->getJson("/api/officines/{$autre}/audit-logs/verifier-integrite")->assertForbidden();
+    }
 }

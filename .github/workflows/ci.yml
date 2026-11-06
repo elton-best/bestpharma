@@ -89,3 +89,16 @@ jobs:
       - name: Compilation de production
         working-directory: frontend
         run: npm run build
+
+  referentiel-source:
+    name: Vérification de l’extraction du guide ABMed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Installer l’outil d’extraction
+        run: pip install -r scripts/requirements-referentiel.txt
+      - name: Vérifier source, numérotation et reproductibilité
+        run: python scripts/extraire-referentiel-abmed.py --check

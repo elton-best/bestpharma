@@ -33,7 +33,7 @@ Aucune déclaration de certification ABMed ne découle de ces travaux.
 ## Bilan du premier contrôle
 
 - Corpus local : **63 fichiers**. `inventaire-corpus.json` contient chemins, tailles, extensions, empreintes SHA-256 et doublons binaires. Il ne prouve ni validation documentaire, ni conformité, ni antériorité.
-- Le PDF officiel des BPD n'est pas dans cette copie du dépôt. Le PDF repéré dans le corpus porte sur les procédures et leurs activités de couverture.
+- Le PDF du guide BPD a été fourni par l’utilisateur et conservé dans `references/abmed/guide-bpdisp.pdf`. Extraction contrôlée des 267 numéros et de leurs segments textuels, avec empreinte et pages sources ; relecture métier et import versionné encore requis. Voir `references/abmed/README.md`.
 - Tests frontend : **23 réussis** ; compilation de production réussie.
 - Vérification des types : **aucune erreur** après correction des contrats de composants, des champs officine/stock/facture et des requêtes comptables. Aucun contournement global du typage.
 - Comptabilité : suppression des écritures et clôtures fictives injectées en cas d’échec API ; message explicite de données incomplètes.
@@ -43,4 +43,4 @@ Aucune déclaration de certification ABMed ne découle de ces travaux.
 
 ## Prochain lot
 
-Faire exécuter les tests backend en CI, puis sécuriser les réponses d’audit et les validations documentaires. Le journal contient encore des calculs de preuve simulés : le succès de la compilation ne vaut pas validation de l’intégrité. L'import du référentiel complet reste conditionné à la remise du guide officiel et à sa relecture métier.
+Faire exécuter les tests backend en CI, puis sécuriser les réponses d’audit et les validations documentaires. Le journal contient encore des calculs de preuve simulés : le succès de la compilation ne vaut pas validation de l’intégrité. L’import du référentiel complet reste conditionné à sa relecture métier et à une stratégie préservant les anciennes cotations.

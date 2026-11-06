@@ -1,0 +1,2433 @@
+{
+  "statut": "extraction_a_relire_non_importee",
+  "source": "references/abmed/guide-bpdisp.pdf",
+  "source_sha256": "24e4c43ba2e4048ba1e0b22f042d9078b2c92df9ddefa3dbe9f145184db8762b",
+  "decision": "ABMED/2025D/1310/ABMed/CJ/DIRP/SA du 26/02/2025",
+  "pages_pdf": 28,
+  "outil": "pypdf 7.0.0",
+  "avertissement": "Segments textuels non validés métier. Les intertitres peuvent être inclus à la fin des segments ; conserver le PDF comme autorité. Aucun article ni score existant n’a été modifié.",
+  "total_articles": 267,
+  "repartition": {
+    "1": 31,
+    "2": 21,
+    "3": 31,
+    "4": 38,
+    "5": 27,
+    "6": 17,
+    "7": 75,
+    "8": 13,
+    "9": 5,
+    "10": 9
+  },
+  "articles": [
+    {
+      "numero": "1.1",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Les missions du pharmacien d ’officine sont celles définies par les règlementations pharma ceutiques nationales en\nvigueur en lien avec le respect de la vie et de la personne humaine, de la gestion du risque médicamenteux et de la\npréservation de son indépendance professionnelle.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.2",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "L’exercice de la profession de pharmacien d’officine est régi par des lois et règlements relatifs aux principes de bonnes\npratiques et aux règles déontologiques applicables.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.3",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Pour la bonne exécution de ses missions et dans le respect des lois et règlements nationaux, le pharmacien d’officine\nmet en place un Système de management de la Qualité (SMQ).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.4",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "L’objectif qualité engage la responsabilité du ou des titulaires de l’officine ainsi que celle de leurs adjoints, assistants\net/ou remplaçants. L’atteinte de cet objectif requiert l’engagement du personnel dans les différentes activités et à tous\nles niveaux de l’entreprise officinale.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.5",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Ce SMQ bénéficie d’une documentation complète.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.6",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "L’officine est dotée d’un Responsable Management Qualité (RMQ) et d’un personnel compétent, en nombre suffisant.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.7",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Les locaux et les équipements sont conformes à leurs usages.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.8",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Le pharmacien veille à ce que ses sous -traitants possèdent un système d’assurance de la qualité, bien conçu,\ncorrectement mis en œuvre.\nGénéralités",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.9",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "La création, l’ouverture et l’exploitation d’une officine pharmaceutique doivent obéir aux lois et règlements nationaux\nen vigueur.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.10",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Tout pharmacien d’officine doit être s ’enregistré auprès de l ’Ordre des pharmaciens , conformément à la\nréglementation nationale et à la Directive n° 06/2008/CM/UEMOA du 26 juin 2008 relative à la libre circulation et à\nl’établissement des pharmaciens ressortissants de l’Union au sein de l’espace de l’UEMOA. Pour exercer sa\nprofession, le pharmacien d’officine (titulaire, gérant, adjoint, assistant ou remplaçant) doit être régulièrement inscrit\nà la section de l’Ordre.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.11",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Une officine de pharmacie ne peut rester ouverte en l’absence d’un pharmacien.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.12",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Le pharmacien exerce personnellement son activité dans le cadre de la santé publique.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.13",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Le nombre obligatoire de pharmaciens dans une officine est lié au chiffre d’affaires annuel de l’officine et/ou à tout\nautre critère, conformément à la réglementation nationale.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.14",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Une officine de pharmacie est tenue de participer aux services de garde et d’urgence.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.15",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Le pharmacien d’officine exerce sa mission dans le respect de la vie et de la personne humaine. Il doit porter secours\nà toute personne en danger immédiat, hors le cas de force majeure.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.16",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Il ne doit pas exposer son patient à un risque lié à des carences en matière de sécurité, de qualité ou d’efficacité.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.17",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Il doit informer le patient sur les risques de son traitement.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.18",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Il veille à préserver la liberté de son jugement professionnel dans l’exercice de sa fonction. Il ne peut aliéner son\nindépendance sous quelque forme que ce soit.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.19",
+      "chapitre": 1,
+      "pages_pdf": [
+        9
+      ],
+      "texte_extrait": "Il a un devoir de confraternité impliquant aide et assistance mutuelle s pour l’accomplissement de ses devoirs\nprofessionnels. En toutes circonstances, il doit faire preuve de loyauté et de solidarité.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.20",
+      "chapitre": 1,
+      "pages_pdf": [
+        10
+      ],
+      "texte_extrait": "Il ne doit pas solliciter la clientèle par des pratiques contraires à la dignité de la profession (acte de concurrence\ndéloyale, compérage, publicité illicite, etc.).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.21",
+      "chapitre": 1,
+      "pages_pdf": [
+        10
+      ],
+      "texte_extrait": "Il veille à entretenir de bons rapports avec les autres professionnels de santé, à respecter leur indépendance\nprofessionnelle et à éviter tout agissement pouvant leur nuire.\nAssurance de la qualité",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.22",
+      "chapitre": 1,
+      "pages_pdf": [
+        10
+      ],
+      "texte_extrait": "L’assurance de la qualité est un large concept qui couvre tout ce qui peut individuellement ou collectivement\ninfluencer la qualité d’un produit et/ou d’un acte.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.23",
+      "chapitre": 1,
+      "pages_pdf": [
+        10
+      ],
+      "texte_extrait": "Elle représente l’ensemble des mesures prises pour s’assurer que les produits et/ou les actes pharmaceutiques réalisés\ndans l’officine de pharmacie sont de la qualité requise.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.24",
+      "chapitre": 1,
+      "pages_pdf": [
+        10
+      ],
+      "texte_extrait": "La mise en application notamment des bonnes pratiques officinales permet le développement de l’assurance de la\nqualité.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.25",
+      "chapitre": 1,
+      "pages_pdf": [
+        10
+      ],
+      "texte_extrait": "Ce système évolutif assure une amélioration continue des pratiques officinales dans un but de santé publique.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.26",
+      "chapitre": 1,
+      "pages_pdf": [
+        10
+      ],
+      "texte_extrait": "L’assurance de la qualité est une démarche d’organisation.  Dans ce but, il convient de décider et d’écrire dans les\ndocuments appropriés :\na) ce que l’on veut faire ;\nb) comment le faire ;\nc) quand le faire ;\nd) qui va le faire ;\ne) les moyens (matériels et humains) à mettre en œuvre ;\nf) comment mesurer les résultats en vue de satisfaire les exigences ;\ng) qui en a la responsabilité.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.27",
+      "chapitre": 1,
+      "pages_pdf": [
+        10
+      ],
+      "texte_extrait": "Pour éviter des dysfonctionnements d’un système, des procédures doivent être mises en place. Elles comportent :\na) l’objet et le domaine d’application d’une activité ;\nb) ce qui doit être fait et qui doit le faire ;\nc) quand, où et comment cela doit être fait ;\nd) quels matériel, équipements et documents doivent être utilisés ;\ne) comment cela doit être maitrisé et enregistré.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.28",
+      "chapitre": 1,
+      "pages_pdf": [
+        10
+      ],
+      "texte_extrait": "La procédure peut être complétée par des instructions de travail détaillant l’action à accomplir.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.29",
+      "chapitre": 1,
+      "pages_pdf": [
+        10
+      ],
+      "texte_extrait": "Le système de management de la qualité nécessite la mise en place d’une procédure d’auto-inspection et/ou d’audit-\ninterne de la qualité qui permet d ’évaluer régulièrement son efficacité et son application.  Des mesures préventives\npréétablies sont rédigées et mises en place.\nBonnes pratiques officinales",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.30",
+      "chapitre": 1,
+      "pages_pdf": [
+        10
+      ],
+      "texte_extrait": "Les bonnes pratiques officinales constituent un des éléments de l’assurance de la qualité . Leur application garantit\nque les actes pharmaceutiques sont réalisés et contrôlés selon les principes de qualité requis dans l’intérêt de chaque\npatient.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "1.31",
+      "chapitre": 1,
+      "pages_pdf": [
+        10,
+        11
+      ],
+      "texte_extrait": "L’exigence de base des bonnes pratiques officinales est d’assurer la sécurité de tout acte pharmaceutique. Pour cela :\na) tous les moyens nécessaires à la mise en œuvre de l’acte pharmaceutique sont réunis y compris :\ni) un personnel qualifié et formé en particulier à la mise en œuvre des procédures ;\nii) des procédures et instructions approuvées, rédigées dans un style approprié avec un vocabulaire clair et sans\nambigüité ;\niii) des locaux conformes ;\niv) un stockage approprié ;\nv) des équipements adéquats ;\nvi) une bibliothèque mise à jour régulièrement.\nf) tout acte pharmaceutique doit être homogène quel que soit le membre de l’équipe officinale qui le réalise.\ng) tous les moyens nécessaires à la mise en œuvre de la  traçabilité de l’acte pharmaceutique sont documentés et\narchivés à travers :\na) des registres officiels ;\nb) des relevés de fonctionnement des équipements ;\nc) des sauvegardes informatiques ;\nd) des informations de retraits, de rappels de lots et les réclamations.\n2. PERSONNEL\nPrincipe",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.1",
+      "chapitre": 2,
+      "pages_pdf": [
+        11
+      ],
+      "texte_extrait": "La mise en place et le maintien d’un système d’assurance de la qualité satisfaisant reposent sur l’ensemble du personnel\nsous la responsabilité d’un pharmacien.\nGénéralités",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.2",
+      "chapitre": 2,
+      "pages_pdf": [
+        11
+      ],
+      "texte_extrait": "L’officine de pharmacie dispose de personnel en nombre suffisant possédant les qualifications nécessaires ainsi qu’une\nexpérience pratique. L’étendue des responsabilités conférées à une seule personne ne doit entraîner aucun risque pour\nla qualité.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.3",
+      "chapitre": 2,
+      "pages_pdf": [
+        11
+      ],
+      "texte_extrait": "Un organigramme de l’officine de pharmacie doit être établi et affiché et les missions et fonctions individuelles\nclairement définies et décrites par écrit. Les fonctions ne peuvent être déléguées qu’à des personnes possédant les\nqualifications adéquates.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.4",
+      "chapitre": 2,
+      "pages_pdf": [
+        11
+      ],
+      "texte_extrait": "Tous les pharmaciens de l’équipe officinale sont inscrits chacun à la section correspondante de l’Ordre des\npharmaciens.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.5",
+      "chapitre": 2,
+      "pages_pdf": [
+        11
+      ],
+      "texte_extrait": "Les conditions de remplacement d’un pharmacien titulaire doivent répondre aux exigences réglementaires nationales.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.6",
+      "chapitre": 2,
+      "pages_pdf": [
+        11
+      ],
+      "texte_extrait": "Le pharmacien titulaire de l’officine de pharmacie demande la présentation de l’original des diplômes et attestations\nde stages des personnes qualifiées. Une copie est archivée.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.7",
+      "chapitre": 2,
+      "pages_pdf": [
+        11
+      ],
+      "texte_extrait": "Le pharmacien titulaire demande aux pharmaciens adjoints, assistants ou remplaçants, la présentation de leur inscription\nà l’Ordre des pharmaciens et de leur enregistrement auprès des services compétents, s’il y a lieu. Une copie est archivée.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.8",
+      "chapitre": 2,
+      "pages_pdf": [
+        11
+      ],
+      "texte_extrait": "Tout le personnel de l’officine de pharmacie reçoit une formation initiale interne et continue adaptée aux activités qui\nleurs sont confiées.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.9",
+      "chapitre": 2,
+      "pages_pdf": [
+        11
+      ],
+      "texte_extrait": "Les produits de santé sont dispensés par les personnes qui possèdent les qualificatio ns nécessaires au regard de la\nlégislation et de la réglementation nationale.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.10",
+      "chapitre": 2,
+      "pages_pdf": [
+        12
+      ],
+      "texte_extrait": "Le pharmacien titulaire d ’une officine doit exercer personnellement sa profession. En toutes circonstances, les\nmédicaments doivent être préparés par un pharmacien, ou sous la surveillance directe d’un pharmacien.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.11",
+      "chapitre": 2,
+      "pages_pdf": [
+        12
+      ],
+      "texte_extrait": "Chaque membre de l’équipe officinale porte l’insigne et/ou un badge professionnel indiquant sa qualification.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.12",
+      "chapitre": 2,
+      "pages_pdf": [
+        12
+      ],
+      "texte_extrait": "Le titulaire réalise un entretien annuel avec chacun des membres de l’équipe officinale pour définir ensemble leurs\nobjectifs et en fixer les moyens.\nChamp d’action du ou des pharmacien(s)",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.13",
+      "chapitre": 2,
+      "pages_pdf": [
+        12
+      ],
+      "texte_extrait": "Dans le cadre des bonnes pratiques officinales et dans le respect des lois et règlements nationaux , l’activité du\npharmacien d’officine s’exerce notamment dans les domaines suivants :\na) la formation et l’information du personnel ;\nb) la connaissance et la mise en application des bonnes pratiques officinales ;\nc) le respect des règles d’hygiène et de sécurité ;\nd) le respect des conditions d’approvisionnement, de stockage et de conservation des produits ;\ne) la surveillance des ventes de certains médicaments paraissant anormales ;\nf) le respect des modalités de dispensation ;\ng) la tenue et l’archivage de la documentation ;\nh) la mise en œuvre des auto-inspections ou audit-internes ;\ni) le bon usage du médicament ;\nj) le suivi thérapeutique des patients ;\nk) la gestion et le suivi de tous les médicaments à délivrance particulière (stupéfiants, psychotropes,\nmédicaments dérivés du sang,….) ;\nl) le respect du circuit de retour des produits rapportés à l’officine , depuis l’arrivée des produits jusqu’à leur\ntransmission à des organismes spécialisés…\nFormation",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.14",
+      "chapitre": 2,
+      "pages_pdf": [
+        12
+      ],
+      "texte_extrait": "La formation s’applique à toutes les catégories de personnel. Elle permet d’assurer et d’entretenir la qualification du\npersonnel pour les tâches qui lui sont attribuées.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.15",
+      "chapitre": 2,
+      "pages_pdf": [
+        12
+      ],
+      "texte_extrait": "En fonction du projet de développement de l ’officine, le(s) pharmacien(s) titulaire(s) analyse (nt) les besoins de\nl’équipe, évalue (nt) les compétences de chacun des membres, tient  (nent) compte de leurs attentes et établit  (ssent)\nun plan de formation. De plus, il(s) s ’assure (nt) que tous les membres de l ’équipe sont formés sur les aspects\nthéoriques et pratiques de l’assurance qualité et des bonnes pratiques officinales.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.16",
+      "chapitre": 2,
+      "pages_pdf": [
+        12
+      ],
+      "texte_extrait": "Une attention toute particulière est portée à la formation initiale du personnel nouvellement recruté ainsi qu ’à la\nformation à donner au personnel affecté à de nouvelles activités.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.17",
+      "chapitre": 2,
+      "pages_pdf": [
+        12
+      ],
+      "texte_extrait": "La formation continue est assurée soit en interne soit en externe. Elle peut être dispensée en présence d’un intervenant\n(membre de l ’officine ou extérieur) et/ou par un moyen électronique (e -learning). Son efficacité est évaluée\npériodiquement.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.18",
+      "chapitre": 2,
+      "pages_pdf": [
+        12
+      ],
+      "texte_extrait": "La formation suivie est enregistrée dans le dossier individuel du personnel. Un compte-rendu sur les points importants\nest diffusé aux autres membres de l’équipe officinale.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.19",
+      "chapitre": 2,
+      "pages_pdf": [
+        12,
+        13
+      ],
+      "texte_extrait": "Les pharmaciens, les préparateurs en pharmacie  et autres auxiliaires en pharmacie ont une obligation de formation\nsous la facilitation de l’Ordre des pharmaciens qui propose un plan  ou parcours professionnel  pluriannuel de\ndéveloppement personnel continu.\nCe parcours professionnel proposé :\na) décrit l ’enchaînement des actions de formation continue, d ’analyse, d ’évaluation et d ’amélioration des\npratiques et de gestion des risques estimées nécessaire par la profession pour le maintien, l’actualisation des\nconnaissances et des compétences et de la maîtrise des risques ;\nb) constitue pour chaque professionnel une recommandation afin de satisfaire à son obligation.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.20",
+      "chapitre": 2,
+      "pages_pdf": [
+        13
+      ],
+      "texte_extrait": "Le pharmacien peut faire valoir les formations organisées par les universités, qu’il aura suivies.\nHygiène du personnel",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "2.21",
+      "chapitre": 2,
+      "pages_pdf": [
+        13
+      ],
+      "texte_extrait": "Des programmes détaillés concernant l’hygiène sont établis et adaptés aux différents besoins de l’ officine de\npharmacie. Ils comportent des procédures relatives à la santé et à l’hygiène du personnel.\n3. DOCUMENTATION\nPrincipe",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.1",
+      "chapitre": 3,
+      "pages_pdf": [
+        13
+      ],
+      "texte_extrait": "De bons documents écrits servant d’information ou de preuve sont un élément essentiel du système d e management\nde la qualité. Ils ont pour objet d’assurer un suivi de l’activité officinale.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.2",
+      "chapitre": 3,
+      "pages_pdf": [
+        13
+      ],
+      "texte_extrait": "Certains documents sont imposés par la réglementation nationale et d’autres suivent les règles définies par l’assurance\nde la qualité.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.3",
+      "chapitre": 3,
+      "pages_pdf": [
+        13
+      ],
+      "texte_extrait": "Le responsable management de la qualité tient à jour un répertoire de la totalité des documents en vigueur.\nDocuments rendus obligatoires par la réglementation",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.4",
+      "chapitre": 3,
+      "pages_pdf": [
+        13
+      ],
+      "texte_extrait": "La délivrance d es médicaments soumis à une réglementation particulière  nécessite une surveillance rigoureuse. A\nchacune des délivrances effectuées, ces médicaments sont  transcrits (inscription manuscrite à l ’encre sur support\npapier) ou enregistrés (document conservé sur support informatique et qui fournit des preuves tangibles des activités\neffectuées) aussitôt sur des documents nommés registres (papier ou informatisé) :\na) registre des préparations magistrales ou officinales,\nb) ordonnancier coté et paraphé par l’autorité compétente ou registre des médicaments relevant des listes I et II et des\nmédicaments classés comme stupéfiants.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.5",
+      "chapitre": 3,
+      "pages_pdf": [
+        13
+      ],
+      "texte_extrait": "La durée de conservation de ces documents est conforme à la réglementation nationale en vigueur. Elle est de dix (10)\nans, le cas échéant.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.6",
+      "chapitre": 3,
+      "pages_pdf": [
+        13
+      ],
+      "texte_extrait": "Pour la surveillance des médicaments dérivés du sang, à chaque délivrance effectuée, ces médicaments sont transcrits\naussitôt sur un document nommé registre, coté et paraphé par l’autorité compétente ou enregistré par tout système\napprouvé par l’autorité compétente.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.7",
+      "chapitre": 3,
+      "pages_pdf": [
+        13
+      ],
+      "texte_extrait": "La durée de conservation de ce registre est conforme à la réglementation nationale en vigueur. Elle est de quarante\n(40) ans, le cas échéant.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.8",
+      "chapitre": 3,
+      "pages_pdf": [
+        13
+      ],
+      "texte_extrait": "La surveillance des mouvements des substances et des médicaments classés comme stupéfiants nécessite une attention\nparticulière. Toute entrée et toute sortie de ces substances et médicaments classés sont inscrites par l a ou l es\npersonne(s) habilité(s) sur un registre coté et paraphé par l’autorité compétente ou enregistrée par un système\ninformatique spécifique approuvé par l’autorité compétente, conçu de sorte qu’aucune  modification des données ne\npuisse être possible après validation de leur enregistrement.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.9",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "La durée de conservation de ces documents est conforme à la réglementation nationale en vigueur. Elle est de dix (10)\nans, le cas échéant.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.10",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Un inventaire avec une balance des entrées et sorties doit être fait conformément à la périodicité définie par la\nréglementation nationale en vigueur et être portée au registre ou éditée. Ces inscriptions sont faites à l ’encre, sans\nblanc, ni surcharge.  Les différences constatées entre la balance et l ’inventaire sont soumises au contrôle des\ninspecteurs.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.11",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Les copies des ordonnances prescrivant des produits comme stupéfiants ou soumis à la réglementation des stupéfiants\ndoivent être conservées suivant les exigences de la réglementation nationale applicable. Le cas échéant, elles sont\nconservées pendant trois (3) ans.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.12",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "L’ensemble des documents rendus obligatoires par la règlementation doit être bien archivé de sorte à pouvoir être mis\nà la disposition des autorités compétentes pendant toute leur durée légale de détention.\nDocuments liés au fonctionnement interne de l’officine",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.13",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Toutes les opérations réalisées à l’officine susceptibles d’avoir un effet sur la qualité de l’activité officinale  doivent\nêtre documentées pour éviter les erreurs inhérentes aux communications verbales.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.14",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Plusieurs types de documents peuvent être utilisés  ; ceux servant au fonctionnement de l ’officine (procédures,\ninstructions, modes opératoires, aides mémoire ou fiches de comptoir…) et ceux servant à enregistrer des données.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.15",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "La réalisation des préparations officinales et magistrales doit se faire conformément aux exigences de bonnes pratiques\ny relatives.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.16",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Les procédures sont gérées par la procédure des procédures ou procédure de maîtrise documentaire qui prévoit leurs\nconditions de création, de modification, de gestion, de diffusion et d’archivage. Les autres documents répondent aux\nmêmes conditions mais leur présentation est fonction de leur utilisation.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.17",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Les documents doivent être lisibles, faciles à utiliser, compréhensibles par tous et conçus d’une façon homogène.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.18",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "La nature, le titre, l’objet, et le domaine d’application sont clairement indiqués.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.19",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Les documents sont soigneusement créés et préparés par les personnes concernées par le sujet.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.20",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Ils comportent la mention des textes réglementaires en vigueur, le cas échéant.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.21",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Tous les documents, y compris ceux modifiés,  sont approuvés, codifiés, datés et signés par le rédacteur et\nl’approbateur.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.22",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Chaque document est réévalué périodiquement  et toute modification d’un texte règlementaire, d’une pratique, d’un\nmatériel entraine obligatoirement une mise à jour du ou des documents pour en donner une nouvelle version.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.23",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Tout document modifié comporte un indice de révision pour identifier les versions.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.24",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Les documents créés sont diffusés sous la responsabilité du RMQ et doivent être aisément accessibles.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.25",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Lors d’une modification de procédure, les anciens exemplaires sont retirés de la circulation et un exemplaire au moins\nest archivé pendant une durée conseillée de 5 ans.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.26",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Les documents sont référencés, classés afin de garantir que, seuls ceux en vigueur sont utilisés.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.27",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Les documents sont archiv és sous la responsabilité du RM Q dans un lieu défini, pendant la durée conseillée de\nconservation.\nDocuments destinés aux patients",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.28",
+      "chapitre": 3,
+      "pages_pdf": [
+        14
+      ],
+      "texte_extrait": "Ces documents sont informatifs, éducatifs, préventifs pour la santé publique et sont basés sur des données confirmées\npar la communauté scientifique.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.29",
+      "chapitre": 3,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Ce sont des documents :\na) générés par l’officine, vérifiés et validés par un pharmacien ;\nb) émis par les instances gouvernementales et professionnelles ;\nc) fournis par les laboratoires pharmaceutiques, grossistes-répartiteurs, sélectionnés et validés par un pharmacien ;\nd) fournis par toutes sources : revues professionnelles, sélectionnés et validés par un pharmacien.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.30",
+      "chapitre": 3,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Ils sont actualisés régulièrement.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "3.31",
+      "chapitre": 3,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Ces documents sont remis aux patients ou mis à leur disposition dans l’officine.\n4. LOCAUX  ET ÉQUIPEMENTS\nPrincipe",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.1",
+      "chapitre": 4,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Les locaux et les équipements sont situés, conçus, construits, adaptés et entretenus de façon à convenir au mieux aux\nactivités à effectuer.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.2",
+      "chapitre": 4,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Leur conception, leur plan, leur agencement et leur utilisation tendent à éliminer les risques d’erreurs. Ils permettent\nla bonne conservation des produits pharmaceutiques et un accueil professionnel de la clientèle.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.3",
+      "chapitre": 4,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Toute modification substantielle des conditions d’installation de l’officine est déclarée à l’ Autorité Nationale de\nRéglementation Pharmaceutique (ANRP) et devra se faire conformément à la réglementation en vigueur.\nLocaux",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.4",
+      "chapitre": 4,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "L’emplacement des locaux d’une officine est fixé par la licence délivrée par l’ANRP.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.5",
+      "chapitre": 4,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Les locaux sont spécifiques, adaptés aux activités qui s ’y exercent et convenablement équipés et tenus. La mise à\ndisposition d’une partie des locaux à des personnes étrangères à l’officine est interdite.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.6",
+      "chapitre": 4,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Les locaux forment un ensemble d’un seul tenant y compris pour ce qui concerne les activités spécialisées  telles la\nvente de médicaments vétérinaires, l ’optique-lunetterie et autres autorisé es par la réglementation nationale. Ils ne\ncommuniquent avec aucun autre local professionnel ou commercial.\nToutefois, des lieux de stockage peuvent se trouver à proximité immédiate à condition qu’ils ne soient pas ouverts au\npublic et ne comportent ni signalisation, ni vitrine extérieure.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.7",
+      "chapitre": 4,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Les locaux de l’officine de pharmacie doivent respecter les obligations de sécurité.\nLorsque des gaz à usage médical, des produits à haute toxicité et des liquides inflammables tels que les alcools y sont\nstockés les mesures de sécurité y afférentes doivent être prises.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.8",
+      "chapitre": 4,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Les locaux exploités par l’officine sont conçus et agencés pour assurer la sécurité des produits pharmaceutiques\nentreposés et permettre un entretien garantissant leur bonne conservation.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.9",
+      "chapitre": 4,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Le volume global des locaux des officines est conforme à la réglementation nationale. Le cas échéant, ce volume doit\nêtre suffisant pour assurer les différentes activités dans de bonnes conditions de sécurité.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.10",
+      "chapitre": 4,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Les locaux comportent un emplacement adapté et réservé à l’exécution et au contrôle des préparations magistrales et\nofficinales.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.11",
+      "chapitre": 4,
+      "pages_pdf": [
+        15
+      ],
+      "texte_extrait": "Les locaux comportent si besoin un emplacement adapté et réservé à chaque activité spécifique (orthopédie, optique\nlunetterie, analyses de biologie médicale…).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.12",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Les locaux comportent un dispositif permettant l’isolement des médicaments et autres produits livrés en dehors des\nheures d’ouverture.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.13",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Les locaux font l’objet d’une signalisation extérieure conforme à la réglementation  en vigueur  (nom du ou  des\npharmaciens propriétaires, qualifications, numéro d’inscription au tableau de l’ordre, adresse, caducée, croix\nverte…).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.14",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Le public doit pouvoir prendre connaissance, à tout moment, soit des noms et adresses des proches confrères ou\npharmacies de garde.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.15",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Les locaux doivent être facilement accessibles à tous les clients, sauf dérogation.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.16",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Des dispositions sont prises pour empêcher la clientèle d’accéder aux médicaments et aux autres produits de santé\nsous monopole pharmaceutique. Toutefois, des médicaments de médication officinale listés peuvent être présentés au\npublic sur présentoir.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.17",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Un espace de confidentialité doit être disponible et clairement identifié.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.18",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "L’éclairage, la température et la ventilation sont appropriés afin de ne pas affecter les produits entreposés. De même,\nle stockage des produits est réalisé à l’abri de la lumière et de l’humidité.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.19",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Les locaux sont conçus, construits et entretenus soigneusement en vue d’éviter le dépôt de poussières ou de saletés et\nla présence de parasites et d’animaux nuisibles.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.20",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Les locaux sont nettoyés selon des procédures écrites et détaillées.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.21",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Les locaux disposent de sanitaires et vestiaires pourvus d’armoires individuelles fermées . Pour les personnes se\nrestaurant sur place, une zone réservée doit être aménagée.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.22",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Les différentes zones de stockage sont de taille suffisante pour permettre un stockage ordonné des différentes\ncatégories de produits entrant dans l’officine.\nÉquipements et matériels",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.23",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Le matériel est qualifié et adapté à l’usage auquel il est destiné.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.24",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Le matériel est maintenu propre, en bon état de fonctionnement et remplacé le cas échéant. Des procédures précisent,\nen fonction du type de matériel, les modalités de fonctionnement, nettoyage, entretien et maintenance.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.25",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Tout appareil de mesure fait l’objet d’étalonnages et de contrôles à intervalles définis attestant l’exactitude des\nindications lues ou enregistrées. Le résultat de ces contrôles est consigné et conservé.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.26",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Tout système informatisé, tels les logiciels d ’aide à la dispensation des médicaments,  est conçu pour répondre aux\nexigences inscrites dans les textes législatifs et déontologiques et aux principes figurant dans ces bonnes pratiques.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.27",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Ce système est validé par l’autorité compétente pour apporter la preuve que son utilisation ne présente pas de risque\npour la santé du patient.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.28",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Les logiciels d’aide à la dispensation des médicaments doivent être certifiés et la liste sera consultable sur le site de\nl’ANRP. Les banques de données (Vidal, Thériaque, Claude Bernard…) doivent être mises à jour régulièrement.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.29",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "La mise à jour du système informatisé est effectuée régulièrement en fonction de l ’apparition de nouveaux textes et\ndes modifications de bonnes pratiques.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.30",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Un contrat est signé entre le pharmacien titulaire et le fournisseur du système informatisé pour définir les conditions\nd’assistance et de maintenance du système.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.31",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Une description écrite et détaillée du système est établie et mise à jour (principes, objectifs, mesures de sécurité…).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.32",
+      "chapitre": 4,
+      "pages_pdf": [
+        16
+      ],
+      "texte_extrait": "Les données générées par l’activité officinale sont introduites ou modifiées par des personnes autorisées. Leur\nprotection est assurée vis-à-vis des risques externes et internes.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.33",
+      "chapitre": 4,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Une procédure écrite détermine les conditions d’autorisation d’accès aux systèmes informatisés. Chaque membre de\nl’équipe officinale bénéficie d’un code d’accès personnel utilisé par lui seul.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.34",
+      "chapitre": 4,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Les données stockées sont protégées contre toute perte ou altération par un système de sauvegarde fiable externe.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.35",
+      "chapitre": 4,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Une sauvegarde est conservée en dehors de l’officine.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.36",
+      "chapitre": 4,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Des mesures de remplacement adéquates à mettre en œuvre en cas de défaillance ou d’arrêt sont prévues.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.37",
+      "chapitre": 4,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "La création et l’exploitation du site internet sont faites conformément à la réglementation en vigueur. Elles ne peuvent\nêtre financées, pour tout ou partie, par une entreprise produisant ou commercialisant des produits de santé mentionnés.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "4.38",
+      "chapitre": 4,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Le commerce électronique des médicaments, s’il est autorisé, doit se faire dans le strict respect de la législation et de\nla réglementation en vigueur.\n5. APPROVISIONNEMENT\nPrincipe",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.1",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "La qualité et la quantité du stock de produits de santé détenu à l’officine permettent de répondre aux besoins de Santé\nPublique. Un stock minimum est prévu pour pouvoir répondre aux exigences d’urgence (douleur, diabète, allergie…).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.2",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Un bon système d’approvisionnement est mis en place pour d’une part, constituer et entretenir ce stock et d’autre part,\nrépondre aux urgences dans les plus brefs délais.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.3",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Les pharmaciens ne peuvent faire dans leur officine le commerce de marchandises au tres que celles figurant sur la\nliste des médicaments et autres produits de santé et ne peuvent vendre aucun remède secret.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.4",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Dans cette liste, sont répertoriés les produits faisant partie du monopole et ceux autorisés à la vente en pharmacie.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.5",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Les pharmaciens veillent à éviter toute entrée de  médicaments et autres produits de santé de qualité inférieure et\nfalsifiés dans leur officine par le choix de leurs fournisseurs.\nPréparation des commandes",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.6",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Les produits de l’officine sont commandés auprès de fournisseurs autorisés par les autorités administratives\ncompétentes.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.7",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Les préparations des commandes sont faites selon la liste des médicaments et produits de santé autorisés, sauf\ndérogation.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.8",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Ces commandes font l’objet d’une édition papier ou informatique pour vérifier leur conformité à la réception.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.9",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Les commandes sont transmises aux fournisseurs et enregistrées par des moyens adaptés.\nRéception des commandes",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.10",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Le pharmacien titulaire doit s’assurer que les médicaments et autres produits de santé reçus sont transportés dans des\nconditions assurant le maintien de leur qualité.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.11",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Si la réception de commandes est effectuée en dehors des heures d’ouverture, un dispositif permettant l’isolement\nsécurisé des médicaments et autres produits de santé livrés est prévu à cet effet.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.12",
+      "chapitre": 5,
+      "pages_pdf": [
+        17
+      ],
+      "texte_extrait": "Les colis livrés sont réceptionnés, vérifiés et stockés en attente de contrôle. Ce stockage répond aux exigences des\nbonnes pratiques y relatives, en particulier pour les médicaments et autres produits de santé soumis à la chaîne du\nfroid, les stupéfiants et les psychotropes, etc.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.13",
+      "chapitre": 5,
+      "pages_pdf": [
+        17,
+        18
+      ],
+      "texte_extrait": "Les médicaments et produits de santé réceptionnés font l’objet des contrôles suivants dans un lieu approprié :\na) recherche et isolement éventuel de produits faisant partie d’alertes sanitaires,\nb) vérification de l’absence de détériorations apparentes,\nc) vérification de la conformité entre les produits commandés et réceptionnés,\nd) vérification des dates de péremption.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.14",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Toute non-conformité constatée (casse, manquant, produit non commandé…) est documentée, enregistrée et fait\nl’objet d’un suivi particulier auprès du fournisseur.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.15",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Les produits non-conformes sont isolés et identifiés dans un endroit défini afin de garantir qu’ils ne puissent pas être\nconfondus avec les produits commercialisables, et qu’ils ne soient pas délivrés.\nStockage",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.16",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "L’organisation du stockage des produits doit permettre une rotation fondée sur le principe «  premier entré – premier\nsorti », en tenant compte de la date de péremption.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.17",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Le stockage à même le sol doit être évité.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.18",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Les conditions particulières de stockage doivent être respectées afin d’éviter tout risque, soit de détérioration par les\nfacteurs environnementaux (lumière, humidité, température) soit de dangerosité (explosion…).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.19",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Les enceintes réfrigérées sont réservées au stockage exclusif des produits pharmaceutiques soumis à la chaîne du\nfroid.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.20",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "La température est contrôlée et enregistrée périodiquement. Ces enregistrements permettent de connaître les écarts.\nIls sont conservés de préférence pendant une durée au moins égale à la durée de vie des produits (5 ans conseillés).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.21",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Les médicaments relevant des listes I et II sont détenus dans un endroit où les personnes étrangères à l’officine n’ont\npas librement accès.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.22",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Les médicaments, les substances, les préparations et les plantes ou parties de plantes placés sous contrôle international\n(stupéfiants, psychotropes et précurseurs chimiques) et national sont détenus dans des armoires ou locaux fermant à\nclef ne contenant rien d’autre.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.23",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Le vol des substances et des médicaments classés comme stupéfiants et les substances psychotropes est déclaré aux\nautorités compétentes (police, gendarmerie, ANRP).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.24",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Les produits en instance de délivrance sont stockés dans des espaces réservés à cet effet en fonction de leurs conditions\nde conservation.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.25",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Les déchets pharmaceutiques sont stockés dans un emplacement réservé à cet effet. Ils sont isolés dans un endroit\nidentifié afin de garantir qu’ils ne puissent pas être confondus avec les produits commercialisables, et qu’ils ne soient\npas délivrés.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.26",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Les produits dont la date de péremption arrive à échéance sont retirés du stock et isolés.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "5.27",
+      "chapitre": 5,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Les emballages à destination du public et les produits destinés à l’entretien de l’officine sont stockés chacun dans des\nemplacements réservés.\n6. SOUS-TRAITANCE\nPrincipe",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.1",
+      "chapitre": 6,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Toute opération réalisée en sous -traitance doit être convenablement précisée, convenue et contrôlée en vue d’éviter\ntout malentendu susceptible de conduire à un service ou un produit de qualité insuffisante.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.2",
+      "chapitre": 6,
+      "pages_pdf": [
+        18
+      ],
+      "texte_extrait": "Un contrat écrit est établi et signé entre le donneur d’ordre et le sous -traitant en vue de fixer clairement les rôles de\nchaque partie dans le respect des bonnes pratiques.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.3",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Les dispositions techniques utilisées sont spécifiées et les responsabilités respectives du donneur d’ordre et du sous -\ntraitant sont précisées.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.4",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Le sous-traitant ne doit pas lui-même sous-traiter tout ou partie du travail confié par contrat par le donneur d’ordre\nsans y avoir été autorisé par écrit par celui-ci.\nDonneur d’ordre",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.5",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Il appartient au donneur d’ordre de veiller à ce que les textes réglementaires et les principes de l’assurance de la qualité\nsoient respectés par le sous-traitant. Ce dernier apporte la preuve des autorisations ou agréments obtenus et fournit la\ngarantie de l’application des bonnes pratiques.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.6",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Le donneur d ’ordre passe commande par des moyens écrits (courrier, télécopie, message électronique …) afin de\nminimiser les risques d’erreur.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.7",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Le donneur d’ordre procure au sous-traitant toute l’information nécessaire à la réalisation correcte des opérations sous\ncontrat et cela en conformité avec les réglementations applicables.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.8",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Le donneur d’ordre s’assure que tous les services, produits et articles qui lui sont fournis répondent bien aux exigences\ndu contrat.\nSous-traitant",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.9",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Le sous-traitant doit répondre aux exigences réglementaires pour l’exercice de son activité et doit être en conformité\navec les bonnes pratiques s’y rapportant.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.10",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Le sous-traitant ne peut refuser un audit diligenté par un donneur d’ordre, y compris en cas d’audit non planifié.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.11",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Le sous-traitant vérifie que tous les services, produits et articles qui lui sont fournis conviennent à leur usage.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.12",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Le sous-traitant doit s ’abstenir de toute activité qui pourrait affecter la qualité des prestations, produits ou articles\nfournis au donneur d’ordre.\nContrat",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.13",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Un contrat doit être établi et signé entre le donneur d’ordre et le sous -traitant, précisant leurs responsabilités\nrespectives dans la fourniture de prestations, produits ou articles.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.14",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Les aspects techniques du contrat sont établis par des personnes compétentes.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.15",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Selon les prestations, produits ou articles fournis en sous-traitance, le contrat définit clairement qui est responsable de\nl’entretien du matériel, de son nettoyage et des opérations de contrôle à réaliser.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.16",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Le contrat précise les conditions dans lesquelles les préparations, produits ou matériel sont transportés et dans certains\ncas, précise les conditions particulières à respecter pendant le transport (sensibilité à la chaleur ou au froid).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "6.17",
+      "chapitre": 6,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "Les données relatives à la traçabilité de toute prestation, produit ou article sous -traité sont conservées en partie ou\ntotalité par le donneur d’ordre. Dans le cas où il n’est pas possible de les conserver en totalité chez le donneur d’ordre,\nceci est clairement spécifié dans le contrat. Dans tous les cas, ces données doivent être immédiatement accessibles.\n7. DISPENSATION\nPrincipe",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.1",
+      "chapitre": 7,
+      "pages_pdf": [
+        19
+      ],
+      "texte_extrait": "La dispensation est l’acte pharmaceutique essentiel parmi les missions liées à l’exercice pharmaceutique officinal.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.2",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "Elle repose sur une confiance réciproque et une bonne communication avec le patient.\nElle doit garantir la sécurité des patients.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.3",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "Une dispensation de qualité vise principalement à :\na) sécuriser la délivrance et donc éviter les erreurs médicamenteuses,\nb) informer sur le bon usage du médicament et donc lutter contre le mésusage,\nc) pratiquer une éducation thérapeutique,\nd) favoriser l’observance des traitements et leur suivi,\ne) prévenir les incidents ou accidents iatrogènes,\nf) mettre ses connaissances au service des patients.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.4",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "Les objectifs de la dispensation peuvent être atteints par :\na) la consultation et l ’alimentation du dossier pharmaceutique avec le consentement du patient  ou de son historique\nthérapeutique ;\nb) les banques de données ;\nc) les questions posées au patient ou à son représentant ;\nd) la coopération avec les autres professionnels de santé,\ne) la consultation de la bibliothèque de la pharmacie,\nf) la consultation d’informations extérieures (centres de vigilances, centres anti-poisons, laboratoires pharmaceutiques…).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.5",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "Le pharmacien ne doit pas inciter à une consommation abusive de médicaments.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.6",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "Il ne peut vendre aucun remède secret ni médicament non autorisé. Il doit contribuer à la lutte contre le charlatanisme.\nAccueil et prise en charge du client",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.7",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "L’accueil est professionnel de sorte à permettre une bonne communication avec le client.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.8",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "La qualification du personnel en contact avec le client doit être identifiable (insignes  et/ou badge d’identification\nprofessionnel).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.9",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "Tout client entrant dans l’officine de pharmacie fait l’objet d’une prise en charge primant sur les autres activités\n(n’incluant pas de risque).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.10",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "Le patient et/ou son mandataire sont identifiés.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.11",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "La confidentialité sonore et visuelle doit être la meilleure possible pour le respect du secret professionnel.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.12",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "Dans le cas où la demande du client  ne peut être satisfaite, le pharmacien d’officine doit l’aider à résoudre son\nproblème.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.13",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "Un contact avec les autres professionnels de santé est pris en cas de besoin.\nDispensation sur prescription",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.14",
+      "chapitre": 7,
+      "pages_pdf": [
+        20
+      ],
+      "texte_extrait": "Le pharmacien doit assurer dans son intégralité l’acte de dispensation de l’ordonnance.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.15",
+      "chapitre": 7,
+      "pages_pdf": [
+        21
+      ],
+      "texte_extrait": "Cet acte réservé aux pharmaciens d’officine en raison de leur compétence scientifique, doit être réalisé en conformité\navec les présentes bonnes pratiques.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.16",
+      "chapitre": 7,
+      "pages_pdf": [
+        21
+      ],
+      "texte_extrait": "Le pharmacien surveille et contrôle l’exécution de la dispensation qui peut être effectuée par les préparateurs  en\npharmacie, les  autres auxiliaires en pharmacie  habilités et les étudiants en pharmacie (sous les conditions\nréglementaires).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.17",
+      "chapitre": 7,
+      "pages_pdf": [
+        21
+      ],
+      "texte_extrait": "Le pharmacien ne peut délivrer un médicament (princeps ou générique) ou produit autre que celui qui a été prescrit\nsans l’accord du prescripteur, sauf en cas d’urgence et dans l’intérêt du patient.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.18",
+      "chapitre": 7,
+      "pages_pdf": [
+        21
+      ],
+      "texte_extrait": "Lorsque l’intérêt de la santé du patient lui paraît l’exiger, le pharmacien doit refuser de dispenser un médicament. Le\nprescripteur doit être informé de son refus dès que possible.\nA. Analyse de la prescription\nAA. Analyse règlementaire",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.19",
+      "chapitre": 7,
+      "pages_pdf": [
+        21
+      ],
+      "texte_extrait": "Le pharmacien doit valider :\na) l’authenticité de la prescription  : l’original de l’ordonnance, recherche d’une falsification du support, d ’une cohérence\nmédicale, recherche éventuelle de l’existence du prescripteur, analyse de l’écriture....\nb) la qualité du prescripteur,\nc) la conformité rédactionnelle (règles communes  aux médicaments de liste  et spécifiques ) et règlementaire (durée de\nprescription, règles spécifiques de délivrance à respecter…).\nAB. Analyse pharmaceutique",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.20",
+      "chapitre": 7,
+      "pages_pdf": [
+        21
+      ],
+      "texte_extrait": "Pour exécuter l’analyse pharmaceutique, le pharmacien doit disposer de certaines informations concernant le patient\net ses traitements en cours, informations qu’il peut recueillir auprès du patient et/ou de son entourage (médical ou non\nmédical).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.21",
+      "chapitre": 7,
+      "pages_pdf": [
+        21
+      ],
+      "texte_extrait": "Le pharmacien peut également les recueillir :\na) dans l’historique du logiciel d’aide à la dispensation, notamment : âge, sexe, poids, taille, traitements en cours, antécédents\nallergiques, contre-indications, état de grossesse ou d’allaitement éventuellement ;\nb) dans le dossier médical personnel : les résultats des analyses biologiques, les états physiopathologiques, les antécédents\npathologiques, le diagnostic établi par le médecin si nécessaire dans le but de détecter d’éventuelles contre-indications,\nc) dans le dossier pharmaceutique  : prise en compte des médicaments délivrés antérieurement et en cours avec ou sans\nprescription médicale.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.22",
+      "chapitre": 7,
+      "pages_pdf": [
+        21
+      ],
+      "texte_extrait": "L’analyse pharmaceutique comporte deux (2) étapes : l’analyse du contenu et celle du contexte.\na) le contenu",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.23",
+      "chapitre": 7,
+      "pages_pdf": [
+        21
+      ],
+      "texte_extrait": "L’objectif thérapeutique est déterminé.\nLes contre-indications, les interactions et les redondances médicamenteuses sont recherchées et étudiées entre les\nmédicaments prescrits et ceux en cours y compris ceux non prescrits dont le pharmacien a connaissance.\nLa posologie, le mode d’administration, la durée du traitement sont vérifiés.\nLa pertinence des rythmes d ’administration est étudiée, les effets indésirables et les précautions d ’emploi sont\nexaminés.\nb) le contexte",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.24",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "Le dossier pharmaceutique et l’historique thérapeutique sont consultés.\nL’état physiopathologique du patient et ses traitements antérieurs et/ou en cours sont pris en compte.\nL’observance du traitement est analysée ; dans le cas d’une mauvaise observance, les causes en sont recherchées avec\nle patient et/ou son entourage.\nSi une interaction est détectée, le pharmacien étudie les éventuelles conséquences cliniques (majoration ou diminution\ndes effets thérapeutiques, effets indésirables). Il recherche les alternatives thérapeutiques (en fonction des\nrecommandations pour la pr atique clinique, du profil du patient, des effets indésirables liés à chaque molécule\nnotamment) pour préparer son contact avec le prescripteur.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.25",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "La synthèse des deux étapes précédentes  de l’analyse pharmaceutique conduit à la décision finale  : de délivrer, de\nsurseoir à la délivrance, de modifier, de refuser.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.26",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "Le pharmacien peut remplacer un médicament par un autre qu’avec l’accord du prescripteur sauf en cas d’urgence et\ndans l’intérêt du patient. Il peut ou doit refuser une délivrance toujours dans l’intérêt du patient.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.27",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "Il est conseillé de rédiger une intervention pharmaceutique pour formaliser l ’analyse pharmaceutique. Elle peut être\nadressée au prescripteur. Elle est archivée.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.28",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "Toute modification ou refus doit être inscrit sur l’ordonnance.\nB. Analyse du renouvellement du traitement",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.29",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "Lors du renouvellement du traitement, le pharmacien vérifie l’observance du traitement, recueille les observations du\npatient et la survenue d’éventuels effets indésirables. Dans ce dernier cas, il doit procéder à une notification à l’autorité\nen charge des vigilances des médicaments et autres produits de santé.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.30",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "Dans le cas où une modification a été apportée à l’ordonnance lors d’une délivrance antérieure, le pharmacien évalue\nles décisions qui ont été prises.\nC. Collecte des médicaments et autres produits de santé",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.31",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "Le pharmacien doit vérifier :\na) la concordance entre médicaments et autres produits de santé collecté(s) et le(s) médicaments et autres produits de santé\nprescrit(s),\nb) la forme pharmaceutique et le dosage,\nc) la date de péremption,\nd) l’intégrité de l’emballage,\ne) le respect des conditions de conservation propres aux médicaments et autres produits de santé.\nD. Enregistrements et registres officiels",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.32",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "Avec le consentement du patient, tout médicament délivré fait l ’objet d ’un enregistrement dans le dossier\npharmaceutique. Dans tous les cas, les médicaments sont enregistrés dans l’historique thérapeutique.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.33",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "Les médicaments délivrés soumis à réglementation particulière sont transcrits ou enregistrés immédiatement sur les\nregistres (papier ou informatisé) les concernant avec les mentions requises.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.34",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "Le pharmacien reporte sur l’original de l’ordonnance et son duplicata les mentions requises par la réglementation en\nparticulier : le timbre de l ’officine, le ou les numéros d ’enregistrement, la date d ’exécution, la ou les quantité(s)\ndélivrée(s).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.35",
+      "chapitre": 7,
+      "pages_pdf": [
+        22
+      ],
+      "texte_extrait": "Dans le cas des médicaments relevant des listes I et II, la posologie prescrite est inscrite dans l’espace réservé.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.36",
+      "chapitre": 7,
+      "pages_pdf": [
+        23
+      ],
+      "texte_extrait": "Dans le cas des stupéfiants, la posologie, le numéro d’ordre, le nom et l’adresse du pharmacien sont inscrits sur chaque\nboîte.\nE. Délivrance et bon usage des médicaments et autres produits de santé",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.37",
+      "chapitre": 7,
+      "pages_pdf": [
+        23
+      ],
+      "texte_extrait": "Le patient est interrogé afin de déterminer s ’il s’agit de l ’initialisation d’un traitement ou de sa poursuite. Dans ce\ndernier cas, des questions lui sont posées concernant le ressenti des symptômes : améliorations apportées et difficultés\nrencontrées, posologies prises. La délivrance peut être adaptée en fonction des réponses.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.38",
+      "chapitre": 7,
+      "pages_pdf": [
+        23
+      ],
+      "texte_extrait": "Des conseils relatifs à chaque médicament et autre produit de santé délivré sont donnés ou rappelés en précisant :\na) l’indication ;\nb) les modalités d’administration : oralement, écrit sur le conditionnement, plan de posologie écrit ;\nc) les modalités d’utilisation (sprays, collyres, dispositifs médicaux…) ;\nd) les précautions d’emploi et les effets secondaires ;\ne) les modalités de conservation ;\nf) la nécessité d’une bonne observance.\nCes conseils s’accompagnent d’un échange d’informations avec le patient ou le client.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.39",
+      "chapitre": 7,
+      "pages_pdf": [
+        23
+      ],
+      "texte_extrait": "Des conseils d’hygiène et de diététique y sont associés et éventuellement, des rappels sont faits sur l’importance des\ncontrôles biologiques.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.40",
+      "chapitre": 7,
+      "pages_pdf": [
+        23
+      ],
+      "texte_extrait": "Il est nécessaire pour le pharmacien d’officine de vérifier la compréhension des explications fournies et tout\nparticulièrement dans le cas d’une substitution.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.41",
+      "chapitre": 7,
+      "pages_pdf": [
+        23
+      ],
+      "texte_extrait": "Des documents écrits peuvent être remis en complément.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.42",
+      "chapitre": 7,
+      "pages_pdf": [
+        23
+      ],
+      "texte_extrait": "Si une erreur de délivrance  est signalée par une personne de l ’équipe officinale ou par un patient, les causes sont\nanalysées afin d’y apporter des mesures préventives et correctives. Une trace écrite est archivée.\nDispensation hors prescription",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.43",
+      "chapitre": 7,
+      "pages_pdf": [
+        23
+      ],
+      "texte_extrait": "Le pharmacien titulaire surveille et contrôle l’exécution de la dispensation qui peut être effectuée par les préparateurs,\nles autres auxiliaires en pharmacie habilités et les étudiants en pharmacie (sous les conditions réglementaires).",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.44",
+      "chapitre": 7,
+      "pages_pdf": [
+        23
+      ],
+      "texte_extrait": "La dispensation hors prescription s’applique à la demande spontanée d’une personne pour :\na) un produit : automédication,\nb) un conseil : médication officinale.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.45",
+      "chapitre": 7,
+      "pages_pdf": [
+        23
+      ],
+      "texte_extrait": "Dans ces deux cas, le pharmacien a un devoir particulier de conseil.\nEn ce qui concerne certains médicaments comme les contraceptifs d’urgence, un entretien confidentiel doit avoir lieu\navec le client.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.46",
+      "chapitre": 7,
+      "pages_pdf": [
+        23
+      ],
+      "texte_extrait": "Il procède à un questionnement pour évaluer le problème de santé spécifique du patient en tenant compte de ses\nantécédents (historique du patient et consultation si possible du dossier pharmaceutique) ce qui lui permet :\na) de pratiquer un conseil,\nb) d’évaluer les risques liés à un usage détourné ou abusif,\nc) de refuser la délivrance,\nd) d’inciter à consulter un praticien qualifié.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.47",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "Si le pharmacien dispense un médicament ou un autre produit de santé, il procure toutes les informations concernant :\na) son action ;\nb) la façon dont il doit être utilisé ;\nc) la posologie ;\nd) la durée du traitement ;\ne) les associations à prendre en compte (historique médicamenteux et si possible dossier pharmaceutique) ;\nf) les effets secondaires éventuels ;\ng) le suivi.\nDes documents écrits peuvent être remis en complément.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.48",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "Toute dispensation d’un médicament fait l’objet, avec le consentement du patient, d’un enregistrement dans le dossier\npharmaceutique et dans la mesure du possible sur l’historique thérapeutique du patient.\nMédicaments directement accessibles au public",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.49",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "Certains médicaments ou autres produits de santé  de médication officinale peuvent être directement accessibles au\npublic à condition d’être présentés dans un espace dédié, clairement identifié et situé à proximité immédiate des postes\nde dispensation des médicaments pour permettre un contrôle effectif du pharmacien titulaire.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.50",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "Les informations émanant des autorités de santé relatives au bon usage de ces médicaments sont mises à la disposition\ndu public.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.51",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "A la remise du produit choisi par le client, le pharmacien  titulaire procède à un questionnement pour savoir s ’il est\npour lui ou pour une autre personne (personne âgée, enfant, nourrisson …), connaître ses éventuels traitements en\ncours- et son état physiopathologique. Il lui procure toutes les informations sur la posologie, le mode d ’emploi, les\neffets secondaires éventuels, contre-indications et interactions concernant le médicament ou autre produit de santé\nchoisi.\nDispensation par voie électronique",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.52",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "Tous les médicaments non soumis à une prescription obligatoire peuvent faire l’objet de commerce électronique selon\ncertaines conditions, conformément à la législation et à la réglementation en vigueur.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.53",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "La dispensation de ces médicaments est soumise au respect des bonnes pratiques de dispensation. Le site internet\nn’étant que le prolongement virtuel d’une pharmacie autorisée et ouverte au public, cette dispensation doit garantir le\nmême niveau de qualité et de sécurité qu’une délivrance à l’officine.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.54",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "L’ouverture et l’exploitation du site internet de l’officine obéit à la réglementation nationale en vigueur.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.55",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "La préparation des commandes obtenues par internet ne peut se faire qu’au sein de l’officine concernée dans un espace\nadapté à cet effet.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.56",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "Le médicament est envoyé par l’officine sous la responsabilité du pharmacien dans un paquet opaque scellé au nom\ndu seul patient et dont la fermeture est telle que le destinataire puisse s’assurer qu’il n’a pas pu être ouvert par un tiers.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.57",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "Le pharmacien veille à ce que les conditions de transport soient compatibles avec la bonne conservation des\nmédicaments, produits ou objets.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.58",
+      "chapitre": 7,
+      "pages_pdf": [
+        24
+      ],
+      "texte_extrait": "Il veille également à ce que toutes explications et recommandations soient mises à la disposition du patient.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.59",
+      "chapitre": 7,
+      "pages_pdf": [
+        24,
+        25
+      ],
+      "texte_extrait": "Le droit de rétractation ne s’exerce pas et doit être spécifié dans le site internet. Les médicaments sont des produits de\nsanté qui, du fait de leur nature, sont susceptibles de se détériorer.\nDispensation et livraison à domicile",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.60",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Quand le patient est dans l’impossibilité de se déplacer, une dispensation à domicile peut être effectuée par le\npharmacien titulaire ou toute autre personne habilitée.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.61",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Cette dispensation est pratiquée avec les mêmes conseils que lors d’une dispensation à l’officine.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.62",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Les médicaments et autres produits de santé  dispensés bénéficient de conditions garantissant leur parfaite\nconservation.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.63",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "La livraison à domicile est effectuée en paquet scellé opaque portant le nom et l’adresse du patient et contenant\nl’ordonnance éventuelle.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.64",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Le pharmacien titulaire veille à ce que toutes explications ou recommandations soient mises à disposition du patient.\nIl veille, de plus, à ce que les conditions de transport soient compatibles avec la bonne conservation des médicaments\net autres produits de santé.\nFourniture et dispensation aux pharmacies à usage intérieur",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.65",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Au sein d ’un établissement hospitalier, le pharmacien d ’officine et toute personne habilitée  peuvent fournir les\nproduits pharmaceutiques soit sur commande écrite soit dans le cadre d ’une convention passée préalablement avec\ncet établissement, dans le respect des listes de médicaments définies à cet effet, par l’autorité compétente.\nVigilances",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.66",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Dans le cadre des vigilances, notamment de la pharmacovigilance, le pharmacien contribue au système de notification\ndes événements indésirables.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.67",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Dès qu’il en a connaissance, le pharmacien notifie tout événement indésirable susceptible d’être imputé à l’utilisation\nd’un médicament ou autre produit de santé délivré, conformément au système de vigilances mis en place par la\nréglementation nationale.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.68",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Si l’effet indésirable est grave ou inattendu le pharmacien titulaire prend contact avec le médecin si nécessaire.\nÉducation, information à la santé et prévention",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.69",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Le pharmacien titulaire doit contribuer à l’information, à l’éducation et à la prévention en matière sanitaire et sociale.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.70",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Il communique des informations sur les pathologies et les produits.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.71",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Il prend en compte les besoins spécifiques de chaque patient, il les écoute attentivement et les accompagne dans un\nprocessus de changement comportemental.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.72",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Il prête son concours aux actions entreprises par les autorités compétentes en vue de la protection de la santé.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.73",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Il met en garde ses patients sur les risques de falsification, de démarchages (par courrier, visites, publicités, internet…).\nIl reste à l’écoute des signalements formulés par ceux-ci.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.74",
+      "chapitre": 7,
+      "pages_pdf": [
+        25
+      ],
+      "texte_extrait": "Il peut vendre des supports d’informations relatifs à la prévention, à l’éducation pour la santé et au bon usage du\nmédicament et des autres produits de santé.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "7.75",
+      "chapitre": 7,
+      "pages_pdf": [
+        25,
+        26
+      ],
+      "texte_extrait": "Il vérifie que toutes les informations sont véridiques, loyales et formulées avec tact et mesure et ne comportent aucune\ndonnée obsolète ou erronée.\n8. GESTION  DES RETOURS/ RECLAMATIONS/RETRAITS/RAPPELS  DE LOTS\nPrincipe",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.1",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Les retours font l’objet d’une mise à l’écart immédiate et spécifique pour éviter toute remise dans le circuit\npharmaceutique.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.2",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Les réclamations, effets indésirables et alertes sanitaires sont traités rapidement par l’officine afin de prévenir tout\nrisque de santé publique.\nProduits retournés",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.3",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Lorsqu’un client rapporte un médicament ou un produit de santé suite à une erreur d’achat, de délivrance ou de\nprescription, le pharmacien doit remédier au problème dans un esprit garantissant la sécurité pharmaceutique.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.4",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Les officines de pharmacie peuvent collecter gratuitement les médicaments partiellement utilisés et ceux non utilisés\ncontenus le cas échéant dans leurs conditionnements apportés par les particuliers qui les détiennent.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.5",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Toute distribution et toute mise à disposition de ces médicaments sont interdites.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.6",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Les médicaments ainsi  collectés sont stockés dans des réceptacles spécifiques dans des conditions définies par la\nréglementation.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.7",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Pour éviter tout risque de remise en circulation par inadvertance, les contenants des produits collectés sont clairement\nidentifiés.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.8",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Les médicaments classés comme stupéfiants sont enregistrés, placés dans les armoires ou locaux de sécurité en attente\nde récupération ou de destruction par l’autorité compétente.\nRéclamations",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.9",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Lorsqu’un client rapporte un produit lui semblant défectueux, le pharmacien doit examiner ce produit et le remplacer\nau besoin.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.10",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "S’il s’agit d’un médicament, d’un produit cosmétique, d’un dispositif médical ou d’un matériel médical présentant un\ndéfaut ou un dysfonctionnement, le pharmacien isole le produit et transmet l’information au fournisseur et\néventuellement aux autorités compétentes.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.11",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Retraits et rappels de lots",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.12",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Dès réception des informations de retraits et rappels de lots, les produits concernés sont isolés, enregistrés et renvoyés\naux grossistes-répartiteurs.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "8.13",
+      "chapitre": 8,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "De plus, en cas de risque sanitaire, il importe d’informer les patients susceptibles de détenir les produits concernés et\nd’en demander le retour à la pharmacie.\n9. DESTRUCTION  DES DECHETS  PHARMACEUTIQUES\nPrincipe",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "9.1",
+      "chapitre": 9,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "La destruction des médicaments et autres produits de santé périmés, altérés, partiellement utilisé, non utilisés répond\nà des normes bien précises.\nProcédure de destruction",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "9.2",
+      "chapitre": 9,
+      "pages_pdf": [
+        26
+      ],
+      "texte_extrait": "Les déchets pharmaceutiques sont répertoriés et stockés à part.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "9.3",
+      "chapitre": 9,
+      "pages_pdf": [
+        27
+      ],
+      "texte_extrait": "Ils doivent être détruits selon la réglementation internationale et nationale en vigueur.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "9.4",
+      "chapitre": 9,
+      "pages_pdf": [
+        27
+      ],
+      "texte_extrait": "La totalité des médicaments et autres produits de santé collectés à partir de particulier et stockés dans des contenants\nspécifiques sont détruits dans les mêmes conditions que les déchets pharmaceutiques produits par l’officine.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "9.5",
+      "chapitre": 9,
+      "pages_pdf": [
+        27
+      ],
+      "texte_extrait": "Les preuves de destruction doivent être conservées et disponibles pour contrôle par les autorités compétentes.\n10. AUTO-INSPECTION /AUDIT-INTERNE\nPrincipe",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "10.1",
+      "chapitre": 10,
+      "pages_pdf": [
+        27
+      ],
+      "texte_extrait": "L’auto-inspection a pour but de déterminer la conformité ou la non -conformité aux présentes bonnes pratiques et de\nproposer éventuellement les mesures préventives et correctives nécessaires.\nModalités",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "10.2",
+      "chapitre": 10,
+      "pages_pdf": [
+        27
+      ],
+      "texte_extrait": "Le champ de l’auto-inspection/ audit-interne s’étend à l’ensemble du système qualité mis en place par l’officine pour\nsatisfaire aux bonnes pratiques officinales.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "10.3",
+      "chapitre": 10,
+      "pages_pdf": [
+        27
+      ],
+      "texte_extrait": "Les auto -inspections/audit-internes sont effectuées à intervalles réguliers, selon un programme préétabli et\néventuellement à la demande.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "10.4",
+      "chapitre": 10,
+      "pages_pdf": [
+        27
+      ],
+      "texte_extrait": "Les audit-internes sont conduits selon les procédures écrites, de façon indépendante et approfondie, par des personnes\ncompétentes de l’officine.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "10.5",
+      "chapitre": 10,
+      "pages_pdf": [
+        27
+      ],
+      "texte_extrait": "Des audits indépendants effectués par des experts externes peuvent également être réalisés.\nEnregistrement",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "10.6",
+      "chapitre": 10,
+      "pages_pdf": [
+        27
+      ],
+      "texte_extrait": "Chaque auto-inspection/audit-interne fait l’objet d’un compte -rendu, reprenant les observations effectuées et\nproposant, s’il y a lieu, des mesures préventives et correctives.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "10.7",
+      "chapitre": 10,
+      "pages_pdf": [
+        27
+      ],
+      "texte_extrait": "L’équipe officinale doit en être informée.",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "10.8",
+      "chapitre": 10,
+      "pages_pdf": [
+        27
+      ],
+      "texte_extrait": "Les mesures préventives et correctives sont mises en œuvre par le pharmacien titulaire et le  responsable du\nmanagement de la qualité.\nSuivi",
+      "statut": "a_relire"
+    },
+    {
+      "numero": "10.9",
+      "chapitre": 10,
+      "pages_pdf": [
+        27,
+        28
+      ],
+      "texte_extrait": "Un suivi des mesures préventives et correctives mises en place est organisé pour vérifier qu’elles sont bien appliquées\net qu’elles donnent des résultats satisfaisants.\nRÉFÉRENCES  BIBLIOGRAPHIQUES\n1. Projet de Guide de Bonnes Pratiques Officinales, DPML, République de Côte d’Ivoire, 2019, 50 pages.\n2. Directive n°  06/2008/CM/UEMOA du 26 juin 2008  relative à la libre circulation et à l’établissement des\npharmaciens ressortissants de l’Union au sein de l’espace UEMOA, 5 pages.\n3. Guide de bonnes pratiques de distribution et d’importation des produits pharmaceutiques à usage humain dans les\nÉtats membres de l’UEMOA 2010, 27 pages.\n4. Guide assurance qualité officinale – Ordre des pharmaciens de France. Edition 1er Trimestre 2022, 33 pages.\n5. Les Bonnes pratiques officinales – Commission Qualité nouvelle Aquitaine pour la Pharmacie d ’Officine\n(CQAPO), Ordre des pharmaciens de France octobre 2013\n https://www.cqapo.fr/gestion-de-la-qualite/1-les-bonnes-pratiques-officinales consulté le 1er mars 2022.\n6. Précis de réglementation applicable à l’officine huitième édition -2012, 113 pages.\n7. Recommandations pour l’aménagement des locaux de l’officine – Ordre des pharmaciens français, 2014, 27 pages.\n8. Accueil pharmaceutique des patients sans ordonnance – Ordre des pharmaciens de France, 2013.\n9. Manuel d’élaboration d’un guide de bonnes pratiques, Agence de la santé et des services sociaux de la Montérégie\nQuébec, Canada, 2015.",
+      "statut": "a_relire"
+    }
+  ]
+}

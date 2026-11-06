@@ -78,7 +78,11 @@ jobs:
       - name: Exécution de la suite de tests automatisés (PHPUnit)
         run: |
           cd backend
-          php artisan test
+          php artisan test --log-junit=storage/logs/tests.xml
+
+      - name: Publier les détails des tests en échec
+        if: failure()
+        run: python3 scripts/rapporter-tests.py
 
   frontend-tests:
     name: Frontend Tests (Vitest)

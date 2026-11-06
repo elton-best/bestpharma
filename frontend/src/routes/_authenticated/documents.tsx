@@ -1,3 +1,4 @@
+import { CanevasCatalogue, ContenuCanevas, lireCanevas, EditionCanevas, htmlCanevas, texteCanevas } from "@/components/modules/canevas-documentaires";
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -298,7 +299,7 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
                       <strong>Statut :</strong> ${docActif.statut.toUpperCase()}<br>
                       <strong>Date de révision :</strong> ${new Date(docActif.updated_at).toLocaleDateString()}
                     </div>
-                    <div style="white-space: pre-wrap; font-size: 13px; line-height: 1.7; background: #fafafa; border: 1px solid #eee; padding: 20px; border-radius: 8px;">${docActif.contenu}</div>
+                    <div style="white-space: pre-wrap; font-size: 13px; line-height: 1.7; background: #fafafa; border: 1px solid #eee; padding: 20px; border-radius: 8px;">${htmlCanevas(docActif.contenu)}</div>
                   `
                 );
               }}
@@ -308,7 +309,7 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
             </Button>
             <Button
               variant="outline"
-              onClick={() => telechargerTexte(docActif.contenu, `${docActif.code_document || "document"}_v${docActif.version}.txt`)}
+              onClick={() => telechargerTexte(texteCanevas(docActif.contenu), `${docActif.code_document || "document"}_v${docActif.version}.txt`)}
               className="border-[#CFF1D2] text-[#0F3B27] gap-1.5 text-xs font-semibold rounded-[10px]"
             >
               <Download className="size-3.5" /> Télécharger TXT
@@ -344,12 +345,15 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
           </div>
         </div>
 
+        {id && docActif.statut === "brouillon" && aRole("promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq") && <EditionCanevas key={docActif.id + docActif.updated_at} contenu={docActif.contenu} officine={id} document={docActif.id} empreinte={docActif.empreinte_contenu} actualiser={async () => {
+          setDocActif(await api.get<DocumentBpd>(`/officines/${id}/documents/${docActif.id}`)); await qc.invalidateQueries({ queryKey: ["documents"] });
+        }} />}
         {/* CONTENU PRINCIPAL DU DOCUMENT */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3 space-y-4">
             <Card className="rounded-[10px] border border-[#CFF1D2] bg-white p-6 shadow-sm">
               <div className="text-xs leading-relaxed text-[#0F3B27] whitespace-pre-wrap font-sans">
-                {docActif.contenu}
+                {lireCanevas(docActif.contenu) ? <ContenuCanevas canevas={lireCanevas(docActif.contenu)!.canevas} valeurs={lireCanevas(docActif.contenu)!.valeurs} /> : docActif.contenu}
               </div>
             </Card>
           </div>
@@ -396,10 +400,12 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
         {id && qualification && <QualificationDocument key={docActif.id} officine={id} fiche={docActif} fermer={() => setQualification(false)}
           actualiser={async () => { setDocActif(await api.get<DocumentBpd>(`/officines/${id}/documents/${docActif.id}`)); await qc.invalidateQueries({ queryKey: ["documents"] }); }} />}
 
+        <details className="rounded-xl border p-4"><summary className="cursor-pointer font-bold">Pièces jointes et validations</summary>
         {id && <FichiersDocumentaires officine={id} document={docActif.id} version={docActif.version} indice={docActif.indice_revision} statut={docActif.statut}
           actualiser={async () => { const fiche = await api.get<DocumentBpd>(`/officines/${id}/documents/${docActif.id}`); setDocActif(fiche); }} />}
 
         {id && <HistoriqueApprobations officine={id} document={docActif.id} />}
+        </details>
 
         {/* MODALE SIGNATURE CODE PIN SI APPROBATION */}
         <ApprobationDocument
@@ -547,6 +553,7 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
 
   return (
     <div className="grid gap-6">
+      {id && <CanevasCatalogue key={id} officine={id} filtre="procedures" creer={aRole("promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq")} />}
       {/* HEADER HERO */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
         <div>
@@ -713,7 +720,7 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
                     </h3>
 
                     <p className="text-xs text-muted-foreground line-clamp-3 bg-[#F7F9F7] p-2.5 rounded-xl border border-[#CFF1D2] leading-relaxed">
-                      {d.contenu || "— Aucun contenu saisi —"}
+                      {texteCanevas(d.contenu || "") || "— Aucun contenu saisi —"}
                     </p>
                   </div>
 

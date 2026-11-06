@@ -40,7 +40,7 @@ describe("fichiers documentaires privés", () => {
   it("ne présente pas une panne comme un historique vide", async () => {
     vi.spyOn(api, "get").mockRejectedValue(new Error("Indisponible"));
     afficher();
-    expect(await screen.findByRole("alert")).toHaveTextContent("L’historique des fichiers n’est pas accessible.");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Les pièces jointes ne sont pas disponibles pour le moment.");
     expect(screen.queryByText("Aucun fichier conservé pour cette fiche.")).not.toBeInTheDocument();
   });
 });

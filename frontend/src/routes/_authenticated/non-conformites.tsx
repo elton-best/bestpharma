@@ -1,3 +1,4 @@
+import { CanevasCatalogue } from "@/components/modules/canevas-documentaires";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -485,6 +486,7 @@ function PageNonConformites() {
 
   return (
     <div className="grid gap-6">
+      {id && <CanevasCatalogue key={id} officine={id} filtre="qualite" creer={aRole("promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq")} />}
       {/* HEADER HERO */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-[10px] border border-[#CFF1D2] shadow-sm">
         <div>

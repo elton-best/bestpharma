@@ -15,6 +15,7 @@ class CampagneAutoEvaluation extends Model
 
     protected $fillable = [
         'officine_id',
+        'referentiel_version_id',
         'titre',
         'annee',
         'date_debut',

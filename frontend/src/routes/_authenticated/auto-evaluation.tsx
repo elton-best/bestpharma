@@ -65,7 +65,7 @@ export const Route = createFileRoute("/_authenticated/auto-evaluation")({
 });
 
 function PageAutoEvaluation() {
-  const { courante } = useOfficine();
+  const { courante, aRole } = useOfficine();
   const queryClient = useQueryClient();
   const id = courante?.officine_id;
 
@@ -229,6 +229,16 @@ function PageAutoEvaluation() {
 
   return (
     <div className="grid gap-6">
+      {campagneData?.referentiel_complet === false && aRole("promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq") && <section className="grid gap-3 rounded-xl border p-4">
+        <p>Cette campagne utilise l’ancienne grille. Une nouvelle grille complète peut être ouverte ; les notes et les actions de l’ancienne campagne resteront conservées séparément.</p>
+        <Button className="min-h-12 justify-self-start" disabled={enCours} onClick={async () => {
+          setEnCours(true);
+          try { await api.post(`/officines/${id}/auto-evaluation/nouvelle-complete`); await refetch(); }
+          catch (e) { toast.error(e instanceof Error ? e.message : "Ouverture impossible."); }
+          finally { setEnCours(false); }
+        }}>Commencer une grille complète sans reprendre les notes</Button>
+      </section>}
+      {campagneData?.texte_a_relire && <p className="text-xs text-muted-foreground">Texte extrait du guide fourni, à relire avec le document source lors de l’évaluation.</p>}
       {/* HEADER & SCORE DE CONFORMITÉ GLOBAL */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -236,9 +246,7 @@ function PageAutoEvaluation() {
             <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
               Auto-évaluation Qualité BPD
             </h1>
-            <Badge variant="outline" className="border-primary/40 text-primary bg-primary/5">
-              Guide ABMed · 267 Articles
-            </Badge>
+
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
             Cotation en direct, génération d'actions CAPA et rapport d'auto-inspection pour l'autorité de santé.
@@ -420,7 +428,7 @@ function PageAutoEvaluation() {
               options={[
                 {
                   valeur: "tous",
-                  libelle: `Tous les 10 chapitres (${campagne?.total_articles ?? 267} articles)`,
+                  libelle: "Tous les chapitres",
                   description: "Afficher l'ensemble de la grille d'évaluation officielle du Guide BPD ABMed.",
                   icone: <Award className="size-4 text-[#0F3B27]" />,
                   motsCles: ["tous", "complet", "grille", "global", "267"],

@@ -53,7 +53,7 @@ export function HistoriqueApprobations({ officine, document }: { officine: strin
   const requete = useQuery({ queryKey: ["approbations-document", officine, document],
     queryFn: () => api.get<Approbation[]>(`/officines/${officine}/documents/${document}/approbations`) });
   if (requete.isLoading) return <p role="status">Chargement des approbations…</p>;
-  if (requete.isError) return <p role="alert">L’historique des approbations ne peut pas être vérifié.</p>;
+  if (requete.isError) return <p role="alert">Les validations ne sont pas disponibles pour le moment.</p>;
   return <section className="grid gap-3 rounded-xl border p-4"><h2 className="font-bold">Approbations enregistrées</h2>
     {!requete.data?.length && <p className="text-sm">Aucune approbation vérifiable enregistrée. Un ancien statut approuvé ne constitue pas une preuve de signature.</p>}
     {requete.data?.map(a => <article key={a.id} className="grid gap-1 text-sm">

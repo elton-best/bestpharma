@@ -1,3 +1,4 @@
+import { PageCatalogueCanevas } from "@/components/modules/canevas-documentaires";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -56,7 +57,7 @@ export const Route = createFileRoute("/_authenticated/modeles")({
       },
     ],
   }),
-  component: PageModeles,
+  component: PageCatalogueCanevas,
 });
 
 interface ModeleBpd {

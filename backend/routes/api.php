@@ -90,6 +90,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // PARTIE 1 : MODULE BPD SOCLE (LOT 1.1)
     // ==========================================
 
+    Route::get('/officines/{officineId}/canevas', [\App\Http\Controllers\Api\CanevasController::class, 'index']);
+    Route::get('/officines/{officineId}/canevas/{id}', [\App\Http\Controllers\Api\CanevasController::class, 'show']);
+    Route::post('/officines/{officineId}/canevas/{id}/documents', [\App\Http\Controllers\Api\CanevasController::class, 'store']);
     Route::get('/officines/{officineId}/suivis-documentaires/{type}/definition', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'definition']);
     Route::get('/officines/{officineId}/suivis-documentaires/{type}', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'index']);
     Route::post('/officines/{officineId}/suivis-documentaires/{type}', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'store']);
@@ -157,6 +160,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/officines/{officineId}/nettoyages', [NettoyageController::class, 'store']);
 
     // Auto-évaluation & Audit Interne 267 articles (BPD-10 & 4.0.1)
+    Route::post('/officines/{officineId}/auto-evaluation/nouvelle-complete', [AutoEvaluationController::class, 'nouvelleComplete']);
     Route::get('/officines/{officineId}/auto-evaluation/campagne-courante', [AutoEvaluationController::class, 'campagneCourante']);
     Route::put('/officines/{officineId}/auto-evaluation/evaluer/{evaluationId}', [AutoEvaluationController::class, 'evaluerArticle']);
     Route::post('/officines/{officineId}/auto-evaluation/generer-capa/{evaluationId}', [AutoEvaluationController::class, 'genererCapa']);

@@ -48,9 +48,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error("Route error:", error);
 
-  const messageErreur =
-    (error as any)?.message ||
-    (typeof error === "string" ? error : "Une erreur inattendue est survenue.");
 
   return (
     <div className="min-h-screen bg-[#F7F9F7] flex items-center justify-center p-4 font-sans">
@@ -58,23 +55,19 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
         <div className="size-10 mx-auto rounded-2xl bg-[#0F3B27] text-[#92FF5F] flex items-center justify-center font-display font-black text-xl mb-4 shadow-sm">
           +
         </div>
-        <h2 className="text-xl font-bold font-display text-[#0F3B27]">Accès à l'Officine</h2>
+        <h2 className="text-xl font-bold font-display text-[#0F3B27]">Cette rubrique ne peut pas être affichée</h2>
         <p className="mt-2 text-xs text-[#475C50] leading-relaxed">
-          {messageErreur}
+          Vos données de session sont conservées. Vous pouvez réessayer ou ouvrir une autre rubrique.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             type="button"
             onClick={() => {
-              if (typeof window !== "undefined") {
-                localStorage.removeItem("begpharma.token");
-                localStorage.removeItem("begpharma.user");
-                window.location.replace("/auth");
-              }
+              if (typeof window !== "undefined") window.location.assign("/app");
             }}
             className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0F3B27] hover:bg-[#164E35] text-[#92FF5F] font-bold text-xs transition-all shadow-sm"
           >
-            Se reconnecter
+            Tableau de bord
           </button>
           <button
             type="button"
@@ -90,6 +83,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  ssr: false,
   head: () => ({
     meta: [
       { charSet: "utf-8" },

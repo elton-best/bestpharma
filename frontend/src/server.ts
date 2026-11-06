@@ -13,7 +13,10 @@ async function getServerEntry(): Promise<ServerEntry> {
   if (!serverEntryPromise) {
     serverEntryPromise = import("@tanstack/react-start/server-entry").then(
       (m) => (m.default ?? m) as ServerEntry,
-    );
+    ).catch(error => {
+      serverEntryPromise = undefined; // une erreur de chargement ne condamne pas les requêtes suivantes
+      throw error;
+    });
   }
   return serverEntryPromise;
 }

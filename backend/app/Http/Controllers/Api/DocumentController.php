@@ -110,6 +110,7 @@ class DocumentController extends Controller
             'processus' => 'sometimes|string|max:20',
             'statut' => 'sometimes|in:brouillon,a_valider,valide,retire',
             'motif_refus' => 'sometimes|nullable|string',
+            'empreinte_edition' => 'sometimes|required|regex:/^[a-f0-9]{64}$/',
             'password' => $valider ? 'required|string|max:1024' : 'prohibited',
             'empreinte_attendue' => $valider ? 'required|regex:/^[a-f0-9]{64}$/' : 'prohibited',
             'intention' => $valider ? 'required|in:approbation_documentaire' : 'prohibited',
@@ -132,6 +133,11 @@ class DocumentController extends Controller
             ]));
             $doc->fichiers = app(FichiersDocumentService::class)->manifeste($doc);
             $empreintes = app(EmpreinteDocumentService::class);
+            if (isset($validated['empreinte_edition'])) {
+                abort_unless(hash_equals($empreintes->empreinte($doc), $validated['empreinte_edition']), 409,
+                    'Ce document a changé. Rechargez-le avant de reprendre les modifications.');
+            }
+
             if ($doc->type_doc === 'piece_source' && (isset($fields['code_document']) || isset($fields['type_doc']))) {
                 abort_unless(in_array($role, ['promoteur', 'pharmacien_titulaire', 'rmq'], true), 403, 'Qualification documentaire réservée aux responsables habilités.');
             }

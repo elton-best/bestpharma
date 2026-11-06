@@ -131,4 +131,5 @@ jobs:
           pip install -r scripts/requirements-corpus.txt
           python scripts/rapprocher-corpus.py --check
           python scripts/preparer-import-corpus.py --check
+          python scripts/extraire-canevas.py --check
           python -m unittest discover -s scripts/tests

@@ -1,8 +1,10 @@
 import http from "http";
 import { readFileSync } from "node:fs";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
 const CATALOGUE_SUIVIS = JSON.parse(readFileSync(new URL("./mock-data/catalogue-suivis.json", import.meta.url), "utf8"));
 const SUIVIS_DOCUMENTAIRES = [];
+const CANEVAS = JSON.parse(readFileSync(new URL("./references/canevas/catalogue.json", import.meta.url), "utf8")).canevas;
+const empreinteDocumentDemo = d => createHash("sha256").update(JSON.stringify([d.contenu, d.updated_at, d.statut])).digest("hex");
 
 const PORT = 8001;
 
@@ -280,28 +282,25 @@ const NON_CONFORMITES = [
   { id: "nc3", numero_nc: "NC-2026-0009", titre: "Registre de nettoyage non visé", description: null, gravite: "critique", processus: "5.20", source: "audit_interne", statut: "cloturee", action_immediate: "Visa du pharmacien rattrapé le jour même", action_preventive: "Rappel du circuit de visa à l'agent d'entretien", analyse_causes_5m: "Absence du pharmacien lors du pointage du soir", responsable_action: "Dr. Marcelle HOUNNOU", date_echeance_capa: "2026-10-30", date_creation: "2026-10-27T19:00:00Z" },
 ];
 
-const CHAPITRES_BPD = [
-  { numero: 1, libelle: "Personnel", total: 3, conformes: 3, ecarts_mineurs: 0, ecarts_majeurs: 0, non_applicables: 0 },
-  { numero: 5, libelle: "Locaux, matériel et stockage", total: 6, conformes: 4, ecarts_mineurs: 1, ecarts_majeurs: 1, non_applicables: 0 },
-  { numero: 6, libelle: "Documentation", total: 4, conformes: 3, ecarts_mineurs: 1, ecarts_majeurs: 0, non_applicables: 0 },
-  { numero: 9, libelle: "Vigilances et rapports", total: 3, conformes: 2, ecarts_mineurs: 0, ecarts_majeurs: 0, non_applicables: 1 },
-];
-
-const AUTO_EVALUATION = {
-  campagne: { id: "camp1", reference: "AUTO-2026-01", libelle: "Auto-inspection annuelle", statut: "en_cours", ouverte_le: "2026-10-15", score_global: 76.5 },
-  evaluations: [
-    { id: "ev1", article_numero: "1.1", article_libelle: "Personnel qualifié et formé", chapitre: 1, cotation: "conforme", preuve: "Attestations de formation 2026", commentaire: "Dossier complet" },
-    { id: "ev2", article_numero: "1.11", article_libelle: "Présence pharmaceutique continue", chapitre: 1, cotation: "conforme", preuve: "Registre de pointage", commentaire: null },
-    { id: "ev3", article_numero: "5.12", article_libelle: "Gestion FEFO des lots", chapitre: 5, cotation: "ecart_mineur", preuve: "Étiquette illisible en réserve", commentaire: "À revoir au prochain rangement" },
-    { id: "ev4", article_numero: "5.20", article_libelle: "Chaîne du froid du réfrigérateur", chapitre: 5, cotation: "ecart_majeur", preuve: "Relevé du soir à 9,6 °C", commentaire: "Action corrective en cours" },
-    { id: "ev5", article_numero: "6.2", article_libelle: "Documents approuvés et datés", chapitre: 6, cotation: "conforme", preuve: "Procédures visées", commentaire: null },
-    { id: "ev6", article_numero: "9.3", article_libelle: "Traçabilité des rappels de lots", chapitre: 9, cotation: "non_applicable", preuve: null, commentaire: "Aucun rappel en 2026" },
-    { id: "ev7", article_numero: "5.4", article_libelle: "Étalonnage des équipements de mesure", chapitre: 5, cotation: "conforme", preuve: "Certificats d'étalonnage", commentaire: null },
-    { id: "ev8", article_numero: "6.4", article_libelle: "Archivage des registres", chapitre: 6, cotation: "non_evalue", preuve: null, commentaire: null },
-  ],
-  statistiques: { score_global: 76.5, total_articles: 8, conformes: 5, ecarts_mineurs: 1, ecarts_majeurs: 1, non_applicables: 1, non_evalues: 0 },
-  synthese_chapitres: CHAPITRES_BPD,
-};
+const GUIDE_COMPLET = JSON.parse(readFileSync(new URL("./references/abmed/extraction/articles-a-relire.json", import.meta.url), "utf8"));
+const TITRES_CHAPITRES = ["Système de management de la qualité", "Personnel", "Documentation", "Locaux et équipements", "Approvisionnement", "Sous-traitance", "Dispensation", "Gestion des retours, réclamations, retraits et rappels de lots", "Destruction des déchets pharmaceutiques", "Auto-inspection et audit interne"];
+const PROCESSUS_CHAPITRES = ["TAM", "GAR", "QAM", "GAR", "GAC", "TAM", "GAD", "GAD", "GAC", "QAM"];
+const CHAPITRES_BPD = TITRES_CHAPITRES.map((titre, i) => ({ numero: i + 1, titre, processus: PROCESSUS_CHAPITRES[i], total_articles: GUIDE_COMPLET.repartition[i + 1] }));
+function nouvelleGrilleComplete(officine) {
+  const evaluations = GUIDE_COMPLET.articles.map((a, i) => ({ id: `ev${i + 1}`, article_numero: a.numero, article_libelle: a.texte_extrait,
+    chapitre_numero: a.chapitre, chapitre_titre: TITRES_CHAPITRES[a.chapitre - 1], processus: PROCESSUS_CHAPITRES[a.chapitre - 1],
+    cotation: "non_evalue", preuve: null, commentaire: null, non_conformite: null }));
+  return { mode_demo: true, referentiel_complet: true, texte_a_relire: true, campagne: { id: "ae-" + officine, titre: "Auto-évaluation complète", annee: 2026, statut: "en_cours", score_global: 0, date_debut: "2026-11-06" }, evaluations, statistiques: {}, synthese_chapitres: [] };
+}
+function recalculerGrille(grille) {
+  const e = grille.evaluations;
+  const count = (c, list = e) => list.filter(a => a.cotation === c).length;
+  const score = list => { const applicables = list.filter(a => !["non_evalue", "non_applicable"].includes(a.cotation)); return applicables.length ? Math.round((count("conforme", applicables) + count("ecart_mineur", applicables) * .5) / applicables.length * 1000) / 10 : 0; };
+  grille.statistiques = { total_articles: e.length, score_global: score(e), total_conformes: count("conforme"), total_ecarts_mineurs: count("ecart_mineur"), total_ecarts_majeurs: count("ecart_majeur"), total_non_applicables: count("non_applicable"), total_non_evalues: count("non_evalue") };
+  grille.campagne.score_global = score(e);
+  grille.synthese_chapitres = CHAPITRES_BPD.map(ch => { const list = e.filter(a => a.chapitre_numero === ch.numero); return { ...ch, evalues: list.filter(a => a.cotation !== "non_evalue").length, conformes: count("conforme", list), ecarts_mineurs: count("ecart_mineur", list), ecarts_majeurs: count("ecart_majeur", list), score_chapitre: score(list) }; });
+}
+const GRILLES_COMPLETES = new Map();
 
 const MODELES_BPD = [
   { id: "mod1", code_document: "BPD10-F01", titre: "Fiche de fonction du pharmacien titulaire", type_document: "procédure", categorie: "personnel", processus: "01", indice_revision: "02", redacteur_nom: "Dr. Anicet ANIAMBOSSOU", contenu: null },
@@ -419,8 +418,48 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   const path = url.pathname;
   const method = req.method;
+  const officineEvaluation = path.match(/^\/api\/officines\/([^/]+)\/auto-evaluation\//)?.[1];
+  let AUTO_EVALUATION;
+  if (officineEvaluation) {
+    const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+    const utilisateur = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
+    if (!utilisateur) return sendJson(res, 401, { message: "Connexion requise." });
+    if (!utilisateur.officines.includes(officineEvaluation)) return sendJson(res, 403, { message: "Officine non autorisée." });
+    if (method !== "GET" && !["promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq"].includes(utilisateur.role)) return sendJson(res, 403, { message: "Modification réservée aux responsables habilités." });
+    if (!GRILLES_COMPLETES.has(officineEvaluation)) GRILLES_COMPLETES.set(officineEvaluation, nouvelleGrilleComplete(officineEvaluation));
+    AUTO_EVALUATION = GRILLES_COMPLETES.get(officineEvaluation);
+    recalculerGrille(AUTO_EVALUATION);
+    if (path.endsWith("/nouvelle-complete") && method === "POST") return sendJson(res, 201, { id: AUTO_EVALUATION.campagne.id });
+  }
+
   console.log(`[MOCK] ${method} ${path}`);
 
+  {
+    const m = path.match(/^\/api\/officines\/([^/]+)\/canevas(?:\/([a-f0-9]+)(\/documents)?)?$/);
+    if (m) {
+      const token = (req.headers.authorization || "").replace(/^Bearer /, "");
+      const u = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
+      if (!u) return sendJson(res, 401, { message: "Connexion requise." });
+      if (!u.officines.includes(m[1])) return sendJson(res, 403, { message: "Officine non autorisée." });
+      if (!m[2] && method === "GET") return sendJson(res, 200, CANEVAS.map(({ id, titre, rubrique, fichier, sha256 }) => ({ id, titre, rubrique, fichier, sha256 })));
+      const c = CANEVAS.find(c => c.id === m[2]);
+      if (!c) return sendJson(res, 404, { message: "Canevas introuvable." });
+      if (!m[3] && method === "GET") return sendJson(res, 200, c);
+      if (m[3] && method === "POST") {
+        if (!["promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq"].includes(u.role)) return sendJson(res, 403, { message: "Création réservée aux responsables habilités." });
+        const b = await parseBody(req);
+        if (!b.valeurs || typeof b.valeurs !== "object" || Array.isArray(b.valeurs) || !["TAM", "QAM", "GAD", "GAC", "GAR"].includes(b.processus) || !["procedure", "enregistrement", "fiche_poste"].includes(b.type_doc)) return sendJson(res, 422, { message: "Vérifiez la nature, le processus et les zones du canevas." });
+        const cles = new Set();
+        const visiter = blocs => blocs.forEach(bloc => { if (bloc.type === "paragraphe") cles.add(bloc.cle); else bloc.lignes.forEach(l => l.forEach(cell => { cles.add(cell.cle); visiter(cell.imbriques || []); })); });
+        c.parties.forEach(p => visiter(p.blocs));
+        if (Object.entries(b.valeurs).some(([k, v]) => !cles.has(k) || typeof v !== "string" || v.length > 30000)) return sendJson(res, 422, { message: "Zone du canevas invalide." });
+        const doc = { id: randomUUID(), officine_id: m[1], titre: c.titre, code_document: "CAN-" + randomUUID().slice(0, 8), type_doc: b.type_doc, processus: b.processus,
+          contenu: JSON.stringify({ schema: "begpharma.canevas-rempli.v1", canevas: c, valeurs: b.valeurs }), statut: "brouillon", version: 1, indice_revision: 0, redacteur_nom: u.name, updated_at: new Date().toISOString(), mode_demo: true };
+        doc.empreinte_contenu = empreinteDocumentDemo(doc);
+        DOCUMENTS.unshift(doc); return sendJson(res, 201, doc);
+      }
+    }
+  }
   // AUTH — login
   {
     const m = path.match(/^\/api\/officines\/([^/]+)\/suivis-documentaires\/(formations|maintenance)(?:\/(definition|[a-f0-9-]+))?$/);
@@ -842,10 +881,12 @@ const server = http.createServer(async (req, res) => {
       const b = await parseBody(req);
       const evaluation = AUTO_EVALUATION.evaluations.find(e => e.id === m[2]);
       if (!evaluation) return sendJson(res, 404, { message: "Article introuvable" });
-      Object.assign(evaluation, b);
+      if (!["conforme", "ecart_mineur", "ecart_majeur", "non_applicable", "non_evalue"].includes(b.cotation)) return sendJson(res, 422, { message: "Cotation invalide." });
+      Object.assign(evaluation, { cotation: b.cotation, ...(b.preuve != null ? { preuve: b.preuve } : {}), ...(b.commentaire != null ? { commentaire: b.commentaire } : {}) });
+      recalculerGrille(AUTO_EVALUATION);
       const notees = AUTO_EVALUATION.evaluations.filter(e => e.cotation && e.cotation !== "non_evalue");
       const conformesPondere = notees.filter(e => e.cotation === "conforme").length + notees.filter(e => e.cotation === "ecart_mineur").length * 0.5;
-      const score = notees.length ? Math.round((conformesPondere / notees.length) * 1000) / 10 : 0;
+      const score = AUTO_EVALUATION.statistiques.score_global;
       AUTO_EVALUATION.statistiques.score_global = score;
       return sendJson(res, 200, { evaluation, nouveau_score_global: score });
     }
@@ -854,10 +895,15 @@ const server = http.createServer(async (req, res) => {
     const m = path.match(/^\/api\/officines\/([^/]+)\/auto-evaluation\/generer-capa\/([^/]+)$/);
     if (m && method === "POST") {
       const evaluation = AUTO_EVALUATION.evaluations.find(e => e.id === m[2]);
+      if (!evaluation) return sendJson(res, 404, { message: "Article introuvable." });
+      const b = await parseBody(req);
+      if (!b.action_corrective?.trim()) return sendJson(res, 422, { message: "Action corrective requise." });
+      if (evaluation.non_conformite) return sendJson(res, 409, { message: "Une action est déjà liée." });
       const nc = {
         id: "nc" + (NON_CONFORMITES.length + 1),
         numero_nc: `NC-2026-${String(NON_CONFORMITES.length + 12).padStart(4, "0")}`,
         titre: `Écart BPD sur l'article ${evaluation?.article_numero ?? ""}`.trim(),
+        action_corrective: b.action_corrective, analyse_causes_5m: b.cause_principale ?? null,
         gravite: "majeure",
         processus: "06",
         source: "auto_evaluation",
@@ -865,6 +911,8 @@ const server = http.createServer(async (req, res) => {
         date_creation: new Date().toISOString(),
       };
       NON_CONFORMITES.unshift(nc);
+      evaluation.non_conformite = nc;
+      evaluation.non_conformite_id = nc.id;
       return sendJson(res, 201, {
         evaluation,
         non_conformite: nc,
@@ -889,7 +937,7 @@ const server = http.createServer(async (req, res) => {
   {
     const m = path.match(/^\/api\/officines\/([^/]+)\/documents$/);
     if (m && method === "GET") {
-      let docs = [...DOCUMENTS];
+      let docs = DOCUMENTS.filter(d => (d.officine_id || "off1") === m[1]);
       if (url.searchParams.get("statut") && url.searchParams.get("statut") !== "tous") {
         docs = docs.filter(d => d.statut === url.searchParams.get("statut"));
       }
@@ -917,18 +965,24 @@ const server = http.createServer(async (req, res) => {
   }
   {
     const m = path.match(/^\/api\/officines\/([^/]+)\/documents\/([^/]+)$/);
+    if (m && method === "GET") {
+      const doc = DOCUMENTS.find(d => d.id === m[2] && (d.officine_id || "off1") === m[1]);
+      return doc ? sendJson(res, 200, doc) : sendJson(res, 404, { message: "Document introuvable." });
+    }
     if (m && method === "PUT") {
       const b = await parseBody(req);
       if (b.statut === "valide" || b.password !== undefined) return sendJson(res, 503, {
         message: "L’approbation sécurisée nécessite Laravel. Aucun mot de passe ni preuve d’approbation n’est conservé par la démonstration.",
       });
-      const doc = DOCUMENTS.find(d => d.id === m[2]);
+      const doc = DOCUMENTS.find(d => d.id === m[2] && (d.officine_id || "off1") === m[1]);
       if (!doc) return sendJson(res, 404, { message: "Document introuvable" });
+      if (b.empreinte_edition && b.empreinte_edition !== doc.empreinte_contenu) return sendJson(res, 409, { message: "Ce document a changé. Rechargez-le avant de reprendre les modifications." });
       for (const cle of ["titre", "contenu", "type_doc", "processus", "statut", "motif_refus"]) {
         if (b[cle] !== undefined) doc[cle] = b[cle];
       }
       doc.version = (doc.version || 1) + 1;
       doc.updated_at = new Date().toISOString();
+      if (doc.mode_demo) doc.empreinte_contenu = empreinteDocumentDemo(doc);
       return sendJson(res, 200, doc);
     }
   }

@@ -44,17 +44,16 @@ export function FichiersDocumentaires({ officine, document, version, indice, sta
     } catch (e) { setErreur(e instanceof Error ? e.message : "Téléchargement impossible."); }
   }
   return <section className="grid gap-3 rounded-xl border p-4">
-    <h2 className="font-bold">Fichiers conservés et historique</h2>
-    <p className="text-xs text-muted-foreground">Les fichiers sont privés. Chaque dépôt reste conservé ; aucun remplacement silencieux n’est autorisé. Les nouvelles révisions doivent joindre les pièces à approuver.</p>
+    <h2 className="font-bold">Pièces jointes</h2>
+    <p className="text-xs text-muted-foreground">Joignez les justificatifs utiles à cette version.</p>
     {["brouillon", "a_valider"].includes(statut) ? <label className="grid gap-2 text-sm">Ajouter une pièce à la version en cours
       <input aria-label="Ajouter un fichier documentaire" ref={input} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.odt,.jpg,.jpeg,.png" disabled={enCours} className="min-h-12 rounded-xl border p-2" onChange={e => deposer(e.target.files?.[0])} />
-    </label> : <p className="text-sm">Ouvrez une nouvelle révision pour ajouter des pièces.</p>}
-    <p className="text-xs text-muted-foreground">Utilisez des fichiers provenant d’une source de confiance. Le dépôt ne constitue ni une analyse antivirus ni une conversion en format d’archivage.</p>
+    </label> : <p className="text-sm">Cette version est en lecture seule.</p>}
     {enCours && <p role="status">Dépôt et actualisation de la version…</p>}
     {message && <p role="status">{message}</p>}
     {erreur && <p role="alert">{erreur}</p>}
     {fichiers.isLoading && <p role="status">Chargement des fichiers…</p>}
-    {fichiers.isError && <p role="alert">L’historique des fichiers n’est pas accessible. Aucun résultat ne peut être attesté.</p>}
+    {fichiers.isError && <p role="alert">Les pièces jointes ne sont pas disponibles pour le moment.</p>}
     {fichiers.data?.length === 0 && <p className="text-sm">Aucun fichier conservé pour cette fiche.</p>}
     {fichiers.data?.map(f => <article key={f.id} className="grid gap-1 rounded-xl border p-3 text-sm">
       <strong className="break-words">{f.nom_original}</strong>

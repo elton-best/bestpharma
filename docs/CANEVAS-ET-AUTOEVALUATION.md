@@ -24,7 +24,7 @@ La démonstration dispose d’une grille complète indépendante par officine, s
 
 ## Continuité d’affichage
 
-L’écran « reprise de session » était une page de secours SSR et ne prouvait pas une expiration de session. Les pages sont maintenant chargées côté navigateur avec la configuration SPA officielle de TanStack Start. La compilation produit la coque de démarrage de production. Un échec d’import du serveur ne reste plus mémorisé pour toutes les requêtes suivantes. Le secours ultime est conservé pour les vraies pannes : il retente uniquement la navigation, de façon bornée, sans supprimer les identifiants ni rejouer une écriture. Un échec de rendu React n’efface plus la session.
+L’écran « reprise de session » était une page de secours SSR et ne prouvait pas une expiration de session. Les pages sont maintenant chargées côté navigateur avec la configuration SPA officielle de TanStack Start. La compilation produit la coque de démarrage de production. Un échec d’import du serveur ne reste plus mémorisé pour toutes les requêtes suivantes. Le secours ultime est conservé pour les vraies pannes : il retente uniquement la navigation, de façon bornée, sans supprimer les identifiants ni rejouer une écriture. Un échec de rendu React n’efface plus la session. Une limite d’erreur locale permet de réessayer la rubrique ou de poursuivre la navigation ; les lectures sont réactualisées au retour de la connexion.
 
 Cette mesure réduit les causes identifiées ; elle ne constitue pas une garantie d’absence de coupure réseau, de panne serveur ou de tout autre défaut applicatif. Aucun formulaire en mémoire n’est déclaré restauré après un rechargement complet.
 

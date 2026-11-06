@@ -70,7 +70,11 @@ export const echapperCanevas = (s: string) => s.replace(/[&<>"']/g, c => ({ "&":
 export function htmlCanevas(contenu: string): string {
   const r = lireCanevas(contenu);
   if (!r) return `<p style="white-space:pre-wrap">${echapperCanevas(contenu)}</p>`;
-  const blocs = (liste: Bloc[]): string => liste.map(b => b.type === "tableau" ? `<table style="width:100%;border-collapse:collapse"><tbody>${b.lignes?.map(l => `<tr>${l.map(c => `<td colspan="${c.largeur}" rowspan="${c.hauteur}" style="border:1px solid #aaa;padding:8px;white-space:pre-wrap">${echapperCanevas(r.valeurs[c.cle] ?? c.texte)}${c.imbriques ? blocs(c.imbriques) : ""}</td>`).join("")}</tr>`).join("")}</tbody></table>` : `<p style="white-space:pre-wrap">${echapperCanevas(r.valeurs[b.cle] ?? b.texte ?? "")}</p>`).join("");
+  const images = (ids: string[] = []) => ids.map(id => {
+    const data = r.canevas.images[id];
+    return typeof data === "string" && /^data:image\/(png|jpeg|gif);base64,[A-Za-z0-9+/=]+$/.test(data) ? `<img src="${data}" alt="Illustration du modèle source" style="max-height:120px;max-width:100%" />` : "";
+  }).join("");
+  const blocs = (liste: Bloc[]): string => liste.map(b => b.type === "tableau" ? `<table style="width:100%;border-collapse:collapse"><tbody>${b.lignes?.map(l => `<tr>${l.map(c => `<td colspan="${c.largeur}" rowspan="${c.hauteur}" style="border:1px solid #aaa;padding:8px;white-space:pre-wrap">${images(c.images)}${echapperCanevas(r.valeurs[c.cle] ?? c.texte)}${c.imbriques ? blocs(c.imbriques) : ""}</td>`).join("")}</tr>`).join("")}</tbody></table>` : `<p style="white-space:pre-wrap">${images(b.images)}${echapperCanevas(r.valeurs[b.cle] ?? b.texte ?? "")}</p>`).join("");
   return r.canevas.parties.map(p => blocs(p.blocs)).join("\n");
 }
 export function texteCanevas(contenu: string): string {

@@ -5,12 +5,11 @@ import {
   createRootRouteWithContext,
   HeadContent,
   Scripts,
-  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import { ErreurRubrique } from "@/components/erreur-rubrique";
 import { Toaster } from "@/components/ui/sonner";
 import { ModaleApercuDocument } from "@/components/modules/modale-apercu-document";
 
@@ -45,42 +44,6 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: ErrorComponentProps) {
-  console.error("Route error:", error);
-
-
-  return (
-    <div className="min-h-screen bg-[#F7F9F7] flex items-center justify-center p-4 font-sans">
-      <div className="max-w-md w-full text-center bg-white border border-[#CFF1D2] rounded-3xl p-7 shadow-lg">
-        <div className="size-10 mx-auto rounded-2xl bg-[#0F3B27] text-[#92FF5F] flex items-center justify-center font-display font-black text-xl mb-4 shadow-sm">
-          +
-        </div>
-        <h2 className="text-xl font-bold font-display text-[#0F3B27]">Cette rubrique ne peut pas être affichée</h2>
-        <p className="mt-2 text-xs text-[#475C50] leading-relaxed">
-          Vos données de session sont conservées. Vous pouvez réessayer ou ouvrir une autre rubrique.
-        </p>
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              if (typeof window !== "undefined") window.location.assign("/app");
-            }}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0F3B27] hover:bg-[#164E35] text-[#92FF5F] font-bold text-xs transition-all shadow-sm"
-          >
-            Tableau de bord
-          </button>
-          <button
-            type="button"
-            onClick={() => reset()}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#CFF1D2] text-[#0F3B27] font-bold text-xs hover:bg-[#CFF1D2]/30 transition-all"
-          >
-            Réessayer
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   ssr: false,
@@ -123,7 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
+  errorComponent: ErreurRubrique,
 });
 
 function RootShell({ children }: { children: ReactNode }) {

@@ -39,3 +39,9 @@ L’aperçu utilise des saisies temporaires en mémoire, signalées comme démon
 - Recette PostgreSQL native : filtres JSON, corrections auditées, interdiction de suppression et de vidage, continuité de la chaîne d’audit.
 
 Commandes : `cd frontend && npm test && npm run typecheck && npm run build` ; `cd backend && php artisan test` ; `AUDIT_TEST_ADMIN_URL=postgres://… npm run test:audit-postgres`. Le catalogue démo se régénère avec `php scripts/exporter-catalogue-suivis.php > mock-data/catalogue-suivis.json` et se vérifie avec `php scripts/exporter-catalogue-suivis.php --check`.
+
+### Résultat de validation
+
+Le lot fonctionnel du commit `8c513f2` a été validé par la [chaîne de vérification complète](https://github.com/elton-best/begpharma/actions/runs/42226142102) : migrations et tests Laravel sous PHP et PostgreSQL réels, recette du journal PostgreSQL, tests de l’interface, vérification des types, compilation et contrôle des sources réussis.
+
+En local : les trente-quatre tests de l’interface répartis dans douze fichiers et les douze scénarios de recette PostgreSQL sont passés. La vérification HTTP à travers le proxy de l’aperçu a confirmé les créations formation et maintenance, la correction, le conflit de version, le refus des dates incohérentes et les restrictions d’accès. Les saisies temporaires de cette vérification ont ensuite été effacées par redémarrage de la démonstration. Cette validation ne vaut pas déploiement opérationnel ni reprise des données historiques.

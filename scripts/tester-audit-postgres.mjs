@@ -126,6 +126,27 @@ try {
   await assert.rejects(client.query('TRUNCATE fichiers_documents'));
   console.log('✓ Manifeste de pièces inclus dans l’approbation ; ajout postérieur et modification des métadonnées bloqués');
 
+  await client.query(`CREATE TABLE imports_corpus (id uuid PRIMARY KEY, officine_id uuid, manifeste_sha256 text,
+    operateur_id uuid, manifeste jsonb, bilan jsonb, importe_le timestamptz, UNIQUE(officine_id, manifeste_sha256));
+    CREATE TABLE imports_corpus_fichiers (id uuid PRIMARY KEY, officine_id uuid, cle_source text,
+    chemin_source text, document_id uuid, fichier_id uuid, UNIQUE(officine_id, cle_source));`);
+  const migrationImports = readFileSync(new URL('../backend/database/migrations/2026_11_06_180000_create_imports_corpus.php', import.meta.url), 'utf8');
+  const templateImports = migrationImports.match(/DB::unprepared\("([\s\S]*?)"\);/)[1];
+  for (const table of ['imports_corpus', 'imports_corpus_fichiers']) {
+    await client.query(templateImports.replaceAll('{$table}', table));
+  }
+  const importId = randomUUID();
+  await client.query(`INSERT INTO imports_corpus (id, officine_id, manifeste_sha256, bilan) VALUES ($1,$2,$3,'{"sources_creees":1,"approbations_creees":0}')`, [importId, doc.officine_id, 'c'.repeat(64)]);
+  await assert.rejects(client.query('INSERT INTO imports_corpus (id,officine_id,manifeste_sha256) VALUES ($1,$2,$3)', [randomUUID(), doc.officine_id, 'c'.repeat(64)]));
+  await assert.rejects(client.query("UPDATE imports_corpus SET bilan='{}' WHERE id=$1", [importId]));
+  await assert.rejects(client.query('TRUNCATE imports_corpus'));
+  const sourceId = randomUUID();
+  await client.query('INSERT INTO imports_corpus_fichiers (id,officine_id,cle_source) VALUES ($1,$2,$3)', [sourceId, doc.officine_id, 'd'.repeat(64)]);
+  await assert.rejects(client.query('INSERT INTO imports_corpus_fichiers (id,officine_id,cle_source) VALUES ($1,$2,$3)', [randomUUID(), doc.officine_id, 'd'.repeat(64)]));
+  await assert.rejects(client.query('DELETE FROM imports_corpus_fichiers WHERE id=$1', [sourceId]));
+  assert.equal((await verifier(doc.officine_id)).premiere_rupture, null);
+  console.log('✓ Reçus d’import privés, uniques, protégés et inclus dans l’audit');
+
 } finally {
   if (client) await client.end();
   if (cree) await admin.query(`DROP DATABASE "${db}" WITH (FORCE)`);

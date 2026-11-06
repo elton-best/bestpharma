@@ -10,6 +10,15 @@ jobs:
   backend-tests:
     name: Backend Tests (PHPUnit + PostgreSQL 16 RLS)
     runs-on: ubuntu-latest
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: bestpharma_test
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      CACHE_STORE: array
 
     services:
       postgres:
@@ -121,4 +130,5 @@ jobs:
         run: |
           pip install -r scripts/requirements-corpus.txt
           python scripts/rapprocher-corpus.py --check
+          python scripts/preparer-import-corpus.py --check
           python -m unittest discover -s scripts/tests

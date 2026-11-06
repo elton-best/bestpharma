@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use App\Services\EmpreinteDocumentService;
 use App\Services\FichiersDocumentService;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class DocumentController extends Controller
 {
@@ -103,6 +104,7 @@ class DocumentController extends Controller
         }
         $validated = $request->validate([
             'titre' => 'sometimes|required|string|max:255',
+            'code_document' => ['sometimes', 'required', 'string', 'max:50', Rule::unique('documents', 'code_document')->where('officine_id', $officineId)->ignore($id)],
             'contenu' => 'sometimes|nullable|string',
             'type_doc' => 'sometimes|string|max:20',
             'processus' => 'sometimes|string|max:20',
@@ -126,11 +128,16 @@ class DocumentController extends Controller
                 ->where('archived', false)->lockForUpdate()->first();
             abort_unless($doc, 404, 'Document introuvable.');
             $fields = array_intersect_key($validated, array_flip([
-                'titre', 'contenu', 'type_doc', 'processus', 'statut', 'motif_refus',
+                'titre', 'contenu', 'type_doc', 'processus', 'statut', 'motif_refus', 'code_document',
             ]));
             $doc->fichiers = app(FichiersDocumentService::class)->manifeste($doc);
             $empreintes = app(EmpreinteDocumentService::class);
+            if ($doc->type_doc === 'piece_source' && (isset($fields['code_document']) || isset($fields['type_doc']))) {
+                abort_unless(in_array($role, ['promoteur', 'pharmacien_titulaire', 'rmq'], true), 403, 'Qualification documentaire réservée aux responsables habilités.');
+            }
             if ($valider) {
+                abort_if($doc->type_doc === 'piece_source' || str_starts_with($doc->code_document ?? '', 'SRC-'), 409,
+                    'Qualifiez le code, le type et le processus du document source avant de demander l’approbation.');
                 abort_if($doc->statut === 'valide' || $doc->statut === 'retire', 409,
                     'Ce document ne peut pas être approuvé dans son état actuel.');
                 // L’approbation porte sur ce qui a été consulté, jamais sur des modifications jointes.
@@ -174,6 +181,17 @@ class DocumentController extends Controller
         return response()->json($lignes->map(function ($ligne) {
             $ligne->empreinte_verifiee = hash_equals($ligne->empreinte_contenu, hash('sha256', $ligne->contenu_signe));
             return $ligne;
+        }));
+    }
+
+    public function importsCorpus(Request $request, string $officineId): JsonResponse
+    {
+        $this->autoriser($request, $officineId);
+        $imports = DB::table('imports_corpus')->where('officine_id', $officineId)
+            ->orderByDesc('importe_le')->get(['id', 'manifeste_sha256', 'bilan', 'importe_le']);
+        return response()->json($imports->map(function ($import) {
+            $import->bilan = json_decode($import->bilan, true, 512, JSON_THROW_ON_ERROR);
+            return $import;
         }));
     }
 

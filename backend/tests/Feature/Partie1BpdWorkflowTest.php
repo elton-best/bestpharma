@@ -215,4 +215,34 @@ class Partie1BpdWorkflowTest extends TestCase
         $autre = (string) Str::uuid();
         $this->actingAs($this->titulaire)->getJson("/api/officines/{$autre}/documents/".$creation->json('id').'/fichiers')->assertForbidden();
     }
+    public function test_import_corpus_complet_sans_doublon_ni_approbation(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('ged');
+        $racine = dirname(__DIR__, 3);
+        $json = file_get_contents($racine.'/docs/manifeste-import-corpus.json');
+        $service = new \App\Services\ImportCorpusService;
+        $avant = DB::table('approbations_documents')->where('officine_id', $this->officine->id)->count();
+        $premier = $service->importer($json, $racine.'/0000. DIGIT ABMEB', $this->officine->id, $this->titulaire->id);
+        $second = $service->importer($json, $racine.'/0000. DIGIT ABMEB', $this->officine->id, $this->titulaire->id);
+        $this->assertSame(62, $premier['sources_creees']);
+        $this->assertSame(0, $second['sources_creees']);
+        $this->assertSame(62, $second['sources_deja_presentes']);
+        $this->assertSame(62, DB::table('documents')->where('officine_id', $this->officine->id)->where('categorie', 'source_corpus')->where('statut', 'brouillon')->count());
+        $this->assertSame($avant, DB::table('approbations_documents')->where('officine_id', $this->officine->id)->count());
+        $this->assertSame(1, DB::table('imports_corpus')->where('officine_id', $this->officine->id)->count());
+        $this->actingAs($this->titulaire)->getJson("/api/officines/{$this->officine->id}/imports-corpus")->assertOk()
+            ->assertJsonPath('0.bilan.sources_creees', 62)->assertJsonPath('0.bilan.approbations_creees', 0);
+        $source = DB::table('documents')->where('officine_id', $this->officine->id)->where('categorie', 'source_corpus')->first();
+        $url = "/api/officines/{$this->officine->id}/documents/{$source->id}";
+        $fiche = $this->actingAs($this->titulaire)->getJson($url)->assertOk();
+        $preuve = ['statut' => 'valide', 'password' => 'Secret123456!', 'intention' => 'approbation_documentaire',
+            'empreinte_attendue' => $fiche->json('empreinte_contenu')];
+        $this->actingAs($this->titulaire)->putJson($url, $preuve)->assertConflict();
+        $qualification = $this->actingAs($this->titulaire)->putJson($url, [
+            'code_document' => 'RECETTE-PR-001', 'type_doc' => 'procedure', 'processus' => 'QAM',
+        ])->assertOk();
+        $preuve['empreinte_attendue'] = $qualification->json('empreinte_contenu');
+        $this->actingAs($this->titulaire)->putJson($url, $preuve)->assertOk();
+
+    }
 }

@@ -28,6 +28,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
+import { QualificationDocument } from "@/components/modules/qualification-document";
+import { ImportsCorpus } from "@/components/modules/imports-corpus";
 import { FichiersDocumentaires } from "@/components/modules/fichiers-documentaires";
 import { ApprobationDocument, HistoriqueApprobations } from "@/components/modules/approbation-document";
 import { api } from "@/lib/api-client";
@@ -112,6 +114,7 @@ function PageDocuments() {
 
   // Modale Signature PIN (BPD-C10)
   const [modaleSignOuverte, setModaleSignOuverte] = useState(false);
+  const [qualification, setQualification] = useState(false);
   const [docASigner, setDocASigner] = useState<DocumentBpd | null>(null);
 
   const { data: documents = [], isError: erreurDocuments, isLoading: chargementDocuments } = useQuery<DocumentBpd[]>({
@@ -310,9 +313,12 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
             >
               <Download className="size-3.5" /> Télécharger TXT
             </Button>
+            {["brouillon", "a_valider"].includes(docActif.statut) && aRole("promoteur", "pharmacien_titulaire", "rmq") && (
+              <Button variant="outline" className="min-h-12" onClick={() => setQualification(true)}>Qualifier la fiche</Button>
+            )}
             {["brouillon", "a_valider"].includes(docActif.statut) && aRole("promoteur", "pharmacien_titulaire") && (
               <Button
-                disabled={!docActif.empreinte_contenu}
+                disabled={!docActif.empreinte_contenu || docActif.type_doc === "piece_source" || docActif.code_document?.startsWith("SRC-")}
                 title={!docActif.empreinte_contenu ? "L’approbation nécessite une empreinte fournie par Laravel." : undefined}
                 onClick={() => {
                   setDocASigner(docActif);
@@ -386,6 +392,9 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
             </Card>
           </div>
         </div>
+
+        {id && qualification && <QualificationDocument key={docActif.id} officine={id} fiche={docActif} fermer={() => setQualification(false)}
+          actualiser={async () => { setDocActif(await api.get<DocumentBpd>(`/officines/${id}/documents/${docActif.id}`)); await qc.invalidateQueries({ queryKey: ["documents"] }); }} />}
 
         {id && <FichiersDocumentaires officine={id} document={docActif.id} version={docActif.version} indice={docActif.indice_revision} statut={docActif.statut}
           actualiser={async () => { const fiche = await api.get<DocumentBpd>(`/officines/${id}/documents/${docActif.id}`); setDocActif(fiche); }} />}
@@ -631,6 +640,7 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
 
       {/* TABS DE LA GED */}
       <div className="space-y-4">
+        {id && <ImportsCorpus officine={id} />}
         {chargementDocuments && <p role="status">Chargement des documents…</p>}
         {erreurDocuments && <p role="alert">Les documents ne peuvent pas être chargés. Les listes et compteurs sont indisponibles.</p>}
 

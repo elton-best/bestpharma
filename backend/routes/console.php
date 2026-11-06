@@ -30,3 +30,29 @@ Artisan::command('bpd:preparer {extraction : Chemin du JSON extrait} {pdf : Chem
         return 1;
     }
 })->purpose('Préparer une version du référentiel BPD sans activation automatique');
+
+Artisan::command('ged:importer-corpus {manifeste} {racine} {--officine=} {--operateur=} {--verifier}', function () {
+    try {
+        $chemin = $this->argument('manifeste');
+        if (!is_readable($chemin)) throw new \InvalidArgumentException('Manifeste illisible.');
+        $json = file_get_contents($chemin);
+        $service = app(\App\Services\ImportCorpusService::class);
+        if ($this->option('verifier')) {
+            $m = $service->verifier($json, $this->argument('racine'));
+            $this->info(count($m['fichiers']).' fichiers sources vérifiés, aucune écriture.');
+        } else {
+            $officine = $this->option('officine');
+            $operateur = $this->option('operateur');
+            if (!\Illuminate\Support\Str::isUuid($officine ?? '') || !\Illuminate\Support\Str::isUuid($operateur ?? '')) {
+                throw new \InvalidArgumentException('Les options officine et operateur doivent désigner des identifiants existants.');
+            }
+            $bilan = $service->importer($json, $this->argument('racine'), $officine, $operateur);
+            $this->info(json_encode($bilan, JSON_UNESCAPED_UNICODE));
+            $this->warn('Sources importées en brouillon. Aucune approbation ni correspondance officielle inventée.');
+        }
+        return 0;
+    } catch (\Throwable $e) {
+        $this->error('Import refusé : '.$e->getMessage());
+        return 1;
+    }
+})->purpose('Importer le corpus documentaire en sources privées, sans approbation automatique');

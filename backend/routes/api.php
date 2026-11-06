@@ -92,6 +92,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // GED et documents qualité (BPD-1 & BPD-3)
     Route::get('/officines/{officineId}/documents', [DocumentController::class, 'index']);
+    Route::get('/officines/{officineId}/imports-corpus', [DocumentController::class, 'importsCorpus']);
     Route::post('/officines/{officineId}/documents', [DocumentController::class, 'store']);
     Route::get('/officines/{officineId}/documents/{id}', [DocumentController::class, 'show']);
     Route::get('/officines/{officineId}/documents/{id}/approbations', [DocumentController::class, 'approbations']);

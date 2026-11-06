@@ -27,6 +27,18 @@ describe("canevas structurés", () => {
     expect(texteCanevas(contenu)).not.toContain("begpharma.canevas-rempli");
     expect(lireCanevas("Texte ancien")).toBeNull();
   });
+  it("consulte une référence annotée sans proposer de saisie ou d’enregistrement", async () => {
+    const reference: Canevas = { ...c, usage: "reference", format: "pdf", titre: "Liste annotée", parties: [{origine: "Page témoin", blocs: [{cle: "note", type: "paragraphe", texte: "Observation du document source"}]}] };
+    vi.spyOn(api, "get").mockImplementation(async url => url.endsWith("/canevas") ? [reference] : reference);
+    const post = vi.spyOn(api, "post");
+    render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><CanevasCatalogue officine="off1" /></QueryClientProvider>);
+    const ouvrir = await screen.findByRole("button", {name: "Consulter le document"});
+    fireEvent.click(ouvrir);
+    expect(await screen.findByText(/sans validation réglementaire implicite/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", {name: "Enregistrer le brouillon"})).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(post).not.toHaveBeenCalled();
+  });
   it("ouvre les feuilles Excel et conserve la saisie lors du changement de feuille", async () => {
     const excel: Canevas = { ...c, format: "xlsx", parties: [
       { origine: "Plan", blocs: [{ cle: "p", type: "tableau", lignes: [[{ cle: "a", texte: "Formation", largeur: 2, hauteur: 1 }]] }] },

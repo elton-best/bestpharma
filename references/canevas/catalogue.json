@@ -163112,6 +163112,342 @@
       }
     },
     {
+      "id": "c0273cd15ccab0bcf6199d81",
+      "titre": "Liste des procédures et leurs activités de couverture (Version annotée)",
+      "rubrique": "Document en cours et autres",
+      "fichier": "Document en cours et autres/Liste des procédures et leurs activités de couverture (Version annotée).pdf",
+      "sha256": "11d1880a1cf73dbabe212c2653973ae7a300dd764d069d9d0b19dbfff5f05506",
+      "format": "pdf",
+      "images": {},
+      "parties": [
+        {
+          "origine": "Page 1",
+          "blocs": [
+            {
+              "cle": "a1",
+              "type": "paragraphe",
+              "texte": "Liste des procédures et leurs activités de couverture \nProcédures Activités de couverture \nProcédure de \ngestion des \napprovisionnements \n \n✓ Commande/achats : Evaluation des besoins, Sélection des fournisseurs, Passation \nde la commande \n✓ Réception : Vérification de la conformité entre le bordereau de livraison et les colis, \nVérification de la quantité et la qualité : cas des fournitures ou équipements, \nSignature des documents \n✓ Dépouillement et étiquetage des produits livrés :  Vérifier la conformité des \nproduits par apport aux exigences, Inscription des codes, Etiquetage \nProcédure de \ngestion de stock et \nde la sécurité des \nproduits \n \n✓ Stockage des différentes catégories des produits de santé : Entrée en stock \n(virtuel), Rangement (entrée en stock physique)  \n✓ Suivi de stock des produits de santé : Mini-inventaire, Inventaire général, Gestion \ndes produits à date de péremption proche, Gestion des produits périmés et avariés, \nMise en quarantaine de produits et rappel de lot \n✓ Gestion de la sécurité des produits de santé :  Surveillance et conservation des \nproduits de la chaine de froid, Surveillance et conservation des autres produits \npharmaceutiques et autres produits de santé, Prévention et gestion de la rupture de \nla chaîne de froid \nProcédure de \ndispensation, \nconseils et de la \ncaisse \n \n✓ Accueil et orientation : Accueil des usagers, Orientation des usagers \n✓ Gestion des conseils : Promulgation de conseil & d’éducation sanitaire, Suivi des \nconseils \n✓ Gestion de la vente :  Dispensation des produits de santé sans prescription \n(absence d’ordonnance), Dispensation des produits de santé prescrits, Analyse \npharmaceutique d'une ordonnance, Substitution d’un produit de sante \n✓ Gestion de la caisse :  Encaissement, Passation de service, Prise de service, \nTransformation d’un ticket en facture & impression d’une facture normalisée, Gestion \ndes avoirs, Encaissement caisse mini-dépense, Décaissement caisse mini-dépense \nProcédure de \ngestion des \nressources et des \ncollaborations \n \n✓ Gestion de garde, des équipements et d'entretien des locaux :  Ouverture et \nfermeture quotidienne, Maintenance et entretien des appareils et équipements, \nEntretien des locaux \n✓ Gestion des ressources humaines :  Recrutement, Gestion de dossier du \npersonnel, Gestion des congés et des absences au poste, Gestion des conflits, \nGestion des compétences \n "
+            },
+            {
+              "cle": "a2",
+              "type": "paragraphe",
+              "texte": "Annotation du document source",
+              "gras": true
+            },
+            {
+              "cle": "a3",
+              "type": "paragraphe",
+              "texte": "Que peut-on prévoir comme système de prévention des erreurs de dispensation (confusion entre noms de spécialités, dosages...etc)? C'est une exigence de l'agence."
+            },
+            {
+              "cle": "a4",
+              "type": "paragraphe",
+              "texte": "Annotation du document source",
+              "gras": true
+            },
+            {
+              "cle": "a5",
+              "type": "paragraphe",
+              "texte": "Le titre ne me paraît pas très explicite, et de plus, les différents items me semblent assez éloignés les uns des autres. Je suggère qu'on splitte cette procédure en 3 carrément. Merci\n"
+            },
+            {
+              "cle": "a6",
+              "type": "paragraphe",
+              "texte": "Annotation du document source",
+              "gras": true
+            },
+            {
+              "cle": "a7",
+              "type": "paragraphe",
+              "texte": "Le rapport d'inspection fait référence à un \"système de contrôle attestant de la qualité des produits y compris les conditions de transport assurant un maintien de la qualité (PV de transport par ex)\". Ce point sera t-il couvert?"
+            }
+          ]
+        },
+        {
+          "origine": "Page 2",
+          "blocs": [
+            {
+              "cle": "a8",
+              "type": "paragraphe",
+              "texte": "Procédures Activités de couverture \n✓ Collaboration avec les prestataires externes :  Constitution d’une base de \ndonnées, Sélection des prestataires externes, Paiement des prestataires externes \nProcédure de \ngestion de la \nsurveillance et des \nactions \nd'amélioration  \n✓ Gestion des risques et opportunités : Identification du risque, Analyse & \nEvaluation du risque, Traitement du risque, Suivi du risque \n✓ Traitement des réclamations : Préalable & Communication, Réception et traitement \ndes réclamations, Clôture de la réclamation, Mesure de la satisfaction des \nréclamants \n✓ Gestion des évaluations de performance et de satisfaction  : Evaluation de la \nperformance du personnel, Evaluation de la performance des prestataires externes, \nEvaluation de la satisfaction client et autres PIP \n✓ Organisation des auto -inspections : Sélection des inspecteurs, Planification des \nauto-inspection, Préparation d’auto -inspection, Déroulement de la mission d’auto -\ninspection, Evaluation des inspecteurs, Mise en œuvre d’action, Suivi et clôture \nd’inspection \n✓ Gestion des non-conformités et d'actions d'amélioration  : Identification de l’écart et \nou constatation de la non-conformité, Analyse et traitement de l’écart ou de la non -\nconformité, Suivi et Evaluation de l’efficacité des actions et clôture de l’écart ou de \nla non-conformité \n "
+            },
+            {
+              "cle": "a9",
+              "type": "paragraphe",
+              "texte": "Annotation du document source",
+              "gras": true
+            },
+            {
+              "cle": "a10",
+              "type": "paragraphe",
+              "texte": "Vous trouverez ci-dessous une liste de procédures ayant fait l'objet d'observations de la part de l'ABMed mais non couvertes dans votre proposition :\n\n1) La Procédure des procédures\n2) Conduite à tenir en cas d'absence non programmée du pharmacien\n3) Mise en œuvre intégrale de l'exercice personnel, surtout les activités que le pharmacien n'accomplit pas lui-même\n4) Procédure de supervision des actes exécutés par les préposés relevant de la responsabilité du pharmacien\n5) Réalisation de la cartographie de la température et de l'hygrométrie\n6) Sauvegarde informatique\n7) Système de maîtrise documentaire \n8) Archivage\n\nPour en discuter. Merci"
+            },
+            {
+              "cle": "a11",
+              "type": "paragraphe",
+              "texte": "Annotation du document source",
+              "gras": true
+            },
+            {
+              "cle": "a12",
+              "type": "paragraphe",
+              "texte": "A déplacer dans la procédure \"Gestion des ressources humaines\" svp. Merci"
+            },
+            {
+              "cle": "a13",
+              "type": "paragraphe",
+              "texte": "Annotation du document source",
+              "gras": true
+            },
+            {
+              "cle": "a14",
+              "type": "paragraphe",
+              "texte": "A définir svp. Merci"
+            },
+            {
+              "cle": "a15",
+              "type": "paragraphe",
+              "texte": "Annotation du document source",
+              "gras": true
+            },
+            {
+              "cle": "a16",
+              "type": "paragraphe",
+              "texte": "Je suggère d'abandonner cette portion de la phrase et ce d'autant plus que les étapes listées ne parlent que de l'aspect risques"
+            },
+            {
+              "cle": "a17",
+              "type": "paragraphe",
+              "texte": "Annotation du document source",
+              "gras": true
+            },
+            {
+              "cle": "a18",
+              "type": "paragraphe",
+              "texte": "Il semblerait qu'il manque un mot après surveillance? Autrement, le titre ne semble pas suffisamment clair"
+            },
+            {
+              "cle": "a19",
+              "type": "paragraphe",
+              "texte": "Annotation du document source",
+              "gras": true
+            },
+            {
+              "cle": "a20",
+              "type": "paragraphe",
+              "texte": "Ici également, je pense qu'il serait plus approprié  de couvrir l'évaluation de la performance des prestataires ext dans la section \"Collaboration avec les prestataires externes\""
+            }
+          ]
+        }
+      ],
+      "usage": "reference",
+      "annotations": [
+        {
+          "page": 1,
+          "texte": "Que peut-on prévoir comme système de prévention des erreurs de dispensation (confusion entre noms de spécialités, dosages...etc)? C'est une exigence de l'agence.",
+          "type": "/Highlight",
+          "rectangle": [
+            193.73,
+            316.514,
+            297.986,
+            329.762
+          ]
+        },
+        {
+          "page": 1,
+          "texte": "Le titre ne me paraît pas très explicite, et de plus, les différents items me semblent assez éloignés les uns des autres. Je suggère qu'on splitte cette procédure en 3 carrément. Merci\n",
+          "type": "/Highlight",
+          "rectangle": [
+            60.024,
+            112.808,
+            160.8312,
+            201.314
+          ]
+        },
+        {
+          "page": 1,
+          "texte": "Le rapport d'inspection fait référence à un \"système de contrôle attestant de la qualité des produits y compris les conditions de transport assurant un maintien de la qualité (PV de transport par ex)\". Ce point sera t-il couvert?",
+          "type": "/Highlight",
+          "rectangle": [
+            193.73,
+            654.244,
+            241.9412,
+            667.492
+          ]
+        },
+        {
+          "page": 2,
+          "texte": "Vous trouverez ci-dessous une liste de procédures ayant fait l'objet d'observations de la part de l'ABMed mais non couvertes dans votre proposition :\n\n1) La Procédure des procédures\n2) Conduite à tenir en cas d'absence non programmée du pharmacien\n3) Mise en œuvre intégrale de l'exercice personnel, surtout les activités que le pharmacien n'accomplit pas lui-même\n4) Procédure de supervision des actes exécutés par les préposés relevant de la responsabilité du pharmacien\n5) Réalisation de la cartographie de la température et de l'hygrométrie\n6) Sauvegarde informatique\n7) Système de maîtrise documentaire \n8) Archivage\n\nPour en discuter. Merci",
+          "type": "/FreeText",
+          "rectangle": [
+            59.750015,
+            171.090044,
+            590.000015,
+            336.090044
+          ]
+        },
+        {
+          "page": 2,
+          "texte": "A déplacer dans la procédure \"Gestion des ressources humaines\" svp. Merci",
+          "type": "/Highlight",
+          "rectangle": [
+            193.73,
+            569.374,
+            545.30512,
+            602.452
+          ]
+        },
+        {
+          "page": 2,
+          "texte": "A définir svp. Merci",
+          "type": "/Highlight",
+          "rectangle": [
+            374.51336,
+            549.574,
+            395.09656,
+            562.822
+          ]
+        },
+        {
+          "page": 2,
+          "texte": "Je suggère d'abandonner cette portion de la phrase et ce d'autant plus que les étapes listées ne parlent que de l'aspect risques",
+          "type": "/Highlight",
+          "rectangle": [
+            279.73832,
+            688.204,
+            342.13064,
+            701.452
+          ]
+        },
+        {
+          "page": 2,
+          "texte": "Il semblerait qu'il manque un mot après surveillance? Autrement, le titre ne semble pas suffisamment clair",
+          "type": "/Highlight",
+          "rectangle": [
+            57.36,
+            538.738,
+            148.7322,
+            603.154
+          ]
+        },
+        {
+          "page": 2,
+          "texte": "Ici également, je pense qu'il serait plus approprié  de couvrir l'évaluation de la performance des prestataires ext dans la section \"Collaboration avec les prestataires externes\"",
+          "type": "/Highlight",
+          "rectangle": [
+            306.44168,
+            569.374,
+            540.16504,
+            582.622
+          ]
+        }
+      ]
+    },
+    {
+      "id": "38fe1d734cc29f916671108e",
+      "titre": "Liste des procédures et leurs activités de couverture",
+      "rubrique": "Document en cours et autres",
+      "fichier": "Document en cours et autres/Liste des procédures et leurs activités de couverture.odt",
+      "sha256": "bfbffad345c99d2cd8651cace2d54b8dc95d0da8601dc5a07ede4ba529218b19",
+      "format": "odt",
+      "images": {},
+      "parties": [
+        {
+          "origine": "document",
+          "blocs": [
+            {
+              "cle": "a1",
+              "type": "paragraphe",
+              "texte": "Liste des procédures et leurs activités de couverture",
+              "gras": false
+            },
+            {
+              "cle": "a12",
+              "type": "tableau",
+              "lignes": [
+                [
+                  {
+                    "cle": "a2",
+                    "texte": "Procédure de gestion des approvisionnements\n",
+                    "largeur": 1,
+                    "hauteur": 1
+                  },
+                  {
+                    "cle": "a3",
+                    "texte": "Commande/achats : Evaluation des besoins, Sélection des fournisseurs, Passation de la commande\nRéception : Vérification de la conformité entre le bordereau de livraison et les colis, Vérification de la quantité et la qualité : cas des fournitures ou équipements, Signature des documents\nDépouillement et étiquetage des produits livrés : Vérifier la conformité des produits par apport aux exigences, Inscription des codes, Etiquetage",
+                    "largeur": 1,
+                    "hauteur": 1
+                  }
+                ],
+                [
+                  {
+                    "cle": "a4",
+                    "texte": "Procédure de gestion de stock et de la sécurité des produits\n",
+                    "largeur": 1,
+                    "hauteur": 1
+                  },
+                  {
+                    "cle": "a5",
+                    "texte": "Stockage des différentes catégories des produits de santé : Entrée en stock (virtuel), Rangement (entrée en stock physique) \nSuivi de stock des produits de santé : Mini-inventaire, Inventaire général, Gestion des produits à date de péremption proche, Gestion des produits périmés et avariés, Mise en quarantaine de produits et rappel de lot\nGestion de la sécurité des produits de santé : Surveillance et conservation des produits de la chaine de froid, Surveillance et conservation des autres produits pharmaceutiques et autres produits de santé, Prévention et gestion de la rupture de la chaîne de froid",
+                    "largeur": 1,
+                    "hauteur": 1
+                  }
+                ],
+                [
+                  {
+                    "cle": "a6",
+                    "texte": "Procédure de dispensation, conseils et de la caisse\n",
+                    "largeur": 1,
+                    "hauteur": 1
+                  },
+                  {
+                    "cle": "a7",
+                    "texte": "Accueil et orientation : Accueil des usagers, Orientation des usagers\nGestion des conseils : Promulgation de conseil & d’éducation sanitaire, Suivi des conseils\nGestion de la vente : Dispensation des produits de santé sans prescription (absence d’ordonnance), Dispensation des produits de santé prescrits, Analyse pharmaceutique d'une ordonnance, Substitution d’un produit de sante\nGestion de la caisse : Encaissement, Passation de service, Prise de service, Transformation d’un ticket en facture & impression d’une facture normalisée, Gestion des avoirs, Encaissement caisse mini-dépense, Décaissement caisse mini-dépense",
+                    "largeur": 1,
+                    "hauteur": 1
+                  }
+                ],
+                [
+                  {
+                    "cle": "a8",
+                    "texte": "Procédure de gestion des ressources et des collaborations\n",
+                    "largeur": 1,
+                    "hauteur": 1
+                  },
+                  {
+                    "cle": "a9",
+                    "texte": "Gestion de garde, des équipements et d'entretien des locaux : Ouverture et fermeture quotidienne, Maintenance et entretien des appareils et équipements, Entretien des locaux\nGestion des ressources humaines : Recrutement, Gestion de dossier du personnel, Gestion des congés et des absences au poste, Gestion des conflits, Gestion des compétences\n\nCollaboration avec les prestataires externes : Constitution d’une base de données, Sélection des prestataires externes, Paiement des prestataires externes",
+                    "largeur": 1,
+                    "hauteur": 1
+                  }
+                ],
+                [
+                  {
+                    "cle": "a10",
+                    "texte": "Procédure de gestion de la surveillance et des actions d'amélioration ",
+                    "largeur": 1,
+                    "hauteur": 1
+                  },
+                  {
+                    "cle": "a11",
+                    "texte": "Gestion des risques et opportunités\t: Identification du risque, Analyse & Evaluation du risque, Traitement du risque, Suivi du risque\nTraitement des réclamations : Préalable & Communication, Réception et traitement des réclamations, Clôture de la réclamation, Mesure de la satisfaction des réclamants\nGestion des évaluations de performance et de satisfaction : Evaluation de la performance du personnel, Evaluation de la performance des prestataires externes, Evaluation de la satisfaction client et autres PIP\nOrganisation des auto-inspections : Sélection des inspecteurs, Planification des auto-inspection, Préparation d’auto-inspection, Déroulement de la mission d’auto-inspection, Evaluation des inspecteurs, Mise en œuvre d’action, Suivi et clôture d’inspection\nGestion des non-conformités et d'actions d'amélioration : Identification de l’écart et ou constatation de la non-conformité, Analyse et traitement de l’écart ou de la non-conformité, Suivi et Evaluation de l’efficacité des actions et clôture de l’écart ou de la non-conformité",
+                    "largeur": 1,
+                    "hauteur": 1
+                  }
+                ]
+              ]
+            },
+            {
+              "cle": "a13",
+              "type": "paragraphe",
+              "texte": "",
+              "gras": false
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "5dad621658c3acd0d81771bf",
       "titre": "PLANNING DU PERSONNEL MODEL",
       "rubrique": "Document en cours et autres",
@@ -213769,8 +214105,5 @@
       "formules_recalculees": false
     }
   ],
-  "non_integres": [
-    "Document en cours et autres/Liste des procédures et leurs activités de couverture (Version annotée).pdf",
-    "Document en cours et autres/Liste des procédures et leurs activités de couverture.odt"
-  ]
+  "non_integres": []
 }

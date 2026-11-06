@@ -59,6 +59,20 @@ class CanevasEtEvaluationCompleteTest extends TestCase
         $this->actingAs($this->titulaire)->getJson('/api/officines/'.Str::uuid().'/canevas')->assertForbidden();
     }
 
+    public function test_odt_adaptable_et_pdf_annote_en_consultation_seulement(): void
+    {
+        $sources = app(\App\Services\CatalogueCanevasService::class)->tous();
+        $base = "/api/officines/{$this->officine->id}/canevas";
+        $pdf = array_values(array_filter($sources, fn ($c) => ($c['format'] ?? null) === 'pdf'))[0];
+        $this->actingAs($this->titulaire)->getJson("$base/{$pdf['id']}")->assertOk()->assertJsonCount(9, 'annotations')->assertJsonPath('usage', 'reference');
+        $this->actingAs($this->titulaire)->postJson("$base/{$pdf['id']}/documents", ['valeurs' => [], 'type_doc' => 'procedure', 'processus' => 'QAM'])->assertUnprocessable();
+        $odt = array_values(array_filter($sources, fn ($c) => ($c['format'] ?? null) === 'odt'))[0];
+        $cle = app(\App\Services\CatalogueCanevasService::class)->champs($odt)[0];
+        $r = $this->actingAs($this->titulaire)->postJson("$base/{$odt['id']}/documents", ['valeurs' => [$cle => 'Liste adaptée pour notre officine'], 'type_doc' => 'procedure', 'processus' => 'QAM'])->assertCreated();
+        $contenu = json_decode($r->json('contenu'), true);
+        $this->assertSame($odt['sha256'], $contenu['canevas']['sha256']);
+        $this->assertSame('Liste adaptée pour notre officine', $contenu['valeurs'][$cle]);
+    }
     public function test_grille_complete_et_actions_sans_fausses_notes(): void
     {
         $base = "/api/officines/{$this->officine->id}/auto-evaluation";

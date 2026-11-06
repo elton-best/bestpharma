@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Canevas Word et Excel : ordre des paragraphes, tableaux, fusions et pièces graphiques.
-Ne réécrit jamais le corpus. Les DOC binaires et classeurs restent à traiter.
+Ne réécrit jamais le corpus. Inclut les listes ODT et la référence PDF annotée.
 """
 import argparse, base64, hashlib, json, re, importlib.util
 from pathlib import Path
@@ -125,15 +125,18 @@ def produire():
     spec = importlib.util.spec_from_file_location('canevas_excel', Path(__file__).with_name('canevas-excel.py'))
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
     result.extend(module.extraire(SOURCE))
+    spec_autres = importlib.util.spec_from_file_location('canevas_autres', Path(__file__).with_name('canevas-autres.py'))
+    autres = importlib.util.module_from_spec(spec_autres); spec_autres.loader.exec_module(autres)
+    result.extend(autres.extraire(SOURCE))
     result.sort(key=lambda c: c['fichier'])
     return {'schema': 'begpharma.canevas.v1', 'canevas': result,
-            'non_integres': [f.relative_to(SOURCE).as_posix() for f in sorted(SOURCE.rglob('*')) if f.suffix.lower() in ['.odt', '.pdf']]}
+            'non_integres': []}
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument('--check', action='store_true'); args = parser.parse_args()
     contenu = json.dumps(produire(), ensure_ascii=False, indent=2)+'\n'
     if args.check:
         if not SORTIE.exists() or SORTIE.read_text() != contenu: raise SystemExit('Canevas à régénérer : python scripts/extraire-canevas.py')
-        print('Canevas Word et Excel alignés sur le corpus.'); return
+        print('Catalogue documentaire aligné sur le corpus.'); return
     SORTIE.parent.mkdir(parents=True, exist_ok=True); SORTIE.write_text(contenu)
-    print('Canevas Word et Excel extraits sans modification des sources.')
+    print('Catalogue documentaire extrait sans modification des sources.')
 if __name__ == '__main__': main()

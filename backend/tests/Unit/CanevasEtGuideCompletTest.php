@@ -9,14 +9,29 @@ class CanevasEtGuideCompletTest extends TestCase
     {
         $service = new CatalogueCanevasService;
         $canevas = $service->tous();
-        $this->assertCount(60, $canevas);
-        $this->assertCount(60, array_unique(array_column($canevas, 'id')));
+        $this->assertCount(62, $canevas);
+        $this->assertCount(62, array_unique(array_column($canevas, 'id')));
         foreach ($canevas as $c) {
             $this->assertSame($c['sha256'], hash_file('sha256', dirname(__DIR__, 3).'/0000. DIGIT ABMEB/'.$c['fichier']));
             $champs = $service->champs($c);
             $this->assertNotEmpty($champs);
             $this->assertSame($champs, array_values(array_unique($champs)));
         }
+    }
+    public function test_liste_odt_et_annotations_pdf_preservees_separement(): void
+    {
+        $sources = (new CatalogueCanevasService)->tous();
+        $odt = array_values(array_filter($sources, fn ($c) => ($c['format'] ?? null) === 'odt'))[0];
+        $table = array_values(array_filter($odt['parties'][0]['blocs'], fn ($b) => $b['type'] === 'tableau'))[0];
+        $this->assertCount(6, $table['lignes']);
+        $this->assertCount(2, $table['lignes'][0]);
+        $pdf = array_values(array_filter($sources, fn ($c) => ($c['format'] ?? null) === 'pdf'))[0];
+        $this->assertSame('reference', $pdf['usage']);
+        $this->assertCount(2, $pdf['parties']);
+        $this->assertCount(9, $pdf['annotations']);
+        $notes = implode("\n", array_column($pdf['annotations'], 'texte'));
+        $this->assertStringContainsString('Sauvegarde informatique', $notes);
+        $this->assertStringContainsString('prévention des erreurs de dispensation', $notes);
     }
     public function test_grille_complete_avec_texte_source_et_ordre_numerique(): void
     {

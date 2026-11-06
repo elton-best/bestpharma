@@ -442,11 +442,12 @@ const server = http.createServer(async (req, res) => {
       const u = Object.values(DEMO_USERS).find(u => token === "demo-token-" + u.id);
       if (!u) return sendJson(res, 401, { message: "Connexion requise." });
       if (!u.officines.includes(m[1])) return sendJson(res, 403, { message: "Officine non autorisée." });
-      if (!m[2] && method === "GET") return sendJson(res, 200, CANEVAS.map(({ id, titre, rubrique, fichier, sha256 }) => ({ id, titre, rubrique, fichier, sha256 })));
+      if (!m[2] && method === "GET") return sendJson(res, 200, CANEVAS.map(({ id, titre, rubrique, fichier, sha256, usage, format }) => ({ id, titre, rubrique, fichier, sha256, usage, format })));
       const c = CANEVAS.find(c => c.id === m[2]);
       if (!c) return sendJson(res, 404, { message: "Canevas introuvable." });
       if (!m[3] && method === "GET") return sendJson(res, 200, c);
       if (m[3] && method === "POST") {
+        if (c.usage === "reference") return sendJson(res, 422, {message: "Ce document annoté est une référence à consulter, pas un formulaire à remplir."});
         if (!["promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq"].includes(u.role)) return sendJson(res, 403, { message: "Création réservée aux responsables habilités." });
         const b = await parseBody(req);
         if (!b.valeurs || typeof b.valeurs !== "object" || Array.isArray(b.valeurs) || !["TAM", "QAM", "GAD", "GAC", "GAR"].includes(b.processus) || !["procedure", "enregistrement", "fiche_poste"].includes(b.type_doc)) return sendJson(res, 422, { message: "Vérifiez la nature, le processus et les zones du canevas." });

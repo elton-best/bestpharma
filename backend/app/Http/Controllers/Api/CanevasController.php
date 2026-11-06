@@ -13,7 +13,7 @@ class CanevasController extends Controller
     public function index(Request $request, string $officineId): JsonResponse
     {
         $this->autoriser($request, $officineId);
-        return response()->json(array_map(fn ($c) => array_intersect_key($c, array_flip(['id', 'titre', 'rubrique', 'fichier', 'sha256'])), app(CatalogueCanevasService::class)->tous()));
+        return response()->json(array_map(fn ($c) => array_intersect_key($c, array_flip(['id', 'titre', 'rubrique', 'fichier', 'sha256', 'usage', 'format'])), app(CatalogueCanevasService::class)->tous()));
     }
 
     public function show(Request $request, string $officineId, string $id): JsonResponse
@@ -27,6 +27,7 @@ class CanevasController extends Controller
         $this->autoriser($request, $officineId, true);
         $service = app(CatalogueCanevasService::class);
         $canevas = $service->trouver($id);
+        abort_if(($canevas['usage'] ?? null) === 'reference', 422, 'Ce document annoté est une référence à consulter, pas un formulaire à remplir.');
         $cles = $service->champs($canevas);
         $v = $request->validate(['valeurs' => 'present|array', 'valeurs.*' => 'nullable|string|max:30000', 'type_doc' => 'required|in:procedure,enregistrement,fiche_poste', 'processus' => 'required|in:TAM,QAM,GAD,GAC,GAR']);
         abort_if(array_diff(array_keys($v['valeurs']), $cles), 422, 'Une zone de saisie ne correspond pas au canevas.');

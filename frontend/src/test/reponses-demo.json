@@ -4887,7 +4887,8 @@
       "titre": "Inventaire documentaire  PHARMACIE OKPE OLUWA",
       "rubrique": "1.MAITRISE DOCUMENTAIRE",
       "fichier": "1.MAITRISE DOCUMENTAIRE/Inventaire documentaire  PHARMACIE OKPE OLUWA.xlsx",
-      "sha256": "7aa190d152b136eec1017172fc00c4711442b09aed7189a1c43fc66a61e7a8ac"
+      "sha256": "7aa190d152b136eec1017172fc00c4711442b09aed7189a1c43fc66a61e7a8ac",
+      "format": "xlsx"
     },
     {
       "id": "cadf973180ea5205ac7963a8",
@@ -4908,35 +4909,40 @@
       "titre": "FOR & ENR  Plan de Formation",
       "rubrique": "2.RESSOURCES ET COLLABORATION",
       "fichier": "2.RESSOURCES ET COLLABORATION/FOR & ENR  Plan de Formation.xlsx",
-      "sha256": "e585f5c7bc5a7557480b060d43fd93adc7a32e46e94f003a24041c5924f7dc4f"
+      "sha256": "e585f5c7bc5a7557480b060d43fd93adc7a32e46e94f003a24041c5924f7dc4f",
+      "format": "xlsx"
     },
     {
       "id": "098947daa309ce29c497e90a",
       "titre": "FOR & ENR-Gestion des Congés",
       "rubrique": "2.RESSOURCES ET COLLABORATION",
       "fichier": "2.RESSOURCES ET COLLABORATION/FOR & ENR-Gestion des Congés.xlsx",
-      "sha256": "2d40733f00fa9da8b9d9f8a4a65bbff0e584d03e1a8060f3e219fde1217a8fda"
+      "sha256": "2d40733f00fa9da8b9d9f8a4a65bbff0e584d03e1a8060f3e219fde1217a8fda",
+      "format": "xlsx"
     },
     {
       "id": "256eaa360e6339bb90029134",
       "titre": "FOR & ENR-Plan de Nettoyage et d'Entretien .",
       "rubrique": "2.RESSOURCES ET COLLABORATION",
       "fichier": "2.RESSOURCES ET COLLABORATION/FOR & ENR-Plan de Nettoyage et d'Entretien ..xlsx",
-      "sha256": "abb5fb8b5a3adb51dd1c7648a08527d1fef771100a5e5f6858c6922cc3f37ad6"
+      "sha256": "abb5fb8b5a3adb51dd1c7648a08527d1fef771100a5e5f6858c6922cc3f37ad6",
+      "format": "xlsx"
     },
     {
       "id": "ea65c149e7fcc81c36743927",
       "titre": "FOR &ENR Inventaire des équipements",
       "rubrique": "2.RESSOURCES ET COLLABORATION",
       "fichier": "2.RESSOURCES ET COLLABORATION/FOR &ENR Inventaire des équipements.xlsx",
-      "sha256": "1ea9d8d5518c782056d7596f5b4635ee9260f5397c66a077e92ebe9b2a94529e"
+      "sha256": "1ea9d8d5518c782056d7596f5b4635ee9260f5397c66a077e92ebe9b2a94529e",
+      "format": "xlsx"
     },
     {
       "id": "97c7ac830455cfb3a2e9a767",
       "titre": "FOR &ENR Plan de Maintenance et d'étalonnage des équipements",
       "rubrique": "2.RESSOURCES ET COLLABORATION",
       "fichier": "2.RESSOURCES ET COLLABORATION/FOR &ENR Plan de Maintenance et d'étalonnage des équipements.xlsx",
-      "sha256": "d991844876eafbc3b18fcef3117d32f46fac16c3cbfe0087f679617c9a607508"
+      "sha256": "d991844876eafbc3b18fcef3117d32f46fac16c3cbfe0087f679617c9a607508",
+      "format": "xlsx"
     },
     {
       "id": "adf7fd675cb19c104d85c253",
@@ -5083,7 +5089,8 @@
       "titre": "Plan de continuité_Pharmacie",
       "rubrique": "2.RESSOURCES ET COLLABORATION",
       "fichier": "2.RESSOURCES ET COLLABORATION/Plan de continuité_Pharmacie.xlsx",
-      "sha256": "decab62c484ec8a0b1efb60e9564f705c900b33b1674a11ad968b3fbd38a095a"
+      "sha256": "decab62c484ec8a0b1efb60e9564f705c900b33b1674a11ad968b3fbd38a095a",
+      "format": "xlsx"
     },
     {
       "id": "98c63129c635fd66637e420e",
@@ -5104,14 +5111,16 @@
       "titre": "Registre de Maintenance & Tests 2025",
       "rubrique": "2.RESSOURCES ET COLLABORATION",
       "fichier": "2.RESSOURCES ET COLLABORATION/Registre de Maintenance & Tests 2025.xlsx",
-      "sha256": "e3f85e871000ecea9153a342b7100427556cca295791ceeac276f73a366087a7"
+      "sha256": "e3f85e871000ecea9153a342b7100427556cca295791ceeac276f73a366087a7",
+      "format": "xlsx"
     },
     {
       "id": "97b2da36ed335908c2460b9d",
       "titre": "Registre de Maintenance & Tests 2026",
       "rubrique": "2.RESSOURCES ET COLLABORATION",
       "fichier": "2.RESSOURCES ET COLLABORATION/Registre de Maintenance & Tests 2026.xlsx",
-      "sha256": "541ae5bd67ce2bada62b5f8e7c929306e6bbfe9969b61c2cff59e4a7577f7454"
+      "sha256": "541ae5bd67ce2bada62b5f8e7c929306e6bbfe9969b61c2cff59e4a7577f7454",
+      "format": "xlsx"
     },
     {
       "id": "cae31039b7e2e0d862616bef",
@@ -5125,7 +5134,8 @@
       "titre": "FOR &ENR-Plan d'Actions du SMQ",
       "rubrique": "3.SURVEILLANCE ET AMELIORATION",
       "fichier": "3.SURVEILLANCE ET AMELIORATION/FOR &ENR-Plan d'Actions du SMQ.xlsx",
-      "sha256": "0518a617c2ff3d8a93a006e8f819008952acc401845bbce3a0a18aba0d77ff7c"
+      "sha256": "0518a617c2ff3d8a93a006e8f819008952acc401845bbce3a0a18aba0d77ff7c",
+      "format": "xlsx"
     },
     {
       "id": "1ce1dcab3de3102b7fcbc956",
@@ -5153,7 +5163,8 @@
       "titre": "FOR-Plan de Maîtrise des Risques et Opportunités",
       "rubrique": "3.SURVEILLANCE ET AMELIORATION",
       "fichier": "3.SURVEILLANCE ET AMELIORATION/FOR-Plan de Maîtrise des Risques et Opportunités.xlsx",
-      "sha256": "eceb368434b969d9b34e78914bfdbe9aa2a86c9b5ad8c6ec5e289efe9b0490ff"
+      "sha256": "eceb368434b969d9b34e78914bfdbe9aa2a86c9b5ad8c6ec5e289efe9b0490ff",
+      "format": "xlsx"
     },
     {
       "id": "7cd67b1f1e39e251ac803075",
@@ -5167,7 +5178,8 @@
       "titre": "FOR-Tableau de Suivi des Améliorations du SMQ",
       "rubrique": "3.SURVEILLANCE ET AMELIORATION",
       "fichier": "3.SURVEILLANCE ET AMELIORATION/FOR-Tableau de Suivi des Améliorations du SMQ.xlsx",
-      "sha256": "1ae08fd1e99dffb0230d1c3f359a362fbc81f1bd8eaf5ba7911bb3bf60337cc6"
+      "sha256": "1ae08fd1e99dffb0230d1c3f359a362fbc81f1bd8eaf5ba7911bb3bf60337cc6",
+      "format": "xlsx"
     },
     {
       "id": "9be9dc1d09aef3199aef6691",
@@ -5223,14 +5235,16 @@
       "titre": "Plan de continuité_Pharmacie",
       "rubrique": "3.SURVEILLANCE ET AMELIORATION",
       "fichier": "3.SURVEILLANCE ET AMELIORATION/Plan de continuité_Pharmacie.xlsx",
-      "sha256": "38e99ac7f22485c3526514b369a6082f9ded6957e685f873f098de06718fcba6"
+      "sha256": "38e99ac7f22485c3526514b369a6082f9ded6957e685f873f098de06718fcba6",
+      "format": "xlsx"
     },
     {
       "id": "eeeb282941ebd0771740d73e",
       "titre": "Tableau de maîtrise des risques et opportunités",
       "rubrique": "3.SURVEILLANCE ET AMELIORATION",
       "fichier": "3.SURVEILLANCE ET AMELIORATION/Tableau de maîtrise des risques et opportunités.xlsx",
-      "sha256": "d5d8510bd2f57b3370ba71f87c0207c7956529be346c847ea5802dc28eca7eae"
+      "sha256": "d5d8510bd2f57b3370ba71f87c0207c7956529be346c847ea5802dc28eca7eae",
+      "format": "xlsx"
     },
     {
       "id": "41c18e026f0ad712f05616ac",
@@ -5268,11 +5282,29 @@
       "sha256": "16032314be8003351fdd54822bfe0374dfd6964b3968309265aedec2f451ad1b"
     },
     {
+      "id": "c0273cd15ccab0bcf6199d81",
+      "titre": "Liste des procédures et leurs activités de couverture (Version annotée)",
+      "rubrique": "Document en cours et autres",
+      "fichier": "Document en cours et autres/Liste des procédures et leurs activités de couverture (Version annotée).pdf",
+      "sha256": "11d1880a1cf73dbabe212c2653973ae7a300dd764d069d9d0b19dbfff5f05506",
+      "format": "pdf",
+      "usage": "reference"
+    },
+    {
+      "id": "38fe1d734cc29f916671108e",
+      "titre": "Liste des procédures et leurs activités de couverture",
+      "rubrique": "Document en cours et autres",
+      "fichier": "Document en cours et autres/Liste des procédures et leurs activités de couverture.odt",
+      "sha256": "bfbffad345c99d2cd8651cace2d54b8dc95d0da8601dc5a07ede4ba529218b19",
+      "format": "odt"
+    },
+    {
       "id": "5dad621658c3acd0d81771bf",
       "titre": "PLANNING DU PERSONNEL MODEL",
       "rubrique": "Document en cours et autres",
       "fichier": "Document en cours et autres/PLANNING DU PERSONNEL MODEL.xlsx",
-      "sha256": "ecc48ebd526e2b322a8728068da7be9bbfc8dff16e41d81cc5ce4e16c4f14606"
+      "sha256": "ecc48ebd526e2b322a8728068da7be9bbfc8dff16e41d81cc5ce4e16c4f14606",
+      "format": "xlsx"
     },
     {
       "id": "1474bc279595b35788543b59",
@@ -5286,7 +5318,8 @@
       "titre": "Quelques plans de la pharmacie OKPE OLUWA",
       "rubrique": "Document en cours et autres",
       "fichier": "Document en cours et autres/Quelques plans de la pharmacie OKPE OLUWA.xlsx",
-      "sha256": "defedecf513696145d5f3810affc97624e4cd74c1098824d23d233ca4838b397"
+      "sha256": "defedecf513696145d5f3810affc97624e4cd74c1098824d23d233ca4838b397",
+      "format": "xlsx"
     }
   ],
   "/stocks/alertes-peremption": {

@@ -78,7 +78,7 @@ function PageAutoEvaluation() {
   const [enCours, setEnCours] = useState(false);
 
   // CHARGEMENT DE LA CAMPAGNE COURANTE ET DES ARTICLES
-  const { data: campagneData, refetch } = useQuery({
+  const { data: campagneData, refetch, isError: erreurCampagne, isLoading: chargementCampagne } = useQuery({
     queryKey: ["auto-evaluation-campagne", id],
     enabled: !!id,
     queryFn: async () => {
@@ -227,6 +227,9 @@ function PageAutoEvaluation() {
     toast.success("Rapport prêt pour impression.");
   };
 
+  if (erreurCampagne) return <section role="alert" className="grid gap-3 rounded-xl border p-4"><h1 className="text-xl font-bold">Auto-évaluation indisponible</h1><p>La grille ne peut pas être chargée pour cette officine. Aucun résultat ne peut être affiché.</p><Button className="min-h-12 justify-self-start" onClick={() => refetch()}>Recharger la grille</Button></section>;
+  if (chargementCampagne || !campagneData) return <p role="status">Chargement de la grille d’auto-évaluation…</p>;
+  const nombreCotes = evaluations.filter((a: any) => !["non_evalue", "non_applicable"].includes(a.cotation)).length;
   return (
     <div className="grid gap-6">
       {campagneData?.referentiel_complet === false && aRole("promoteur", "pharmacien_titulaire", "pharmacien_adjoint", "rmq") && <section className="grid gap-3 rounded-xl border p-4">
@@ -289,7 +292,7 @@ function PageAutoEvaluation() {
                   Indice de Conformité Globale BPD
                 </h2>
                 <Badge className={scoreGlobal >= 80 ? "bg-[#0F3B27] text-[#92FF5F] border border-[#92FF5F]/50 rounded-[6px]" : scoreGlobal >= 50 ? "bg-[#FF7036] text-white rounded-[6px]" : "bg-red-600 text-white rounded-[6px]"}>
-                  {scoreGlobal >= 80 ? "★ Niveau Conforme (Audit Validé)" : scoreGlobal >= 50 ? "Mise à niveau requise" : "Non Conforme"}
+                  {!nombreCotes ? "Évaluation à réaliser" : scoreGlobal >= 80 ? "Score favorable sur les articles évalués" : scoreGlobal >= 50 ? "Actions à poursuivre" : "Écarts à traiter"}
                 </Badge>
               </div>
               <p className="text-xs text-[#475C50] mt-1.5 max-w-xl font-medium leading-relaxed">
@@ -756,11 +759,11 @@ function PageAutoEvaluation() {
         <ModaleFiche
           titre="Rapport d'auto-inspection qualité"
           sousTitre="Le bilan de l'officine sur le référentiel des bonnes pratiques de dispensation, chapitre par chapitre."
-          badge={<Badge variant="outline" className="border-[#CFF1D2] text-[#475C50]">Guide BPD · ABMed</Badge>}
+
           pied={
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-[11px] text-[#475C50]">
-                Le rapport imprimé est daté et signé par le pharmacien responsable.
+                Rapport à relire et à signer par le pharmacien responsable.
               </p>
               <div className="flex flex-col-reverse gap-2 sm:flex-row">
                 <Button variant="outline" onClick={() => setDialogRapport(false)} className="h-12 rounded-xl sm:h-11">
@@ -778,10 +781,10 @@ function PageAutoEvaluation() {
               <div className="space-y-1 rounded-xl border-2 border-[#CFF1D2] bg-[#F7F9F7] p-4 text-xs">
                 <p className="text-sm font-bold text-[#0F3B27]">{courante?.officine?.nom}</p>
                 <p className="text-[#475C50]">
-                  Licence : {courante?.officine?.numero_licence ?? "En cours"} · Ville : {courante?.officine?.ville ?? "Cotonou"}
+                  Licence : {courante?.officine?.numero_licence ?? "À renseigner"} · Ville : {courante?.officine?.ville ?? "À renseigner"}
                 </p>
                 <p className="text-[#475C50]">
-                  Audité le {formatDate(new Date())} par le pharmacien titulaire et le responsable qualité.
+                  Document préparé le {formatDate(new Date())}, à faire vérifier par les responsables de l’officine.
                 </p>
               </div>
 

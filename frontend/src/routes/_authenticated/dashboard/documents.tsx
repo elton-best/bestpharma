@@ -1,3 +1,4 @@
+import { ConnexionDonnees } from "@/components/connexion-donnees";
 import { CanevasCatalogue, ContenuCanevas, lireCanevas, EditionCanevas, htmlCanevas, texteCanevas } from "@/components/modules/canevas-documentaires";
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
@@ -118,7 +119,7 @@ function PageDocuments() {
   const [qualification, setQualification] = useState(false);
   const [docASigner, setDocASigner] = useState<DocumentBpd | null>(null);
 
-  const { data: documents = [], isError: erreurDocuments, isLoading: chargementDocuments } = useQuery<DocumentBpd[]>({
+  const { data: documents = [], isError: erreurDocuments, isLoading: chargementDocuments, error: detailErreurDocuments, refetch: rechargerDocuments } = useQuery<DocumentBpd[]>({
     queryKey: ["documents", id, filtreStatut, filtreProcessus],
     enabled: !!id,
     queryFn: async () => {
@@ -649,7 +650,7 @@ ${commentDoc || "Appliquer les étapes dans l'ordre chronologique prescrit."}
       <div className="space-y-4">
         {id && <ImportsCorpus officine={id} />}
         {chargementDocuments && <p role="status">Chargement des documents…</p>}
-        {erreurDocuments && <p role="alert">Les documents ne peuvent pas être chargés. Les listes et compteurs sont indisponibles.</p>}
+        {erreurDocuments && <ConnexionDonnees erreur={detailErreurDocuments} reessayer={() => rechargerDocuments()} titre="Documents en attente de chargement" />}
 
         {/* 1. BIBLIOTHÈQUE DOCUMENTAIRE */}
         {activeTab === "bibliotheque" && <div className="space-y-4">

@@ -1,3 +1,4 @@
+import { EtatConnexion } from "@/components/connexion-donnees";
 import { useCallback, useEffect, useState } from "react";
 import {
   Outlet,
@@ -238,6 +239,7 @@ function Coquille({ userId, email }: { userId: string; email: string }) {
 
         {/* CONTENU DE LA PAGE */}
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-8">
+          <EtatConnexion />
           <Outlet key={courante?.officine_id ?? "sans-officine"} />
         </main>
       </div>

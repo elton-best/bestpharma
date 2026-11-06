@@ -53,7 +53,9 @@ export function OfficineProvider({ userId, children }: { userId: string; childre
       })) as Rattachement[];
     },
     queryFn: async () => {
-      const offs = await api.get<any[]>("/api/officines").catch(() => api.getOfficines());
+      const offs = await api.get<any[]>("/api/officines");
+      if (!Array.isArray(offs)) throw new Error("Liste des officines indisponible.");
+      api.setOfficines(offs);
       return (offs || []).map((o: any) => ({
         officine_id: o.id,
         role: (o.pivot?.role_code || "dispensateur") as Role,

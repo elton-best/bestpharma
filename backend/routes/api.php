@@ -35,6 +35,7 @@ use Illuminate\Support\Facades\Route;
 // Routes publiques d'authentification
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
+Route::get('/demo/access', [AuthController::class, 'demoAccess']);
 
 // Routes protégées par token Sanctum
 Route::middleware('auth:sanctum')->group(function () {
@@ -256,4 +257,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/comptabilite/ecritures', [ComptabiliteController::class, 'storeEcriture']);
     Route::post('/comptabilite/ecritures/{id}/extourne', [ComptabiliteController::class, 'extourneEcriture']);
     Route::get('/comptabilite/clotures', [ComptabiliteController::class, 'cloturesCaisse']);
+
+    // ==========================================
+    // JALON 4 : CONSOLIDATION PROMOTEUR & TÉLÉSERVICES DE GARDE
+    // ==========================================
+
+    // Consolidation Multi-Officines & Transferts Groupe
+    Route::get('/promoteur/consolidation', [\App\Http\Controllers\Api\PromoteurConsolidationController::class, 'consolidation']);
+    Route::get('/promoteur/transferts', [\App\Http\Controllers\Api\PromoteurConsolidationController::class, 'transferts']);
+    Route::post('/promoteur/transferts', [\App\Http\Controllers\Api\PromoteurConsolidationController::class, 'storeTransfert']);
+    Route::post('/promoteur/transferts/{id}/receptionner', [\App\Http\Controllers\Api\PromoteurConsolidationController::class, 'receptionnerTransfert']);
+
+    // Officines de garde
+    Route::get('/gardes', [\App\Http\Controllers\Api\GardeOfficineController::class, 'index']);
+    Route::post('/gardes', [\App\Http\Controllers\Api\GardeOfficineController::class, 'store']);
+    Route::delete('/gardes/{id}', [\App\Http\Controllers\Api\GardeOfficineController::class, 'destroy']);
 });

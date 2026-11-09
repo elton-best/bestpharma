@@ -68,6 +68,8 @@ type NavEntry = Leaf | Group;
 
 const NAV_ENTRIES: NavEntry[] = [
   { to: "/dashboard", label: "Tableau de bord", icon: Home },
+  { to: "/dashboard/consolidation", label: "Consolidation Groupe", icon: Building2, badge: "Multi" },
+  { to: "/dashboard/gardes", label: "Pharmacies de Garde", icon: Clock, badge: "24/7" },
   {
     label: "Comptoir & Caisse",
     icon: Receipt,

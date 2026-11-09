@@ -41,10 +41,12 @@ import { Route as AuthenticatedDashboardAppareilsRouteImport } from './routes/_a
 import { Route as AuthenticatedDashboardAutoEvaluationRouteImport } from './routes/_authenticated/dashboard/auto-evaluation'
 import { Route as AuthenticatedDashboardComptabiliteRouteImport } from './routes/_authenticated/dashboard/comptabilite'
 import { Route as AuthenticatedDashboardCompteRouteImport } from './routes/_authenticated/dashboard/compte'
+import { Route as AuthenticatedDashboardConsolidationRouteImport } from './routes/_authenticated/dashboard/consolidation'
 import { Route as AuthenticatedDashboardDispensationRouteImport } from './routes/_authenticated/dashboard/dispensation'
 import { Route as AuthenticatedDashboardDocumentsRouteImport } from './routes/_authenticated/dashboard/documents'
 import { Route as AuthenticatedDashboardEcheancesRouteImport } from './routes/_authenticated/dashboard/echeances'
 import { Route as AuthenticatedDashboardFacturationRouteImport } from './routes/_authenticated/dashboard/facturation'
+import { Route as AuthenticatedDashboardGardesRouteImport } from './routes/_authenticated/dashboard/gardes'
 import { Route as AuthenticatedDashboardJournalRouteImport } from './routes/_authenticated/dashboard/journal'
 import { Route as AuthenticatedDashboardLocauxRouteImport } from './routes/_authenticated/dashboard/locaux'
 import { Route as AuthenticatedDashboardModelesRouteImport } from './routes/_authenticated/dashboard/modeles'
@@ -232,6 +234,12 @@ const AuthenticatedDashboardCompteRoute =
     path: '/compte',
     getParentRoute: () => AuthenticatedDashboardRouteRoute,
   } as any)
+const AuthenticatedDashboardConsolidationRoute =
+  AuthenticatedDashboardConsolidationRouteImport.update({
+    id: '/consolidation',
+    path: '/consolidation',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
 const AuthenticatedDashboardDispensationRoute =
   AuthenticatedDashboardDispensationRouteImport.update({
     id: '/dispensation',
@@ -254,6 +262,12 @@ const AuthenticatedDashboardFacturationRoute =
   AuthenticatedDashboardFacturationRouteImport.update({
     id: '/facturation',
     path: '/facturation',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
+const AuthenticatedDashboardGardesRoute =
+  AuthenticatedDashboardGardesRouteImport.update({
+    id: '/gardes',
+    path: '/gardes',
     getParentRoute: () => AuthenticatedDashboardRouteRoute,
   } as any)
 const AuthenticatedDashboardJournalRoute =
@@ -366,10 +380,12 @@ export interface FileRoutesByFullPath {
   '/dashboard/auto-evaluation': typeof AuthenticatedDashboardAutoEvaluationRoute
   '/dashboard/comptabilite': typeof AuthenticatedDashboardComptabiliteRoute
   '/dashboard/compte': typeof AuthenticatedDashboardCompteRoute
+  '/dashboard/consolidation': typeof AuthenticatedDashboardConsolidationRoute
   '/dashboard/dispensation': typeof AuthenticatedDashboardDispensationRoute
   '/dashboard/documents': typeof AuthenticatedDashboardDocumentsRoute
   '/dashboard/echeances': typeof AuthenticatedDashboardEcheancesRoute
   '/dashboard/facturation': typeof AuthenticatedDashboardFacturationRoute
+  '/dashboard/gardes': typeof AuthenticatedDashboardGardesRoute
   '/dashboard/journal': typeof AuthenticatedDashboardJournalRoute
   '/dashboard/locaux': typeof AuthenticatedDashboardLocauxRoute
   '/dashboard/modeles': typeof AuthenticatedDashboardModelesRoute
@@ -415,10 +431,12 @@ export interface FileRoutesByTo {
   '/dashboard/auto-evaluation': typeof AuthenticatedDashboardAutoEvaluationRoute
   '/dashboard/comptabilite': typeof AuthenticatedDashboardComptabiliteRoute
   '/dashboard/compte': typeof AuthenticatedDashboardCompteRoute
+  '/dashboard/consolidation': typeof AuthenticatedDashboardConsolidationRoute
   '/dashboard/dispensation': typeof AuthenticatedDashboardDispensationRoute
   '/dashboard/documents': typeof AuthenticatedDashboardDocumentsRoute
   '/dashboard/echeances': typeof AuthenticatedDashboardEcheancesRoute
   '/dashboard/facturation': typeof AuthenticatedDashboardFacturationRoute
+  '/dashboard/gardes': typeof AuthenticatedDashboardGardesRoute
   '/dashboard/journal': typeof AuthenticatedDashboardJournalRoute
   '/dashboard/locaux': typeof AuthenticatedDashboardLocauxRoute
   '/dashboard/modeles': typeof AuthenticatedDashboardModelesRoute
@@ -467,10 +485,12 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/auto-evaluation': typeof AuthenticatedDashboardAutoEvaluationRoute
   '/_authenticated/dashboard/comptabilite': typeof AuthenticatedDashboardComptabiliteRoute
   '/_authenticated/dashboard/compte': typeof AuthenticatedDashboardCompteRoute
+  '/_authenticated/dashboard/consolidation': typeof AuthenticatedDashboardConsolidationRoute
   '/_authenticated/dashboard/dispensation': typeof AuthenticatedDashboardDispensationRoute
   '/_authenticated/dashboard/documents': typeof AuthenticatedDashboardDocumentsRoute
   '/_authenticated/dashboard/echeances': typeof AuthenticatedDashboardEcheancesRoute
   '/_authenticated/dashboard/facturation': typeof AuthenticatedDashboardFacturationRoute
+  '/_authenticated/dashboard/gardes': typeof AuthenticatedDashboardGardesRoute
   '/_authenticated/dashboard/journal': typeof AuthenticatedDashboardJournalRoute
   '/_authenticated/dashboard/locaux': typeof AuthenticatedDashboardLocauxRoute
   '/_authenticated/dashboard/modeles': typeof AuthenticatedDashboardModelesRoute
@@ -519,10 +539,12 @@ export interface FileRouteTypes {
     | '/dashboard/auto-evaluation'
     | '/dashboard/comptabilite'
     | '/dashboard/compte'
+    | '/dashboard/consolidation'
     | '/dashboard/dispensation'
     | '/dashboard/documents'
     | '/dashboard/echeances'
     | '/dashboard/facturation'
+    | '/dashboard/gardes'
     | '/dashboard/journal'
     | '/dashboard/locaux'
     | '/dashboard/modeles'
@@ -568,10 +590,12 @@ export interface FileRouteTypes {
     | '/dashboard/auto-evaluation'
     | '/dashboard/comptabilite'
     | '/dashboard/compte'
+    | '/dashboard/consolidation'
     | '/dashboard/dispensation'
     | '/dashboard/documents'
     | '/dashboard/echeances'
     | '/dashboard/facturation'
+    | '/dashboard/gardes'
     | '/dashboard/journal'
     | '/dashboard/locaux'
     | '/dashboard/modeles'
@@ -619,10 +643,12 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/auto-evaluation'
     | '/_authenticated/dashboard/comptabilite'
     | '/_authenticated/dashboard/compte'
+    | '/_authenticated/dashboard/consolidation'
     | '/_authenticated/dashboard/dispensation'
     | '/_authenticated/dashboard/documents'
     | '/_authenticated/dashboard/echeances'
     | '/_authenticated/dashboard/facturation'
+    | '/_authenticated/dashboard/gardes'
     | '/_authenticated/dashboard/journal'
     | '/_authenticated/dashboard/locaux'
     | '/_authenticated/dashboard/modeles'
@@ -872,6 +898,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardCompteRouteImport
       parentRoute: typeof AuthenticatedDashboardRouteRoute
     }
+    '/_authenticated/dashboard/consolidation': {
+      id: '/_authenticated/dashboard/consolidation'
+      path: '/consolidation'
+      fullPath: '/dashboard/consolidation'
+      preLoaderRoute: typeof AuthenticatedDashboardConsolidationRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
     '/_authenticated/dashboard/dispensation': {
       id: '/_authenticated/dashboard/dispensation'
       path: '/dispensation'
@@ -898,6 +931,13 @@ declare module '@tanstack/react-router' {
       path: '/facturation'
       fullPath: '/dashboard/facturation'
       preLoaderRoute: typeof AuthenticatedDashboardFacturationRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/gardes': {
+      id: '/_authenticated/dashboard/gardes'
+      path: '/gardes'
+      fullPath: '/dashboard/gardes'
+      preLoaderRoute: typeof AuthenticatedDashboardGardesRouteImport
       parentRoute: typeof AuthenticatedDashboardRouteRoute
     }
     '/_authenticated/dashboard/journal': {
@@ -999,10 +1039,12 @@ interface AuthenticatedDashboardRouteRouteChildren {
   AuthenticatedDashboardAutoEvaluationRoute: typeof AuthenticatedDashboardAutoEvaluationRoute
   AuthenticatedDashboardComptabiliteRoute: typeof AuthenticatedDashboardComptabiliteRoute
   AuthenticatedDashboardCompteRoute: typeof AuthenticatedDashboardCompteRoute
+  AuthenticatedDashboardConsolidationRoute: typeof AuthenticatedDashboardConsolidationRoute
   AuthenticatedDashboardDispensationRoute: typeof AuthenticatedDashboardDispensationRoute
   AuthenticatedDashboardDocumentsRoute: typeof AuthenticatedDashboardDocumentsRoute
   AuthenticatedDashboardEcheancesRoute: typeof AuthenticatedDashboardEcheancesRoute
   AuthenticatedDashboardFacturationRoute: typeof AuthenticatedDashboardFacturationRoute
+  AuthenticatedDashboardGardesRoute: typeof AuthenticatedDashboardGardesRoute
   AuthenticatedDashboardJournalRoute: typeof AuthenticatedDashboardJournalRoute
   AuthenticatedDashboardLocauxRoute: typeof AuthenticatedDashboardLocauxRoute
   AuthenticatedDashboardModelesRoute: typeof AuthenticatedDashboardModelesRoute
@@ -1027,12 +1069,15 @@ const AuthenticatedDashboardRouteRouteChildren: AuthenticatedDashboardRouteRoute
     AuthenticatedDashboardComptabiliteRoute:
       AuthenticatedDashboardComptabiliteRoute,
     AuthenticatedDashboardCompteRoute: AuthenticatedDashboardCompteRoute,
+    AuthenticatedDashboardConsolidationRoute:
+      AuthenticatedDashboardConsolidationRoute,
     AuthenticatedDashboardDispensationRoute:
       AuthenticatedDashboardDispensationRoute,
     AuthenticatedDashboardDocumentsRoute: AuthenticatedDashboardDocumentsRoute,
     AuthenticatedDashboardEcheancesRoute: AuthenticatedDashboardEcheancesRoute,
     AuthenticatedDashboardFacturationRoute:
       AuthenticatedDashboardFacturationRoute,
+    AuthenticatedDashboardGardesRoute: AuthenticatedDashboardGardesRoute,
     AuthenticatedDashboardJournalRoute: AuthenticatedDashboardJournalRoute,
     AuthenticatedDashboardLocauxRoute: AuthenticatedDashboardLocauxRoute,
     AuthenticatedDashboardModelesRoute: AuthenticatedDashboardModelesRoute,

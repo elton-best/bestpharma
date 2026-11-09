@@ -13,6 +13,7 @@ const PORT = Number(process.env.PORT || 8001);
 
 // Données démo  :  extraites des seeders BEGPHARMA
 const DEMO_USERS = {
+  "demo@begpharma.bj": { id: "u-demo", name: "Dr. Démo Promoteur", email: "demo@begpharma.bj", role: "promoteur", mfa: false, officines: ["off1","off2"] },
   "promoteur@begpharma.bj": { id: "u1", name: "Dr. Anicet ANIAMBOSSOU", email: "promoteur@begpharma.bj", role: "promoteur", mfa: true, officines: ["off1","off2"] },
   "pharmacien@begpharma.bj": { id: "u2", name: "Dr. Marcelle HOUNNOU", email: "pharmacien@begpharma.bj", role: "pharmacien_titulaire", mfa: true, officines: ["off1"] },
   "dispensateur@begpharma.bj": { id: "u3", name: "Gervais KPADONOU", email: "dispensateur@begpharma.bj", role: "dispensateur", mfa: false, officines: ["off1"] },
@@ -646,6 +647,109 @@ const server = http.createServer(async (req, res) => {
   }
 
   // OFFICINES
+  if (path === "/api/promoteur/consolidation" && method === "GET") {
+    return sendJson(res, 200, {
+      officines: OFFICINES.map(o => ({
+        id: o.id,
+        nom: o.nom,
+        ville: o.ville,
+        numero_licence: o.numero_licence,
+        ca_jour: 145000,
+        ca_mois: 3820000,
+        nb_ventes_jour: 24,
+        valeur_stock: 4850000,
+        nb_references: 142,
+        alertes_peremption_30j: 1,
+        alertes_peremption_90j: 3,
+        score_bpd: 96.5,
+        non_conformites_ouvertes: 0,
+        pharmacien_present: true,
+        pharmaciens_noms: ["Dr. Marcelle HOUNNOU"],
+      })),
+      totaux_groupe: {
+        nombre_officines: OFFICINES.length,
+        ca_jour_total: 290000,
+        ca_mois_total: 7640000,
+        valeur_stock_totale: 9700000,
+        alertes_peremption_totales: 2,
+        non_conformites_ouvertes: 0,
+      },
+      opportunites_transferts: [
+        {
+          produit_id: "p1",
+          produit_nom: "Paracétamol 500mg",
+          code_cip: "6170123456789",
+          source_officine_id: "off1",
+          source_officine_nom: "Pharmacie de l'Étoile",
+          source_stock: 45,
+          dest_officine_id: "off2",
+          dest_officine_nom: "Pharmacie du Littoral",
+          dest_stock: 0,
+          quantite_suggeree: 15,
+          numero_lot: "LOT-2026-001",
+          date_peremption: "2027-06-15",
+          stock_lot_id: "l1",
+          prix_achat: 900,
+          motif: "Rupture constatée chez le destinataire",
+        }
+      ],
+      transferts_recents: [],
+    });
+  }
+  if (path === "/api/promoteur/transferts" && method === "GET") {
+    return sendJson(res, 200, []);
+  }
+  if (path === "/api/promoteur/transferts" && method === "POST") {
+    const b = await parseBody(req);
+    return sendJson(res, 201, {
+      message: "Transfert initié avec succès.",
+      transfert: {
+        id: "trf-demo-1",
+        numero_transfert: "TRF-2026-DEMO01",
+        statut: "valide",
+        ...b,
+      }
+    });
+  }
+  if (path.startsWith("/api/gardes")) {
+    if (method === "GET") {
+      return sendJson(res, 200, [
+        {
+          id: "garde-1",
+          nom_officine: "Pharmacie de l'Étoile",
+          commune: "Cotonou",
+          zone_quartier: "Haie Vive",
+          telephone: "+229 21 30 11 22",
+          date_debut: new Date().toISOString(),
+          date_fin: new Date(Date.now() + 7 * 86400000).toISOString(),
+          est_garde_active: true,
+          commentaires: "Service de garde 24h/24",
+        },
+        {
+          id: "garde-2",
+          nom_officine: "Pharmacie du Littoral",
+          commune: "Porto-Novo",
+          zone_quartier: "Ouando",
+          telephone: "+229 20 22 33 44",
+          date_debut: new Date().toISOString(),
+          date_fin: new Date(Date.now() + 7 * 86400000).toISOString(),
+          est_garde_active: true,
+          commentaires: "Garde ville de Porto-Novo",
+        }
+      ]);
+    }
+    if (method === "POST") {
+      const b = await parseBody(req);
+      return sendJson(res, 201, {
+        message: "Période de garde enregistrée avec succès.",
+        garde: { id: "garde-" + Date.now(), ...b, est_garde_active: true }
+      });
+    }
+    if (method === "DELETE") {
+      return sendJson(res, 200, { message: "Garde supprimée." });
+    }
+  }
+
   if (path === "/api/officines" && method === "GET") {
     const user = utilisateurCourant(req);
     return sendJson(res, 200, officinesPour(user));

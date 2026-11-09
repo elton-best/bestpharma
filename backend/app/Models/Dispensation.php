@@ -18,6 +18,9 @@ class Dispensation extends Model
         'officine_id',
         'numero_dispensation',
         'type_dispensation',
+        'patient_id',
+        'ordonnance_id',
+        'prescripteur_id',
         'patient_nom',
         'patient_age',
         'patient_telephone',
@@ -30,17 +33,34 @@ class Dispensation extends Model
         'dispensateur_id',
         'pharmacien_id',
         'commentaires_posologie',
+        'alertes_detectees',
     ];
 
     protected $casts = [
         'patient_age' => 'integer',
         'date_ordonnance' => 'date',
         'montant_total' => 'decimal:2',
+        'alertes_detectees' => 'array',
     ];
 
     public function officine(): BelongsTo
     {
         return $this->belongsTo(Officine::class);
+    }
+
+    public function patient(): BelongsTo
+    {
+        return $this->belongsTo(Patient::class);
+    }
+
+    public function ordonnance(): BelongsTo
+    {
+        return $this->belongsTo(Ordonnance::class);
+    }
+
+    public function prescripteur(): BelongsTo
+    {
+        return $this->belongsTo(Prescripteur::class);
     }
 
     public function dispensateur(): BelongsTo

@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   User,
+  Users,
   FileText,
   Clock,
   ShieldCheck,
@@ -80,6 +81,8 @@ function PageDispensation() {
 
   const [dialogNouvelleDispensation, setDialogNouvelleDispensation] = useState(false);
   const [typeDispensation, setTypeDispensation] = useState<"ordonnance" | "conseil_sans_ordonnance">("ordonnance");
+  const [patientId, setPatientId] = useState("");
+  const [ordonnanceId, setOrdonnanceId] = useState("");
   const [patientNom, setPatientNom] = useState("");
   const [patientAge, setPatientAge] = useState("");
   const [patientTelephone, setPatientTelephone] = useState("");
@@ -87,6 +90,8 @@ function PageDispensation() {
   const [prescripteurTitre, setPrescripteurTitre] = useState("Dr");
   const [prescripteurCentre, setPrescripteurCentre] = useState("");
   const [commentaires, setCommentaires] = useState("");
+  const [forcerAlertes, setForcerAlertes] = useState(false);
+  const [alertesDetectees, setAlertesDetectees] = useState<any[]>([]);
 
   // Lignes du panier de délivrance
   const [lignes, setLignes] = useState<LigneSaisie[]>([]);
@@ -94,6 +99,12 @@ function PageDispensation() {
   const [quantiteSelectionnee, setQuantiteSelectionnee] = useState(1);
   const [posologieSelectionnee, setPosologieSelectionnee] = useState("");
   const [dureeSelectionnee, setDureeSelectionnee] = useState("5 jours");
+
+  // Requête liste des dossiers patients pour sélection rapide (BPD Art 7.1)
+  const { data: dataPatients } = useQuery<{ data: { data: any[] } }>({
+    queryKey: ["patients-select"],
+    queryFn: () => api.get("/patients?per_page=100"),
+  });
 
   // Requête produits avec stock FEFO
   const { data: produitsData } = useQuery<{ data: ProduitItem[] }>({
@@ -140,17 +151,51 @@ function PageDispensation() {
   });
 
   const reinitialiserFormulaire = () => {
+    setPatientId("");
+    setOrdonnanceId("");
     setPatientNom("");
     setPatientAge("");
     setPatientTelephone("");
     setPrescripteurNom("");
     setPrescripteurCentre("");
     setCommentaires("");
+    setForcerAlertes(false);
+    setAlertesDetectees([]);
     setLignes([]);
+  };
+
+  const verifierSecuriteClinique = async (pId: string, nouvellesLignes: LigneSaisie[]) => {
+    if (!pId || nouvellesLignes.length === 0) {
+      setAlertesDetectees([]);
+      return;
+    }
+    try {
+      const res: any = await api.post(`/patients/${pId}/verifier-interactions`, {
+        produits: nouvellesLignes.map((l) => ({ produit_id: l.produit_id, quantite: l.quantite })),
+      });
+      if (res && res.alertes) {
+        setAlertesDetectees(res.alertes);
+      }
+    } catch {
+      // Ignorer si échec réseau non bloquant
+    }
   };
 
   const produits = (produitsData?.data || []).filter(p => p.stock_total > 0);
   const dispensations = dispensationsData?.data?.data || [];
+  const listePatients = dataPatients?.data?.data || [];
+
+  const handleSelectionnerPatient = (pId: string) => {
+    setPatientId(pId);
+    if (!pId) return;
+    const pat = listePatients.find((p) => p.id === pId);
+    if (pat) {
+      setPatientNom(`${pat.nom} ${pat.prenom}`);
+      setPatientAge(pat.age ? String(pat.age) : "");
+      setPatientTelephone(pat.telephone || "");
+      verifierSecuriteClinique(pId, lignes);
+    }
+  };
 
   const produitsFiltres = produits.filter(
     (p) =>
@@ -165,17 +210,16 @@ function PageDispensation() {
       return;
     }
 
+    let nouvellesLignes: LigneSaisie[];
     const existante = lignes.find((l) => l.produit_id === produit.id);
     if (existante) {
-      setLignes(
-        lignes.map((l) =>
-          l.produit_id === produit.id
-            ? { ...l, quantite: l.quantite + quantiteSelectionnee }
-            : l
-        )
+      nouvellesLignes = lignes.map((l) =>
+        l.produit_id === produit.id
+          ? { ...l, quantite: l.quantite + quantiteSelectionnee }
+          : l
       );
     } else {
-      setLignes([
+      nouvellesLignes = [
         ...lignes,
         {
           produit_id: produit.id,
@@ -184,15 +228,23 @@ function PageDispensation() {
           posologie: posologieSelectionnee || "Selon prescription",
           duree_traitement: dureeSelectionnee,
         },
-      ]);
+      ];
     }
+    setLignes(nouvellesLignes);
     setPosologieSelectionnee("");
     setQuantiteSelectionnee(1);
     toast.success(`${produit.nom_commercial} ajouté au panier de délivrance`);
+    if (patientId) {
+      verifierSecuriteClinique(patientId, nouvellesLignes);
+    }
   };
 
   const supprimerLigne = (produitId: string) => {
-    setLignes(lignes.filter((l) => l.produit_id !== produitId));
+    const nouvellesLignes = lignes.filter((l) => l.produit_id !== produitId);
+    setLignes(nouvellesLignes);
+    if (patientId) {
+      verifierSecuriteClinique(patientId, nouvellesLignes);
+    }
   };
 
   const totalPanier = lignes.reduce(
@@ -213,6 +265,8 @@ function PageDispensation() {
 
     mutationCreerDispensation.mutate({
       type_dispensation: typeDispensation,
+      patient_id: patientId || null,
+      ordonnance_id: ordonnanceId || null,
       patient_nom: patientNom,
       patient_age: patientAge ? parseInt(patientAge, 10) : null,
       patient_telephone: patientTelephone || null,
@@ -220,6 +274,7 @@ function PageDispensation() {
       prescripteur_titre: prescripteurTitre || null,
       prescripteur_centre: prescripteurCentre || null,
       commentaires_posologie: commentaires || null,
+      forcer_alertes: forcerAlertes,
       lignes: lignes.map((l) => ({
         produit_id: l.produit_id,
         quantite: l.quantite,
@@ -409,6 +464,58 @@ function PageDispensation() {
           </DialogHeader>
 
           <form onSubmit={handleSubmitDispensation} className="space-y-6">
+            {/* Sélection rapide Patient du Dossier Pharmaceutique */}
+            <div className="p-3 bg-emerald-50/60 rounded-lg border border-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-emerald-900 font-medium text-sm">
+                <Users className="h-4 w-4 text-emerald-700" />
+                <span>Sélectionner un dossier patient existant (BPD Art. 7.1) :</span>
+              </div>
+              <select
+                className="border rounded-md px-3 py-1.5 text-xs bg-white w-full sm:w-72"
+                value={patientId}
+                onChange={(e) => handleSelectionnerPatient(e.target.value)}
+              >
+                <option value="">-- Patient de passage (saisie manuelle) --</option>
+                {listePatients.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nom} {p.prenom} ({p.code_patient}) - {p.telephone}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Bandeau d'Alertes Cliniques en Direct */}
+            {alertesDetectees.length > 0 && (
+              <div className="p-4 rounded-lg bg-red-50 border border-red-200 text-red-900 space-y-2 animate-in fade-in">
+                <div className="flex items-center gap-2 font-bold text-red-800">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                  <span>ALERTE DE SÉCURITÉ CLINIQUE PHARMACEUTIQUE</span>
+                  <Badge variant="destructive" className="ml-auto text-[10px]">
+                    {alertesDetectees.length} alerte(s)
+                  </Badge>
+                </div>
+                <div className="space-y-1.5 text-xs">
+                  {alertesDetectees.map((alt, idx) => (
+                    <div key={idx} className="p-2 bg-white/80 rounded border border-red-200">
+                      <span className="font-bold text-red-700">{alt.titre} : </span>
+                      <span>{alt.message}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="pt-2 border-t border-red-200">
+                  <label className="flex items-center gap-2 text-xs font-medium cursor-pointer text-red-950">
+                    <input
+                      type="checkbox"
+                      checked={forcerAlertes}
+                      onChange={(e) => setForcerAlertes(e.target.checked)}
+                      className="rounded text-red-600"
+                    />
+                    Dérogation motivée du pharmacien : valider malgré l'alerte clinique
+                  </label>
+                </div>
+              </div>
+            )}
+
             {/* Données Patient & Prescripteur */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
               <div className="space-y-3">

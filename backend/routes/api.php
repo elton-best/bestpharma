@@ -16,6 +16,9 @@ use App\Http\Controllers\Api\PointageController;
 use App\Http\Controllers\Api\CaisseSessionController;
 use App\Http\Controllers\Api\ComptabiliteController;
 use App\Http\Controllers\Api\DispensationController;
+use App\Http\Controllers\Api\PatientController;
+use App\Http\Controllers\Api\OrdonnanceController;
+use App\Http\Controllers\Api\PrescripteurController;
 use App\Http\Controllers\Api\PreparationController;
 use App\Http\Controllers\Api\ProduitController;
 use App\Http\Controllers\Api\AvisRappelController;
@@ -216,6 +219,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dispensations', [DispensationController::class, 'index']);
     Route::post('/dispensations', [DispensationController::class, 'store']);
     Route::post('/dispensations/{id}/viser', [DispensationController::class, 'viser']);
+
+    // Dossier Pharmaceutique Patient (DP) & Sécurité Clinique (BPD Chapitre 7, Art. 7.1 à 7.14)
+    Route::get('/patients', [PatientController::class, 'index']);
+    Route::post('/patients', [PatientController::class, 'store']);
+    Route::get('/patients/{id}', [PatientController::class, 'show']);
+    Route::put('/patients/{id}', [PatientController::class, 'update']);
+    Route::get('/patients/{id}/historique-therapeutique', [PatientController::class, 'historiqueTherapeutique']);
+    Route::post('/patients/{id}/verifier-interactions', [PatientController::class, 'verifierInteractions']);
+
+    // Répertoire des Prescripteurs (Médecins, Ordre des Médecins, Centres de santé)
+    Route::get('/prescripteurs', [PrescripteurController::class, 'index']);
+    Route::post('/prescripteurs', [PrescripteurController::class, 'store']);
+
+    // Ordonnances Médicales & Archivage Légal (BPD Chapitre 7, Art. 7.15 à 7.30)
+    Route::get('/ordonnances', [OrdonnanceController::class, 'index']);
+    Route::post('/ordonnances', [OrdonnanceController::class, 'store']);
+    Route::get('/ordonnances/{id}', [OrdonnanceController::class, 'show']);
+    Route::post('/ordonnances/{id}/scan', [OrdonnanceController::class, 'televerserScan']);
+    Route::post('/ordonnances/{id}/renouveler', [OrdonnanceController::class, 'renouveler']);
+    Route::post('/ordonnances/{id}/cloturer', [OrdonnanceController::class, 'cloturer']);
 
     // Registre Officiel des Stupéfiants & Substances Vénéneuses (BPD-3 & Art 7.15 à 7.20) — STU complet 9 onglets
     Route::get('/stupefiants', [StupefiantController::class, 'index']);

@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Dispensation;
 use App\Models\LigneDispensation;
+use App\Models\Ordonnance;
+use App\Models\Patient;
+use App\Models\Prescripteur;
 use App\Models\Produit;
 use App\Models\RegistreStupefiant;
 use App\Models\StockLot;
+use App\Services\SecuriteCliniqueService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,16 +20,28 @@ use Illuminate\Support\Str;
 
 class DispensationController extends Controller
 {
+    public function __construct(
+        protected SecuriteCliniqueService $securiteClinique
+    ) {}
+
+    protected function getOfficineId(Request $request): string
+    {
+        $user = $request->user();
+        return $request->header('X-Officine-Id')
+            ?? $user->officine_id
+            ?? $user->officines()->wherePivot('actif', true)->value('officines.id')
+            ?? abort(400, "Aucune officine active n'est rattachée à cet utilisateur.");
+    }
+
     /**
      * Liste chronologique de l'ordonnancier et des dispensations
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $officineId = $user->officine_id;
+        $officineId = $this->getOfficineId($request);
 
         $dispensations = Dispensation::where('officine_id', $officineId)
-            ->with(['lignes.produit', 'lignes.lot', 'dispensateur', 'pharmacien'])
+            ->with(['patient', 'ordonnance', 'prescripteur', 'lignes.produit', 'lignes.lot', 'dispensateur', 'pharmacien'])
             ->orderBy('created_at', 'desc')
             ->paginate(25);
 
@@ -42,7 +58,10 @@ class DispensationController extends Controller
     {
         $validated = $request->validate([
             'type_dispensation' => 'required|in:ordonnance,conseil_sans_ordonnance',
-            'patient_nom' => 'required|string|max:150',
+            'patient_id' => 'nullable|uuid|exists:patients,id',
+            'ordonnance_id' => 'nullable|uuid|exists:ordonnances,id',
+            'prescripteur_id' => 'nullable|uuid|exists:prescripteurs,id',
+            'patient_nom' => 'nullable|string|max:150',
             'patient_age' => 'nullable|integer|min:0|max:130',
             'patient_telephone' => 'nullable|string|max:50',
             'prescripteur_nom' => 'nullable|string|max:150',
@@ -50,6 +69,7 @@ class DispensationController extends Controller
             'prescripteur_centre' => 'nullable|string|max:150',
             'date_ordonnance' => 'nullable|date',
             'commentaires_posologie' => 'nullable|string',
+            'forcer_alertes' => 'nullable|boolean',
             'lignes' => 'required|array|min:1',
             'lignes.*.produit_id' => 'required|uuid|exists:produits,id',
             'lignes.*.quantite' => 'required|integer|min:1',
@@ -58,9 +78,49 @@ class DispensationController extends Controller
         ]);
 
         $user = $request->user();
-        $officineId = $user->officine_id;
+        $officineId = $this->getOfficineId($request);
 
-        return DB::transaction(function () use ($validated, $user, $officineId) {
+        // 1. Récupération et cohérence du patient
+        $patient = null;
+        if (! empty($validated['patient_id'])) {
+            $patient = Patient::where('officine_id', $officineId)
+                ->where('id', $validated['patient_id'])
+                ->firstOrFail();
+            $patientNom = "{$patient->nom} {$patient->prenom}";
+            $patientAge = $patient->age;
+            $patientTel = $patient->telephone;
+        } else {
+            $patientNom = $validated['patient_nom'] ?? 'Patient comptoir';
+            $patientAge = $validated['patient_age'] ?? null;
+            $patientTel = $validated['patient_telephone'] ?? null;
+        }
+
+        // 2. Récupération et contrôle de l'ordonnance
+        $ordonnance = null;
+        if (! empty($validated['ordonnance_id'])) {
+            $ordonnance = Ordonnance::where('officine_id', $officineId)
+                ->where('id', $validated['ordonnance_id'])
+                ->firstOrFail();
+
+            if (! empty($ordonnance->prescripteur_id) && empty($validated['prescripteur_id'])) {
+                $validated['prescripteur_id'] = $ordonnance->prescripteur_id;
+            }
+        }
+
+        // 3. Analyse de sécurité clinique (Allergies, Grossesse, Redondances BPD Art. 7.1)
+        $alertes = $this->securiteClinique->analyserRisques($patient, $validated['lignes']);
+        $aAlerteBloquante = collect($alertes)->contains('severite', 'critique');
+
+        if ($aAlerteBloquante && empty($validated['forcer_alertes'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Dispensation bloquée par le moteur de sécurité clinique (risque vital ou allergie majeure).',
+                'bloquant' => true,
+                'alertes' => $alertes,
+            ], 422);
+        }
+
+        return DB::transaction(function () use ($validated, $user, $officineId, $patient, $patientNom, $patientAge, $patientTel, $ordonnance, $alertes) {
             $totalDispensation = 0;
             $lignesAInserer = [];
 
@@ -121,21 +181,33 @@ class DispensationController extends Controller
                 'officine_id' => $officineId,
                 'numero_dispensation' => $numDisp,
                 'type_dispensation' => $validated['type_dispensation'],
-                'patient_nom' => $validated['patient_nom'],
-                'patient_age' => $validated['patient_age'] ?? null,
-                'patient_telephone' => $validated['patient_telephone'] ?? null,
-                'prescripteur_nom' => $validated['prescripteur_nom'] ?? null,
-                'prescripteur_titre' => $validated['prescripteur_titre'] ?? null,
-                'prescripteur_centre' => $validated['prescripteur_centre'] ?? null,
-                'date_ordonnance' => $validated['date_ordonnance'] ?? Carbon::now(),
+                'patient_id' => $patient?->id,
+                'ordonnance_id' => $ordonnance?->id,
+                'prescripteur_id' => $validated['prescripteur_id'] ?? null,
+                'patient_nom' => $patientNom,
+                'patient_age' => $patientAge,
+                'patient_telephone' => $patientTel,
+                'prescripteur_nom' => $validated['prescripteur_nom'] ?? $ordonnance?->prescripteur_nom_libre ?? $ordonnance?->prescripteur?->nom_complet ?? null,
+                'prescripteur_titre' => $validated['prescripteur_titre'] ?? $ordonnance?->prescripteur?->titre ?? null,
+                'prescripteur_centre' => $validated['prescripteur_centre'] ?? $ordonnance?->prescripteur_centre_libre ?? $ordonnance?->prescripteur?->centre_sante ?? null,
+                'date_ordonnance' => $validated['date_ordonnance'] ?? $ordonnance?->date_prescription ?? Carbon::now(),
                 'montant_total' => $totalDispensation,
                 'statut' => 'validee',
                 'dispensateur_id' => $user->id,
                 'pharmacien_id' => in_array($user->role, ['pharmacien_titulaire', 'pharmacien_adjoint']) ? $user->id : null,
                 'commentaires_posologie' => $validated['commentaires_posologie'] ?? null,
+                'alertes_detectees' => ! empty($alertes) ? $alertes : null,
             ]);
 
-            // 3. Insérer les lignes rattachées aux lots FEFO et alimenter le registre des stupéfiants si nécessaire
+            // 3. Mise à jour de l'ordonnance si rattachée
+            if ($ordonnance) {
+                $ordonnance->increment('nombre_renouvellements_effectues');
+                if ($ordonnance->nombre_renouvellements_effectues >= $ordonnance->nombre_renouvellements_autorises) {
+                    $ordonnance->update(['statut' => 'cloturee']);
+                }
+            }
+
+            // 4. Insérer les lignes rattachées aux lots FEFO et alimenter le registre des stupéfiants si nécessaire
             foreach ($lignesAInserer as $item) {
                 LigneDispensation::create([
                     'dispensation_id' => $dispensation->id,
@@ -177,7 +249,8 @@ class DispensationController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => "Dispensation {$dispensation->numero_dispensation} validée avec succès avec allocation FEFO",
-                'data' => $dispensation->load(['lignes.produit', 'lignes.lot', 'dispensateur']),
+                'alertes_cliniques' => $alertes,
+                'data' => $dispensation->load(['patient', 'ordonnance', 'lignes.produit', 'lignes.lot', 'dispensateur']),
             ], 201);
         });
     }
@@ -192,7 +265,8 @@ class DispensationController extends Controller
             return response()->json(['message' => 'Seul un pharmacien diplômé peut viser une dispensation.'], 403);
         }
 
-        $dispensation = Dispensation::where('officine_id', $user->officine_id)->findOrFail($id);
+        $officineId = $this->getOfficineId($request);
+        $dispensation = Dispensation::where('officine_id', $officineId)->findOrFail($id);
         $dispensation->update([
             'pharmacien_id' => $user->id,
         ]);

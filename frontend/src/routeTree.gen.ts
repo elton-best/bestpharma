@@ -29,6 +29,7 @@ import { Route as AuthenticatedLocauxRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedModelesRouteImport } from './routes/_authenticated/modeles'
 import { Route as AuthenticatedNonConformitesRouteImport } from './routes/_authenticated/non-conformites'
 import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
+import { Route as AuthenticatedPatientsRouteImport } from './routes/_authenticated/patients'
 import { Route as AuthenticatedPersonnelRouteImport } from './routes/_authenticated/personnel'
 import { Route as AuthenticatedPointageRouteImport } from './routes/_authenticated/pointage'
 import { Route as AuthenticatedPreparationsRouteImport } from './routes/_authenticated/preparations'
@@ -52,6 +53,7 @@ import { Route as AuthenticatedDashboardLocauxRouteImport } from './routes/_auth
 import { Route as AuthenticatedDashboardModelesRouteImport } from './routes/_authenticated/dashboard/modeles'
 import { Route as AuthenticatedDashboardNonConformitesRouteImport } from './routes/_authenticated/dashboard/non-conformites'
 import { Route as AuthenticatedDashboardParametresRouteImport } from './routes/_authenticated/dashboard/parametres'
+import { Route as AuthenticatedDashboardPatientsRouteImport } from './routes/_authenticated/dashboard/patients'
 import { Route as AuthenticatedDashboardPersonnelRouteImport } from './routes/_authenticated/dashboard/personnel'
 import { Route as AuthenticatedDashboardPointageRouteImport } from './routes/_authenticated/dashboard/pointage'
 import { Route as AuthenticatedDashboardPreparationsRouteImport } from './routes/_authenticated/dashboard/preparations'
@@ -164,6 +166,11 @@ const AuthenticatedNonConformitesRoute =
 const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
   id: '/parametres',
   path: '/parametres',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPatientsRoute = AuthenticatedPatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPersonnelRoute = AuthenticatedPersonnelRouteImport.update({
@@ -300,6 +307,12 @@ const AuthenticatedDashboardParametresRoute =
     path: '/parametres',
     getParentRoute: () => AuthenticatedDashboardRouteRoute,
   } as any)
+const AuthenticatedDashboardPatientsRoute =
+  AuthenticatedDashboardPatientsRouteImport.update({
+    id: '/patients',
+    path: '/patients',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
 const AuthenticatedDashboardPersonnelRoute =
   AuthenticatedDashboardPersonnelRouteImport.update({
     id: '/personnel',
@@ -369,6 +382,7 @@ export interface FileRoutesByFullPath {
   '/modeles': typeof AuthenticatedModelesRoute
   '/non-conformites': typeof AuthenticatedNonConformitesRoute
   '/parametres': typeof AuthenticatedParametresRoute
+  '/patients': typeof AuthenticatedPatientsRoute
   '/personnel': typeof AuthenticatedPersonnelRoute
   '/pointage': typeof AuthenticatedPointageRoute
   '/preparations': typeof AuthenticatedPreparationsRoute
@@ -391,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/modeles': typeof AuthenticatedDashboardModelesRoute
   '/dashboard/non-conformites': typeof AuthenticatedDashboardNonConformitesRoute
   '/dashboard/parametres': typeof AuthenticatedDashboardParametresRoute
+  '/dashboard/patients': typeof AuthenticatedDashboardPatientsRoute
   '/dashboard/personnel': typeof AuthenticatedDashboardPersonnelRoute
   '/dashboard/pointage': typeof AuthenticatedDashboardPointageRoute
   '/dashboard/preparations': typeof AuthenticatedDashboardPreparationsRoute
@@ -420,6 +435,7 @@ export interface FileRoutesByTo {
   '/modeles': typeof AuthenticatedModelesRoute
   '/non-conformites': typeof AuthenticatedNonConformitesRoute
   '/parametres': typeof AuthenticatedParametresRoute
+  '/patients': typeof AuthenticatedPatientsRoute
   '/personnel': typeof AuthenticatedPersonnelRoute
   '/pointage': typeof AuthenticatedPointageRoute
   '/preparations': typeof AuthenticatedPreparationsRoute
@@ -442,6 +458,7 @@ export interface FileRoutesByTo {
   '/dashboard/modeles': typeof AuthenticatedDashboardModelesRoute
   '/dashboard/non-conformites': typeof AuthenticatedDashboardNonConformitesRoute
   '/dashboard/parametres': typeof AuthenticatedDashboardParametresRoute
+  '/dashboard/patients': typeof AuthenticatedDashboardPatientsRoute
   '/dashboard/personnel': typeof AuthenticatedDashboardPersonnelRoute
   '/dashboard/pointage': typeof AuthenticatedDashboardPointageRoute
   '/dashboard/preparations': typeof AuthenticatedDashboardPreparationsRoute
@@ -474,6 +491,7 @@ export interface FileRoutesById {
   '/_authenticated/modeles': typeof AuthenticatedModelesRoute
   '/_authenticated/non-conformites': typeof AuthenticatedNonConformitesRoute
   '/_authenticated/parametres': typeof AuthenticatedParametresRoute
+  '/_authenticated/patients': typeof AuthenticatedPatientsRoute
   '/_authenticated/personnel': typeof AuthenticatedPersonnelRoute
   '/_authenticated/pointage': typeof AuthenticatedPointageRoute
   '/_authenticated/preparations': typeof AuthenticatedPreparationsRoute
@@ -496,6 +514,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/modeles': typeof AuthenticatedDashboardModelesRoute
   '/_authenticated/dashboard/non-conformites': typeof AuthenticatedDashboardNonConformitesRoute
   '/_authenticated/dashboard/parametres': typeof AuthenticatedDashboardParametresRoute
+  '/_authenticated/dashboard/patients': typeof AuthenticatedDashboardPatientsRoute
   '/_authenticated/dashboard/personnel': typeof AuthenticatedDashboardPersonnelRoute
   '/_authenticated/dashboard/pointage': typeof AuthenticatedDashboardPointageRoute
   '/_authenticated/dashboard/preparations': typeof AuthenticatedDashboardPreparationsRoute
@@ -528,6 +547,7 @@ export interface FileRouteTypes {
     | '/modeles'
     | '/non-conformites'
     | '/parametres'
+    | '/patients'
     | '/personnel'
     | '/pointage'
     | '/preparations'
@@ -550,6 +570,7 @@ export interface FileRouteTypes {
     | '/dashboard/modeles'
     | '/dashboard/non-conformites'
     | '/dashboard/parametres'
+    | '/dashboard/patients'
     | '/dashboard/personnel'
     | '/dashboard/pointage'
     | '/dashboard/preparations'
@@ -579,6 +600,7 @@ export interface FileRouteTypes {
     | '/modeles'
     | '/non-conformites'
     | '/parametres'
+    | '/patients'
     | '/personnel'
     | '/pointage'
     | '/preparations'
@@ -601,6 +623,7 @@ export interface FileRouteTypes {
     | '/dashboard/modeles'
     | '/dashboard/non-conformites'
     | '/dashboard/parametres'
+    | '/dashboard/patients'
     | '/dashboard/personnel'
     | '/dashboard/pointage'
     | '/dashboard/preparations'
@@ -632,6 +655,7 @@ export interface FileRouteTypes {
     | '/_authenticated/modeles'
     | '/_authenticated/non-conformites'
     | '/_authenticated/parametres'
+    | '/_authenticated/patients'
     | '/_authenticated/personnel'
     | '/_authenticated/pointage'
     | '/_authenticated/preparations'
@@ -654,6 +678,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/modeles'
     | '/_authenticated/dashboard/non-conformites'
     | '/_authenticated/dashboard/parametres'
+    | '/_authenticated/dashboard/patients'
     | '/_authenticated/dashboard/personnel'
     | '/_authenticated/dashboard/pointage'
     | '/_authenticated/dashboard/preparations'
@@ -812,6 +837,13 @@ declare module '@tanstack/react-router' {
       path: '/parametres'
       fullPath: '/parametres'
       preLoaderRoute: typeof AuthenticatedParametresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/patients': {
+      id: '/_authenticated/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof AuthenticatedPatientsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/personnel': {
@@ -975,6 +1007,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardParametresRouteImport
       parentRoute: typeof AuthenticatedDashboardRouteRoute
     }
+    '/_authenticated/dashboard/patients': {
+      id: '/_authenticated/dashboard/patients'
+      path: '/patients'
+      fullPath: '/dashboard/patients'
+      preLoaderRoute: typeof AuthenticatedDashboardPatientsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
     '/_authenticated/dashboard/personnel': {
       id: '/_authenticated/dashboard/personnel'
       path: '/personnel'
@@ -1050,6 +1089,7 @@ interface AuthenticatedDashboardRouteRouteChildren {
   AuthenticatedDashboardModelesRoute: typeof AuthenticatedDashboardModelesRoute
   AuthenticatedDashboardNonConformitesRoute: typeof AuthenticatedDashboardNonConformitesRoute
   AuthenticatedDashboardParametresRoute: typeof AuthenticatedDashboardParametresRoute
+  AuthenticatedDashboardPatientsRoute: typeof AuthenticatedDashboardPatientsRoute
   AuthenticatedDashboardPersonnelRoute: typeof AuthenticatedDashboardPersonnelRoute
   AuthenticatedDashboardPointageRoute: typeof AuthenticatedDashboardPointageRoute
   AuthenticatedDashboardPreparationsRoute: typeof AuthenticatedDashboardPreparationsRoute
@@ -1085,6 +1125,7 @@ const AuthenticatedDashboardRouteRouteChildren: AuthenticatedDashboardRouteRoute
       AuthenticatedDashboardNonConformitesRoute,
     AuthenticatedDashboardParametresRoute:
       AuthenticatedDashboardParametresRoute,
+    AuthenticatedDashboardPatientsRoute: AuthenticatedDashboardPatientsRoute,
     AuthenticatedDashboardPersonnelRoute: AuthenticatedDashboardPersonnelRoute,
     AuthenticatedDashboardPointageRoute: AuthenticatedDashboardPointageRoute,
     AuthenticatedDashboardPreparationsRoute:
@@ -1121,6 +1162,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedModelesRoute: typeof AuthenticatedModelesRoute
   AuthenticatedNonConformitesRoute: typeof AuthenticatedNonConformitesRoute
   AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
+  AuthenticatedPatientsRoute: typeof AuthenticatedPatientsRoute
   AuthenticatedPersonnelRoute: typeof AuthenticatedPersonnelRoute
   AuthenticatedPointageRoute: typeof AuthenticatedPointageRoute
   AuthenticatedPreparationsRoute: typeof AuthenticatedPreparationsRoute
@@ -1148,6 +1190,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedModelesRoute: AuthenticatedModelesRoute,
   AuthenticatedNonConformitesRoute: AuthenticatedNonConformitesRoute,
   AuthenticatedParametresRoute: AuthenticatedParametresRoute,
+  AuthenticatedPatientsRoute: AuthenticatedPatientsRoute,
   AuthenticatedPersonnelRoute: AuthenticatedPersonnelRoute,
   AuthenticatedPointageRoute: AuthenticatedPointageRoute,
   AuthenticatedPreparationsRoute: AuthenticatedPreparationsRoute,

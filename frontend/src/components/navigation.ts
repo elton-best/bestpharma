@@ -33,6 +33,7 @@ export const navPrincipale: ItemNav[] = [
   { titre: "Tableau de bord", url: "/app", icone: Home },
   { titre: "Caisse POS", url: "/caisse", icone: Receipt, sprint: "Lot 2.1" },
   { titre: "Dispensation BPD", url: "/dispensation", icone: Stethoscope, sprint: "Lot 1.3" },
+  { titre: "Dossiers Patients", url: "/patients", icone: Users, sprint: "Lot 1.3" },
   { titre: "Facturation DGI", url: "/facturation", icone: ScanBarcode, sprint: "Lot 2.2" },
   { titre: "Stock & FEFO", url: "/stock", icone: ShoppingBag, sprint: "Lot 1.4" },
   { titre: "Comptabilité", url: "/comptabilite", icone: ChartLine, sprint: "Lot 3.1" },

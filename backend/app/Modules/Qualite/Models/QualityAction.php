@@ -10,6 +10,6 @@ class QualityAction extends Model
 {
     use BelongsToCompany;
 
-    protected $fillable = ['title', 'chapter', 'severity', 'owner', 'due_date', 'status', 'description', 'resolution'];
+    protected $fillable = ['officine_id', 'created_by', 'title', 'chapter', 'severity', 'owner', 'due_date', 'status', 'description', 'resolution'];
     protected $hidden = ['officine_id', 'created_by'];
 }

@@ -8,6 +8,7 @@ use App\Modules\Qualite\Controllers\Module5InspectionController;
 use App\Modules\Qualite\Controllers\Module6NonconformiteController;
 use App\Modules\Qualite\Controllers\Module7RisqueContinuiteController;
 use App\Modules\Personnel\Controllers\Module8PersonnelFormationController;
+use App\Modules\LocauxEquipements\Controllers\Module9EquipementLocauxController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.context', 'module.active:qualite'])
@@ -112,5 +113,32 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
             Route::post('training-sessions/{sessionId}/attendances', 'recordSessionAttendance')->whereNumber('sessionId')->middleware('throttle:identity');
             Route::get('performance-reviews', 'reviewsIndex');
             Route::post('performance-reviews', 'storePerformanceReview')->middleware('throttle:identity');
+        });
+
+        // Module 09 : Équipements & Locaux (CDC 09)
+        Route::prefix('locauxequipements')->controller(Module9EquipementLocauxController::class)->group(function (): void {
+            Route::get('overview', 'overview');
+            Route::get('locations', 'locationsIndex');
+            Route::post('locations', 'storeLocation')->middleware('throttle:identity');
+            Route::get('equipments', 'equipmentsIndex');
+            Route::post('equipments', 'storeEquipment')->middleware('throttle:identity');
+            Route::get('equipments/{id}', 'showEquipment')->whereNumber('id');
+            Route::put('equipments/{id}', 'updateEquipment')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('equipments/{id}/commissioning', 'storeCommissioningTest')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('maintenance-plans', 'maintenancePlansIndex');
+            Route::post('maintenance-plans', 'storeMaintenancePlan')->middleware('throttle:identity');
+            Route::get('maintenance-events', 'maintenanceEventsIndex');
+            Route::post('maintenance-events', 'storeMaintenanceEvent')->middleware('throttle:identity');
+            Route::post('maintenance-events/{id}/verify', 'verifyMaintenanceEvent')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('generator-tests', 'generatorTestsIndex');
+            Route::post('generator-tests', 'storeGeneratorTest')->middleware('throttle:identity');
+            Route::get('cleaning-plans', 'cleaningPlansIndex');
+            Route::post('cleaning-plans', 'storeCleaningPlan')->middleware('throttle:identity');
+            Route::get('cleaning-occurrences', 'cleaningOccurrencesIndex');
+            Route::post('cleaning-occurrences', 'storeCleaningOccurrence')->middleware('throttle:identity');
+            Route::post('cleaning-occurrences/{id}/verify', 'verifyCleaningOccurrence')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('withdrawals', 'withdrawalsIndex');
+            Route::post('withdrawals', 'requestWithdrawal')->middleware('throttle:identity');
+            Route::post('withdrawals/{id}/decision', 'decideWithdrawal')->whereNumber('id')->middleware('throttle:identity');
         });
     });

@@ -1,0 +1,46 @@
+<?php
+namespace Tests\Feature;
+use App\Models\User;
+use App\Modules\Tenancy\Models\Officine;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\Sanctum;
+use Tests\TestCase;
+class MissionDiagnosticsTest extends TestCase {
+ use RefreshDatabase;
+ private User $admin;private User $lead;private Officine $office;private int $mission;private int $assignment;
+ protected function setUp():void{parent::setUp();$this->admin=User::create(['name'=>'Admin visite','email'=>'admin-visit@example.test','password'=>'Fictional12345']);$this->lead=User::create(['name'=>'Responsable visite','email'=>'lead-visit@example.test','password'=>'Fictional12345']);$this->lead->forceFill(['is_support_staff'=>true])->save();$this->office=Officine::create(['name'=>'Visite','slug'=>'visit-office','status'=>'active']);DB::table('officine_user')->insert(['user_id'=>$this->admin->id,'officine_id'=>$this->office->id,'is_admin'=>true,'is_active'=>true,'permissions'=>'[]']);$q=DB::table('support_requests')->insertGetId(['officine_id'=>$this->office->id,'created_by'=>$this->admin->id,'reference'=>'VIS-REQ','request_key'=>'visit-request-000001','status'=>'submitted']);$this->mission=DB::table('support_missions')->insertGetId(['support_request_id'=>$q,'proposed_by'=>$this->lead->id,'title'=>'Mission visites','scope'=>'Suivi','starts_on'=>now()->subDays(10)->toDateString(),'ends_on'=>now()->addDays(30)->toDateString(),'status'=>'active']);$this->assignment=DB::table('officine_support_assignments')->insertGetId(['officine_id'=>$this->office->id,'user_id'=>$this->lead->id,'proposed_by'=>$this->admin->id,'scope'=>'Mission visites','permissions'=>json_encode(['accompagnement.read','accompagnement.write']),'starts_on'=>now()->subDay()->toDateString(),'ends_on'=>now()->addDays(30)->toDateString(),'status'=>'approved','request_key'=>'visit-assignment-00001','created_at'=>now(),'updated_at'=>now()]);DB::table('support_mission_team')->insert(['mission_id'=>$this->mission,'assignment_id'=>$this->assignment,'role'=>'lead','status'=>'approved','proposed_by'=>$this->admin->id]);$this->withHeader('X-Officine-ID',(string)$this->office->id);Sanctum::actingAs($this->lead);}
+ private function base():string{return '/api/v1/support/missions/'.$this->mission.'/diagnostics';}
+ private function questions():array{return [['key'=>'question-1','label'=>'Question métier fictive','required'=>true,'source'=>'Exemple fictif, non réglementaire','choices'=>['conform','gap','not_applicable','not_evaluated']]];}
+ private function modelData(array $extra=[]):array{return $extra+['title'=>'Modèle fictif','questions'=>$this->questions(),'request_key'=>'diagnostic-template-key-0001','confirmed'=>true];}
+ private function model(bool $publish=true):int{$id=$this->postJson($this->base().'/templates',$this->modelData())->assertCreated()->json('id');if($publish)$this->postJson($this->base().'/templates/'.$id.'/publish',['version'=>1,'confirmed'=>true])->assertOk();return $id;}
+ private function diagnostic(int $template,array $extra=[]):int{return $this->postJson($this->base(),$extra+['template_id'=>$template,'type'=>'initial','assessed_on'=>now()->toDateString(),'request_key'=>'diagnostic-instance-key-0001','confirmed'=>true])->assertCreated()->json('id');}
+ private function saveAnswers(int $id,array $answers,int $version=1){return $this->patchJson($this->base().'/'.$id,['version'=>$version,'answers'=>$answers]);}
+ private function decide(int $id,string $action,int $version){return $this->postJson($this->base().'/'.$id.'/decision',['version'=>$version,'action'=>$action,'confirmed'=>true]);}
+ public function test_no_default_grid_and_draft_metadata_are_hidden_from_office():void{
+  $this->getJson($this->base())->assertOk()->assertJsonCount(0,'templates')->assertJsonCount(0,'diagnostics');$this->model(false);Sanctum::actingAs($this->admin);$this->getJson($this->base())->assertJsonCount(0,'templates')->assertJsonMissingPath('score');$this->getJson('/api/v1/officine/journal?action=support.diagnostic.template_draft_created')->assertJsonCount(0,'data');
+ }
+ public function test_empty_or_invalid_models_cannot_be_published_and_published_models_are_frozen():void{
+  $this->postJson($this->base().'/templates',$this->modelData(['questions'=>[['key'=>'q','label'=>'Fictif','required'=>true,'choices'=>['invented-score']]]]))->assertUnprocessable();
+  $id=$this->postJson($this->base().'/templates',$this->modelData(['questions'=>[]]))->assertCreated()->json('id');$this->postJson($this->base().'/templates/'.$id.'/publish',['version'=>1,'confirmed'=>true])->assertUnprocessable();
+  $this->patchJson($this->base().'/templates/'.$id,['version'=>1,'title'=>'Questions ajoutées','questions'=>$this->questions()])->assertOk();$this->postJson($this->base().'/templates/'.$id.'/publish',['version'=>2,'confirmed'=>true])->assertOk();$this->patchJson($this->base().'/templates/'.$id,['version'=>3,'title'=>'Écrasement','questions'=>[]])->assertConflict();
+ }
+ public function test_template_revisions_do_not_change_the_diagnostic_snapshot():void{
+  $t=$this->model();$id=$this->diagnostic($t);$q=$this->questions();$q[0]['label']='Nouvelle formulation';$this->postJson($this->base().'/templates',$this->modelData(['parent_id'=>$t,'request_key'=>'new-template-revision-0001','questions'=>$q]))->assertCreated();$this->getJson($this->base())->assertJsonPath('diagnostics.0.template_snapshot.questions.0.label','Question métier fictive')->assertJsonPath('diagnostics.0.template_snapshot.revision',1);$this->assertDatabaseCount('support_diagnostic_templates',2);$this->assertDatabaseHas('support_diagnostics',['id'=>$id,'status'=>'draft']);
+ }
+ public function test_submission_requires_required_answers_and_non_applicable_reason():void{
+  $t=$this->model();$d=$this->diagnostic($t);$this->decide($d,'submit',1)->assertUnprocessable();$this->saveAnswers($d,[['key'=>'question-1','answer'=>'not_applicable','note'=>' ']])->assertUnprocessable();$this->saveAnswers($d,[['key'=>'foreign-key','answer'=>'conform']])->assertUnprocessable();$this->saveAnswers($d,[['key'=>'question-1','answer'=>'not_evaluated']])->assertOk();$this->decide($d,'submit',2)->assertOk();$this->assertDatabaseHas('support_diagnostics',['id'=>$d,'status'=>'submitted']);$this->saveAnswers($d,[],3)->assertConflict();
+ }
+ public function test_office_only_sees_shared_diagnostics_and_revisions_preserve_history():void{
+  $t=$this->model();$d=$this->diagnostic($t);$this->saveAnswers($d,[['key'=>'question-1','answer'=>'gap','note'=>'Constat factuel']])->assertOk();$this->decide($d,'submit',2)->assertOk();Sanctum::actingAs($this->admin);$this->getJson($this->base())->assertJsonCount(0,'diagnostics');$this->getJson('/api/v1/officine/journal?action=support.diagnostic.submitted')->assertJsonCount(0,'data');Sanctum::actingAs($this->lead);$this->decide($d,'share',3)->assertOk();$this->decide($d,'share',3)->assertConflict();Sanctum::actingAs($this->admin);$this->getJson($this->base())->assertJsonCount(1,'diagnostics')->assertJsonPath('diagnostics.0.answers.0.answer','gap');$this->decide($d,'share',4)->assertNotFound();Sanctum::actingAs($this->lead);$this->diagnostic($t,['previous_id'=>$d,'request_key'=>'revised-diagnostic-key-001']);$this->assertDatabaseCount('support_diagnostics',2);$this->assertDatabaseHas('support_diagnostics',['id'=>$d,'status'=>'shared','version'=>4]);$this->assertSame(1,DB::table('notification_outbox')->where('event_key','like','mission-diagnostic:%')->count());
+ }
+ public function test_creation_replay_is_idempotent_and_different_content_conflicts():void{
+  $data=$this->modelData();$t=$this->postJson($this->base().'/templates',$data)->assertCreated()->json('id');$this->postJson($this->base().'/templates',$data)->assertOk()->assertJsonPath('id',$t);$this->postJson($this->base().'/templates',array_replace($data,['title'=>'Changement']))->assertConflict();$this->assertDatabaseCount('support_diagnostic_templates',1);
+ }
+ public function test_unauthorized_choices_and_duplicates_are_rejected():void{
+  $q=$this->questions();$q[0]['choices']=['gap'];$t=$this->postJson($this->base().'/templates',$this->modelData(['questions'=>$q]))->assertCreated()->json('id');$this->postJson($this->base().'/templates/'.$t.'/publish',['version'=>1,'confirmed'=>true])->assertOk();$d=$this->diagnostic($t);$this->saveAnswers($d,[['key'=>'question-1','answer'=>'conform']])->assertUnprocessable();$this->saveAnswers($d,[['key'=>'question-1','answer'=>'gap'],['key'=>'question-1','answer'=>'gap']])->assertUnprocessable();
+ }
+ public function test_revoked_assignment_and_foreign_tenant_cannot_read_or_modify():void{
+  $t=$this->model();$d=$this->diagnostic($t);DB::table('officine_support_assignments')->where('id',$this->assignment)->update(['status'=>'revoked']);$this->getJson($this->base())->assertForbidden();$this->saveAnswers($d,[])->assertForbidden();Sanctum::actingAs($this->admin);$other=Officine::create(['name'=>'Autre diagnostic','slug'=>'diagnostic-other','status'=>'active']);DB::table('officine_user')->insert(['user_id'=>$this->admin->id,'officine_id'=>$other->id,'is_admin'=>true,'is_active'=>true,'permissions'=>'[]']);$this->withHeader('X-Officine-ID',(string)$other->id)->getJson($this->base())->assertNotFound();
+ }
+}

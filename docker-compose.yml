@@ -1,0 +1,72 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bestpharma_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bestpharma
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secretpassword
+    # Keep the host PostgreSQL used by local development on 5433 untouched.
+    ports: ["127.0.0.1:5434:5432"]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U postgres -d bestpharma"], interval: 5s, timeout: 5s, retries: 5 }
+  redis:
+    image: redis:7-alpine
+    container_name: bestpharma_redis
+    restart: unless-stopped
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: [redis_data:/data]
+    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 5s, timeout: 5s, retries: 5 }
+  backend: &backend
+    build: { context: ./backend, dockerfile: ../docker/backend/Dockerfile }
+    container_name: bestpharma_backend
+    restart: unless-stopped
+    working_dir: /var/www/backend
+    volumes: ["./backend:/var/www/backend"]
+    ports: ["8002:8000"]
+    environment:
+      APP_NAME: "BEGPHARMA"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: "http://localhost:8002"
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: bestpharma
+      DB_USERNAME: postgres
+      DB_PASSWORD: secretpassword
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      FRONTEND_URL: "http://localhost:3001"
+      SANCTUM_STATEFUL_DOMAINS: "localhost:3001,127.0.0.1:3001,localhost:3000"
+    command: php artisan serve --host=0.0.0.0 --port=8000 --no-reload
+    depends_on: { postgres: { condition: service_healthy }, redis: { condition: service_healthy } }
+  scheduler:
+    <<: *backend
+    container_name: bestpharma_scheduler
+    ports: []
+    command: php artisan schedule:work
+    depends_on: { backend: { condition: service_started }, postgres: { condition: service_healthy }, redis: { condition: service_healthy } }
+  frontend:
+    build: { context: ./frontend, dockerfile: ../docker/frontend/Dockerfile }
+    container_name: bestpharma_frontend
+    restart: unless-stopped
+    working_dir: /app
+    volumes: ["./frontend:/app", "/app/node_modules"]
+    ports: ["3001:3000"]
+    environment: { API_PROXY_TARGET: "http://backend:8000", VITE_DATA_MODE: "api" }
+    depends_on: [backend]
+  admin:
+    build: { context: ./admin, dockerfile: ../docker/frontend/Dockerfile }
+    container_name: bestpharma_admin
+    restart: unless-stopped
+    working_dir: /app
+    volumes: ["./admin:/app", "/app/node_modules"]
+    ports: ["3002:3000"]
+    environment: { API_PROXY_TARGET: "http://backend:8000" }
+    depends_on: [backend]
+volumes: { postgres_data: {}, redis_data: {} }

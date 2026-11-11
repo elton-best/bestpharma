@@ -1,0 +1,17 @@
+<?php
+namespace Tests\Feature;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
+class GoogleFlowTest extends TestCase {
+ use RefreshDatabase;
+ protected function setUp():void{parent::setUp();config(['services.google.client_id'=>'test-client','services.google.client_secret'=>'fictional','services.google.redirect'=>'https://example.test/api/v1/auth/google/callback']);}
+ private function start():array {$s=$this->postJson('/api/v1/auth/google/start')->assertOk();parse_str(parse_url($s->json('url'),PHP_URL_QUERY),$q);return [$q['state'],$s->headers->getCookies()[0]->getValue()];}
+ private function provider(bool $verified=true):void{Http::fake(['oauth2.googleapis.com/*'=>Http::response(['access_token'=>'fictif']),'openidconnect.googleapis.com/*'=>Http::response(['sub'=>'stable-subject','email'=>'google@example.test','email_verified'=>$verified,'name'=>'Fictif'])]);}
+ public function test_new_google_identity_exchanges_once_and_has_no_business_access():void{[$state,$cookie]=$this->start();$this->provider();$r=$this->withUnencryptedCookie('bestpharma_oauth',$cookie)->get('/api/v1/auth/google/callback?'.http_build_query(['state'=>$state,'code'=>'fictional-code']))->assertRedirect();parse_str(parse_url($r->headers->get('Location'),PHP_URL_FRAGMENT),$fragment);$this->assertArrayHasKey('code',$fragment);$this->assertDatabaseCount('auth_identities',1);$this->assertDatabaseCount('officine_user',0);$u=User::where('email','google@example.test')->firstOrFail();$this->assertNotNull($u->email_verified_at);$this->postJson('/api/v1/auth/google/exchange',['code'=>$fragment['code']])->assertOk()->assertJsonStructure(['token']);$this->postJson('/api/v1/auth/google/exchange',['code'=>$fragment['code']])->assertUnprocessable();}
+ public function test_cancelled_or_wrong_state_never_calls_provider():void{[$state,$cookie]=$this->start();Http::fake();$this->withUnencryptedCookie('bestpharma_oauth',$cookie)->get('/api/v1/auth/google/callback?'.http_build_query(['state'=>'invalid','code'=>'fictif']))->assertRedirect(config('socle.frontend_url').'/google-callback#error=google_failed');$this->withUnencryptedCookie('bestpharma_oauth',$cookie)->get('/api/v1/auth/google/callback?'.http_build_query(['state'=>$state,'error'=>'access_denied']))->assertRedirect(config('socle.frontend_url').'/google-callback#error=google_failed');Http::assertNothingSent();$this->assertDatabaseCount('users',0);}
+ public function test_unverified_provider_email_never_creates_account():void{[$state,$cookie]=$this->start();$this->provider(false);$this->withUnencryptedCookie('bestpharma_oauth',$cookie)->get('/api/v1/auth/google/callback?'.http_build_query(['state'=>$state,'code'=>'fictif']))->assertRedirect(config('socle.frontend_url').'/google-callback#error=google_failed');$this->assertDatabaseCount('users',0);$this->assertDatabaseCount('auth_identities',0);}
+ public function test_suspended_identity_cannot_exchange_a_previous_provider_code():void{[$state,$cookie]=$this->start();$this->provider();$r=$this->withUnencryptedCookie('bestpharma_oauth',$cookie)->get('/api/v1/auth/google/callback?'.http_build_query(['state'=>$state,'code'=>'fictif']));parse_str(parse_url($r->headers->get('Location'),PHP_URL_FRAGMENT),$fragment);DB::table('users')->update(['is_active'=>false]);$this->postJson('/api/v1/auth/google/exchange',['code'=>$fragment['code']])->assertForbidden();$this->assertDatabaseCount('personal_access_tokens',0);}
+}

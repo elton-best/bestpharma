@@ -56,6 +56,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend URL
+    |--------------------------------------------------------------------------
+    |
+    | URL du SPA (utilise dans les emails).
+    |
+    */
+
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Double authentification locale
+    |--------------------------------------------------------------------------
+    |
+    | Neutralise la 2FA uniquement en environnement "local" pour faciliter le
+    | développement. Auparavant lue directement via env() dans LoginController,
+    | une lecture qui retournait null dès que config:cache était actif.
+    |
+    */
+
+    'disable_local_2fa' => env('DISABLE_LOCAL_2FA', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
@@ -65,7 +89,10 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'UTC'),
+    // BEG opère depuis le Bénin (WAT, UTC+1, sans heure d'été) — UTC ici créait un
+    // décalage d'1h entre l'heure serveur (now()) et l'heure réelle des utilisateurs,
+    // faussant tous les calculs d'échéance/rappel (agenda, congés, contrats...).
+    'timezone' => env('APP_TIMEZONE', 'Africa/Porto-Novo'),
 
     /*
     |--------------------------------------------------------------------------
@@ -101,7 +128,7 @@ return [
 
     'previous_keys' => [
         ...array_filter(
-            explode(',', env('APP_PREVIOUS_KEYS', ''))
+            explode(',', (string) env('APP_PREVIOUS_KEYS', ''))
         ),
     ],
 

@@ -1,7 +1,29 @@
 <?php
-
-use App\Providers\AppServiceProvider;
-
 return [
-    AppServiceProvider::class,
+    \App\Providers\AppServiceProvider::class,
+    \App\Modules\ACL\Providers\ACLServiceProvider::class,
+    \App\Modules\Accompagnement\Providers\AccompagnementServiceProvider::class,
+    \App\Modules\Achats\Providers\AchatsServiceProvider::class,
+    \App\Modules\Administration\Providers\AdministrationServiceProvider::class,
+    \App\Modules\Catalogue\Providers\CatalogueServiceProvider::class,
+    \App\Modules\Comptabilite\Providers\ComptabiliteServiceProvider::class,
+    \App\Modules\Dashboard\Providers\DashboardServiceProvider::class,
+    \App\Modules\Dispensation\Providers\DispensationServiceProvider::class,
+    \App\Modules\Documents\Providers\DocumentsServiceProvider::class,
+    \App\Modules\Fiscalite\Providers\FiscaliteServiceProvider::class,
+    \App\Modules\LocauxEquipements\Providers\LocauxEquipementsServiceProvider::class,
+    \App\Modules\Notifications\Providers\NotificationsServiceProvider::class,
+    \App\Modules\Paie\Providers\PaieServiceProvider::class,
+    \App\Modules\Parametrage\Providers\ParametrageServiceProvider::class,
+    \App\Modules\Personnel\Providers\PersonnelServiceProvider::class,
+    \App\Modules\PlatformAdmin\Providers\PlatformAdminServiceProvider::class,
+    \App\Modules\Qualite\Providers\QualiteServiceProvider::class,
+    \App\Modules\Reporting\Providers\ReportingServiceProvider::class,
+    \App\Modules\Stock\Providers\StockServiceProvider::class,
+    \App\Modules\Tenancy\Providers\TenancyServiceProvider::class,
+    \App\Modules\Tresorerie\Providers\TresorerieServiceProvider::class,
+    \App\Modules\Users\Providers\UsersServiceProvider::class,
+    \App\Modules\VentesCaisse\Providers\VentesCaisseServiceProvider::class,
+    \App\Modules\Vigilance\Providers\VigilanceServiceProvider::class,
+    \App\Modules\Workflow\Providers\WorkflowServiceProvider::class,
 ];

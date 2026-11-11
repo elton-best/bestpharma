@@ -1,0 +1,17 @@
+{
+  "name": "bestpharma-module01-browser-tests",
+  "private": true,
+  "scripts": {
+    "test": "node mandatory.cjs",
+    "test:policy": "node mandatory.cjs",
+    "test:baseline": "node registration.cjs && node security.cjs && node logo.cjs && node access.cjs && node navigation.cjs && node mobile.cjs",
+    "test:support": "node support-requests.cjs",
+    "test:stock": "node stock.cjs",
+    "test:stock-api": "node stock-api.cjs",
+    "test:diagnostics": "node diagnostics.cjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.65.0",
+    "@sparticuz/chromium": "153.0.0"
+  }
+}

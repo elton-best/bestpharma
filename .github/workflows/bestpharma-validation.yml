@@ -1,0 +1,65 @@
+name: BestPharma validation
+on:
+  push:
+    paths: ['backend/**', 'frontend/**', 'admin/**', '.github/workflows/bestpharma-validation.yml']
+  pull_request:
+    paths: ['backend/**', 'frontend/**', 'admin/**', '.github/workflows/bestpharma-validation.yml']
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        database: [sqlite, pgsql]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: bestpharma_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: validation-only
+        ports: ['5432:5432']
+        options: --health-cmd="pg_isready -U postgres -d bestpharma_test" --health-interval=5s --health-timeout=5s --health-retries=10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: ${{ matrix.database }}
+      DB_HOST: 127.0.0.1
+      DB_PORT: '5432'
+      DB_DATABASE: ${{ matrix.database == 'pgsql' && 'bestpharma_test' || ':memory:' }}
+      DB_USERNAME: postgres
+      DB_PASSWORD: validation-only
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, pdo_sqlite, mbstring, dom, gd, zip, bcmath, intl, pcntl
+          tools: composer:v2
+          coverage: none
+      - run: cp .env.example .env
+      - run: composer validate --no-check-publish && composer install --no-interaction --prefer-dist
+      - run: php artisan key:generate && php artisan test
+  interfaces:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [frontend, admin]
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - if: matrix.app == 'frontend'
+        run: npm test
+      - run: npm run build

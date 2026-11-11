@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import {onMounted,ref} from 'vue'
+import {officineService,accountState,chooseOffice} from '@/services/officine'
+const error=ref('');const busy=ref(true)
+onMounted(async()=>{try{await officineService.account()}catch(e){error.value=(e as Error).message}finally{busy.value=false}})
+function select(id:number){try{chooseOffice(id)}catch(e){error.value=(e as Error).message}}
+</script>
+<template><section class="page erp-page"><div class="page-heading compact"><div><p class="eyebrow">MODULE 01 · MES ACCÈS</p><h1>Choisir mon officine</h1><p class="page-subtitle">Vos espaces sont isolés. Sélectionnez celui dans lequel travailler.</p></div></div><p v-if="error" class="alert error" role="alert">{{error}}</p><p v-if="busy" role="status">Chargement…</p><div class="role-grid"><article v-for="o in accountState.officines" :key="o.id" class="panel form-body"><h2>{{o.name}}</h2><p class="page-subtitle">{{o.access_type==='support'?'Accompagnateur approuvé':o.is_admin?'Administrateur':'Membre'}} · {{o.status==='active'?'Active':'En attente'}}</p><button class="button primary" :disabled="o.status!=='active'" @click="select(o.id)">Ouvrir l’officine</button></article></div><div v-if="!busy&&!accountState.officines.length" class="panel form-body"><h2>Aucun accès actif</h2><p>Une invitation, une affectation approuvée ou l’activation de votre inscription est nécessaire.</p><RouterLink to="/application" class="button secondary">Suivre ma demande</RouterLink><RouterLink v-if="accountState.user?.is_support_coordinator" to="/beg/accompagnateurs" class="button primary">Coordination des accès</RouterLink></div></section></template>

@@ -1,0 +1,1 @@
+<template><div class="p-6"><h1 class="font-display text-3xl font-bold">Inscriptions officines</h1><p class="accent-serif text-gray-500">instruction BEG</p><p class="mt-2 text-sm text-gray-600">Examiner, demander des corrections, approuver ou refuser avec motif et trace. Approbation ≠ licence sanitaire.</p></div></template>

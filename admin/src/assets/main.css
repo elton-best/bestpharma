@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body { font-family: 'Manrope', sans-serif; }
+.font-display { font-family: 'Bricolage Grotesque', sans-serif; }
+.accent-serif { font-family: 'Instrument Serif', serif; font-style: italic; }
+
+h1, h2, h3 { font-family: var(--font-display, "Bricolage Grotesque", sans-serif); font-optical-sizing: auto; }

@@ -1,0 +1,14 @@
+// @vitest-environment jsdom
+import {afterEach,it,expect,vi} from 'vitest'
+import {mount,flushPromises,type VueWrapper} from '@vue/test-utils'
+const api=vi.hoisted(()=>vi.fn())
+vi.mock('../quality',()=>({request:api}))
+import MissionFindingsPanel from '@/components/MissionFindingsPanel.vue'
+let w:VueWrapper|undefined
+const finding={id:1,title:'Constat fictif',fact:'Fait uniquement',category:'gap',presumed_cause:'Hypothèse',recommendation:'Proposition',observed_on:'2026-11-10',status:'shared',version:2,source_snapshot:{model_title:'Modèle fictif',diagnostic_revision:1,question:{key:'q1',label:'Question fictive',source:'Source'},answer:{answer:'gap',note:'Observation source'}}}
+function button(text:string){return [...document.querySelectorAll('button')].find(b=>b.textContent?.trim()===text)!}
+async function render(lead:boolean,rows:unknown[]=[]){api.mockImplementation((path:string)=>Promise.resolve(path.endsWith('/findings')?{data:rows,can_lead:lead}:{diagnostics:[{id:3,revision:1,status:'shared',template_snapshot:{title:'Modèle fictif',questions:[{key:'q1',label:'Question fictive',source:'Source'}]}}]}));w=mount(MissionFindingsPanel,{attachTo:document.body,props:{missionId:7,active:true}});button('Constats du diagnostic').click();await flushPromises()}
+afterEach(()=>{w?.unmount();document.body.innerHTML='';api.mockReset()})
+it('creates in a modal with separate fact and hypothesis and an explicit source',async()=>{await render(true);button('Créer un constat').click();await flushPromises();expect(document.querySelectorAll('[role=dialog]')).toHaveLength(2);expect(document.body.textContent).toContain('Description factuelle');expect(document.body.textContent).toContain('Cause présumée');expect(document.body.textContent).toContain('Diagnostic source');expect(document.body.textContent).toContain('Liaison M4 indisponible');expect(api.mock.calls.some(c=>c[1]==='POST')).toBe(false)})
+it('shows a shared finding read-only to the office',async()=>{await render(false,[finding]);expect(button('Créer un constat')).toBeUndefined();expect(button('Modifier le constat')).toBeUndefined();button('Voir le constat').click();await flushPromises();expect(document.body.textContent).toContain('Fait uniquement');expect(document.body.textContent).toContain('Hypothèse');expect(document.body.textContent).toContain('Observation source')})
+it('keeps a failed share modal open without optimistic publication',async()=>{await render(true,[{...finding,status:'draft',version:1}]);button('Partager le constat').click();await flushPromises();api.mockRejectedValueOnce(new Error('Partagez d’abord le diagnostic source.'));document.querySelector('#finding-form')!.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));await flushPromises();expect(document.querySelectorAll('[role=dialog]')).toHaveLength(2);expect(document.body.textContent).toContain('Partagez d’abord');expect(w!.emitted('changed')).toBeUndefined()})

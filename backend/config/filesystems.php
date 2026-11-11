@@ -30,18 +30,10 @@ return [
 
     'disks' => [
 
-        'ged' => [
-            'driver' => 'local',
-            'root' => storage_path('app/ged-privee'),
-            'serve' => false,
-            'visibility' => 'private',
-            'throw' => true,
-        ],
-
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
@@ -49,7 +41,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -66,6 +58,21 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
             'report' => false,
+        ],
+
+        'dropbox' => [
+            'driver' => 'dropbox',
+            'key' => env('DROPBOX_APP_KEY'),
+            'secret' => env('DROPBOX_APP_SECRET'),
+            'refresh_token' => env('DROPBOX_REFRESH_TOKEN'),
+            'token' => env('DROPBOX_ACCESS_TOKEN'),
+            'prefix' => env('DROPBOX_PREFIX', 'ERP_STORAGE'),
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'documents' => [
+            'driver' => 'documents',
         ],
 
     ],

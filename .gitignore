@@ -1,55 +1,26 @@
-# Environnements & secrets
+# BestPharma
 .env
-.env.backup
-.env.production
-backend/.env
-backend/.env.backup
-backend/.env.production
-
-# Dépendances PHP & Node
-backend/vendor/
-frontend/node_modules/
-frontend/dist/
-frontend/.output/
-frontend/.vinxi/
-frontend/.nitro/
-
-# Caches Laravel & logs
-backend/bootstrap/cache/*
-!backend/bootstrap/cache/.gitignore
-backend/storage/*.key
-backend/storage/app/*
-!backend/storage/app/.gitignore
-backend/storage/framework/cache/*
-!backend/storage/framework/cache/.gitignore
-backend/storage/framework/sessions/*
-!backend/storage/framework/sessions/.gitignore
-backend/storage/framework/views/*
-!backend/storage/framework/views/.gitignore
-backend/storage/logs/*
-!backend/storage/logs/.gitignore
-
-# Fichiers temporaires & IDE
+.env.*
+!.env.example
+.context.md
+vendor/
+node_modules/
+dist/
+build/
+**/storage/*.key
+**/storage/logs/*.log
+**/storage/framework/cache/data/**
+**/storage/framework/sessions/**
+**/storage/framework/views/**
+**/storage/framework/testing/**
+**/bootstrap/cache/*.php
 .phpunit.result.cache
-cahier_des_charges_extracted.txt
-.vscode/
-.idea/
-*.log
+.php-cs-fixer.cache
 .DS_Store
+.idea/
+.vscode/
+*.log
 
-# Archives de polices brutes (fichiers web intégrés dans frontend/public/fonts)
-Satoshi_Complete/
-Stardom_Complete/
-
-# Outils locaux
-frontend/.tanstack/
-
-# Dépendances des outils de recette à la racine
-/node_modules/
-
-# Cache des outils Python
+# Python runtime caches
 __pycache__/
-*.pyc
-
-# Données locales de démonstration, jamais versionnées
-/.demo-state/
+*.py[cod]

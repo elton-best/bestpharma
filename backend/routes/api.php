@@ -1,275 +1,188 @@
 <?php
 
-use App\Http\Controllers\Api\AppareilAutoriseController;
-use App\Http\Controllers\Api\AuditController;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\AutoEvaluationController;
-use App\Http\Controllers\Api\DocumentController;
-use App\Http\Controllers\Api\EmployeController;
-use App\Http\Controllers\Api\EquipementController;
-use App\Http\Controllers\Api\ModeleBpdController;
-use App\Http\Controllers\Api\NettoyageController;
-use App\Http\Controllers\Api\NonConformiteController;
-use App\Http\Controllers\Api\OfficineController;
-use App\Http\Controllers\Api\ParametreController;
-use App\Http\Controllers\Api\PointageController;
-use App\Http\Controllers\Api\CaisseSessionController;
-use App\Http\Controllers\Api\ComptabiliteController;
-use App\Http\Controllers\Api\DispensationController;
-use App\Http\Controllers\Api\PreparationController;
-use App\Http\Controllers\Api\ProduitController;
-use App\Http\Controllers\Api\AvisRappelController;
-use App\Http\Controllers\Api\DechetController;
-use App\Http\Controllers\Api\EmplacementController;
-use App\Http\Controllers\Api\InventaireController;
-use App\Http\Controllers\Api\MouvementStockController;
-use App\Http\Controllers\Api\ReleveTemperatureController;
-use App\Http\Controllers\Api\StockLotController;
-use App\Http\Controllers\Api\StupefiantController;
-use App\Http\Controllers\Api\SyncController;
-use App\Http\Controllers\Api\EcheanceController;
-use App\Http\Controllers\Api\UploadController;
-use App\Http\Controllers\Api\VenteCaisseController;
+declare(strict_types=1);
+use App\Http\Controllers\Auth\SessionController;
 use Illuminate\Support\Facades\Route;
 
-// Routes publiques d'authentification
-Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::get('/demo/access', [AuthController::class, 'demoAccess']);
+Route::post('auth/login', [SessionController::class, 'login'])->middleware('throttle:auth.login');
+Route::post('auth/logout', [SessionController::class, 'logout'])->middleware('auth:sanctum');
+Route::get('health', fn () => response()->json(['status' => 'ok', 'app' => 'BestPharma']));
+Route::prefix('gardes')->middleware(['auth:sanctum','tenant.context'])->group(function(){
+ Route::get('',[\App\Modules\Pharmacies\Controllers\PharmacyGuardController::class,'index']);
+ Route::post('',[\App\Modules\Pharmacies\Controllers\PharmacyGuardController::class,'store'])->middleware('throttle:identity');
+ Route::put('{id}',[\App\Modules\Pharmacies\Controllers\PharmacyGuardController::class,'update'])->whereNumber('id')->middleware('throttle:identity');
+ Route::delete('{id}',[\App\Modules\Pharmacies\Controllers\PharmacyGuardController::class,'destroy'])->whereNumber('id')->middleware('throttle:identity');
+});
 
-// Routes protégées par token Sanctum
+Route::post('auth/register', [\App\Modules\Tenancy\Controllers\ApplicationController::class, 'register'])->middleware('throttle:auth.register');
 Route::middleware('auth:sanctum')->group(function () {
-    // Téléversement de fichiers et pièces jointes (BPD)
-    Route::post('/upload', [UploadController::class, 'upload']);
-    Route::post('/officines/{officineId}/upload', [UploadController::class, 'upload']);
-    Route::post('/officines/{officineId}/temperatures/csv', [UploadController::class, 'uploadCsvTemperatures']);
+    Route::get('applications', [\App\Modules\Tenancy\Controllers\ApplicationController::class, 'index']);
+    Route::put('applications/{id}', [\App\Modules\Tenancy\Controllers\ApplicationController::class, 'resubmit'])->whereNumber('id');
+    Route::get('platform/applications', [\App\Modules\PlatformAdmin\Controllers\ApplicationReviewController::class, 'index']);
+    Route::post('platform/applications/{id}/decision', [\App\Modules\PlatformAdmin\Controllers\ApplicationReviewController::class, 'update'])->whereNumber('id')->middleware('throttle:platform.review');
+});
 
-    // Authentification, MFA TOTP et appareils (E0-S3)
-    Route::post('/auth/verify-mfa', [AuthController::class, 'verifyMfa']);
-    Route::get('/auth/mfa', [AuthController::class, 'etatMfa']);
-    Route::post('/auth/mfa/demarrer', [AuthController::class, 'demarrerMfa']);
-    Route::delete('/auth/mfa', [AuthController::class, 'desactiverMfa']);
-    Route::get('/auth/me', [AuthController::class, 'me']);
-    Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
-    Route::put('/auth/password', [AuthController::class, 'updatePassword']);
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::get('/auth/devices', [AuthController::class, 'devices']);
-    Route::delete('/auth/devices/{tokenId}', [AuthController::class, 'revokeDevice']);
-    Route::post('/auth/devices/revoke-others', [AuthController::class, 'revokeOtherDevices']);
+Route::post('invitations/accept', \App\Modules\Users\Controllers\AcceptInvitationController::class)->middleware('throttle:invitations.accept');
+Route::prefix('team')->middleware(['auth:sanctum', 'tenant.context'])->group(function () {
+    Route::get('/', [\App\Modules\Users\Controllers\TeamController::class, 'index']);
+    Route::post('roles', [\App\Modules\Users\Controllers\TeamController::class, 'saveRole']);
+    Route::put('roles/{roleId}', [\App\Modules\Users\Controllers\TeamController::class, 'saveRole'])->whereNumber('roleId');
+    Route::put('members/{memberId}', [\App\Modules\Users\Controllers\TeamController::class, 'updateMember'])->whereNumber('memberId');
+    Route::post('invitations', [\App\Modules\Users\Controllers\TeamController::class, 'invite'])->middleware('throttle:team.invite');
+    Route::delete('invitations/{inviteId}', [\App\Modules\Users\Controllers\TeamController::class, 'revoke'])->whereNumber('inviteId');
+});
 
-    // Appareils autorisés et bornes (APP-01 à APP-13)
-    Route::get('/officines/{officineId}/appareils-autorises', [AppareilAutoriseController::class, 'index']);
-    Route::get('/appareils-autorises', [AppareilAutoriseController::class, 'index']);
-    Route::post('/officines/{officineId}/appareils-autorises', [AppareilAutoriseController::class, 'store']);
-    Route::post('/appareils-autorises', [AppareilAutoriseController::class, 'store']);
-    Route::post('/appareils-autorises/{id}/revoquer', [AppareilAutoriseController::class, 'revoquer']);
-    Route::post('/appareils-autorises/{id}/reactiver', [AppareilAutoriseController::class, 'reactiver']);
-    Route::delete('/appareils-autorises/{id}', [AppareilAutoriseController::class, 'destroy']);
+// Module 01: account context is authenticated independently of the selected tenant.
+Route::middleware('auth:sanctum')->group(function () {
+ Route::get('me', [\App\Modules\Tenancy\Controllers\MyAccountController::class,'show']);
+ Route::put('me', [\App\Modules\Tenancy\Controllers\MyAccountController::class,'update']);
+ Route::get('platform/support-directory', [\App\Modules\Tenancy\Controllers\SupportAssignmentController::class,'directory']);
+ Route::get('platform/officines/{officeId}/support', [\App\Modules\Tenancy\Controllers\SupportAssignmentController::class,'platformIndex'])->whereNumber('officeId');
+ Route::post('platform/officines/{officeId}/support', [\App\Modules\Tenancy\Controllers\SupportAssignmentController::class,'propose'])->whereNumber('officeId');
+});
+Route::prefix('officine')->middleware(['auth:sanctum','tenant.context'])->group(function () {
+ Route::get('/', [\App\Modules\Tenancy\Controllers\OfficineProfileController::class,'show']);
+ Route::put('/', [\App\Modules\Tenancy\Controllers\OfficineProfileController::class,'update']);
+ Route::get('contacts', [\App\Modules\Tenancy\Controllers\OfficineProfileController::class,'contacts']);
+ Route::post('contacts', [\App\Modules\Tenancy\Controllers\OfficineProfileController::class,'saveContact']);
+ Route::put('contacts/{contactId}', [\App\Modules\Tenancy\Controllers\OfficineProfileController::class,'saveContact'])->whereNumber('contactId');
+ Route::get('history', [\App\Modules\Tenancy\Controllers\OfficineProfileController::class,'history']);
+ Route::get('support', [\App\Modules\Tenancy\Controllers\SupportAssignmentController::class,'index']);
+ Route::post('support/{assignmentId}/decision', [\App\Modules\Tenancy\Controllers\SupportAssignmentController::class,'decide'])->whereNumber('assignmentId');
+});
 
-    // Gestion des officines (multi-tenant E0-S2)
-    Route::get('/officines', [OfficineController::class, 'index']);
-    Route::post('/officines', [OfficineController::class, 'store']);
-    Route::get('/officines/{id}', [OfficineController::class, 'show']);
-    Route::put('/officines/{id}', [OfficineController::class, 'update']);
-    // Rattachement de l'utilisateur courant comme promoteur d'une officine qu'il vient de créer
-    Route::post('/officines/{id}/rattacher', [OfficineController::class, 'rattacher']);
+Route::prefix('auth')->middleware('throttle:identity')->group(function () {
+ Route::post('forgot-password',[\App\Modules\Identity\Controllers\SecurityController::class,'forgot']);
+ Route::post('reset-password',[\App\Modules\Identity\Controllers\SecurityController::class,'reset']);
+ Route::post('email/verify',[\App\Modules\Identity\Controllers\SecurityController::class,'verify']);
+});
+Route::middleware(['auth:sanctum','throttle:identity'])->group(function () {
+ Route::post('auth/email/request',[\App\Modules\Identity\Controllers\SecurityController::class,'requestVerification']);
+ Route::get('security',[\App\Modules\Identity\Controllers\SecurityController::class,'status']);
+ Route::post('security/password',[\App\Modules\Identity\Controllers\SecurityController::class,'changePassword']);
+ Route::post('security/email',[\App\Modules\Identity\Controllers\SecurityController::class,'changeEmail']);
+ Route::post('security/mfa/setup',[\App\Modules\Identity\Controllers\SecurityController::class,'setupMfa']);
+ Route::post('security/mfa/confirm',[\App\Modules\Identity\Controllers\SecurityController::class,'confirmMfa']);
+ Route::delete('security/mfa',[\App\Modules\Identity\Controllers\SecurityController::class,'disableMfa']);
+ Route::get('security/sessions',[\App\Modules\Identity\Controllers\SecurityController::class,'sessions']);
+ Route::delete('security/sessions/{id}',[\App\Modules\Identity\Controllers\SecurityController::class,'revokeSession'])->whereNumber('id');
+});
+Route::middleware('auth:sanctum')->group(function () {
+ Route::get('notifications',[\App\Modules\Identity\Controllers\SecurityController::class,'notifications']);
+ Route::post('notifications/{id}/read',[\App\Modules\Identity\Controllers\SecurityController::class,'read'])->whereNumber('id');
+ Route::get('notifications/{id}/preview',[\App\Modules\Identity\Controllers\SecurityController::class,'preview'])->whereNumber('id');
+});
 
-    // Paramètres d'officine (E0-S5)
-    Route::get('/officines/{officineId}/parametres', [ParametreController::class, 'index']);
-    Route::put('/officines/{officineId}/parametres/{cle}', [ParametreController::class, 'update']);
-    Route::put('/officines/{officineId}/parametres', [ParametreController::class, 'updateLot']);
+Route::middleware('auth:sanctum')->group(function () {
+ Route::post('registration-applications',[\App\Modules\Tenancy\Controllers\ApplicationDraftController::class,'create']);
+ Route::patch('registration-applications/{id}',[\App\Modules\Tenancy\Controllers\ApplicationDraftController::class,'save'])->whereNumber('id');
+ Route::post('registration-applications/{id}/submit',[\App\Modules\Tenancy\Controllers\ApplicationDraftController::class,'submit'])->whereNumber('id');
+ Route::get('registration-applications/{id}/comments',[\App\Modules\Tenancy\Controllers\ApplicationDraftController::class,'comments'])->whereNumber('id');
+ Route::post('registration-applications/{id}/comments',[\App\Modules\Tenancy\Controllers\ApplicationDraftController::class,'comment'])->whereNumber('id');
+ Route::get('registration-applications/{id}/documents',[\App\Modules\Tenancy\Controllers\ApplicationDraftController::class,'documents'])->whereNumber('id');
+ Route::post('registration-applications/{id}/documents',[\App\Modules\Tenancy\Controllers\ApplicationDraftController::class,'upload'])->whereNumber('id');
+ Route::get('registration-applications/{id}/documents/{documentId}',[\App\Modules\Tenancy\Controllers\ApplicationDraftController::class,'download'])->whereNumber('id')->whereNumber('documentId');
+});
+Route::prefix('team')->middleware(['auth:sanctum','tenant.context'])->group(function () {
+ Route::post('roles/{roleId}/duplicate',[\App\Modules\Users\Controllers\TeamController::class,'duplicateRole'])->whereNumber('roleId');
+ Route::post('roles/{roleId}/state',[\App\Modules\Users\Controllers\TeamController::class,'roleState'])->whereNumber('roleId');
+ Route::post('invitations/{inviteId}/resend',[\App\Modules\Users\Controllers\TeamController::class,'resend'])->whereNumber('inviteId')->middleware('throttle:team.invite');
+});
+Route::get('auth/providers',[\App\Modules\Identity\Controllers\GoogleIdentityController::class,'availability']);
+Route::post('auth/google/start',[\App\Modules\Identity\Controllers\GoogleIdentityController::class,'start'])->middleware('throttle:identity');
+Route::get('auth/google/callback',[\App\Modules\Identity\Controllers\GoogleIdentityController::class,'callback'])->middleware('throttle:identity');
+Route::post('auth/google/exchange',[\App\Modules\Identity\Controllers\GoogleIdentityController::class,'exchange'])->middleware('throttle:identity');
+Route::delete('security/google',[\App\Modules\Identity\Controllers\GoogleIdentityController::class,'unlink'])->middleware(['auth:sanctum','throttle:identity']);
+Route::post('platform/officines/{officeId}/support/{assignmentId}/end',[\App\Modules\Tenancy\Controllers\SupportAssignmentController::class,'end'])->middleware('auth:sanctum')->whereNumber('officeId')->whereNumber('assignmentId');
+Route::get('platform/officines',[\App\Modules\PlatformAdmin\Controllers\OfficeStateController::class,'index'])->middleware('auth:sanctum');
+Route::post('platform/officines/{id}/state',[\App\Modules\PlatformAdmin\Controllers\OfficeStateController::class,'update'])->middleware('auth:sanctum')->whereNumber('id');
+Route::get('platform/internal-team',[\App\Modules\Identity\Controllers\InternalTeamController::class,'index'])->middleware('auth:sanctum');
+Route::post('platform/internal-team/invitations',[\App\Modules\Identity\Controllers\InternalTeamController::class,'invite'])->middleware(['auth:sanctum','throttle:identity']);
+Route::put('platform/internal-team/{id}',[\App\Modules\Identity\Controllers\InternalTeamController::class,'update'])->middleware('auth:sanctum')->whereNumber('id');
+Route::post('internal-invitations/accept',[\App\Modules\Identity\Controllers\InternalTeamController::class,'accept'])->middleware('throttle:identity');
+Route::post('security/mfa/recovery-codes',[\App\Modules\Identity\Controllers\SecurityController::class,'recoveryCodes'])->middleware(['auth:sanctum','throttle:identity']);
+Route::get('platform/accounts',[\App\Modules\PlatformAdmin\Controllers\AccountStateController::class,'index'])->middleware('auth:sanctum');
+Route::post('platform/accounts/{id}/state',[\App\Modules\PlatformAdmin\Controllers\AccountStateController::class,'update'])->middleware(['auth:sanctum','throttle:identity'])->whereNumber('id');
+Route::middleware(['auth:sanctum','tenant.context'])->group(function(){
+ Route::get('officine/logo',[\App\Modules\Tenancy\Controllers\OfficeLogoController::class,'show']);
+ Route::post('officine/logo',[\App\Modules\Tenancy\Controllers\OfficeLogoController::class,'save']);
+ Route::delete('officine/logo',[\App\Modules\Tenancy\Controllers\OfficeLogoController::class,'destroy']);
+});
+Route::middleware(['auth:sanctum','tenant.context'])->group(function(){
+ Route::get('officine/summary',[\App\Modules\Tenancy\Controllers\ModuleSummaryController::class,'show']);
+ Route::get('officine/journal',[\App\Modules\Tenancy\Controllers\AccessJournalController::class,'index']);
+});
+Route::get('platform/summary',[\App\Modules\Tenancy\Controllers\ModuleSummaryController::class,'show'])->middleware('auth:sanctum')->name('socle.platform.summary');
+Route::get('platform/journal',[\App\Modules\Tenancy\Controllers\AccessJournalController::class,'index'])->middleware('auth:sanctum')->name('socle.platform.journal');
+Route::post('notifications/{id}/retry',[\App\Modules\Identity\Controllers\SecurityController::class,'retry'])->middleware(['auth:sanctum','throttle:identity'])->whereNumber('id');
+Route::post('officine/journal/export',[\App\Modules\Tenancy\Controllers\AccessJournalController::class,'export'])->middleware(['auth:sanctum','tenant.context','throttle:identity']);
+Route::post('platform/journal/export',[\App\Modules\Tenancy\Controllers\AccessJournalController::class,'export'])->middleware(['auth:sanctum','throttle:identity'])->name('socle.platform.journal.export');
+Route::prefix('support/requests')->middleware(['auth:sanctum','tenant.context'])->group(function(){
+ Route::get('',[\App\Modules\Accompagnement\Controllers\SupportRequestController::class,'index']);
+ Route::post('',[\App\Modules\Accompagnement\Controllers\SupportRequestController::class,'create'])->middleware('throttle:identity');
+ Route::post('{id}/mission-decision',[\App\Modules\Accompagnement\Controllers\SupportMissionController::class,'decide'])->whereNumber('id')->middleware('throttle:identity');
+ Route::patch('{id}',[\App\Modules\Accompagnement\Controllers\SupportRequestController::class,'save'])->whereNumber('id');
+ Route::post('{id}/submit',[\App\Modules\Accompagnement\Controllers\SupportRequestController::class,'submit'])->whereNumber('id');
+ Route::post('{id}/withdraw',[\App\Modules\Accompagnement\Controllers\SupportRequestController::class,'withdraw'])->whereNumber('id');
+});
 
-    // Journal d'audit inaltérable (E0-S4)
-    Route::get('/officines/{officineId}/audit-logs', [AuditController::class, 'index']);
-    Route::get('/officines/{officineId}/audit-logs/verifier-integrite', [AuditController::class, 'verifierIntegrite']);
-    Route::get('/audit-logs/verifier-integrite', [AuditController::class, 'verifierIntegrite']);
+Route::prefix('support/intake')->middleware('auth:sanctum')->group(function(){
+ Route::get('',[\App\Modules\Accompagnement\Controllers\SupportIntakeController::class,'index']);
+ Route::post('{id}/qualify',[\App\Modules\Accompagnement\Controllers\SupportIntakeController::class,'qualify'])->whereNumber('id')->middleware('throttle:identity');
+});
 
-    // File de synchronisation hors-ligne (E0-S7)
-    Route::post('/sync/push', [SyncController::class, 'push']);
+Route::post('support/intake/{id}/propose-mission',[\App\Modules\Accompagnement\Controllers\SupportMissionController::class,'propose'])->middleware(['auth:sanctum','throttle:identity'])->whereNumber('id');
 
-    // ==========================================
-    // PARTIE 1 : MODULE BPD SOCLE (LOT 1.1)
-    // ==========================================
+Route::prefix('stock')->middleware(['auth:sanctum','tenant.context'])->group(function(){
+ Route::get('workspace',[\App\Modules\Stock\Controllers\StockController::class,'index']);
+ Route::post('operations',[\App\Modules\Stock\Controllers\StockController::class,'operate'])->middleware('throttle:identity');
+});
 
-    Route::get('/officines/{officineId}/canevas', [\App\Http\Controllers\Api\CanevasController::class, 'index']);
-    Route::get('/officines/{officineId}/canevas/{id}', [\App\Http\Controllers\Api\CanevasController::class, 'show']);
-    Route::post('/officines/{officineId}/canevas/{id}/documents', [\App\Http\Controllers\Api\CanevasController::class, 'store']);
-    Route::get('/officines/{officineId}/suivis-documentaires/{type}/definition', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'definition']);
-    Route::get('/officines/{officineId}/suivis-documentaires/{type}', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'index']);
-    Route::post('/officines/{officineId}/suivis-documentaires/{type}', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'store']);
-    Route::put('/officines/{officineId}/suivis-documentaires/{type}/{id}', [\App\Http\Controllers\Api\SuiviDocumentaireController::class, 'update']);
+Route::prefix('support/missions')->middleware(['auth:sanctum','tenant.context'])->group(function(){
+ Route::get('',[\App\Modules\Accompagnement\Controllers\MissionWorkspaceController::class,'index']);
+ Route::get('{id}',[\App\Modules\Accompagnement\Controllers\MissionWorkspaceController::class,'show'])->whereNumber('id');
+ Route::post('{id}/transition',[\App\Modules\Accompagnement\Controllers\MissionWorkspaceController::class,'transition'])->whereNumber('id')->middleware('throttle:identity');
+ Route::post('{id}/team/{memberId}/decision',[\App\Modules\Accompagnement\Controllers\MissionWorkspaceController::class,'decideMember'])->whereNumber('id')->whereNumber('memberId')->middleware('throttle:identity');
+});
+Route::prefix('support/intake/{requestId}/team')->middleware('auth:sanctum')->whereNumber('requestId')->group(function(){
+ Route::get('',[\App\Modules\Accompagnement\Controllers\MissionWorkspaceController::class,'centralTeam']);
+ Route::post('',[\App\Modules\Accompagnement\Controllers\MissionWorkspaceController::class,'proposeMember'])->middleware('throttle:identity');
+});
 
-    // GED et documents qualité (BPD-1 & BPD-3)
-    Route::get('/officines/{officineId}/documents', [DocumentController::class, 'index']);
-    Route::get('/officines/{officineId}/imports-corpus', [DocumentController::class, 'importsCorpus']);
-    Route::post('/officines/{officineId}/documents', [DocumentController::class, 'store']);
-    Route::get('/officines/{officineId}/documents/{id}', [DocumentController::class, 'show']);
-    Route::get('/officines/{officineId}/documents/{id}/approbations', [DocumentController::class, 'approbations']);
-    Route::get('/officines/{officineId}/documents/{id}/fichiers', [\App\Http\Controllers\Api\FichierDocumentController::class, 'index']);
-    Route::post('/officines/{officineId}/documents/{id}/fichiers', [\App\Http\Controllers\Api\FichierDocumentController::class, 'store'])->middleware('throttle:20,1');
-    Route::get('/officines/{officineId}/documents/{id}/fichiers/{fichierId}/telecharger', [\App\Http\Controllers\Api\FichierDocumentController::class, 'telecharger']);
-    Route::put('/officines/{officineId}/documents/{id}', [DocumentController::class, 'update']);
+Route::prefix('support/missions/{id}/visits')->middleware(['auth:sanctum','tenant.context'])->whereNumber('id')->group(function(){
+ Route::get('',[\App\Modules\Accompagnement\Controllers\MissionVisitController::class,'index']);
+ Route::post('',[\App\Modules\Accompagnement\Controllers\MissionVisitController::class,'create'])->middleware('throttle:identity');
+ Route::post('{visitId}/transition',[\App\Modules\Accompagnement\Controllers\MissionVisitController::class,'transition'])->whereNumber('visitId')->middleware('throttle:identity');
+ Route::post('{visitId}/reports',[\App\Modules\Accompagnement\Controllers\MissionVisitController::class,'report'])->whereNumber('visitId')->middleware('throttle:identity');
+ Route::patch('{visitId}/reports/{reportId}',[\App\Modules\Accompagnement\Controllers\MissionVisitController::class,'report'])->whereNumber('visitId')->whereNumber('reportId')->middleware('throttle:identity');
+ Route::post('{visitId}/reports/{reportId}/decision',[\App\Modules\Accompagnement\Controllers\MissionVisitController::class,'reportDecision'])->whereNumber('visitId')->whereNumber('reportId')->middleware('throttle:identity');
+});
 
-    // Bibliothèque des modèles BPD types de l'ABMed (BPD-C02)
-    Route::get('/modeles-bpd', [ModeleBpdController::class, 'index']);
-    Route::post('/officines/{officineId}/modeles-bpd/{modeleId}/instancier', [ModeleBpdController::class, 'instancier']);
+Route::prefix('support/missions/{id}/diagnostics')->middleware(['auth:sanctum','tenant.context'])->whereNumber('id')->group(function(){
+ Route::get('',[\App\Modules\Accompagnement\Controllers\MissionDiagnosticController::class,'index']);
+ Route::post('templates',[\App\Modules\Accompagnement\Controllers\MissionDiagnosticController::class,'createTemplate'])->middleware('throttle:identity');
+ Route::patch('templates/{templateId}',[\App\Modules\Accompagnement\Controllers\MissionDiagnosticController::class,'saveTemplate'])->whereNumber('templateId')->middleware('throttle:identity');
+ Route::post('templates/{templateId}/publish',[\App\Modules\Accompagnement\Controllers\MissionDiagnosticController::class,'publishTemplate'])->whereNumber('templateId')->middleware('throttle:identity');
+ Route::post('',[\App\Modules\Accompagnement\Controllers\MissionDiagnosticController::class,'create'])->middleware('throttle:identity');
+ Route::patch('{diagnosticId}',[\App\Modules\Accompagnement\Controllers\MissionDiagnosticController::class,'save'])->whereNumber('diagnosticId')->middleware('throttle:identity');
+ Route::post('{diagnosticId}/decision',[\App\Modules\Accompagnement\Controllers\MissionDiagnosticController::class,'decision'])->whereNumber('diagnosticId')->middleware('throttle:identity');
+});
 
-    // Dossiers RH et compétences du personnel (BPD-2)
-    Route::get('/officines/{officineId}/employes', [EmployeController::class, 'index']);
-    Route::post('/officines/{officineId}/employes', [EmployeController::class, 'store']);
-    Route::put('/officines/{officineId}/employes/{id}', [EmployeController::class, 'update']);
+Route::prefix('support/missions/{id}/findings')->middleware(['auth:sanctum','tenant.context'])->whereNumber('id')->group(function(){
+ Route::get('',[\App\Modules\Accompagnement\Controllers\MissionFindingController::class,'index']);
+ Route::post('',[\App\Modules\Accompagnement\Controllers\MissionFindingController::class,'create'])->middleware('throttle:identity');
+ Route::patch('{findingId}',[\App\Modules\Accompagnement\Controllers\MissionFindingController::class,'save'])->whereNumber('findingId')->middleware('throttle:identity');
+ Route::post('{findingId}/share',[\App\Modules\Accompagnement\Controllers\MissionFindingController::class,'share'])->whereNumber('findingId')->middleware('throttle:identity');
+});
 
-    // Pointage par badge & Présence obligatoire du pharmacien (BPD-C09 & art. 1.11)
-    Route::get('/officines/{officineId}/pointages', [PointageController::class, 'index']);
-    Route::get('/officines/{officineId}/pointages/actif', [PointageController::class, 'actif']);
-    Route::post('/officines/{officineId}/pointages/prise', [PointageController::class, 'prise']);
-    Route::post('/officines/{officineId}/pointages', [PointageController::class, 'store']);
+Route::prefix('support/missions/{id}/plan')->middleware(['auth:sanctum','tenant.context'])->whereNumber('id')->group(function(){
+ Route::get('',[\App\Modules\Accompagnement\Controllers\MissionPlanController::class,'index']);
+ Route::put('',[\App\Modules\Accompagnement\Controllers\MissionPlanController::class,'save'])->middleware('throttle:identity');
+ Route::post('submit',[\App\Modules\Accompagnement\Controllers\MissionPlanController::class,'submit'])->middleware('throttle:identity');
+ Route::post('decision',[\App\Modules\Accompagnement\Controllers\MissionPlanController::class,'decide'])->middleware('throttle:identity');
+});
 
-    // Non-conformités et CAPA 5M (BPD1-F09)
-    Route::get('/officines/{officineId}/non-conformites', [NonConformiteController::class, 'index']);
-    Route::post('/officines/{officineId}/non-conformites', [NonConformiteController::class, 'store']);
-    Route::put('/officines/{officineId}/non-conformites/{id}', [NonConformiteController::class, 'update']);
-
-    // Échéances réglementaires
-    Route::get('/officines/{officineId}/echeances', [EcheanceController::class, 'index']);
-    Route::post('/officines/{officineId}/echeances', [EcheanceController::class, 'store']);
-    Route::get('/officines/{officineId}/echeances/ical', [EcheanceController::class, 'exportIcal']);
-    Route::get('/echeances', [EcheanceController::class, 'indexGlobal']);
-    Route::post('/echeances', [EcheanceController::class, 'store']);
-    Route::put('/echeances/{id}', [EcheanceController::class, 'update']);
-    Route::patch('/echeances/{id}', [EcheanceController::class, 'update']);
-    Route::delete('/echeances/{id}', [EcheanceController::class, 'destroy']);
-    // Journal d'audit inaltérable (E0-S4)
-    Route::get('/officines/{officineId}/audit-logs', [AuditController::class, 'index']);
-    Route::get('/audit-logs', [AuditController::class, 'index']);
-
-    // ==========================================
-    // PARTIE 2 : CONSERVATION, LOCAUX & AUTO-ÉVALUATION (LOTS 1.2 & 1.5)
-    // ==========================================
-
-    // Températures & Chaîne du Froid (BPD4-F04 & BPD4-F05)
-    Route::get('/officines/{officineId}/temperatures', [ReleveTemperatureController::class, 'index']);
-    Route::post('/officines/{officineId}/temperatures', [ReleveTemperatureController::class, 'store']);
-    Route::get('/officines/{officineId}/temperatures/stats', [ReleveTemperatureController::class, 'stats']);
-
-    // Équipements & Étalonnages (BPD4-F01 à F03)
-    Route::get('/officines/{officineId}/equipements', [EquipementController::class, 'index']);
-    Route::post('/officines/{officineId}/equipements', [EquipementController::class, 'store']);
-
-    // Plan de Nettoyage & Bio-nettoyage (BPD4-F07)
-    Route::get('/officines/{officineId}/nettoyages', [NettoyageController::class, 'index']);
-    Route::post('/officines/{officineId}/nettoyages', [NettoyageController::class, 'store']);
-
-    // Auto-évaluation & Audit Interne 267 articles (BPD-10 & 4.0.1)
-    Route::post('/officines/{officineId}/auto-evaluation/nouvelle-complete', [AutoEvaluationController::class, 'nouvelleComplete']);
-    Route::get('/officines/{officineId}/auto-evaluation/campagne-courante', [AutoEvaluationController::class, 'campagneCourante']);
-    Route::put('/officines/{officineId}/auto-evaluation/evaluer/{evaluationId}', [AutoEvaluationController::class, 'evaluerArticle']);
-    Route::post('/officines/{officineId}/auto-evaluation/generer-capa/{evaluationId}', [AutoEvaluationController::class, 'genererCapa']);
-    Route::get('/officines/{officineId}/auto-evaluation/rapport', [AutoEvaluationController::class, 'rapport']);
-
-    // ==========================================
-    // PARTIE 3 : DISPENSATION, GESTION DES STOCKS (FEFO) & REGISTRES OFFICIELS (LOTS 1.3 & 1.4)
-    // ==========================================
-
-    // Catalogue Produits
-    Route::get('/produits', [ProduitController::class, 'index']);
-    Route::post('/produits', [ProduitController::class, 'store']);
-
-    // Gestion des Stocks & Règle FEFO (BPD5-F08 & STK-02) — Section Magasin & Stocks v1.0
-    Route::get('/stocks', [StockLotController::class, 'index']);
-    Route::post('/stocks', [StockLotController::class, 'store']);
-    Route::post('/stocks/{id}/quarantaine', [StockLotController::class, 'miseEnQuarantaine']);
-    Route::post('/stocks/{id}/lever-quarantaine', [StockLotController::class, 'leverQuarantaine']);
-    Route::put('/stocks/{id}/statut', [StockLotController::class, 'changerStatut']);
-    Route::get('/stocks/alertes-peremption', [StockLotController::class, 'alertesPeremption']);
-    Route::get('/stocks/peremptions', [StockLotController::class, 'peremptions']);
-    Route::get('/stocks/valorisation', [StockLotController::class, 'valorisation']);
-    Route::get('/stocks/alertes', [StockLotController::class, 'alertes']);
-
-    // Emplacements & Zones (STO-04)
-    Route::get('/emplacements', [EmplacementController::class, 'index']);
-    Route::post('/emplacements', [EmplacementController::class, 'store']);
-    Route::get('/emplacements/{id}', [EmplacementController::class, 'show']);
-
-    // Mouvements de stock — Journal (STO-09)
-    Route::get('/mouvements', [MouvementStockController::class, 'index']);
-    Route::post('/mouvements', [MouvementStockController::class, 'store']);
-
-    // Inventaires tournant & général (STO-12)
-    Route::get('/inventaires', [InventaireController::class, 'index']);
-    Route::post('/inventaires', [InventaireController::class, 'store']);
-    Route::get('/inventaires/{id}', [InventaireController::class, 'show']);
-    Route::post('/inventaires/{inventaireId}/lignes/{ligneId}/compter', [InventaireController::class, 'compter']);
-    Route::post('/inventaires/{id}/valider', [InventaireController::class, 'valider']);
-
-    // Rappels de lots (STO-14)
-    Route::get('/rappels', [AvisRappelController::class, 'index']);
-    Route::post('/rappels', [AvisRappelController::class, 'store']);
-    Route::post('/rappels/{id}/cloturer', [AvisRappelController::class, 'cloturer']);
-
-    // Déchets & Destruction (STO-17)
-    Route::get('/dechets', [DechetController::class, 'index']);
-    Route::post('/dechets', [DechetController::class, 'store']);
-    Route::post('/dechets/{id}/detruire', [DechetController::class, 'detruire']);
-
-    // Dispensations / Délivrances Ordonnances & Conseil (BPD Chapitre 5 & LOT-1.3)
-    Route::get('/dispensations', [DispensationController::class, 'index']);
-    Route::post('/dispensations', [DispensationController::class, 'store']);
-    Route::post('/dispensations/{id}/viser', [DispensationController::class, 'viser']);
-
-    // Registre Officiel des Stupéfiants & Substances Vénéneuses (BPD-3 & Art 7.15 à 7.20) — STU complet 9 onglets
-    Route::get('/stupefiants', [StupefiantController::class, 'index']);
-    Route::post('/stupefiants', [StupefiantController::class, 'store']);
-    Route::post('/stupefiants/{id}/viser', [StupefiantController::class, 'viser']);
-    Route::post('/stupefiants/{id}/rectificative', [StupefiantController::class, 'rectificative']);
-    Route::get('/stupefiants/balance', [StupefiantController::class, 'balance']);
-    Route::get('/stupefiants/ordonnancier', [StupefiantController::class, 'ordonnancier']);
-    Route::get('/stupefiants/armoire', [StupefiantController::class, 'armoire']);
-    Route::post('/stupefiants/inventaire', [StupefiantController::class, 'inventaire']);
-    Route::post('/stupefiants/declaration-vol', [StupefiantController::class, 'declarationVol']);
-    Route::post('/stupefiants/demande-destruction', [StupefiantController::class, 'demandeDestruction']);
-    Route::get('/stupefiants/rapport', [StupefiantController::class, 'rapport']);
-
-    // Registre Officiel des Préparations Magistrales et Officinales (BPD Chapitre 6 & POI-03)
-    Route::get('/preparations', [PreparationController::class, 'index']);
-    Route::post('/preparations', [PreparationController::class, 'store']);
-    Route::post('/preparations/{id}/viser', [PreparationController::class, 'viser']);
-
-    // ==========================================
-    // PARTIE 4 : CAISSE POS, FACTURATION DGI E-MECEF, FEEXPAY & SYSCOHADA
-    // ==========================================
-
-    // Sessions de caisse & Clôtures X/Z
-    Route::get('/caisse/session-active', [CaisseSessionController::class, 'sessionActive']);
-    Route::post('/caisse/ouvrir', [CaisseSessionController::class, 'ouvrir']);
-    Route::get('/caisse/session/{id}/ticket-x', [CaisseSessionController::class, 'ticketX']);
-    Route::post('/caisse/session/{id}/fermer', [CaisseSessionController::class, 'fermer']);
-
-    // Ventes comptoir & Encaissement POS
-    Route::get('/caisse/ventes', [VenteCaisseController::class, 'index']);
-    Route::post('/caisse/ventes', [VenteCaisseController::class, 'store']);
-
-    // Facturation normalisée DGI e-MECeF
-    Route::get('/facturation/emecef', [ComptabiliteController::class, 'facturesEmecef']);
-
-    // Comptabilité & Clôtures SYSCOHADA
-    Route::get('/comptabilite/journal-ventes', [ComptabiliteController::class, 'journalVentes']);
-    Route::post('/comptabilite/ecritures', [ComptabiliteController::class, 'storeEcriture']);
-    Route::post('/comptabilite/ecritures/{id}/extourne', [ComptabiliteController::class, 'extourneEcriture']);
-    Route::get('/comptabilite/clotures', [ComptabiliteController::class, 'cloturesCaisse']);
-
-    // ==========================================
-    // JALON 4 : CONSOLIDATION PROMOTEUR & TÉLÉSERVICES DE GARDE
-    // ==========================================
-
-    // Consolidation Multi-Officines & Transferts Groupe
-    Route::get('/promoteur/consolidation', [\App\Http\Controllers\Api\PromoteurConsolidationController::class, 'consolidation']);
-    Route::get('/promoteur/transferts', [\App\Http\Controllers\Api\PromoteurConsolidationController::class, 'transferts']);
-    Route::post('/promoteur/transferts', [\App\Http\Controllers\Api\PromoteurConsolidationController::class, 'storeTransfert']);
-    Route::post('/promoteur/transferts/{id}/receptionner', [\App\Http\Controllers\Api\PromoteurConsolidationController::class, 'receptionnerTransfert']);
-
-    // Officines de garde
-    Route::get('/gardes', [\App\Http\Controllers\Api\GardeOfficineController::class, 'index']);
-    Route::post('/gardes', [\App\Http\Controllers\Api\GardeOfficineController::class, 'store']);
-    Route::delete('/gardes/{id}', [\App\Http\Controllers\Api\GardeOfficineController::class, 'destroy']);
+Route::prefix('support/missions/{id}/comments')->middleware(['auth:sanctum','tenant.context'])->whereNumber('id')->group(function(){
+ Route::get('',[\App\Modules\Accompagnement\Controllers\MissionCommentController::class,'index']);
+ Route::post('',[\App\Modules\Accompagnement\Controllers\MissionCommentController::class,'create'])->middleware('throttle:identity');
 });

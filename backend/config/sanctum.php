@@ -48,9 +48,17 @@ return [
     | considered expired. This will override any values set in the token's
     | "expires_at" attribute, but first-party sessions are not affected.
     |
+    | Ne s'applique qu'aux requêtes hors domaines "stateful" (SANCTUM_STATEFUL_
+    | DOMAINS) : le frontend SPA de ce projet passe par le guard "web" (session
+    | cookie, cf. 'guard' ci-dessus), donc c'est SESSION_LIFETIME (config/
+    | session.php) qui gouverne réellement l'expiration côté app - pas cette
+    | valeur, réservée à un éventuel client API externe (mobile...).
+    |
+    | Valeur par défaut : 720 minutes = 12 heures.
+    |
     */
 
-    'expiration' => null,
+    'expiration' => (int) env('SANCTUM_EXPIRATION', 720),
 
     /*
     |--------------------------------------------------------------------------

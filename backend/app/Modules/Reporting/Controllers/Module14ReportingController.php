@@ -252,15 +252,27 @@ class Module14ReportingController extends Controller
             'pinned_metric_codes' => 'nullable|array',
         ]);
 
-        $pref = DashboardPreference::updateOrCreate(
-            ['officine_id' => $officineId, 'user_id' => $userId],
-            [
+        $pref = DashboardPreference::where('officine_id', $officineId)
+            ->where('user_id', $userId)
+            ->first();
+
+        if ($pref) {
+            $pref->update([
                 'default_period' => $validated['default_period'],
                 'pinned_modules' => $validated['pinned_modules'] ?? [],
                 'pinned_metric_codes' => $validated['pinned_metric_codes'] ?? [],
-                'version' => DB::raw('version + 1'),
-            ]
-        );
+                'version' => $pref->version + 1,
+            ]);
+        } else {
+            $pref = DashboardPreference::create([
+                'officine_id' => $officineId,
+                'user_id' => $userId,
+                'default_period' => $validated['default_period'],
+                'pinned_modules' => $validated['pinned_modules'] ?? [],
+                'pinned_metric_codes' => $validated['pinned_metric_codes'] ?? [],
+                'version' => 1,
+            ]);
+        }
 
         return response()->json(['data' => $pref->fresh()]);
     }

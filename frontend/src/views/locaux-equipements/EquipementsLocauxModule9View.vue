@@ -296,12 +296,12 @@ onMounted(() => load('overview'))
     <!-- Tabs -->
     <nav class="tab-bar">
       <button v-for="t in [
-        { key: 'overview', label: 'Vue d\'ensemble', icon: 'chart-bar' },
+        { key: 'overview', label: 'Vue d\'ensemble', icon: 'dashboard' },
         { key: 'equipments', label: 'Inventaire Matériel', icon: 'box' },
-        { key: 'maintenance', label: 'Maintenance & Étalonnage', icon: 'wrench' },
-        { key: 'generator', label: 'Groupe Électrogène', icon: 'bolt' },
-        { key: 'cleaning', label: 'Hygiène & Nettoyage', icon: 'sparkles' },
-        { key: 'withdrawals', label: 'Retrait / Réforme', icon: 'archive-box-x-mark' },
+        { key: 'maintenance', label: 'Maintenance & Étalonnage', icon: 'settings' },
+        { key: 'generator', label: 'Groupe Électrogène', icon: 'clock' },
+        { key: 'cleaning', label: 'Hygiène & Nettoyage', icon: 'check' },
+        { key: 'withdrawals', label: 'Retrait / Réforme', icon: 'close' },
       ]" :key="t.key" :class="['tab-btn', { active: tab === t.key }]" @click="onTab(t.key as any)">
         <AppIcon :name="t.icon" class="tab-icon" /> {{ t.label }}
       </button>

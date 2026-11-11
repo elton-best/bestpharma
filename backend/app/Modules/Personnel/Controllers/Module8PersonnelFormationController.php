@@ -669,20 +669,29 @@ class Module8PersonnelFormationController extends Controller
 
         return DB::transaction(function () use ($session, $validated) {
             foreach ($validated['attendances'] as $att) {
-                TrainingAttendance::updateOrInsert(
-                    [
-                        'training_session_id' => $session->id,
-                        'employee_id' => $att['employee_id'],
-                    ],
-                    [
+                $existing = TrainingAttendance::where('training_session_id', $session->id)
+                    ->where('employee_id', $att['employee_id'])
+                    ->first();
+
+                if ($existing) {
+                    $existing->update([
                         'presence_status' => $att['presence_status'],
                         'score' => $att['score'] ?? null,
                         'evaluation_comments' => $att['evaluation_comments'] ?? null,
                         'certificate_ref' => $att['certificate_ref'] ?? null,
-                        'version' => DB::raw('COALESCE(version, 0) + 1'),
-                        'updated_at' => now(),
-                    ]
-                );
+                        'version' => $existing->version + 1,
+                    ]);
+                } else {
+                    TrainingAttendance::create([
+                        'training_session_id' => $session->id,
+                        'employee_id' => $att['employee_id'],
+                        'presence_status' => $att['presence_status'],
+                        'score' => $att['score'] ?? null,
+                        'evaluation_comments' => $att['evaluation_comments'] ?? null,
+                        'certificate_ref' => $att['certificate_ref'] ?? null,
+                        'version' => 1,
+                    ]);
+                }
             }
 
             $session->update([

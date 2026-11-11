@@ -6,6 +6,7 @@ use App\Modules\Qualite\Controllers\AutoEvaluationController;
 use App\Modules\Qualite\Controllers\Module4ActionController;
 use App\Modules\Qualite\Controllers\Module5InspectionController;
 use App\Modules\Qualite\Controllers\Module6NonconformiteController;
+use App\Modules\Qualite\Controllers\Module7RisqueContinuiteController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.context', 'module.active:qualite'])
@@ -67,5 +68,23 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
             Route::post('nc/{id}/actions', 'createCapaAction')->whereNumber('id')->middleware('throttle:identity');
             Route::post('nc/{id}/effectiveness', 'reviewEffectiveness')->whereNumber('id')->middleware('throttle:identity');
             Route::post('nc/{id}/close', 'closeNc')->whereNumber('id')->middleware('throttle:identity');
+        });
+
+        // Module 07: Gestion des Risques, Opportunités & Continuité d'Activité (PCA)
+        Route::prefix('risques')->controller(Module7RisqueContinuiteController::class)->group(function (): void {
+            Route::get('overview', 'overview');
+            // Risques et opportunités
+            Route::get('', 'risksIndex');
+            Route::post('', 'createRisk')->middleware('throttle:identity');
+            Route::get('{id}', 'showRisk')->whereNumber('id');
+            Route::put('{id}', 'updateRisk')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('{id}/assess', 'assessRisk')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('{id}/actions', 'createCapaAction')->whereNumber('id')->middleware('throttle:identity');
+            // Scénarios PCA & Exercices
+            Route::get('pca/scenarios', 'scenariosIndex');
+            Route::post('pca/scenarios', 'createScenario')->middleware('throttle:identity');
+            Route::get('pca/scenarios/{id}', 'showScenario')->whereNumber('id');
+            Route::put('pca/scenarios/{id}', 'updateScenario')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('pca/scenarios/{id}/exercises', 'logExercise')->whereNumber('id')->middleware('throttle:identity');
         });
     });

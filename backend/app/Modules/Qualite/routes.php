@@ -10,6 +10,7 @@ use App\Modules\Qualite\Controllers\Module7RisqueContinuiteController;
 use App\Modules\Personnel\Controllers\Module8PersonnelFormationController;
 use App\Modules\LocauxEquipements\Controllers\Module9EquipementLocauxController;
 use App\Modules\Achats\Controllers\Module10PrestataireFournisseurController;
+use App\Modules\Stock\Controllers\Module11ProduitStockController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.context', 'module.active:qualite'])
@@ -161,5 +162,29 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
             Route::post('complaints/{id}/resolve', 'resolveComplaint')->whereNumber('id')->middleware('throttle:identity');
             Route::get('contracts', 'contractsIndex');
             Route::post('contracts', 'storeContract')->middleware('throttle:identity');
+        });
+
+        // Module 11 : Produits, Approvisionnements & Stocks (CDC 11 - alias qualité)
+        Route::prefix('stock')->controller(Module11ProduitStockController::class)->group(function (): void {
+            Route::get('overview', 'overview');
+            Route::get('products', 'productsIndex');
+            Route::post('products', 'storeProduct')->middleware('throttle:identity');
+            Route::put('products/{id}', 'updateProduct')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('order-suggestions', 'orderSuggestions');
+            Route::get('orders', 'ordersIndex');
+            Route::post('orders', 'storeOrder')->middleware('throttle:identity');
+            Route::post('orders/{id}/approve', 'approveOrder')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('receipts', 'receiptsIndex');
+            Route::post('receipts', 'storeReceipt')->middleware('throttle:identity');
+            Route::get('lots', 'lotsIndex');
+            Route::get('movements', 'movementsIndex');
+            Route::post('movements', 'recordMovement')->middleware('throttle:identity');
+            Route::post('lots/{lotId}/quarantine', 'quarantineAction')->whereNumber('lotId')->middleware('throttle:identity');
+            Route::get('inventories', 'inventoriesIndex');
+            Route::post('inventories', 'storeInventory')->middleware('throttle:identity');
+            Route::post('inventories/{id}/approve', 'approveInventory')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('temperatures', 'temperaturesIndex');
+            Route::post('temperatures', 'storeTemperature')->middleware('throttle:identity');
+            Route::post('temperatures/{id}/decision', 'decideTemperature')->whereNumber('id')->middleware('throttle:identity');
         });
     });

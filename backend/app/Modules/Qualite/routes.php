@@ -5,6 +5,7 @@ use App\Modules\Qualite\Controllers\QualityActionController;
 use App\Modules\Qualite\Controllers\AutoEvaluationController;
 use App\Modules\Qualite\Controllers\Module4ActionController;
 use App\Modules\Qualite\Controllers\Module5InspectionController;
+use App\Modules\Qualite\Controllers\Module6NonconformiteController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.context', 'module.active:qualite'])
@@ -44,5 +45,27 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
             Route::post('{id}/sign', 'signReport')->whereNumber('id')->middleware('throttle:identity');
             Route::post('{id}/actions', 'createAction')->whereNumber('id')->middleware('throttle:identity');
             Route::post('{id}/evaluate-inspector', 'evaluateInspector')->whereNumber('id')->middleware('throttle:identity');
+        });
+
+        // Module 06: Non-conformités, Réclamations et Traitement CAPA
+        Route::prefix('nonconformites')->controller(Module6NonconformiteController::class)->group(function (): void {
+            Route::get('overview', 'overview');
+            // Réclamations
+            Route::get('complaints', 'complaintsIndex');
+            Route::post('complaints', 'createComplaint')->middleware('throttle:identity');
+            Route::get('complaints/{id}', 'showComplaint')->whereNumber('id');
+            Route::put('complaints/{id}', 'updateComplaint')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('complaints/{id}/responses', 'addComplaintResponse')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('complaints/{id}/create-nc', 'createNcFromComplaint')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('complaints/{id}/close', 'closeComplaint')->whereNumber('id')->middleware('throttle:identity');
+            // Non-conformités & Écarts
+            Route::get('nc', 'ncIndex');
+            Route::post('nc', 'createNc')->middleware('throttle:identity');
+            Route::get('nc/{id}', 'showNc')->whereNumber('id');
+            Route::put('nc/{id}', 'updateNc')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('nc/{id}/root-cause', 'saveRootCause')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('nc/{id}/actions', 'createCapaAction')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('nc/{id}/effectiveness', 'reviewEffectiveness')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('nc/{id}/close', 'closeNc')->whereNumber('id')->middleware('throttle:identity');
         });
     });

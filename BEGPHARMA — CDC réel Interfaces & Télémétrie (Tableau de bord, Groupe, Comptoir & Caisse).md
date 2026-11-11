@@ -4,6 +4,8 @@
 
 Version 1.0 · 11 novembre 2026 · Complément opérationnel du *Cahier des charges des sections « Tableau de bord, Comptoir & Caisse, Groupe »*. Ce document décrit **l'interface réelle** (relevée dans le code et à l'écran), **l'interface cible** (wireframes), **les modales**, **les graphiques** et **la télémétrie** (métriques métier, événements d'usage, télémétrie technique).
 
+> **Volet suivant** : *CDC réel Interfaces & Télémétrie (Stock, Stupéfiants, Qualité, Finance, Compte)* couvre les 18 écrans restants de la barre latérale et prolonge les inventaires de ce document (modales M-43→M-127, graphiques G-21→G-56, métriques et événements supplémentaires).
+
 > **Comment l'utiliser** : le document frère fixe le *quoi* fonctionnel (références TDB/CAI/VTE/FPX/DSP/FDG/CGL/GRD, règles de gestion, critères d'acceptation). Celui-ci fixe le *comment visible* : chaque zone, chaque modale, chaque graphe, chaque métrique, avec sa formule et son endpoint. Les deux sont à lire ensemble ; en cas de divergence, la règle de gestion du document frère l'emporte.
 
 ---

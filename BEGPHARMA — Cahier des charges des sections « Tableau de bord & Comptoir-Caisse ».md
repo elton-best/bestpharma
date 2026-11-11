@@ -15,6 +15,8 @@ Version 1.0 · 11 novembre 2026 · Dérivé du *Cahier des charges BEGPHARMA* (�
 
 **Hors périmètre explicite de ce document** : le groupe « Stock » (`/dashboard/stock` et ses 11 onglets), « Stupéfiants & Préparations », « Qualité & BPD ABMed » (déjà spécifié dans *BEGPHARMA — Cahier des charges de la section « Qualité & BPD ABMed »*), « Gestion & Finance » (comptabilité, journal, appareils), « Compte & Officine ». Ces pages **ne doivent pas être modifiées** par les travaux décrits ici, sauf pour les points d'intégration nommément listés (lecture de données, invalidation de caches).
 
+**Document complémentaire** : *BEGPHARMA — CDC réel Interfaces & Télémétrie (Tableau de bord, Groupe, Comptoir & Caisse).md* précise, pour ces mêmes 6 écrans, l'interface réelle et cible (wireframes), l'inventaire des modales et des graphiques, et le plan complet de télémétrie (métriques métier, événements d'usage, télémétrie technique). Les deux documents se lisent ensemble.
+
 **Convention des références** : TDB (tableau de bord), CGL (consolidation groupe), GRD (gardes), CAI/VTE/FPX (caisse, vente, FeexPay — références du cahier d'origine conservées), DSP (dispensation), FDG (facturation DGI), RG (règles de gestion), API (contrats). Les références du cahier d'origine et les articles du Guide BPD ABMed sont rappelés entre crochets, par exemple \[DSH-01\] ou \[art. 7.31\]. **Priorités : P1 indispensable à la mise en service, P2 important, P3 souhaitable.**
 
 ---

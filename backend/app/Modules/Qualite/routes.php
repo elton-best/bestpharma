@@ -9,6 +9,7 @@ use App\Modules\Qualite\Controllers\Module6NonconformiteController;
 use App\Modules\Qualite\Controllers\Module7RisqueContinuiteController;
 use App\Modules\Personnel\Controllers\Module8PersonnelFormationController;
 use App\Modules\LocauxEquipements\Controllers\Module9EquipementLocauxController;
+use App\Modules\Achats\Controllers\Module10PrestataireFournisseurController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.context', 'module.active:qualite'])
@@ -140,5 +141,25 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
             Route::get('withdrawals', 'withdrawalsIndex');
             Route::post('withdrawals', 'requestWithdrawal')->middleware('throttle:identity');
             Route::post('withdrawals/{id}/decision', 'decideWithdrawal')->whereNumber('id')->middleware('throttle:identity');
+        });
+
+        // Module 10 : Prestataires & Fournisseurs (CDC 10 - alias qualité)
+        Route::prefix('achats')->controller(Module10PrestataireFournisseurController::class)->group(function (): void {
+            Route::get('overview', 'overview');
+            Route::get('suppliers', 'suppliersIndex');
+            Route::post('suppliers', 'storeSupplier')->middleware('throttle:identity');
+            Route::get('suppliers/{id}', 'showSupplier')->whereNumber('id');
+            Route::put('suppliers/{id}', 'updateSupplier')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('selections', 'selectionsIndex');
+            Route::post('selections', 'storeSelection')->middleware('throttle:identity');
+            Route::post('selections/{id}/validate', 'validateSelection')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('evaluation-templates', 'evaluationTemplatesIndex');
+            Route::get('evaluations', 'evaluationsIndex');
+            Route::post('evaluations', 'storeEvaluation')->middleware('throttle:identity');
+            Route::get('complaints', 'complaintsIndex');
+            Route::post('complaints', 'storeComplaint')->middleware('throttle:identity');
+            Route::post('complaints/{id}/resolve', 'resolveComplaint')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('contracts', 'contractsIndex');
+            Route::post('contracts', 'storeContract')->middleware('throttle:identity');
         });
     });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 use App\Modules\Qualite\Controllers\QualityActionController;
 use App\Modules\Qualite\Controllers\AutoEvaluationController;
 use App\Modules\Qualite\Controllers\Module4ActionController;
+use App\Modules\Qualite\Controllers\Module5InspectionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.context', 'module.active:qualite'])
@@ -26,5 +27,22 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
             Route::post('actions/{id}/effectiveness', 'effectiveness')->whereNumber('id')->middleware('throttle:identity');
             Route::post('actions/{id}/{transition}', 'transition')->whereNumber('id')->middleware('throttle:identity');
             Route::post('import-mission/{missionId}', 'importMissionPlan')->whereNumber('missionId')->middleware('throttle:identity');
+        });
+
+        // Module 05: Auto-inspections et Conformité BPD ABMed
+        Route::prefix('inspections')->controller(Module5InspectionController::class)->group(function (): void {
+            Route::get('overview', 'overview');
+            Route::get('programs', 'programs');
+            Route::post('programs', 'createProgram')->middleware('throttle:identity');
+            Route::get('', 'index');
+            Route::post('', 'store')->middleware('throttle:identity');
+            Route::get('{id}', 'show')->whereNumber('id');
+            Route::put('{id}', 'update')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('{id}/transition/{transition}', 'transition')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('{id}/responses', 'saveResponses')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('{id}/report', 'submitReport')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('{id}/sign', 'signReport')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('{id}/actions', 'createAction')->whereNumber('id')->middleware('throttle:identity');
+            Route::post('{id}/evaluate-inspector', 'evaluateInspector')->whereNumber('id')->middleware('throttle:identity');
         });
     });

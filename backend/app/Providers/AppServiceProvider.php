@@ -28,7 +28,9 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('team.invite', fn (Request $request) => Limit::perMinute(20)->by('invite:'.$request->user()->id));
         RateLimiter::for('platform.review', fn (Request $request) => Limit::perMinute(30)->by('review:'.$request->user()->id));
         // Diagnostic dashboards are deliberately closed until their access policy is reviewed.
-        \Laravel\Horizon\Horizon::auth(fn () => false);
+        if (class_exists(\Laravel\Horizon\Horizon::class)) {
+            \Laravel\Horizon\Horizon::auth(fn () => false);
+        }
         if (class_exists(\Laravel\Telescope\Telescope::class)) {
             \Laravel\Telescope\Telescope::auth(fn () => false);
             // Request/mail/provider diagnostics can contain identity links or MFA secrets.

@@ -14,6 +14,7 @@ use App\Modules\Stock\Controllers\Module11ProduitStockController;
 use App\Modules\Dispensation\Controllers\Module12DispensationVenteController;
 use App\Modules\Tresorerie\Controllers\Module13CaisseFinancesController;
 use App\Modules\Reporting\Controllers\Module14ReportingController;
+use App\Modules\PlatformAdmin\Controllers\Module15AdministrationSaasController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.context', 'module.active:qualite'])
@@ -242,5 +243,22 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
             Route::post('compare-officines', 'compareOfficines');
             Route::get('notification-jobs', 'notificationJobsIndex');
             Route::post('notification-jobs/{id}/retry', 'retryNotificationJob')->whereNumber('id')->middleware('throttle:identity');
+        });
+
+        // Module 15 : Administration SaaS (CDC 15 - alias qualité)
+        Route::prefix('platformadmin')->controller(Module15AdministrationSaasController::class)->group(function (): void {
+            Route::get('overview', 'overview');
+            Route::get('plans', 'plansIndex');
+            Route::post('plans', 'storePlan')->middleware('throttle:identity');
+            Route::get('subscriptions', 'subscriptionsIndex');
+            Route::post('subscriptions', 'storeSubscription')->middleware('throttle:identity');
+            Route::post('subscriptions/{id}/state', 'suspendSubscription')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('tickets', 'ticketsIndex');
+            Route::post('tickets', 'storeTicket')->middleware('throttle:identity');
+            Route::get('support-access-requests', 'accessRequestsIndex');
+            Route::post('support-access-requests/{id}/decision', 'decideAccessRequest')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('settings', 'settingsIndex');
+            Route::post('settings', 'saveSetting')->middleware('throttle:identity');
+            Route::get('audit-events', 'auditEventsIndex');
         });
     });

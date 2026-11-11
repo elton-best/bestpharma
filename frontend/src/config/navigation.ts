@@ -3,7 +3,7 @@ export interface NavGroup { id: string; label: string; icon: string; badge?: str
 const planned = (label: string, to: string): NavLink => ({ label, to, planned: true })
 export const navigation: NavGroup[] = [
   { id:'pilotage',label:'Pilotage',icon:'dashboard',children:[{label:'Tableau de bord',to:'/dashboard'},{label:'Consolidation Groupe',to:'/dashboard/consolidation'},{label:'Pharmacies de garde',to:'/dashboard/gardes'}] },
-  { id:'caisse',label:'Comptoir & Caisse',icon:'caisse',children:[{label:'Caisse POS',to:'/ventes-caisse'},{label:'Dispensation & ordonnances',to:'/dispensation'}] },
+  { id:'caisse',label:'Comptoir & Caisse',icon:'caisse',children:[{label:'Caisse POS',to:'/ventes-caisse'},{label:'Dispensation & ordonnances',to:'/dispensation'},{label:'Dispensation & Vente (M12)',to:'/dispensation/ventes'}] },
  { id:'stock',label:'Stock',icon:'box',children:[{label:'Approvisionnements & Stocks (M11)',to:'/stock/approvisionnements'},...'Vue d’ensemble,Produits,Lots,FEFO,Emplacements,Mouvements,Réception,Scan,Inventaires,Péremptions,Quarantaine & Rappels,Déchets,Valorisation'.split(',').map((label,i)=>({label,to:`/dashboard/stock?tab=${['overview','produits','lots','fefo','emplacements','mouvements','reception','scan','inventaires','peremptions','quarantaine','dechets','valorisation'][i]}`}))] },
  { id:'preparations',label:'Stupéfiants & Préparations',icon:'flask',children:[planned('Registre Stupéfiants Tab. B','/dashboard/stupefiants'),planned('Préparations Magistrales','/dashboard/preparations')] },
  { id:'documents',label:'Documents & Canevas',icon:'documents',badge:'M03',children:[{label:'GED & Procédures',to:'/documents'},planned('Modèles Types BPD (59)','/dashboard/modeles')] },

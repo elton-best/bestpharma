@@ -32,6 +32,7 @@ const router = createRouter({
    { path: '/qualite/inspections', component: () => import('@/views/qualite/InspectionsModule5View.vue'), meta: { title: 'Auto-inspections BPD M5' } },
    { path: '/qualite/non-conformites', component: () => import('@/views/qualite/NonConformitesModule6View.vue'), meta: { title: 'Non-conformités & Réclamations M6' } },
    { path: '/qualite/risques', component: () => import('@/views/qualite/RisquesContinuiteModule7View.vue'), meta: { title: 'Risques & Continuité PCA M7' } },
+   { path: '/personnel/formations', component: () => import('@/views/personnel/PersonnelFormationsModule8View.vue'), meta: { title: 'Personnel & Formations M8' } },
   { path: '/documents', component: () => import('@/views/documents/IndexView.vue'), meta: { title: 'Documents' } },
   { path: '/dashboard/officine', component: () => import('@/views/officine/OfficineModuleView.vue'), meta: { title: 'Paramètres Officine' } },
   { path: '/dashboard/profil', component: () => import('@/views/officine/OfficineModuleView.vue'), meta: { title: 'Mon profil & rôle', applicant: true } },

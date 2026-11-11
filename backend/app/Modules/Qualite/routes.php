@@ -7,6 +7,7 @@ use App\Modules\Qualite\Controllers\Module4ActionController;
 use App\Modules\Qualite\Controllers\Module5InspectionController;
 use App\Modules\Qualite\Controllers\Module6NonconformiteController;
 use App\Modules\Qualite\Controllers\Module7RisqueContinuiteController;
+use App\Modules\Personnel\Controllers\Module8PersonnelFormationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.context', 'module.active:qualite'])
@@ -86,5 +87,30 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
             Route::get('pca/scenarios/{id}', 'showScenario')->whereNumber('id');
             Route::put('pca/scenarios/{id}', 'updateScenario')->whereNumber('id')->middleware('throttle:identity');
             Route::post('pca/scenarios/{id}/exercises', 'logExercise')->whereNumber('id')->middleware('throttle:identity');
+        });
+
+        // Module 08: Personnel & Formations (CDC 08)
+        Route::prefix('personnel')->controller(Module8PersonnelFormationController::class)->group(function (): void {
+            Route::get('overview', 'overview');
+            Route::get('employees', 'employeesIndex');
+            Route::post('employees', 'storeEmployee')->middleware('throttle:identity');
+            Route::get('employees/{id}', 'showEmployee')->whereNumber('id');
+            Route::put('employees/{id}', 'updateEmployee')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('job-descriptions', 'jobDescriptionsIndex');
+            Route::post('job-descriptions', 'storeJobDescription')->middleware('throttle:identity');
+            Route::put('job-descriptions/{id}', 'updateJobDescription')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('leave-requests', 'leaveRequestsIndex');
+            Route::post('leave-requests', 'storeLeaveRequest')->middleware('throttle:identity');
+            Route::post('leave-requests/{id}/decision', 'decideLeaveRequest')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('leave-balances', 'leaveBalancesIndex');
+            Route::get('shifts', 'shiftsIndex');
+            Route::post('shifts', 'storeShift')->middleware('throttle:identity');
+            Route::put('shifts/{id}', 'updateShift')->whereNumber('id')->middleware('throttle:identity');
+            Route::get('training-plans', 'trainingPlansIndex');
+            Route::post('training-plans', 'storeTrainingPlan')->middleware('throttle:identity');
+            Route::post('training-plans/{planId}/sessions', 'storeTrainingSession')->whereNumber('planId')->middleware('throttle:identity');
+            Route::post('training-sessions/{sessionId}/attendances', 'recordSessionAttendance')->whereNumber('sessionId')->middleware('throttle:identity');
+            Route::get('performance-reviews', 'reviewsIndex');
+            Route::post('performance-reviews', 'storePerformanceReview')->middleware('throttle:identity');
         });
     });

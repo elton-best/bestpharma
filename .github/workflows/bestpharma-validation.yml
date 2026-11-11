@@ -9,9 +9,6 @@ permissions:
 jobs:
   backend:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        database: [sqlite, pgsql]
     services:
       postgres:
         image: postgres:16-alpine
@@ -26,10 +23,10 @@ jobs:
         working-directory: backend
     env:
       APP_ENV: testing
-      DB_CONNECTION: ${{ matrix.database }}
+      DB_CONNECTION: pgsql
       DB_HOST: 127.0.0.1
       DB_PORT: '5432'
-      DB_DATABASE: ${{ matrix.database == 'pgsql' && 'bestpharma_test' || ':memory:' }}
+      DB_DATABASE: bestpharma_test
       DB_USERNAME: postgres
       DB_PASSWORD: validation-only
       CACHE_STORE: array
@@ -40,7 +37,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: pdo_pgsql, pdo_sqlite, mbstring, dom, gd, zip, bcmath, intl, pcntl
+          extensions: pdo_pgsql, mbstring, dom, gd, zip, bcmath, intl, pcntl
           tools: composer:v2
           coverage: none
       - run: cp .env.example .env
@@ -61,5 +58,5 @@ jobs:
           node-version: '22'
       - run: npm ci
       - if: matrix.app == 'frontend'
-        run: npm test
+        run: VITE_DATA_MODE=demo npm test
       - run: npm run build

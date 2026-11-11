@@ -30,7 +30,7 @@ class ResolveTenantContext
             $roles=DB::table('officine_member_roles')->join('officine_roles','officine_roles.id','=','officine_member_roles.role_id')->where('officine_roles.is_active',true)->where('membership_id',$membership->id)->where('officine_roles.officine_id',(int)$id)->pluck('officine_roles.permissions');
             foreach($roles as $role)$permissions=array_merge($permissions,json_decode($role,true)?:[]);
             $admin=(bool)$membership->is_admin;
-            if($admin)$permissions=array_merge($permissions,['qualite.read','qualite.write','personnel.read','personnel.write','achats.read','achats.write','stock.read','stock.write','dispensation.read','dispensation.write']);
+            if($admin)$permissions=array_merge($permissions,['qualite.read','qualite.write','personnel.read','personnel.write','achats.read','achats.write','stock.read','stock.write','dispensation.read','dispensation.write','tresorerie.read','tresorerie.write']);
         } else {
             abort_unless((bool)$request->user()->is_support_staff && $request->user()->internal_active && DB::table('officines')->where('id',(int)$id)->where('status','active')->exists(),403,'Accès officine non autorisé.');
             $assignments=\App\Modules\Tenancy\Services\OfficineAccess::assignments($request->user()->id)->where('officine_id',(int)$id)->get();

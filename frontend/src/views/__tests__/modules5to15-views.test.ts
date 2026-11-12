@@ -18,6 +18,7 @@ import CaisseFinancesModule13View from '../tresorerie/CaisseFinancesModule13View
 import ReportingModule14View from '../dashboard/ReportingModule14View.vue'
 import AdministrationSaasModule15View from '../officine/AdministrationSaasModule15View.vue'
 import ComptabiliteSyscohadaView from '../comptabilite/ComptabiliteSyscohadaView.vue'
+import PaieSocialView from '../paie/PaieSocialView.vue'
 
 const VIEWS = [
   { name: 'Module 5 — Inspections', component: InspectionsModule5View },
@@ -32,6 +33,7 @@ const VIEWS = [
   { name: 'Module 14 — Reporting & Tableaux de Bord', component: ReportingModule14View },
   { name: 'Module 15 — Administration SaaS & Support', component: AdministrationSaasModule15View },
   { name: 'Phase 3 — Comptabilité SYSCOHADA', component: ComptabiliteSyscohadaView },
+  { name: 'Phase 3 — Paie & Social', component: PaieSocialView },
 ]
 
 describe('Modules 5 à 15 — Rendu UI et appels initiaux', () => {

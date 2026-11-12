@@ -9,12 +9,12 @@
 | Écrans couverts | `/dashboard/pointage` (1 126 l., 7 sections) · `/dashboard/personnel` (959 l., 9 sections) |
 | Modules partagés | `badge-double-face.tsx` (632 l.) · `modale-profil-collaborateur.tsx` (303 l.) · `modale-historique-presences.tsx` (255 l.) · `bpd-communs.tsx` (`ModaleSignatureCode`, `BoutonCreerNC`) |
 | Consommateurs transverses | `tableau-de-bord.tsx:53` · `notifications-sheet.tsx:50` · `consolidation.tsx:304` · `parametres.tsx:234` |
-| Backend | `PointageController.php` (196 l.) · `EmployeController.php` (85 l.) · tables `employes`, `pointages`, `inscriptions_ordre` |
+| Backend | `PointageController.php` (203 l.) · `EmployeController.php` (84 l.) · tables `employes`, `pointages`, `inscriptions_ordre` |
 | Socle réglementaire | Guide BPD ABMed **art. 1.11** (présence physique continue du pharmacien) · BPD-2 Personnel · codes UI existants POI-01/03/07/09/10/13 et PER-01…05 |
 | Numérotation | défauts **DEF-01→DEF-25**, incohérences **INC-01→INC-08**, défauts propres au badge **BDG-D1→BDG-D9**, exigences **PRS/BDG/DOS/PLN/RPT/PAR-nn**, règles d'onglets **TAB-07→TAB-10**, règles transverses **RG-13→RG-24**, modales **M-128→M-157**, graphiques **G-57→G-68**, lots **L15→L20** |
 | Convention | `BDG-Dn` désigne un **défaut** constaté sur le badge (§1.3) ; `BDG-nn` désigne une **exigence** cible (§2.4). Les deux séries ne se recouvrent pas |
 
-> **Documents complémentaires** : ce volet prolonge et ne répète pas les trois précédents. Les modales et graphiques continuent la numérotation du *CDC réel (Stock, Stupéfiants, Qualité, Finance, Compte)* — M-43→M-127 et G-21→G-56 — et les règles transverses continuent ses RG-01→RG-12, de même que les lots continuent ses L8→L14. Le *quoi* fonctionnel des 9 pages qualité fait foi dans le cahier « Qualité & BPD ABMed » déjà présent au dépôt.
+> **Documents complémentaires** : ce volet prolonge et ne répète pas les trois précédents. Il est lui-même suivi de deux volets d'approfondissement : le **volet 5** (*Stock, Magasin, Stupéfiants & Préparations*, M-158→M-199, G-69→G-96, RG-25→RG-34, L21→L26, avec les constats transverses vérifiés par exécution) et le **volet 6** (*Qualité, GED, Finance, Compte & Sécurité*, M-200→M-243, G-97→G-124, RG-35→RG-44, L27→L33). Les modales et graphiques continuent la numérotation du *CDC réel (Stock, Stupéfiants, Qualité, Finance, Compte)* — M-43→M-127 et G-21→G-56 — et les règles transverses continuent ses RG-01→RG-12, de même que les lots continuent ses L8→L14. Le *quoi* fonctionnel des 9 pages qualité fait foi dans le cahier « Qualité & BPD ABMed » déjà présent au dépôt.
 
 ---
 

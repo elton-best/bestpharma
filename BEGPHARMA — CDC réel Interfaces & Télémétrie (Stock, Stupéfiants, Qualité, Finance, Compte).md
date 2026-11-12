@@ -7,7 +7,10 @@ Version 1.0 · 11 novembre 2026 · Troisième volet, complémentaire des deux do
 | --- | --- |
 | *Cahier des charges des sections « Tableau de bord, Comptoir & Caisse, Groupe »* | le **quoi** fonctionnel des 6 premiers écrans |
 | *CDC réel Interfaces & Télémétrie (Tableau de bord, Groupe, Comptoir & Caisse)* | le **comment visible** de ces 6 écrans (modales M-01→M-42, graphiques G-01→G-20, télémétrie) |
-| **Ce document** | le **comment visible** des 18 écrans restants (modales **M-43→M-127**, graphiques **G-21→G-56**, télémétrie étendue) |
+| **Ce document** | la **cartographie** des 18 écrans restants (modales **M-43→M-127**, graphiques **G-21→G-56**, télémétrie étendue) |
+| *CDC réel Gestion des Présences, Pointage & Badges (Art. 1.11)* — **volet 4** | approfondissement de « Pointage Présence » et « Personnel & Ordre B » : DEF-01→DEF-25, M-128→M-157, G-57→G-68, RG-13→RG-24, L15→L20 |
+| *CDC réel Stock, Magasin, Stupéfiants & Préparations* — **volet 5** | approfondissement des 4 fichiers du produit (5 195 l., 29 sections) + constats transverses vérifiés par exécution (§0) : M-158→M-199, G-69→G-96, RG-25→RG-34, L21→L26 |
+| *CDC réel Qualité, GED, Finance, Compte & Sécurité* — **volet 6** | approfondissement des 13 écrans restants (12 895 l., 78 sections) : M-200→M-243, G-97→G-124, RG-35→RG-44, L27→L33 |
 | *Cahier des charges de la section « Qualité & BPD ABMed »* | le **quoi** fonctionnel des 9 pages qualité — **fait foi**, ce document n'y ajoute que l'interface et la télémétrie |
 
 **Périmètre — 18 écrans, 44 sous-sections** (tout ce qui suit le groupe « Comptoir & Caisse » dans `frontend/src/components/app-sidebar.tsx`) :

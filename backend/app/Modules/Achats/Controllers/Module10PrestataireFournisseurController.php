@@ -37,9 +37,6 @@ class Module10PrestataireFournisseurController extends Controller
         }
 
         $perms = $request->attributes->get('officine.permissions', []);
-        if (empty($perms)) {
-            return;
-        }
 
         $altPerm = str_starts_with($permission, 'achats.')
             ? str_replace('achats.', 'qualite.', $permission)
@@ -299,6 +296,14 @@ class Module10PrestataireFournisseurController extends Controller
             return response()->json(['message' => 'Cette référence de sélection existe déjà.'], 422);
         }
 
+        if (!empty($validated['quotes'])) {
+            $supplierIds = array_values(array_unique(array_map(fn ($q) => (int) $q['supplier_id'], $validated['quotes'])));
+            $ownedCount = Supplier::where('officine_id', $officineId)->whereIn('id', $supplierIds)->count();
+            if ($ownedCount !== count($supplierIds)) {
+                return response()->json(['message' => 'Un ou plusieurs fournisseurs sont introuvables dans cette officine.'], 404);
+            }
+        }
+
         return DB::transaction(function () use ($validated, $officineId, $request) {
             $selection = SupplierSelection::create([
                 'officine_id' => $officineId,
@@ -349,6 +354,15 @@ class Module10PrestataireFournisseurController extends Controller
             'selected_supplier_id' => 'required_if:decision,valide|nullable|integer',
             'selection_justification' => 'required_if:decision,valide|nullable|string',
         ]);
+
+        if (!empty($validated['selected_supplier_id'])) {
+            $supplierExists = Supplier::where('officine_id', $officineId)
+                ->where('id', $validated['selected_supplier_id'])
+                ->exists();
+            if (!$supplierExists) {
+                return response()->json(['message' => 'Fournisseur sélectionné introuvable dans cette officine.'], 404);
+            }
+        }
 
         return DB::transaction(function () use ($selection, $validated, $officineId, $request) {
             // CDC 7 : Une sélection ne modifie pas un paiement
@@ -626,6 +640,10 @@ class Module10PrestataireFournisseurController extends Controller
             'notice_days' => 'sometimes|integer|min:0|max:180',
             'terms_summary' => 'nullable|string',
         ]);
+
+        if (!Supplier::where('officine_id', $officineId)->where('id', $validated['supplier_id'])->exists()) {
+            return response()->json(['message' => 'Fournisseur introuvable dans cette officine.'], 404);
+        }
 
         $contract = SupplierContract::create([
             ...$validated,

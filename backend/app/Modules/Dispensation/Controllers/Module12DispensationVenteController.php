@@ -40,9 +40,6 @@ class Module12DispensationVenteController extends Controller
         }
 
         $perms = $request->attributes->get('officine.permissions', []);
-        if (empty($perms)) {
-            return;
-        }
 
         $altPerm = str_starts_with($permission, 'dispensation.')
             ? str_replace('dispensation.', 'qualite.', $permission)
@@ -480,6 +477,14 @@ class Module12DispensationVenteController extends Controller
             return response()->json(['message' => 'Cette référence de retour existe déjà.'], 422);
         }
 
+        if (!Product::where('officine_id', $officineId)->where('id', $validated['product_id'])->exists()) {
+            return response()->json(['message' => 'Produit introuvable dans cette officine.'], 404);
+        }
+
+        if (!empty($validated['lot_id']) && !Lot::where('officine_id', $officineId)->where('id', $validated['lot_id'])->exists()) {
+            return response()->json(['message' => 'Lot introuvable dans cette officine.'], 404);
+        }
+
         // CDC 7 : les retours ne réintègrent PAS automatiquement un lot vendable
         $return = SaleReturn::create([
             'officine_id' => $officineId,
@@ -663,6 +668,16 @@ class Module12DispensationVenteController extends Controller
 
         if (SafetyReport::where('officine_id', $officineId)->where('reference', $validated['reference'])->exists()) {
             return response()->json(['message' => 'Cette référence de signalement existe déjà.'], 422);
+        }
+
+        if (!empty($validated['sale_id']) && !Sale::where('officine_id', $officineId)->where('id', $validated['sale_id'])->exists()) {
+            return response()->json(['message' => 'Vente introuvable dans cette officine.'], 404);
+        }
+        if (!empty($validated['product_id']) && !Product::where('officine_id', $officineId)->where('id', $validated['product_id'])->exists()) {
+            return response()->json(['message' => 'Produit introuvable dans cette officine.'], 404);
+        }
+        if (!empty($validated['lot_id']) && !Lot::where('officine_id', $officineId)->where('id', $validated['lot_id'])->exists()) {
+            return response()->json(['message' => 'Lot introuvable dans cette officine.'], 404);
         }
 
         return DB::transaction(function () use ($validated, $officineId, $request) {

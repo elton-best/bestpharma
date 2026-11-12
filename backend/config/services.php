@@ -96,4 +96,8 @@ return [
         'redirect' => env('GITHUB_REDIRECT_URI'),
     ],
 
+    'billing' => [
+        'webhook_secret' => env('BILLING_WEBHOOK_SECRET'),
+    ],
+
 ];

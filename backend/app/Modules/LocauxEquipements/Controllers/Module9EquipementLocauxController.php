@@ -38,9 +38,6 @@ class Module9EquipementLocauxController extends Controller
         }
 
         $perms = $request->attributes->get('officine.permissions', []);
-        if (empty($perms)) {
-            return;
-        }
         // Accepts either locauxequipements.* or qualite.*
         $altPerm = str_starts_with($permission, 'locauxequipements.')
             ? str_replace('locauxequipements.', 'qualite.', $permission)

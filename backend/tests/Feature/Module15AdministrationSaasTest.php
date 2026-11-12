@@ -9,6 +9,7 @@ use App\Modules\PlatformAdmin\Models\Subscription;
 use App\Modules\Stock\Models\Product;
 use App\Modules\Tenancy\Models\Officine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -24,6 +25,7 @@ class Module15AdministrationSaasTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Config::set('services.billing.webhook_secret', 'test-billing-webhook-secret');
         $this->admin = User::create([
             'name' => 'Admin Officine M15',
             'email' => 'admin-m15@example.test',
@@ -109,11 +111,12 @@ class Module15AdministrationSaasTest extends TestCase
             'event_type' => 'payment_confirmed',
             'amount' => 45000,
         ];
-        $wh1 = $this->postJson('/api/v1/platformadmin/billing-webhook', $webhookPayload);
+        $sig1 = hash_hmac('sha256', json_encode($webhookPayload, JSON_THROW_ON_ERROR), 'test-billing-webhook-secret');
+        $wh1 = $this->withHeaders(['X-Webhook-Signature' => $sig1])->postJson('/api/v1/platformadmin/billing-webhook', $webhookPayload);
         $wh1->assertCreated()->assertJsonPath('replayed', false);
 
         // Rejeu webhook -> 200 & replayed=true sans double BillingEvent
-        $wh2 = $this->postJson('/api/v1/platformadmin/billing-webhook', $webhookPayload);
+        $wh2 = $this->withHeaders(['X-Webhook-Signature' => $sig1])->postJson('/api/v1/platformadmin/billing-webhook', $webhookPayload);
         $wh2->assertOk()->assertJsonPath('replayed', true);
         $this->assertEquals(1, BillingEvent::where('provider_event_id', 'evt-fedapay-998811')->count());
 
@@ -141,13 +144,17 @@ class Module15AdministrationSaasTest extends TestCase
             'reference' => 'SUB-SUSP-01',
         ])->json('data.id');
 
-        $this->postJson('/api/v1/platformadmin/billing-webhook', [
+        $suspWebhookPayload = [
             'officine_id' => $this->office->id,
             'subscription_id' => $subId,
             'provider_name' => 'fedapay',
             'provider_event_id' => 'evt-susp-01',
             'event_type' => 'payment_confirmed',
-        ])->assertCreated();
+        ];
+        $suspSig = hash_hmac('sha256', json_encode($suspWebhookPayload, JSON_THROW_ON_ERROR), 'test-billing-webhook-secret');
+        $this->withHeaders(['X-Webhook-Signature' => $suspSig])
+            ->postJson('/api/v1/platformadmin/billing-webhook', $suspWebhookPayload)
+            ->assertCreated();
 
         // Suspension (CDC 3.6 & 7 : n'efface rien !)
         $suspRes = $this->postJson("/api/v1/platformadmin/subscriptions/{$subId}/state", [
@@ -216,5 +223,21 @@ class Module15AdministrationSaasTest extends TestCase
         $auditRes = $this->getJson('/api/v1/platformadmin/audit-events');
         $auditRes->assertOk();
         $this->assertNotEmpty($auditRes->json('data'));
+    }
+
+    public function test_billing_webhook_rejects_missing_or_invalid_signature(): void
+    {
+        $payload = [
+            'officine_id' => $this->office->id,
+            'subscription_id' => 9999,
+            'provider_name' => 'fedapay',
+            'provider_event_id' => 'evt-unsigned-01',
+            'event_type' => 'payment_confirmed',
+        ];
+
+        $this->postJson('/api/v1/platformadmin/billing-webhook', $payload)->assertForbidden();
+        $this->withHeaders(['X-Webhook-Signature' => 'invalid-signature'])
+            ->postJson('/api/v1/platformadmin/billing-webhook', $payload)
+            ->assertForbidden();
     }
 }

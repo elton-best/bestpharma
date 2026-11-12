@@ -36,9 +36,6 @@ class Module8PersonnelFormationController extends Controller
         }
 
         $perms = $request->attributes->get('officine.permissions', []);
-        if (empty($perms)) {
-            return;
-        }
         // Accepts either personnel.* or qualite.* for smooth integration
         $altPerm = str_starts_with($permission, 'personnel.')
             ? str_replace('personnel.', 'qualite.', $permission)

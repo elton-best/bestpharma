@@ -39,9 +39,6 @@ class Module15AdministrationSaasController extends Controller
         }
 
         $perms = $request->attributes->get('officine.permissions', []);
-        if (empty($perms)) {
-            return;
-        }
 
         abort_unless(
             in_array($permission, $perms, true) || in_array('admin', $perms, true),
@@ -215,6 +212,14 @@ class Module15AdministrationSaasController extends Controller
      */
     public function billingWebhook(Request $request): JsonResponse
     {
+        $secret = (string) config('services.billing.webhook_secret');
+        $providedSignature = (string) $request->header('X-Webhook-Signature', '');
+        $expectedSignature = $secret !== '' ? hash_hmac('sha256', (string) $request->getContent(), $secret) : '';
+
+        if ($secret === '' || $providedSignature === '' || !hash_equals($expectedSignature, $providedSignature)) {
+            return response()->json(['message' => 'Signature webhook invalide ou non configurée.'], 403);
+        }
+
         $validated = $request->validate([
             'officine_id' => 'required|integer',
             'subscription_id' => 'required|integer',

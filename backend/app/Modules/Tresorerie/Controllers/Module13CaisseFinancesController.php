@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Tresorerie\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Dispensation\Models\Sale;
 use App\Modules\Qualite\Models\QualityAction;
 use App\Modules\Tresorerie\Models\CashCount;
 use App\Modules\Tresorerie\Models\CashMovement;
@@ -37,9 +38,6 @@ class Module13CaisseFinancesController extends Controller
         }
 
         $perms = $request->attributes->get('officine.permissions', []);
-        if (empty($perms)) {
-            return;
-        }
 
         $altPerm = str_starts_with($permission, 'tresorerie.')
             ? str_replace('tresorerie.', 'qualite.', $permission)
@@ -321,6 +319,10 @@ class Module13CaisseFinancesController extends Controller
             return response()->json(['message' => 'Cette référence de transaction existe déjà.'], 422);
         }
 
+        if (!empty($validated['sale_id']) && !Sale::where('officine_id', $officineId)->where('id', $validated['sale_id'])->exists()) {
+            return response()->json(['message' => 'Vente introuvable dans cette officine.'], 404);
+        }
+
         return DB::transaction(function () use ($validated, $officineId, $request) {
             $session = CashSession::where('officine_id', $officineId)->lockForUpdate()->find($validated['cash_session_id']);
             if (!$session || $session->status === 'cloturee') {
@@ -470,6 +472,10 @@ class Module13CaisseFinancesController extends Controller
             return response()->json(['message' => 'Cette référence de dépense existe déjà.'], 422);
         }
 
+        if (!empty($validated['cash_session_id']) && !CashSession::where('officine_id', $officineId)->where('id', $validated['cash_session_id'])->exists()) {
+            return response()->json(['message' => 'Session de caisse introuvable dans cette officine.'], 404);
+        }
+
         $expense = ExpenseRequest::create([
             ...$validated,
             'officine_id' => $officineId,
@@ -562,6 +568,10 @@ class Module13CaisseFinancesController extends Controller
             'denominations' => 'nullable|array',
             'anomalies_notes' => 'nullable|string',
         ]);
+
+        if (!empty($validated['incoming_user_id']) && !DB::table('officine_user')->where('officine_id', $officineId)->where('user_id', $validated['incoming_user_id'])->where('is_active', true)->exists()) {
+            return response()->json(['message' => 'Caissier entrant introuvable ou inactif dans cette officine.'], 404);
+        }
 
         return DB::transaction(function () use ($validated, $officineId, $request) {
             $session = CashSession::with('register')->where('officine_id', $officineId)->lockForUpdate()->find($validated['cash_session_id']);

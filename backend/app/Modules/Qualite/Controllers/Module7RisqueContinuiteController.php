@@ -34,9 +34,6 @@ class Module7RisqueContinuiteController extends Controller
         }
 
         $perms = $request->attributes->get('officine.permissions', []);
-        if (empty($perms)) {
-            return;
-        }
         abort_unless(in_array($permission, $perms, true) || in_array('admin', $perms, true), 403, "Permission {$permission} requise.");
     }
 

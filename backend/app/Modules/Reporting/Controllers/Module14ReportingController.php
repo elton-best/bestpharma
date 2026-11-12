@@ -33,9 +33,6 @@ class Module14ReportingController extends Controller
         }
 
         $perms = $request->attributes->get('officine.permissions', []);
-        if (empty($perms)) {
-            return;
-        }
 
         $altPerm = str_starts_with($permission, 'reporting.')
             ? str_replace('reporting.', 'qualite.', $permission)
@@ -369,6 +366,10 @@ class Module14ReportingController extends Controller
 
         if (ReportRun::where('officine_id', $officineId)->where('reference', $validated['reference'])->exists()) {
             return response()->json(['message' => 'Cette référence de rapport existe déjà.'], 422);
+        }
+
+        if (!empty($validated['template_id']) && !ReportTemplate::where('officine_id', $officineId)->where('id', $validated['template_id'])->exists()) {
+            return response()->json(['message' => 'Modèle de rapport introuvable dans cette officine.'], 404);
         }
 
         $metrics = $this->computeLiveMetrics($officineId, $validated['period_start'], $validated['period_end']);

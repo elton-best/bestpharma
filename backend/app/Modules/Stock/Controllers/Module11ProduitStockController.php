@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Stock\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Achats\Models\Supplier;
+use App\Modules\LocauxEquipements\Models\Equipment;
 use App\Modules\Qualite\Models\QualityAction;
 use App\Modules\Stock\Models\Inventory;
 use App\Modules\Stock\Models\InventoryLine;
@@ -40,9 +42,6 @@ class Module11ProduitStockController extends Controller
         }
 
         $perms = $request->attributes->get('officine.permissions', []);
-        if (empty($perms)) {
-            return;
-        }
 
         $altPerm = str_starts_with($permission, 'stock.')
             ? str_replace('stock.', 'qualite.', $permission)
@@ -214,6 +213,10 @@ class Module11ProduitStockController extends Controller
             return response()->json(['message' => 'Ce code produit existe déjà dans le catalogue.'], 422);
         }
 
+        if (!empty($validated['default_supplier_id']) && !Supplier::where('officine_id', $officineId)->where('id', $validated['default_supplier_id'])->exists()) {
+            return response()->json(['message' => 'Fournisseur par défaut introuvable dans cette officine.'], 404);
+        }
+
         // CDC 3.1 : ne pas affirmer une AMM sans source officielle vérifiée
         $ammVerified = !empty($validated['amm_source_label']) && !empty($validated['amm_source_verified']);
 
@@ -374,6 +377,15 @@ class Module11ProduitStockController extends Controller
             return response()->json(['message' => 'Cette référence de commande existe déjà.'], 422);
         }
 
+        if (!Supplier::where('officine_id', $officineId)->where('id', $validated['supplier_id'])->exists()) {
+            return response()->json(['message' => 'Fournisseur introuvable dans cette officine.'], 404);
+        }
+
+        $productIds = array_values(array_unique(array_map(fn ($l) => (int) $l['product_id'], $validated['lines'])));
+        if (Product::where('officine_id', $officineId)->whereIn('id', $productIds)->count() !== count($productIds)) {
+            return response()->json(['message' => 'Un ou plusieurs produits sont introuvables dans cette officine.'], 404);
+        }
+
         return DB::transaction(function () use ($validated, $officineId, $request) {
             $total = 0.0;
             foreach ($validated['lines'] as $l) {
@@ -502,6 +514,24 @@ class Module11ProduitStockController extends Controller
 
         if (Receipt::where('officine_id', $officineId)->where('reference', $validated['reference'])->exists()) {
             return response()->json(['message' => 'Cette référence de réception existe déjà.'], 422);
+        }
+
+        if (!Supplier::where('officine_id', $officineId)->where('id', $validated['supplier_id'])->exists()) {
+            return response()->json(['message' => 'Fournisseur introuvable dans cette officine.'], 404);
+        }
+
+        if (!empty($validated['purchase_order_id']) && !PurchaseOrder::where('officine_id', $officineId)->where('id', $validated['purchase_order_id'])->exists()) {
+            return response()->json(['message' => 'Bon de commande introuvable dans cette officine.'], 404);
+        }
+
+        $productIds = array_values(array_unique(array_map(fn ($l) => (int) $l['product_id'], $validated['lines'])));
+        if (Product::where('officine_id', $officineId)->whereIn('id', $productIds)->count() !== count($productIds)) {
+            return response()->json(['message' => 'Un ou plusieurs produits sont introuvables dans cette officine.'], 404);
+        }
+
+        $orderLineIds = array_values(array_unique(array_filter(array_map(fn ($l) => $l['order_line_id'] ?? null, $validated['lines']))));
+        if (!empty($orderLineIds) && OrderLine::where('officine_id', $officineId)->whereIn('id', $orderLineIds)->count() !== count($orderLineIds)) {
+            return response()->json(['message' => 'Une ou plusieurs lignes de commande sont introuvables dans cette officine.'], 404);
         }
 
         return DB::transaction(function () use ($validated, $officineId, $request) {
@@ -1049,6 +1079,10 @@ class Module11ProduitStockController extends Controller
             'measured_at' => 'sometimes|date',
             'incident_notes' => 'nullable|string',
         ]);
+
+        if (!empty($validated['equipment_id']) && !Equipment::where('officine_id', $officineId)->where('id', $validated['equipment_id'])->exists()) {
+            return response()->json(['message' => 'Équipement introuvable dans cette officine.'], 404);
+        }
 
         $min = (float) ($validated['min_threshold'] ?? 2.0);
         $max = (float) ($validated['max_threshold'] ?? 8.0);

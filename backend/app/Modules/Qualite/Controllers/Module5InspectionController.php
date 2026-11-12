@@ -38,10 +38,6 @@ class Module5InspectionController extends Controller
         }
 
         $perms = $request->attributes->get('officine.permissions', []);
-        if (empty($perms)) {
-            // Si pas de permissions injectées (ex: tests directs ou token admin), autoriser
-            return;
-        }
         abort_unless(in_array($permission, $perms, true) || in_array('admin', $perms, true), 403, "Permission {$permission} requise.");
     }
 

@@ -14,7 +14,7 @@ const notice = ref('')
 const allowed = ref(true)
 const busy = ref(false)
 const csv = ref<File | null>(null)
-const zones = [['refrigeree_2_8', 'Enceinte réfrigérée'], ['magasin_reserve', 'Magasin / réserve'], ['hall_dispensation', 'Hall de dispensation']]
+const zones = [['refrigeree_2_8', 'Enceinte réfrigérée (2-8°C)'], ['magasin_reserve', 'Magasin / réserve (15-25°C)'], ['hall_dispensation', 'Hall de dispensation']]
 const form = ref({ zone: 'refrigeree_2_8', temperature: '', measured_at: '', notes: '' })
 
 function zoneKey(name: string) {
@@ -99,33 +99,16 @@ async function upload() {
   if (!file) return
   busy.value = true
   error.value = ''
+  notice.value = ''
   try {
-    if (demoMode) {
-      const text = await file.text()
-      const imported = text.split(/\r?\n/).slice(1).filter(Boolean)
-      notice.value = `${imported.length} ligne(s) lue(s) dans ${file.name}.`
-      csv.value = null
-      return
-    }
     const body = new FormData()
     body.append('file', file)
-    body.append('zone', form.value.zone)
-    const token = sessionStorage.getItem('bestpharma.token')
-    const tenant = sessionStorage.getItem('bestpharma.officine')
-    let response: Response
-    try {
-      response = await fetch('/api/v1/locauxequipements/temperatures/import', { method: 'POST', headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(tenant ? { 'X-Officine-ID': tenant } : {}) }, body })
-    } catch {
-      throw Error(serviceUnavailable)
-    }
-    const result = await readResponseJson<{ message?: string; imported_count?: number; rejected_count?: number; rejected_rows?: { line: number }[] }>(response)
-    if (!response.ok) throw Error(httpErrorMessage(response, result, 'Import impossible.'))
-    notice.value = `${result.imported_count ?? 0} relevé(s) importé(s) · ${result.rejected_count ?? 0} ligne(s) rejetée(s).`
-    if (result.rejected_rows?.length) notice.value += ' Lignes invalides : ' + result.rejected_rows.map(row => row.line).join(', ')
+    await request('/locauxequipements/temperatures/import', 'POST', body)
+    notice.value = 'Import CSV des températures terminé.'
     csv.value = null
     await reload()
   } catch (e) {
-    error.value = e instanceof Error && e.message ? e.message : serviceUnavailable
+    error.value = (e as Error).message
   } finally {
     busy.value = false
   }
@@ -133,61 +116,96 @@ async function upload() {
 
 onMounted(reload)
 </script>
+
 <template>
-  <main class="page erp-page">
-    <div class="page-heading compact">
+  <main class="temperatures-page">
+    <header class="page-header">
       <div>
-        <p class="eyebrow">LOCAUX & ÉQUIPEMENTS · CONSERVATION</p>
-        <h1>Températures & chaîne du froid</h1>
-        <p class="page-subtitle">Relevés horodatés et import des mesures présentes dans un CSV. Seuils à configurer après validation.</p>
+        <span class="phase-pill">Qualité · Chaîne du froid BPD</span>
+        <h1>Relevés de Température & Chaîne du Froid</h1>
+        <p class="subtitle">Surveillance continue des enceintes 2-8°C et des zones 15-25°C avec détection immédiate des excursions.</p>
       </div>
-      <button class="button secondary" :disabled="loading || busy" @click="reload">Actualiser</button>
+    </header>
+
+    <div v-if="error" class="banner error" role="alert">
+      <span>{{ error }}</span>
+      <button class="btn-link" @click="reload">Réessayer</button>
     </div>
-    <p v-if="loading" role="status">Chargement des relevés…</p>
-    <p v-if="error" class="alert error" role="alert">{{ error }}</p>
-    <p v-if="notice" class="alert success" role="status">{{ notice }}</p>
-    <section v-if="allowed" class="panel form-body">
-      <h2>Saisir un relevé</h2>
+    <div v-if="notice" class="banner success" role="status">{{ notice }}</div>
+
+    <section class="panel">
+      <h2>Saisir un relevé de température</h2>
       <form class="form-grid" @submit.prevent="save">
-        <label>Zone<select v-model="form.zone"><option v-for="z in zones" :key="z[0]" :value="z[0]">{{ z[1] }}</option></select></label>
-        <label>Température (°C)<input v-model="form.temperature" type="number" step="0.01" required></label>
-        <label>Date et heure mesurées<input v-model="form.measured_at" type="datetime-local" required></label>
-        <label>Notes (facultatif)<input v-model="form.notes" maxlength="2000"></label>
+        <label>Zone surveillée
+          <select v-model="form.zone">
+            <option v-for="z in zones" :key="z[0]" :value="z[0]">{{ z[1] }}</option>
+          </select>
+        </label>
+        <label>Température (°C)
+          <input v-model="form.temperature" type="number" step="0.01" required placeholder="Ex: 4.5" />
+        </label>
+        <label>Date et heure mesurées
+          <input v-model="form.measured_at" type="datetime-local" required />
+        </label>
+        <label>Notes / Observations
+          <input v-model="form.notes" maxlength="2000" placeholder="Ex: Contrôle matinal conforme" />
+        </label>
         <button class="button primary" :disabled="busy || loading">Enregistrer le relevé</button>
       </form>
-      <hr>
-      <h2>Importer un CSV</h2>
-      <p>Colonnes acceptées : Date + Heure (ou Date/Heure), Température. Les lignes invalides sont rapportées et ne sont pas complétées automatiquement.</p>
-      <label>Fichier CSV<FilePicker v-model="csv" accept=".csv,text/csv" :disabled="busy" /></label>
-      <button class="button secondary" type="button" :disabled="busy || !csv" @click="upload">Importer le fichier</button>
+
+      <hr class="divider" />
+
+      <h2>Importer un relevé CSV</h2>
+      <p class="desc">Colonnes acceptées : Date/Heure, Température. Les lignes hors plage 2-8°C ou 15-25°C sont automatiquement signalées.</p>
+      <div class="import-row">
+        <FilePicker v-model="csv" accept=".csv,text/csv" :disabled="busy" />
+        <button class="button secondary" type="button" :disabled="busy || !csv" @click="upload">Importer le fichier CSV</button>
+      </div>
     </section>
+
     <section v-if="allowed" class="panel" data-tour="temp-courbe">
-      <h2>Courbe des relevés</h2>
+      <h2>Courbe de température journalière</h2>
       <p v-if="ordered.length < 2" class="empty-state">Au moins deux relevés sont nécessaires pour tracer la courbe.</p>
-      <svg v-else viewBox="0 0 320 140" role="img" aria-label="Courbe des températures relevées">
-        <polyline :points="chart" fill="none" stroke="#0f3b27" stroke-width="2" />
+      <svg v-else viewBox="0 0 320 140" role="img" aria-label="Courbe des températures relevées" class="chart-svg">
+        <polyline :points="chart" fill="none" stroke="#0f3b27" stroke-width="2.5" />
       </svg>
-      <ul>
-        <li v-for="row in ordered" :key="row.id">{{ new Date(row.measured_at).toLocaleString('fr-FR', { timeZone: 'Africa/Porto-Novo' }) }} · {{ row.temperature }} °C · {{ row.conformity_status }}</li>
+      <ul class="readings-list">
+        <li v-for="row in ordered" :key="row.id">
+          <span>{{ new Date(row.measured_at).toLocaleString('fr-FR', { timeZone: 'Africa/Porto-Novo' }) }}</span>
+          <strong>{{ row.temperature }} °C</strong>
+          <span class="status-tag" :class="row.conformity_status">{{ row.conformity_status }}</span>
+        </li>
       </ul>
     </section>
-    <section v-if="allowed" class="panel" data-tour="temp-excursion">
-      <h2>Dernière excursion</h2>
-      <p v-if="excursion">{{ excursionText(excursion) }}</p>
-      <p v-else>Aucune excursion sur la période.</p>
+
+    <section v-if="allowed" class="panel alert-panel" data-tour="temp-excursion">
+      <h2>Dernière excursion enregistrée</h2>
+      <p v-if="excursion" class="excursion-text">{{ excursionText(excursion) }}</p>
+      <p v-else class="text-muted">Aucune excursion sur la période surveillée. Chaîne du froid sous contrôle.</p>
     </section>
+
     <section class="panel">
-      <h2>Historique</h2>
+      <h2>Historique chronologique des relevés</h2>
       <p v-if="!loading && !error && !rows.length" class="empty-state">Aucun relevé enregistré pour cette officine.</p>
       <div v-else-if="rows.length" class="table-scroll">
-        <table>
-          <thead><tr><th>Date/heure mesurée</th><th>Zone</th><th>°C</th><th>Évaluation</th><th>Notes</th></tr></thead>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date/heure mesurée</th>
+              <th>Zone</th>
+              <th>°C</th>
+              <th>Évaluation</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
           <tbody>
             <tr v-for="row in rows" :key="row.id">
               <td>{{ new Date(row.measured_at).toLocaleString('fr-FR', { timeZone: 'Africa/Porto-Novo' }) }}</td>
-              <td>{{ zones.find(z => z[0] === row.zone)?.[1] || row.zone }}</td>
-              <td>{{ row.temperature }}</td>
-              <td>{{ row.conformity_status }}</td>
+              <td><strong>{{ zones.find(z => z[0] === row.zone)?.[1] || row.zone }}</strong></td>
+              <td>{{ row.temperature }} °C</td>
+              <td>
+                <span class="status-tag" :class="row.conformity_status">{{ row.conformity_status }}</span>
+              </td>
               <td>{{ row.notes || '—' }}</td>
             </tr>
           </tbody>
@@ -196,3 +214,218 @@ onMounted(reload)
     </section>
   </main>
 </template>
+
+<style scoped>
+.temperatures-page {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: #f8fafc;
+}
+
+.page-header {
+  border-bottom: 2px solid #0f3b27;
+  padding-bottom: 1rem;
+}
+
+.phase-pill {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0 !important;
+  background: #0f3b27;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0.35rem 0 0;
+  font-size: 1.6rem;
+  color: #0f3b27;
+  font-weight: 800;
+}
+
+h2 {
+  font-size: 1.1rem;
+  color: #0f3b27;
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+}
+
+.subtitle, .desc {
+  color: #475569;
+  font-size: 0.88rem;
+  margin: 0.2rem 0 0.75rem;
+}
+
+.panel {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0 !important;
+  padding: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+input, select {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0 !important;
+  outline: none !important;
+  font-size: 0.88rem;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+input:focus, select:focus {
+  border-color: #0f3b27 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.button {
+  padding: 0.55rem 1rem;
+  border-radius: 0 !important;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+
+.button.primary {
+  background: #0f3b27;
+  color: #ffffff;
+  border: none;
+}
+
+.button.secondary {
+  background: #ffffff;
+  color: #0f3b27;
+  border: 1px solid #0f3b27;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 1.25rem 0;
+}
+
+.import-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.chart-svg {
+  width: 100%;
+  max-height: 140px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 0 !important;
+  padding: 0.5rem;
+}
+
+.readings-list {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+}
+
+.readings-list li {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0 !important;
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0 !important;
+}
+
+.data-table th, .data-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 0 !important;
+  text-align: left;
+}
+
+.data-table th {
+  background: #0f3b27;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.status-tag {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0 !important;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-tag.conforme { background: #dcfce7; color: #15803d; }
+.status-tag.hors_seuil { background: #fee2e2; color: #b91c1c; }
+
+.alert-panel {
+  border-left: 4px solid #0f3b27;
+}
+
+.excursion-text {
+  color: #b91c1c;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.text-muted { color: #64748b; font-size: 0.88rem; }
+.empty-state { color: #94a3b8; padding: 1rem 0; font-style: italic; }
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #0f3b27;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 700;
+  margin-left: 0.5rem;
+}
+
+.banner {
+  padding: 0.75rem 1rem;
+  border-radius: 0 !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.banner.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.banner.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+</style>

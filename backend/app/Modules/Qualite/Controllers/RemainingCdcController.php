@@ -458,6 +458,44 @@ class RemainingCdcController extends Controller
         return response()->json(['data' => DB::table('cdc_autoeval_campaigns')->where('id', $id)->first()], 201);
     }
 
+    public function autoevalCreateCapa(Request $request, int $id): JsonResponse
+    {
+        $this->checkPermission($request, 'qualite.write');
+        $officineId = $this->getOfficineId($request);
+
+        $campaign = DB::table('cdc_autoeval_campaigns')->where('officine_id', $officineId)->where('id', $id)->first();
+        if (!$campaign) {
+            return response()->json(['message' => 'Campagne introuvable.'], 404);
+        }
+
+        $validated = $request->validate([
+            'article_code' => 'required|string|max:50',
+            'chapter' => 'required|string|max:100',
+            'severity' => 'required|string|in:low,medium,high,critical',
+            'description' => 'required|string',
+            'due_date' => 'required|date',
+            'owner' => 'required|string|max:120',
+        ]);
+
+        $action = \App\Modules\Qualite\Models\QualityAction::create([
+            'officine_id' => $officineId,
+            'created_by' => $request->user()?->id ?? 1,
+            'title' => "Écart BPD {$validated['article_code']} — Campagne {$campaign->reference}",
+            'chapter' => $validated['chapter'],
+            'severity' => $validated['severity'],
+            'owner' => $validated['owner'],
+            'due_date' => $validated['due_date'],
+            'status' => 'open',
+            'description' => $validated['description'],
+            'resolution' => '',
+        ]);
+
+        return response()->json([
+            'data' => $action,
+            'message' => 'Action corrective CAPA créée et rattachée à l auto-évaluation.',
+        ], 201);
+    }
+
     // ==========================================
     // 5. POINTAGE PRÉSENCE (ART 1.11)
     // ==========================================
@@ -473,6 +511,33 @@ class RemainingCdcController extends Controller
                 ->orderByDesc('work_date')
                 ->orderByDesc('id')
                 ->get(),
+        ]);
+    }
+
+    public function pharmacistPresenceStatus(Request $request): JsonResponse
+    {
+        $this->checkPermission($request, 'qualite.read');
+        $officineId = $this->getOfficineId($request);
+        $today = date('Y-m-d');
+
+        $activePharmacists = DB::table('cdc_presence_logs')
+            ->where('officine_id', $officineId)
+            ->where('work_date', $today)
+            ->where('pharmacist_present', true)
+            ->whereNull('check_out_at')
+            ->get();
+
+        $isPresent = $activePharmacists->isNotEmpty();
+
+        return response()->json([
+            'data' => [
+                'pharmacist_present' => $isPresent,
+                'status' => $isPresent ? 'conforme' : 'alerte_absence',
+                'active_count' => $activePharmacists->count(),
+                'pharmacists' => $activePharmacists->pluck('staff_name'),
+                'as_of' => now()->toIso8601String(),
+                'article_rule' => 'Art. 1.11 BPD ABMed — Présence physique continue d un pharmacien',
+            ],
         ]);
     }
 

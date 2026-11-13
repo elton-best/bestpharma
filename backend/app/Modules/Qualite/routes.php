@@ -281,8 +281,10 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
 
             Route::get('autoeval', 'autoevalIndex');
             Route::post('autoeval', 'storeAutoeval');
+            Route::post('autoeval/{id}/capa', 'autoevalCreateCapa')->whereNumber('id');
 
             Route::get('presence', 'presenceIndex');
+            Route::get('presence/pharmacist-status', 'pharmacistPresenceStatus');
             Route::post('presence', 'storePresence');
 
             Route::get('deadlines', 'deadlinesIndex');

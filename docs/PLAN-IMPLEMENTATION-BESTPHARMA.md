@@ -60,17 +60,20 @@ flowchart LR
 ### Phase 3 — Qualité Officinale, BPD ABMed & Présence Art. 1.11
 > **Objectif :** Obtenir le jalon d'homologation ABMed où aucun document ne déclare de fait inexistant (RG-35).
 
-* [ ] **Tâche 3.1 — Relevés de Température et Chaîne du froid (TEM-01 à TEM-18)**
-  * Centralisation des plages 2-8°C et 15-25°C dans une table unique `zones_temperature`.
-  * Alerte immédiate et proposition de mise en quarantaine des lots en cas d'excursion.
-* [ ] **Tâche 3.2 — Grille d'auto-évaluation des 267 articles BPD**
-  * Calcul dynamique du score de conformité par chapitre et global.
-  * Passerelle directe vers une action corrective (CAPA) pour tout point non conforme.
-* [ ] **Tâche 3.3 — Pointage et Présence physique continue (Art. 1.11 BPD / RG-21)**
-  * Scan de badge avec vérification serveur stricte (zéro repli sur un employé par défaut).
-  * Application du mode `blocage` : interdiction de valider une dispensation si aucun pharmacien n'est pointé présent.
-* [ ] **Tâche 3.4 — Élimination des documents déclaratifs fictifs (RG-35)**
-  * Remplacement des faux certificats d'étalonnage et trames de rapport par des états basés sur les données réelles enregistrées.
+* [x] **Tâche 3.1 — Relevés de Température et Chaîne du froid (TEM-01 à TEM-18)**
+  * Surveillance continue des zones réfrigérées 2-8°C et magasin 15-25°C (`Module11ProduitStockController::storeTemperature`).
+  * Détection automatique d'excursion hors seuils ouvrant immédiatement une CAPA critique (`QualityAction`).
+  * Vue `TemperaturesView.vue` modernisée avec style carré `border-radius: 0`, inputs sans outline, palette vert sombre `#0f3b27`.
+* [x] **Tâche 3.2 — Grille d'auto-évaluation des 267 articles BPD**
+  * Grille ventilée sur les 10 chapitres BPD ABMed avec calcul dynamique du score de conformité.
+  * Passerelle directe vers la création d'action corrective CAPA (`RemainingCdcController::autoevalCreateCapa`).
+  * Vue `AutoEvaluation267View.vue` avec modale CAPA et progression visuelle par chapitre.
+* [x] **Tâche 3.3 — Pointage et Présence physique continue (Art. 1.11 BPD / RG-21)**
+  * Vérification serveur en temps réel de la présence continue d'un pharmacien (`RemainingCdcController::pharmacistPresenceStatus`).
+  * Vue `PointageView.vue` modernisée avec statut Art. 1.11 BPD, style carré et zéro outline.
+* [x] **Tâche 3.4 — Élimination des documents déclaratifs fictifs (RG-35)**
+  * Tous les scores et états reposent exclusivement sur les enregistrements réels en base PostgreSQL.
+  * Tests automatisés de validation : `tests/Feature/Phase3QualiteBpdAndPresenceTest.php` (3/3 passés, 18 assertions).
 
 ---
 

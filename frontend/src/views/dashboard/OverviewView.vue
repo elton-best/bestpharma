@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { downloadSalesCsv, loadPeriodSales, pilotageLinks, readPeriod, validDate, type SalesDay } from '@/services/pilotageOverview'
+import { downloadSalesCsv, loadPeriodSales, readPeriod, validDate, type SalesDay } from '@/services/pilotageOverview'
 import { demoMode } from '@/services/quality'
 import { currentOffice, supportState } from '@/services/supportDemo'
 import { getDemoDashboard, resetBoardsDemo, type DemoDashboard } from '@/services/cdcBoardsDemo'
 import AppIcon from '@/components/AppIcon.vue'
 import AppModal from '@/components/AppModal.vue'
+import PilotagePageHeader from '@/components/PilotagePageHeader.vue'
+import PilotageNav from '@/components/PilotageNav.vue'
 import QualityDashboard from './DashboardView.vue'
 
 const dashboard = ref<DemoDashboard | null>(null)
@@ -113,11 +115,23 @@ const shortcuts = [
     <QualityDashboard />
   </template>
   <section v-else class="page erp-page officine-dashboard" data-tour="dashboard">
-    <header class="page-heading compact">
-      <div><p class="eyebrow">PILOTAGE DE L’OFFICINE</p><h1>Tableau de bord</h1><p class="page-subtitle">{{ currentOffice.name }} · {{ currentOffice.city }}</p></div>
-      <div class="officine-heading-actions"><span class="officine-date"><AppIcon name="calendar" :size="16" />{{ today }}</span><button class="button secondary" @click="refresh"><AppIcon name="clock" :size="16" />Actualiser</button><button class="text-link" data-testid="dashboard-restore" @click="openRestore">Restaurer les exemples</button></div>
-    </header>
-    <nav class="pilotage-nav" aria-label="Autres écrans Pilotage" data-testid="dashboard-pilotage-links"><RouterLink v-for="link in pilotageLinks" :key="link.to" :to="link.to" class="button secondary">{{ link.label }} <AppIcon name="arrow" :size="14" /></RouterLink></nav>
+    <PilotagePageHeader
+      eyebrow="PILOTAGE DE L’OFFICINE"
+      title="Tableau de bord"
+      :subtitle="`${currentOffice.name} · ${currentOffice.city}`"
+      :office="currentOffice.name"
+      :source="demoMode ? 'Démonstration · données fictives' : 'Données API · officine active'"
+      :tone="demoMode ? 'demo' : 'api'"
+    >
+      <template #actions>
+        <div class="officine-heading-actions">
+          <span class="officine-date"><AppIcon name="calendar" :size="16" />{{ today }}</span>
+          <button class="button secondary" @click="refresh"><AppIcon name="clock" :size="16" />Actualiser</button>
+          <button class="text-link" data-testid="dashboard-restore" @click="openRestore">Restaurer les exemples</button>
+        </div>
+      </template>
+    </PilotagePageHeader>
+    <PilotageNav data-testid="dashboard-pilotage-links" />
     <form class="pilotage-filters" data-testid="dashboard-period-filter" @submit.prevent="applyPeriod('custom')">
       <label>Période des ventes <select data-testid="dashboard-period" :value="period.period" @change="applyPeriod(($event.target as HTMLSelectElement).value)"><option value="7">7 derniers jours</option><option value="30">30 derniers jours</option><option value="custom">Dates personnalisées</option></select></label>
       <label>Du <input v-model="from" data-testid="dashboard-from" type="date" required /></label><label>Au <input v-model="to" data-testid="dashboard-to" type="date" required /></label>

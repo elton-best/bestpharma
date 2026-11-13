@@ -3,6 +3,8 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '@/components/AppIcon.vue'
 import AppModal from '@/components/AppModal.vue'
+import PilotagePageHeader from '@/components/PilotagePageHeader.vue'
+import PilotageNav from '@/components/PilotageNav.vue'
 import { demoMode } from '@/services/quality'
 import { currentOffice, supportState } from '@/services/supportDemo'
 import {
@@ -84,14 +86,16 @@ function exportCsv() {
 
 <template>
   <main class="page erp-page consolidation-page" data-testid="consolidation-page">
-    <header class="page-heading compact" data-tour="consolidation-heading">
-      <div>
-        <p class="eyebrow">PILOTAGE · PÉRIMÈTRE MULTI-OFFICINES</p>
-        <h1>Consolidation Groupe</h1>
-        <p class="page-subtitle">{{ currentOffice.name }} · agrégation des indicateurs de reporting des officines accessibles.</p>
-      </div>
-      <span class="consolidation-source">{{ demoMode ? 'Démonstration · chiffres fictifs' : 'API · reporting par officine' }}</span>
-    </header>
+    <PilotagePageHeader
+      eyebrow="PILOTAGE · PÉRIMÈTRE MULTI-OFFICINES"
+      title="Consolidation Groupe"
+      :subtitle="`${currentOffice.name} · agrégation des indicateurs de reporting des officines accessibles.`"
+      :office="currentOffice.name"
+      :source="demoMode ? 'Démonstration · chiffres fictifs' : 'API · reporting par officine'"
+      :tone="demoMode ? 'demo' : 'api'"
+      tour="consolidation-heading"
+    />
+    <PilotageNav />
 
     <p class="consolidation-notice" data-testid="consolidation-notice"><AppIcon name="info" :size="17" /><span>{{ demoMode ? 'Les officines et leurs chiffres sont fictifs. Cette vue montre le calcul et la couverture des sources, sans constituer une consolidation comptable ou réglementaire.' : 'La vue interroge le reporting de chaque officine où vous êtes membre. Elle ne crée pas un droit de consolidation groupe et ne remplace pas une autorisation dédiée.' }}</span></p>
 

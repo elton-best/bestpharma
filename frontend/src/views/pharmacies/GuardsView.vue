@@ -3,6 +3,8 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '@/components/AppIcon.vue'
 import AppModal from '@/components/AppModal.vue'
+import PilotagePageHeader from '@/components/PilotagePageHeader.vue'
+import PilotageNav from '@/components/PilotageNav.vue'
 import { demoMode } from '@/services/quality'
 import { currentOffice, supportState } from '@/services/supportDemo'
 import {
@@ -193,17 +195,21 @@ function exportIcal() {
 
 <template>
   <main class="page erp-page guards-page" data-testid="guards-page">
-    <header class="page-heading compact" data-tour="guards-heading">
-      <div>
-        <p class="eyebrow">PILOTAGE · OFFICINE</p>
-        <h1>Pharmacies de garde</h1>
-        <p class="page-subtitle">{{ currentOffice.name }} · {{ currentOffice.city }} · planning manuel, non officiel.</p>
-      </div>
-      <div class="guards-heading-actions">
+    <PilotagePageHeader
+      eyebrow="PILOTAGE · OFFICINE"
+      title="Pharmacies de garde"
+      :subtitle="`${currentOffice.name} · ${currentOffice.city} · planning manuel, non officiel.`"
+      :office="currentOffice.name"
+      :source="demoMode ? 'Démonstration · planning fictif' : 'Données API · officine active'"
+      :tone="demoMode ? 'demo' : 'api'"
+      tour="guards-heading"
+    >
+      <template #actions>
         <button v-if="demoMode" class="text-link" data-testid="guards-reset" @click="resetError = ''; resetModal = true">Réinitialiser les exemples</button>
         <button v-if="canWrite" class="button primary" data-testid="guards-create" @click="openCreate"><AppIcon name="plus" :size="16" />Déclarer une garde</button>
-      </div>
-    </header>
+      </template>
+    </PilotagePageHeader>
+    <PilotageNav />
 
     <p class="guards-notice" data-testid="guards-notice"><AppIcon name="info" :size="17" /><span>Ce planning est saisi par l’officine. Il ne remplace pas le calendrier officiel de garde et n’est pas transmis à une autorité.</span></p>
     <p v-if="feedback" role="status" class="guards-feedback" data-testid="guards-feedback">{{ feedback }}</p>

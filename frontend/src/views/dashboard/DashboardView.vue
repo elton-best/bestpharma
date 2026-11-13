@@ -3,8 +3,10 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '@/components/AppIcon.vue'
 import AppModal from '@/components/AppModal.vue'
+import PilotagePageHeader from '@/components/PilotagePageHeader.vue'
+import PilotageNav from '@/components/PilotageNav.vue'
 import { currentOffice, supportState } from '@/services/supportDemo'
-import { downloadSalesCsv, loadCurrentDomains, loadPeriodSales, pilotageLinks, readPeriod, validDate, type Domain, type SalesDay } from '@/services/pilotageOverview'
+import { downloadSalesCsv, loadCurrentDomains, loadPeriodSales, readPeriod, validDate, type Domain, type SalesDay } from '@/services/pilotageOverview'
 
 const route = useRoute(), router = useRouter()
 const period = computed(() => readPeriod(route.query))
@@ -41,8 +43,19 @@ onBeforeUnmount(() => { generation++ })
 
 <template>
   <section class="page erp-page officine-dashboard api-overview" data-tour="dashboard" :aria-busy="loading">
-    <header class="page-heading compact"><div><p class="eyebrow">PILOTAGE DE L’OFFICINE</p><h1>Tableau de bord</h1><p class="page-subtitle">{{ currentOffice.name }} · Vue opérationnelle multi-domaines</p></div><button class="button secondary" data-testid="api-refresh" :disabled="loading" @click="refresh"><AppIcon name="clock" :size="16" />{{ loading ? 'Actualisation…' : 'Actualiser' }}</button></header>
-    <nav class="pilotage-nav" aria-label="Autres écrans Pilotage" data-testid="api-pilotage-links"><RouterLink v-for="link in pilotageLinks" :key="link.to" class="button secondary" :to="link.to">{{ link.label }} <AppIcon name="arrow" :size="14" /></RouterLink></nav>
+    <PilotagePageHeader
+      eyebrow="PILOTAGE DE L’OFFICINE"
+      title="Tableau de bord"
+      :subtitle="`${currentOffice.name} · Vue opérationnelle multi-domaines`"
+      :office="currentOffice.name"
+      source="Données API · accès selon vos droits"
+      tone="api"
+    >
+      <template #actions>
+        <button class="button secondary" data-testid="api-refresh" :disabled="loading" @click="refresh"><AppIcon name="clock" :size="16" />{{ loading ? 'Actualisation…' : 'Actualiser' }}</button>
+      </template>
+    </PilotagePageHeader>
+    <PilotageNav data-testid="api-pilotage-links" />
     <section class="officine-situation" data-tour="dashboard-situation"><div><span class="officine-demo-label">DONNÉES API · ACCÈS SELON VOS DROITS</span><h2>L’essentiel pour agir.</h2><p>Ventes sur la période, stock et suivi métier à l’instant présent.</p></div><RouterLink class="button primary" to="/tresorerie/caisse">Ouvrir la caisse <AppIcon name="arrow" :size="16" /></RouterLink></section>
     <p v-if="loading" role="status" data-testid="api-loading">Chargement des domaines autorisés…</p><p v-else class="officine-update" role="status" data-testid="api-freshness">Dernière tentative : {{ refreshedAt ? time(refreshedAt) : 'N/D' }} · Porto-Novo. Horodatage de chaque source dans son détail.</p>
     <form class="pilotage-filters" data-testid="api-period-filter" @submit.prevent="apply('custom')"><label>Période des ventes<select :value="period.period" data-testid="api-period" @change="apply(($event.target as HTMLSelectElement).value)"><option value="7">7 derniers jours</option><option value="30">30 derniers jours</option><option value="custom">Dates personnalisées</option></select></label><label>Du<input v-model="from" type="date" data-testid="api-from" required /></label><label>Au<input v-model="to" type="date" data-testid="api-to" required /></label><button class="button secondary" type="submit" data-testid="api-apply">Appliquer les dates</button><button class="button secondary" type="button" data-testid="api-export" :disabled="loading || !sales" @click="exportCsv">Exporter les ventes CSV</button><p v-if="validation || exportError" role="alert">{{ validation || exportError }}</p></form>

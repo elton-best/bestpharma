@@ -3,11 +3,6 @@ import { boardRequest } from './cdcBoardsDemo'
 
 export type SalesDay = { date: string; amount: number; count: number }
 export type Period = { period: '7' | '30' | 'custom'; from: string; to: string }
-export const pilotageLinks = [
-  { to: '/reporting/rapports', label: 'Tableaux de bord & rapports' },
-  { to: '/dashboard/gardes', label: 'Pharmacies de garde' },
-  { to: '/dashboard/consolidation', label: 'Consolidation groupe' },
-]
 export function localDay(value = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Porto-Novo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(value)
 }

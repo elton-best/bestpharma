@@ -2,7 +2,10 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppModal from '@/components/AppModal.vue'
+import PilotagePageHeader from '@/components/PilotagePageHeader.vue'
+import PilotageNav from '@/components/PilotageNav.vue'
 import { demoMode } from '@/services/quality'
+import { currentOffice } from '@/services/supportDemo'
 import { reportingService as api, officeToday, previousPeriod, validatePeriod, metricDisplay, metricDelta, downloadCsv, type Overview, type Metric, type ReportTemplate, type ReportRun, type NotificationJob, type Recipient, type RunInput, type TemplateInput } from '@/services/reporting'
 
 const route = useRoute(), router = useRouter()
@@ -72,7 +75,16 @@ const visibleRuns = computed(() => runs.value.filter(r => r.period_start.slice(0
 
 <template>
   <main class="reporting-page" data-testid="reporting-page">
-    <header class="page-heading" data-tour="reporting-heading"><div><p class="eyebrow">PILOTAGE / M14</p><h1>Tableaux de bord & rapports</h1><p class="page-subtitle">Comparer les faits. Figer les bilans. Garder la trace.</p></div><span class="source-label">{{ demoMode ? 'Démonstration · données fictives' : 'Données API · officine active' }}</span></header>
+    <PilotagePageHeader
+      eyebrow="PILOTAGE / M14"
+      title="Tableaux de bord & rapports"
+      subtitle="Comparer les faits. Figer les bilans. Garder la trace."
+      :office="currentOffice.name"
+      :source="demoMode ? 'Démonstration · données fictives' : 'Données API · officine active'"
+      :tone="demoMode ? 'demo' : 'api'"
+      tour="reporting-heading"
+    />
+    <PilotageNav />
     <nav class="section-nav" aria-label="Sections des rapports" data-tour="reporting-sections"><button v-for="section in sections" :key="section.key" :data-testid="`tab-${section.key}`" :aria-current="tab === section.key ? 'page' : undefined" @click="navigate(section.key)">{{ section.label }}</button></nav>
     <form class="filters" data-tour="reporting-period" @submit.prevent="navigate()"><label>Du<input v-model="start" data-testid="period-start" type="date" required /></label><label>Au<input v-model="end" data-testid="period-end" type="date" required /></label><button class="button secondary" data-testid="apply-period" :disabled="loading">Appliquer la période</button><span>Jours inclusifs · Africa/Porto-Novo</span></form>
     <p v-if="feedback" role="status" class="feedback" data-testid="reporting-feedback">{{ feedback }}</p>
@@ -90,8 +102,58 @@ const visibleRuns = computed(() => runs.value.filter(r => r.period_start.slice(0
       <section v-if="tab === 'notifications'" class="panel"><header><h2>Diffusions & reprises</h2><p>Un état « envoyé » du serveur ne prouve pas la livraison au destinataire.</p></header><div v-if="jobs.length" class="table-scroll"><table data-testid="notifications-table"><thead><tr><th>Modèle / canal</th><th>État serveur</th><th>Tentatives</th><th>Dernière erreur</th><th>Action</th></tr></thead><tbody><tr v-for="job in jobs" :key="job.id"><td data-label="Modèle / canal"><strong>{{ job.template?.title || 'Notification directe' }}</strong><small>{{ job.channel }}</small></td><td data-label="État serveur"><span class="status" :class="{ failed: job.status === 'echec' }">{{ job.status }}</span></td><td data-label="Tentatives">{{ job.attempts }}</td><td data-label="Dernière erreur">{{ job.last_error || '—' }}</td><td data-label="Action"><button v-if="job.status === 'echec'" class="button secondary" data-testid="retry-notification" :disabled="busy" @click="retry = job; modalError = ''">Reprendre</button><span v-else>—</span></td></tr></tbody></table></div><p v-else class="state">Aucune diffusion enregistrée.</p></section>
     </template>
 
-    <AppModal v-model="showRun" title="Générer un bilan figé" :busy="busy"><form class="modal-form" data-testid="run-form" @submit.prevent="generate"><p v-if="modalError" role="alert" class="error">{{ modalError }}</p><fieldset :disabled="busy"><label>Référence stable<input v-model="runForm.reference" required maxlength="50" /></label><label>Titre<input v-model="runForm.title" required maxlength="150" /></label><label>Modèle<select v-model="runForm.template_id" @change="chooseTemplate"><option :value="null">Sélection libre</option><option v-for="tpl in templates" :key="tpl.id" :value="tpl.id">{{ tpl.title }}</option></select></label><div class="date-grid"><label>Début<input v-model="runForm.period_start" type="date" required /></label><label>Fin<input v-model="runForm.period_end" type="date" required /></label></div><legend>Indicateurs figés</legend><label v-for="m in available" :key="m.code" class="check"><input v-model="runForm.metric_codes" type="checkbox" :value="m.code" />{{ m.title }}</label></fieldset><p>La référence reste identique après un refus. Le serveur calcule et fige les indicateurs pour cet intervalle.</p><button class="button primary" data-testid="submit-run" :disabled="busy || !available.length || !runForm.metric_codes.length">{{ busy ? 'Traitement…' : 'Calculer & figer' }}</button></form></AppModal>
-    <AppModal v-model="showTemplate" title="Nouveau modèle de rapport" :busy="busy"><form class="modal-form" data-testid="template-form" @submit.prevent="saveTemplate"><p v-if="modalError" role="alert" class="error">{{ modalError }}</p><fieldset :disabled="busy"><label>Code<input v-model="tplForm.code" required maxlength="50" /></label><label>Titre<input v-model="tplForm.title" required maxlength="150" /></label><label>Catégorie<select v-model="tplForm.category"><option value="smq_bpd">SMQ / BPD</option><option value="stock_fefo">Stock / FEFO</option><option value="ventes_caisse">Ventes / caisse</option><option value="fournisseurs">Fournisseurs</option><option value="locaux">Locaux</option></select></label><p>Format : CSV uniquement</p><legend>Indicateurs du modèle</legend><label v-for="m in available" :key="m.code" class="check"><input v-model="tplForm.metric_codes" type="checkbox" :value="m.code" />{{ m.title }}</label><label class="check"><input v-model="tplForm.is_scheduled" data-testid="schedule-toggle" type="checkbox" />Planifier automatiquement</label><template v-if="tplForm.is_scheduled"><label>Fréquence<select v-model="tplForm.cron_schedule"><option value="0 8 1 * *">Le 1er du mois, 8 h</option><option value="0 8 * * 1">Chaque lundi, 8 h</option></select></label><p>Expression transmise telle quelle au serveur ; fuseau d’exécution à confirmer côté serveur.</p><legend>Destinataires de l’équipe</legend><label v-for="member in recipients" :key="member.id" class="check"><input v-model="tplForm.recipients" type="checkbox" :value="member.id" />{{ member.name }} · {{ member.email }}</label><p v-if="!recipients.length">Aucun destinataire accessible. La planification est indisponible.</p><label class="check"><input v-model="tplForm.consent_confirmed" data-testid="schedule-consent" type="checkbox" />Je confirme le consentement métier et les destinataires autorisés.</label></template></fieldset><button class="button primary" data-testid="submit-template" :disabled="busy || !available.length || !tplForm.metric_codes.length || (tplForm.is_scheduled && (!tplForm.consent_confirmed || !tplForm.recipients.length))">Enregistrer le modèle</button></form></AppModal>
+    <AppModal v-model="showRun" title="Générer un bilan figé" :busy="busy">
+      <form class="modal-form" data-testid="run-form" @submit.prevent="generate">
+        <p v-if="modalError" role="alert" class="error">{{ modalError }}</p>
+        <fieldset :disabled="busy">
+          <legend>Périmètre du bilan</legend>
+          <label>Référence stable<input v-model="runForm.reference" required maxlength="50" /></label>
+          <label>Titre<input v-model="runForm.title" required maxlength="150" /></label>
+          <label>Modèle<select v-model="runForm.template_id" @change="chooseTemplate"><option :value="null">Sélection libre</option><option v-for="tpl in templates" :key="tpl.id" :value="tpl.id">{{ tpl.title }}</option></select></label>
+          <div class="date-grid"><label>Début<input v-model="runForm.period_start" type="date" required /></label><label>Fin<input v-model="runForm.period_end" type="date" required /></label></div>
+        </fieldset>
+        <fieldset :disabled="busy">
+          <legend>Indicateurs figés</legend>
+          <label v-for="m in available" :key="m.code" class="check"><input v-model="runForm.metric_codes" type="checkbox" :value="m.code" />{{ m.title }}</label>
+          <p v-if="!available.length">Aucun indicateur disponible : le bilan ne peut pas être généré.</p>
+        </fieldset>
+        <p>La référence reste identique après un refus. Le serveur calcule et fige les indicateurs pour cet intervalle.</p>
+        <div class="modal-actions">
+          <button class="button primary" data-testid="submit-run" :disabled="busy || !available.length || !runForm.metric_codes.length">{{ busy ? 'Traitement…' : 'Calculer & figer' }}</button>
+        </div>
+      </form>
+    </AppModal>
+    <AppModal v-model="showTemplate" title="Nouveau modèle de rapport" :busy="busy">
+      <form class="modal-form" data-testid="template-form" @submit.prevent="saveTemplate">
+        <p v-if="modalError" role="alert" class="error">{{ modalError }}</p>
+        <fieldset :disabled="busy">
+          <legend>Définition du modèle</legend>
+          <label>Code<input v-model="tplForm.code" required maxlength="50" /></label>
+          <label>Titre<input v-model="tplForm.title" required maxlength="150" /></label>
+          <label>Catégorie<select v-model="tplForm.category"><option value="smq_bpd">SMQ / BPD</option><option value="stock_fefo">Stock / FEFO</option><option value="ventes_caisse">Ventes / caisse</option><option value="fournisseurs">Fournisseurs</option><option value="locaux">Locaux</option></select></label>
+          <p>Format : CSV uniquement</p>
+        </fieldset>
+        <fieldset :disabled="busy">
+          <legend>Indicateurs du modèle</legend>
+          <label v-for="m in available" :key="m.code" class="check"><input v-model="tplForm.metric_codes" type="checkbox" :value="m.code" />{{ m.title }}</label>
+          <p v-if="!available.length">Aucun indicateur disponible : le modèle ne peut pas être enregistré.</p>
+        </fieldset>
+        <fieldset :disabled="busy">
+          <legend>Planification et destinataires</legend>
+          <label class="check"><input v-model="tplForm.is_scheduled" data-testid="schedule-toggle" type="checkbox" />Planifier automatiquement</label>
+          <template v-if="tplForm.is_scheduled">
+            <label>Fréquence<select v-model="tplForm.cron_schedule"><option value="0 8 1 * *">Le 1er du mois, 8 h</option><option value="0 8 * * 1">Chaque lundi, 8 h</option></select></label>
+            <p>Expression transmise telle quelle au serveur ; fuseau d’exécution à confirmer côté serveur.</p>
+            <p v-if="!recipients.length">Aucun destinataire accessible. La planification est indisponible.</p>
+            <label v-for="member in recipients" :key="member.id" class="check"><input v-model="tplForm.recipients" type="checkbox" :value="member.id" />{{ member.name }} · {{ member.email }}</label>
+            <label class="check"><input v-model="tplForm.consent_confirmed" data-testid="schedule-consent" type="checkbox" />Je confirme le consentement métier et les destinataires autorisés.</label>
+          </template>
+        </fieldset>
+        <div class="modal-actions">
+          <button class="button primary" data-testid="submit-template" :disabled="busy || !available.length || !tplForm.metric_codes.length || (tplForm.is_scheduled && (!tplForm.consent_confirmed || !tplForm.recipients.length))">Enregistrer le modèle</button>
+        </div>
+      </form>
+    </AppModal>
     <AppModal :model-value="!!detail" title="Snapshot du rapport" size="wide" :busy="busy" @update:model-value="value => { if (!value) detail = null }"><template v-if="detail"><p v-if="modalError" role="alert" class="error">{{ modalError }}</p><h3>{{ detail.title }}</h3><p>{{ detail.reference }} · {{ detail.status }}</p><p>{{ detail.period_start.slice(0, 10) }} → {{ detail.period_end.slice(0, 10) }} · Généré : {{ detail.generated_at }}</p><p>Modèle : {{ detail.template?.title || 'Sélection libre / modèle non retourné' }}</p><div class="snapshot" data-testid="run-snapshot"><article v-for="m in detail.computed_metrics" :key="m.code"><strong>{{ m.title }} · {{ metricDisplay(m) }}</strong><p>{{ m.definition }}</p><small>{{ m.numerator }} / {{ m.denominator }} · {{ m.computed_at }}</small></article></div><h3>Historique des exports</h3><ul><li v-for="item in detail.exports" :key="item.id">{{ item.export_ref }} · {{ item.format }} · {{ item.exported_at || 'Date non retournée' }}<small v-if="/^[a-f0-9]{64}$/i.test(item.file_checksum_sha256 || '')">Empreinte serveur (contenu avant sécurisation locale) : {{ item.file_checksum_sha256 }}</small></li></ul><p v-if="!detail.exports?.length">Aucun export enregistré.</p><button class="button primary" :disabled="busy" @click="exportRun(detail)">Télécharger le snapshot CSV</button><p v-if="feedback" role="status">{{ feedback }}</p></template></AppModal>
     <AppModal :model-value="!!retry" title="Confirmer la reprise" :busy="busy" size="small" @update:model-value="value => { if (!value) retry = null }"><p v-if="modalError" role="alert" class="error">{{ modalError }}</p><p>Reprendre la tâche en échec ? Le statut retourné sera affiché sans présumer d’une livraison email.</p><button class="button primary" data-testid="confirm-retry" :disabled="busy" @click="confirmRetry">Confirmer la reprise</button></AppModal>
   </main>

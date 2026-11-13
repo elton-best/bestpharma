@@ -42,15 +42,18 @@ flowchart LR
 ### Phase 2 — Magasin, Stock FEFO & Stupéfiants Tableau B
 > **Objectif :** Assurer la traçabilité sanitaire de bout en bout et zéro repli silencieux.
 
-* [ ] **Tâche 2.1 — Traçabilité FEFO stricte (Art. 5.2 BPD / RG-29)**
-  * Verrouillage du tri FEFO par date d'expiration pour la délivrance comptoir.
-  * Déclenchement automatique de la quarantaine avec blocage de vente lors d'un avis de rappel (STO-14).
-* [ ] **Tâche 2.2 — Registre des Stupéfiants Tableau B (STU-01 à STU-22)**
-  * Suppression de tout `.catch(() => null)` pouvant masquer un écart de balance.
-  * Émission des PV de destruction avec double signature dont celle du titulaire.
-* [ ] **Tâche 2.3 — Préparations Magistrales & Ordonnancier (PRE-01 à PRE-18)**
-  * Décompte automatique des matières premières décrémentées du stock FEFO.
-  * Fiche de libération pharmaceutique signée avant mise à disposition.
+* [x] **Tâche 2.1 — Traçabilité FEFO stricte (Art. 5.2 BPD / RG-29)**
+  * Verrouillage du tri FEFO par date d'expiration pour la délivrance comptoir dans `Module12DispensationVenteController`.
+  * Déclenchement automatique de la quarantaine avec blocage de vente lors d'un avis de rappel (STO-14) dans `Module11ProduitStockController`.
+* [x] **Tâche 2.2 — Registre des Stupéfiants Tableau B (STU-01 à STU-22)**
+  * Calcul de la balance permanente dynamique sans repli silencieux (`RemainingCdcController::stupefiantsBalance`).
+  * Émission des PV de destruction avec double signature obligatoire (titulaire + témoin habilité) scellée SHA-256 (`RemainingCdcController::destroyStupefiant`).
+  * Vue modernisée avec carrés stricts `border-radius: 0`, inputs sans outline, palette `#0f3b27`.
+* [x] **Tâche 2.3 — Préparations Magistrales & Ordonnancier (PRE-01 à PRE-18)**
+  * Inscription à l'ordonnancier avec traçabilité formule / patient / prescripteur / DLU.
+  * Modale de contrôle libératoire pharmaceutique (checklist BPD + visa scellé SHA-256).
+  * Génération de l'étiquette réglementaire officinale avec mentions obligatoires imprimables.
+  * Tests automatisés de validation : `tests/Feature/Phase2StupefiantsAndPreparationsTest.php` (3/3 passés, 24 assertions).
 
 ---
 

@@ -33,7 +33,7 @@ const sections = [
 ]
 const tab = computed(() => sections.some(s => s.id === route.query.tab) ? String(route.query.tab) : 'direct')
 const borne = computed(() => route.query.borne === '1')
-function setTab(id: string) { router.replace({ path: '/dashboard/presence', query: { ...route.query, tab: id } }) }
+function setTab(id: string) { router.replace({ path: '/dashboard/pointage', query: { ...route.query, tab: id } }) }
 
 const people = reactive<Person[]>([
   { id: 'e1', name: 'Amina Dossou', matricule: 'EMP-2026-0001', poste: 'Pharmacien titulaire', pharmacien: true, actif: true, ordre: '31/12/2026', badge: 'actif', badgeFin: '12/11/2027' },
@@ -197,7 +197,7 @@ function downloadCsv() {
     </section>
     <footer>
       <span>{{ pharmacienPresent ? 'Pharmacien sur place' : 'Aucun pharmacien sur place' }} · {{ presents.length }} sur place</span>
-      <RouterLink to="/dashboard/presence">Quitter</RouterLink>
+      <RouterLink to="/dashboard/pointage">Quitter</RouterLink>
     </footer>
   </div>
 
@@ -210,7 +210,7 @@ function downloadCsv() {
       </div>
       <div class="heading-actions">
         <span class="status-badge" :class="pharmacienPresent ? 'closed' : 'open'">{{ pharmacienPresent ? 'Pharmacien sur place' : 'Interruption' }}</span>
-        <RouterLink class="button secondary" to="/dashboard/presence?borne=1">Lancer la borne</RouterLink>
+        <RouterLink class="button secondary" to="/dashboard/pointage?borne=1">Lancer la borne</RouterLink>
       </div>
     </div>
     <p v-if="!pharmacienPresent && params.mode === 'blocage'" class="alert error" data-testid="prs-parametre-effet">Aucun pharmacien sur place : la caisse et la dispensation sont bloquées.</p>

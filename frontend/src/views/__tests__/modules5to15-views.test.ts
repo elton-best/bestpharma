@@ -21,6 +21,17 @@ import DispensationVenteModule12View from '../dispensation/DispensationVenteModu
 import CaisseFinancesModule13View from '../tresorerie/CaisseFinancesModule13View.vue'
 import ReportingModule14View from '../dashboard/ReportingModule14View.vue'
 import AdministrationSaasModule15View from '../officine/AdministrationSaasModule15View.vue'
+import ComptabiliteSyscohadaView from '../comptabilite/ComptabiliteSyscohadaView.vue'
+import PaieSocialView from '../paie/PaieSocialView.vue'
+import FiscaliteConnectorsView from '../fiscalite/FiscaliteConnectorsView.vue'
+import StupefiantsTabBView from '../preparations/StupefiantsTabBView.vue'
+import PreparationsMagistralesView from '../preparations/PreparationsMagistralesView.vue'
+import ModelesBpdView from '../documents/ModelesBpdView.vue'
+import AutoEvaluation267View from '../qualite/AutoEvaluation267View.vue'
+import PresenceArt111View from '../personnel/PresenceArt111View.vue'
+import EcheancierReglementaireView from '../qualite/EcheancierReglementaireView.vue'
+import OhadaEtatsView from '../comptabilite/OhadaEtatsView.vue'
+import JournalAuditSha256View from '../officine/JournalAuditSha256View.vue'
 
 const VIEWS = [
   { name: 'Module 5 — Inspections', component: InspectionsModule5View },
@@ -34,6 +45,17 @@ const VIEWS = [
   { name: 'Module 13 — Caisse, Finances & Passations', component: CaisseFinancesModule13View },
   { name: 'Module 14 — Reporting & Tableaux de Bord', component: ReportingModule14View },
   { name: 'Module 15 — Administration SaaS & Support', component: AdministrationSaasModule15View },
+  { name: 'Phase 3 — Comptabilité SYSCOHADA', component: ComptabiliteSyscohadaView },
+  { name: 'Phase 3 — Paie & Social', component: PaieSocialView },
+  { name: 'Phase 3 — Connecteurs e-MECEF & FeexPay', component: FiscaliteConnectorsView },
+  { name: 'CDC — Registre Stupéfiants Tab. B', component: StupefiantsTabBView },
+  { name: 'CDC — Préparations Magistrales', component: PreparationsMagistralesView },
+  { name: 'CDC — Modèles Types BPD (59)', component: ModelesBpdView },
+  { name: 'CDC — Auto-évaluation 267 Arts', component: AutoEvaluation267View },
+  { name: 'CDC — Pointage Présence Art 1.11', component: PresenceArt111View },
+  { name: 'CDC — Échéancier réglementaire', component: EcheancierReglementaireView },
+  { name: 'CDC — États Financiers OHADA', component: OhadaEtatsView },
+  { name: 'CDC — Journal d’audit SHA-256', component: JournalAuditSha256View },
 ]
 
 describe('Modules 5 à 15 — Rendu UI et appels initiaux', () => {

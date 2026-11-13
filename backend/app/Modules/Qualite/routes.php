@@ -7,6 +7,7 @@ use App\Modules\Qualite\Controllers\Module4ActionController;
 use App\Modules\Qualite\Controllers\Module5InspectionController;
 use App\Modules\Qualite\Controllers\Module6NonconformiteController;
 use App\Modules\Qualite\Controllers\Module7RisqueContinuiteController;
+use App\Modules\Qualite\Controllers\RemainingCdcController;
 use App\Modules\Personnel\Controllers\Module8PersonnelFormationController;
 use App\Modules\LocauxEquipements\Controllers\Module9EquipementLocauxController;
 use App\Modules\Achats\Controllers\Module10PrestataireFournisseurController;
@@ -260,5 +261,29 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
             Route::get('settings', 'settingsIndex');
             Route::post('settings', 'saveSetting')->middleware('throttle:identity');
             Route::get('audit-events', 'auditEventsIndex');
+        });
+
+        // Écrans complémentaires CDC (Stupéfiants, Préparations, Modèles BPD 59, Auto-éval 267, Présence, Échéancier)
+        Route::prefix('cdc-extras')->controller(RemainingCdcController::class)->group(function (): void {
+            Route::get('stupefiants', 'stupefiantsIndex');
+            Route::post('stupefiants', 'storeStupefiant');
+
+            Route::get('preparations', 'preparationsIndex');
+            Route::post('preparations', 'storePreparation');
+            Route::post('preparations/{id}/release', 'releasePreparation')->whereNumber('id');
+
+            Route::get('bpd-models', 'bpdModelsIndex');
+            Route::post('bpd-models/bootstrap', 'bootstrapBpdModels');
+            Route::post('bpd-models/{id}/adopt', 'adoptBpdModel')->whereNumber('id');
+
+            Route::get('autoeval', 'autoevalIndex');
+            Route::post('autoeval', 'storeAutoeval');
+
+            Route::get('presence', 'presenceIndex');
+            Route::post('presence', 'storePresence');
+
+            Route::get('deadlines', 'deadlinesIndex');
+            Route::post('deadlines', 'storeDeadline');
+            Route::post('deadlines/{id}/close', 'closeDeadline')->whereNumber('id');
         });
     });

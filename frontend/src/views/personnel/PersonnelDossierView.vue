@@ -147,7 +147,7 @@ function saveOrdre() {
 
       <div v-else-if="tab === 'conges'">
         <p>Les demandes ouvertes se consultent aussi dans le pointage, section Absences.</p>
-        <RouterLink class="button secondary" to="/dashboard/presence?tab=absences">Ouvrir les absences</RouterLink>
+        <RouterLink class="button secondary" to="/dashboard/pointage?tab=absences">Ouvrir les absences</RouterLink>
       </div>
 
       <div v-else>

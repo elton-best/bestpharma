@@ -13,6 +13,7 @@ use App\Modules\Dispensation\Models\Sale;
 use App\Modules\Tresorerie\Models\ExpenseRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ComptabiliteService
 {
@@ -245,6 +246,20 @@ class ComptabiliteService
      */
     public function computeBalance(int $officineId, ?int $exerciceId = null): array
     {
+        if (!Schema::hasTable('compta_ecriture_lignes') || !Schema::hasTable('compta_ecritures') || !Schema::hasTable('compta_comptes')) {
+            return [
+                'rows' => [],
+                'totals' => [
+                    'total_debit' => 0.0,
+                    'total_credit' => 0.0,
+                    'solde_debiteur' => 0.0,
+                    'solde_crediteur' => 0.0,
+                    'is_balanced' => true,
+                ],
+                'warning' => 'Tables comptables non initialisées. Exécutez php artisan migrate.',
+            ];
+        }
+
         $query = ComptaEcritureLigne::query()
             ->join('compta_ecritures as e', 'e.id', '=', 'compta_ecriture_lignes.ecriture_id')
             ->join('compta_comptes as c', 'c.id', '=', 'compta_ecriture_lignes.compte_id')

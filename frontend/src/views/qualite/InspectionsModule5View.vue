@@ -281,7 +281,7 @@ async function selectInspection(id: number) {
       reportForm.strengths = 'Personnel coopératif, conformité aux procédures affichées.'
       reportForm.weaknesses = 'Points d’amélioration relevés sur la traçabilité continue.'
       reportForm.conclusions = 'Les exigences fondamentales BPD sont globalement respectées sous réserve des actions correctives.'
-      reportForm.recommendations = 'Mettre en œuvre les actions CAPA Module 04 et réévaluer lors du prochain cycle.'
+      reportForm.recommendations = 'Mettre en œuvre les actions CAPA et réévaluer lors du prochain cycle.'
     }
   } catch (e) {
     error.value = (e as Error).message
@@ -424,7 +424,7 @@ async function signReport(decision: 'approve' | 'reject') {
 
 function openCapaBridge(item: ChecklistItem) {
   capaForm.response_id = item.response?.id || null
-  capaForm.title = `CAPA M5 : ${item.bpd_reference} - ${item.requirement.slice(0, 50)}...`
+  capaForm.title = `CAPA Inspection : ${item.bpd_reference} - ${item.requirement.slice(0, 50)}...`
   capaForm.description = `Constat lors de l'auto-inspection ${selectedInspection.value?.reference} (${selectedInspection.value?.process_scope}) :\n` +
     `Écart : ${item.requirement}\n` +
     `Faits observés : ${responsesBuffer.value[item.id]?.observed_facts || 'Non-conformité relevée sur le terrain.'}`
@@ -444,7 +444,7 @@ async function submitCapaBridge() {
       'POST',
       capaForm
     )
-    notice.value = `Action CAPA #${res.data.action.id} créée avec succès dans le Module 04.`
+    notice.value = `Action CAPA #${res.data.action.id} créée avec succès.`
     createCapaModal.value = false
     await selectInspection(selectedInspection.value.id)
   } catch (e) {
@@ -791,7 +791,7 @@ onMounted(loadData)
               class="button small danger"
               @click="openCapaBridge(item)"
             >
-              Créer action CAPA (Module 04)
+              Créer action CAPA
             </button>
           </div>
         </div>
@@ -908,7 +908,7 @@ onMounted(loadData)
 
       <!-- Actions CAPA rattachées au rapport -->
       <div class="linked-capas-panel">
-        <h3>Actions CAPA liées (Module 04)</h3>
+        <h3>Actions CAPA liées</h3>
         <p v-if="!selectedInspection.action_links?.length" class="muted-note">
           Aucune action CAPA n'a encore été rattachée à cette auto-inspection.
         </p>
@@ -1045,7 +1045,7 @@ onMounted(loadData)
     <!-- MODAL 3: PASSERELLE 1-CLIC CAPA MODULE 04 -->
     <AppModal
       v-model="createCapaModal"
-      title="Créer une action CAPA liée (Module 04)"
+      title="Créer une action CAPA liée"
       :busy="busy"
     >
       <form id="form-capa" class="form-body" @submit.prevent="submitCapaBridge">

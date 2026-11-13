@@ -42,7 +42,7 @@ onMounted(() => { if (!demoMode) load() })
 
 <template>
   <section class="page erp-page">
-    <div class="page-heading compact"><div><p class="eyebrow">MODULE 01 · SÉCURITÉ OFFICINE</p><h1>Appareils autorisés</h1><p class="page-subtitle">Enregistrement, révocation et réactivation dans l’officine sélectionnée.</p></div></div>
+    <div class="page-heading compact"><div><p class="eyebrow">SÉCURITÉ OFFICINE</p><h1>Appareils autorisés</h1><p class="page-subtitle">Enregistrement, révocation et réactivation dans l’officine sélectionnée.</p></div></div>
     <div v-if="demoMode" class="panel form-body"><h2>Parc connecté requis</h2><p>La démonstration ne crée ni n’autorise de véritables appareils. Ouvrez l’aperçu API pour gérer le parc.</p></div>
     <template v-else>
       <p v-if="error" class="alert error" role="alert">{{ error }}</p><p v-if="notice" class="alert success" role="status">{{ notice }}</p>

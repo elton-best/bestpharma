@@ -355,7 +355,7 @@ onMounted(() => load('overview'))
       </div>
 
       <table v-if="reconciliations.length" class="data-table">
-        <thead><tr><th>Réf.</th><th>Date</th><th>Attendu</th><th>Déclaré</th><th>Écart</th><th>Statut</th><th>CAPA M4</th></tr></thead>
+        <thead><tr><th>Réf.</th><th>Date</th><th>Attendu</th><th>Déclaré</th><th>Écart</th><th>Statut</th><th>Action CAPA</th></tr></thead>
         <tbody>
           <tr v-for="r in reconciliations" :key="r.id">
             <td class="font-mono font-bold">{{ r.reference }}</td>

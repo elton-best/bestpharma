@@ -76,7 +76,7 @@ const visibleRuns = computed(() => runs.value.filter(r => r.period_start.slice(0
 <template>
   <main class="reporting-page" data-testid="reporting-page">
     <PilotagePageHeader
-      eyebrow="PILOTAGE / M14"
+      eyebrow="PILOTAGE & REPORTING"
       title="Tableaux de bord & rapports"
       subtitle="Comparer les faits. Figer les bilans. Garder la trace."
       :office="currentOffice.name"

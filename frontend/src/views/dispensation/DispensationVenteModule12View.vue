@@ -308,7 +308,7 @@ onMounted(() => load('overview'))
       </div>
 
       <table v-if="safetyReports.length" class="data-table">
-        <thead><tr><th>Réf.</th><th>Type</th><th>Gravité</th><th>Transmission externe</th><th>CAPA M4</th></tr></thead>
+        <thead><tr><th>Réf.</th><th>Type</th><th>Gravité</th><th>Transmission externe</th><th>Action CAPA</th></tr></thead>
         <tbody>
           <tr v-for="sr in safetyReports" :key="sr.id">
             <td class="font-mono font-bold">{{ sr.reference }}</td>
@@ -421,7 +421,7 @@ onMounted(() => load('overview'))
       <form v-if="showEvalReturn" @submit.prevent="submitEvalReturn" class="modal-form">
         <div class="form-row"><label>Décision sur le produit</label>
           <select v-model="evalReturnForm.pharmacist_decision">
-            <option value="quarantaine">Mise en quarantaine (CAPA M4)</option>
+            <option value="quarantaine">Mise en quarantaine (avec action CAPA)</option>
             <option value="destruction">Destruction</option>
             <option value="reintegration_validee">Réintégration validée (scellé intact vérifié)</option>
           </select>

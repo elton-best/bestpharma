@@ -266,11 +266,14 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
         // Écrans complémentaires CDC (Stupéfiants, Préparations, Modèles BPD 59, Auto-éval 267, Présence, Échéancier)
         Route::prefix('cdc-extras')->controller(RemainingCdcController::class)->group(function (): void {
             Route::get('stupefiants', 'stupefiantsIndex');
+            Route::get('stupefiants/balance', 'stupefiantsBalance');
             Route::post('stupefiants', 'storeStupefiant');
+            Route::post('stupefiants/destroy', 'destroyStupefiant');
 
             Route::get('preparations', 'preparationsIndex');
             Route::post('preparations', 'storePreparation');
             Route::post('preparations/{id}/release', 'releasePreparation')->whereNumber('id');
+            Route::get('preparations/{id}/label', 'preparationLabel')->whereNumber('id');
 
             Route::get('bpd-models', 'bpdModelsIndex');
             Route::post('bpd-models/bootstrap', 'bootstrapBpdModels');

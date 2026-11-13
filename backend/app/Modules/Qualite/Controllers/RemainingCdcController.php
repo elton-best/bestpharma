@@ -49,6 +49,65 @@ class RemainingCdcController extends Controller
         ]);
     }
 
+    public function stupefiantsBalance(Request $request): JsonResponse
+    {
+        $this->checkPermission($request, 'qualite.read');
+        $officineId = $this->getOfficineId($request);
+
+        $entries = DB::table('cdc_stupefiants_entries')
+            ->where('officine_id', $officineId)
+            ->orderBy('entry_date')
+            ->get();
+
+        $bySubstance = [];
+        $totalEntrees = 0.0;
+        $totalSorties = 0.0;
+        $totalDestructions = 0.0;
+
+        foreach ($entries as $e) {
+            $sub = $e->substance_name;
+            if (!isset($bySubstance[$sub])) {
+                $bySubstance[$sub] = [
+                    'substance_name' => $sub,
+                    'unit' => $e->unit ?? 'Unité',
+                    'entrees' => 0.0,
+                    'sorties' => 0.0,
+                    'destructions' => 0.0,
+                    'solde' => 0.0,
+                    'lots' => [],
+                ];
+            }
+            $qty = (float) $e->quantity;
+            if ($e->movement_type === 'entree') {
+                $bySubstance[$sub]['entrees'] += $qty;
+                $bySubstance[$sub]['solde'] += $qty;
+                $totalEntrees += $qty;
+            } elseif ($e->movement_type === 'sortie') {
+                $bySubstance[$sub]['sorties'] += $qty;
+                $bySubstance[$sub]['solde'] -= $qty;
+                $totalSorties += $qty;
+            } elseif ($e->movement_type === 'destruction') {
+                $bySubstance[$sub]['destructions'] += $qty;
+                $bySubstance[$sub]['solde'] -= $qty;
+                $totalDestructions += $qty;
+            }
+            if (!in_array($e->lot_number, $bySubstance[$sub]['lots'], true)) {
+                $bySubstance[$sub]['lots'][] = $e->lot_number;
+            }
+        }
+
+        return response()->json([
+            'data' => array_values($bySubstance),
+            'summary' => [
+                'total_entrees' => round($totalEntrees, 2),
+                'total_sorties' => round($totalSorties, 2),
+                'total_destructions' => round($totalDestructions, 2),
+                'solde_global' => round($totalEntrees - $totalSorties - $totalDestructions, 2),
+                'substances_count' => count($bySubstance),
+            ],
+        ]);
+    }
+
     public function storeStupefiant(Request $request): JsonResponse
     {
         $this->checkPermission($request, 'qualite.write');
@@ -91,6 +150,54 @@ class RemainingCdcController extends Controller
 
         return response()->json([
             'data' => DB::table('cdc_stupefiants_entries')->where('id', $id)->first(),
+        ], 201);
+    }
+
+    public function destroyStupefiant(Request $request): JsonResponse
+    {
+        $this->checkPermission($request, 'qualite.write');
+        $officineId = $this->getOfficineId($request);
+
+        $validated = $request->validate([
+            'entry_date' => 'required|date',
+            'substance_name' => 'required|string|max:150',
+            'lot_number' => 'required|string|max:80',
+            'quantity' => 'required|numeric|min:0.01',
+            'unit' => 'sometimes|string|max:30',
+            'titulaire_visa' => 'required|string|max:120',
+            'witness_visa' => 'required|string|max:120',
+            'witness_role' => 'required|string|max:80',
+            'destruction_method' => 'required|string|max:120',
+            'notes' => 'nullable|string',
+        ]);
+
+        $pvRef = 'PV-DEST-' . date('Y') . '-' . strtoupper(bin2hex(random_bytes(3)));
+        $hash = hash(
+            'sha256',
+            "{$officineId}|{$validated['entry_date']}|destruction|{$validated['substance_name']}|{$validated['lot_number']}|{$validated['quantity']}|{$validated['titulaire_visa']}|{$validated['witness_visa']}"
+        );
+
+        $id = DB::table('cdc_stupefiants_entries')->insertGetId([
+            'officine_id' => $officineId,
+            'entry_date' => $validated['entry_date'],
+            'movement_type' => 'destruction',
+            'substance_name' => $validated['substance_name'],
+            'lot_number' => $validated['lot_number'],
+            'quantity' => $validated['quantity'],
+            'unit' => $validated['unit'] ?? 'Unité',
+            'prescription_ref' => $pvRef,
+            'patient_name' => "PV: {$pvRef} (Témoin: {$validated['witness_visa']}, Méthode: {$validated['destruction_method']})",
+            'prescriber_name' => "Double visa: Titulaire ({$validated['titulaire_visa']}) / Témoin ({$validated['witness_visa']})",
+            'pharmacist_visa' => $validated['titulaire_visa'],
+            'entry_hash' => $hash,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return response()->json([
+            'data' => DB::table('cdc_stupefiants_entries')->where('id', $id)->first(),
+            'pv_reference' => $pvRef,
+            'message' => 'Procès-Verbal de destruction émis et scellé.',
         ], 201);
     }
 
@@ -159,7 +266,16 @@ class RemainingCdcController extends Controller
             return response()->json(['message' => 'Préparation introuvable.'], 404);
         }
 
-        $hash = hash('sha256', "{$officineId}|{$prep->reference}|{$prep->formula_name}|released");
+        $validated = $request->validate([
+            'pharmacist_visa' => 'nullable|string|max:120',
+            'posology_verified' => 'sometimes|boolean',
+            'organoleptic_check' => 'sometimes|boolean',
+            'packaging_compliant' => 'sometimes|boolean',
+        ]);
+
+        $visa = $validated['pharmacist_visa'] ?? ($request->user()?->name ?? 'Pharmacien Titulaire');
+        $hash = hash('sha256', "{$officineId}|{$prep->reference}|{$prep->formula_name}|released|{$visa}|" . now()->toIso8601String());
+
         DB::table('cdc_preparations')->where('id', $id)->update([
             'status' => 'delivree',
             'control_hash' => $hash,
@@ -167,7 +283,46 @@ class RemainingCdcController extends Controller
             'updated_at' => now(),
         ]);
 
-        return response()->json(['data' => DB::table('cdc_preparations')->where('id', $id)->first()]);
+        return response()->json([
+            'data' => DB::table('cdc_preparations')->where('id', $id)->first(),
+            'control_hash' => $hash,
+            'visa' => $visa,
+        ]);
+    }
+
+    public function preparationLabel(Request $request, int $id): JsonResponse
+    {
+        $this->checkPermission($request, 'qualite.read');
+        $officineId = $this->getOfficineId($request);
+
+        $prep = DB::table('cdc_preparations')->where('officine_id', $officineId)->where('id', $id)->first();
+        if (!$prep) {
+            return response()->json(['message' => 'Préparation introuvable.'], 404);
+        }
+
+        $officine = DB::table('officines')->where('id', $officineId)->first();
+
+        return response()->json([
+            'data' => [
+                'preparation_id' => $prep->id,
+                'reference' => $prep->reference,
+                'formula_name' => $prep->formula_name,
+                'patient_name' => $prep->patient_name ?? 'Usage externe / Prescription',
+                'prescriber_name' => $prep->prescriber_name ?? 'Médecin Prescripteur',
+                'quantity_prepared' => $prep->quantity_prepared,
+                'expiry_date' => $prep->expiry_date,
+                'status' => $prep->status,
+                'control_hash' => $prep->control_hash,
+                'officine_name' => $officine?->name ?? 'Pharmacie Officinale',
+                'officine_city' => $officine?->city ?? 'Bénin',
+                'regulatory_mentions' => [
+                    'Usage pharmaceutique sous contrôle d un pharmacien',
+                    'Conserver à l abri de la chaleur et de l humidité',
+                    'Ne pas dépasser la dose prescrite',
+                    'Tenir hors de portée des enfants',
+                ],
+            ],
+        ]);
     }
 
     // ==========================================

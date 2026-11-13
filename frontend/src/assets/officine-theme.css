@@ -1,0 +1,181 @@
+/* Officine palette from the original BEGPHARMA interface; loaded after lisibilite.css.
+   Keep business-module tables and panels intact: shell, shared actions, dashboard only. */
+:root {
+  --ink: #0f3b27;
+  --green: #0f3b27;
+  --muted: #475c50;
+  --line: #cff1d2;
+  --paper: #f7f9f7;
+  --officine-lime: #92ff5f;
+  --officine-orange: #ff7036;
+  --officine-ice: #bff2f0;
+}
+body { background: var(--paper); color: var(--ink); }
+.erp-shell .sidebar { width: 256px; background: #fff; border-right: 1px solid #e0ece2; }
+.erp-shell .workspace-main { margin-left: 256px; min-width: 0; }
+.erp-shell .sidebar-brand, .erp-shell .topbar { height: 64px; }
+.erp-shell .sidebar-brand { border-color: #e0ece2; }
+.erp-shell .topbar { background: #fff; border-color: #e0ece2; padding-inline: 28px; }
+.erp-shell .brand-mark { background: var(--green); }
+.erp-shell .brand-dot, .erp-shell .collapse-control { color: var(--green); }
+.erp-shell .workspace { background: var(--paper); border-color: #dfebe1; border-radius: 12px; }
+.erp-shell .workspace-avatar, .erp-shell .profile-avatar, .erp-shell .top-avatar { background: #e3f4e6; color: var(--green); }
+.erp-shell .workspace-copy strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.erp-shell .workspace-copy small, .erp-shell .profile small { color: var(--muted); font-size: 12px; }
+.erp-shell .profile strong { font-size: 12px; white-space: normal; }
+.erp-shell .erp-parent, .erp-shell .erp-children a, .erp-shell .sidebar-admin .nav-item { color: var(--muted); }
+.erp-shell .erp-parent:hover, .erp-shell .erp-children a:hover, .erp-shell .sidebar-admin .nav-item:hover { background: #f0f8f1; color: var(--green); }
+.erp-shell .erp-parent.active, .erp-shell .erp-parent.current, .erp-shell .erp-children a.active,
+.erp-shell .erp-children a.selected, .erp-shell .nav-item.router-link-exact-active { background: #e3f4e6; color: var(--green); }
+.erp-shell .erp-parent.active > svg:first-child, .erp-shell .topbar-left strong { color: var(--green); }
+.erp-shell .erp-children a.active::before { background: var(--green); }
+.erp-shell .erp-children { border-color: var(--line); }
+.erp-shell .erp-group-label, .erp-shell .breadcrumb-root { color: var(--muted); }
+.erp-shell .header-search { color: var(--muted); background: var(--paper); border-color: #dfebe1; }
+.erp-shell .environment { color: var(--muted); font-size: 12px; }
+.erp-shell .environment i { background: var(--green); }
+.erp-shell .demo-environment { display: inline-flex; background: #edf7ee; border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; white-space: nowrap; }
+.button.primary { background: var(--green); color: #fff; }
+.button.primary:hover { background: #195337; }
+.button.secondary { color: var(--green); border-color: #bcd8c1; }
+.button.secondary:hover { background: #edf7ee; }
+.text-link { color: var(--green); }
+.page-heading .eyebrow, .page-subtitle { color: var(--muted); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid #367d50; outline-offset: 3px; }
+
+.officine-dashboard { max-width: 1600px; padding: 28px; font-size: 14px; }
+.officine-dashboard .page-heading { align-items: center; gap: 20px; margin-bottom: 22px; }
+.officine-dashboard .page-heading h1 { font-size: 32px; line-height: 1.2; margin: 5px 0 8px; }
+.officine-dashboard .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .09em; margin: 0 0 7px; color: var(--muted); }
+.officine-dashboard .page-subtitle { font-size: 14px; }
+.officine-heading-actions, .officine-date { display: flex; align-items: center; gap: 10px; }
+.officine-heading-actions { flex-wrap: wrap; justify-content: flex-end; }
+.officine-date { font-size: 12px; color: var(--muted); }
+.officine-dashboard .button { font-size: 14px; border-radius: 9px; min-height: 42px; gap: 8px; }
+.officine-situation { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 25px 28px; background: var(--green); color: #fff; border-radius: 20px; }
+.officine-demo-label { color: var(--officine-lime); font-size: 12px; letter-spacing: .07em; font-weight: 700; }
+.officine-situation h2 { color: #fff; font-size: 27px; line-height: 1.25; margin: 8px 0; }
+.officine-situation p { color: #e3f4e6; margin: 0; font-size: 14px; }
+.officine-situation-actions { display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0; }
+.officine-situation .button.primary { background: var(--officine-lime); color: var(--green); }
+.officine-situation .button.primary:hover { background: #b0ff8d; }
+.officine-banner-link { color: #fff; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
+.officine-update { display: flex; justify-content: flex-end; gap: 6px; align-items: center; color: var(--muted); font-size: 12px; margin: 12px 0 20px; }
+.officine-kpis { display: grid; grid-template-columns: 1.25fr repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.officine-kpi { min-width: 0; display: flex; flex-direction: column; padding: 20px; border: 1px solid #dbe9dd; border-radius: 18px; background: #fff; color: var(--ink); box-shadow: 0 5px 16px #0f3b2704; transition: border-color .16s, transform .16s; }
+.officine-kpi:hover { transform: translateY(-2px); border-color: #73a781; }
+.officine-kpi > span { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; }
+.officine-kpi > span svg { flex-shrink: 0; }
+.officine-kpi > strong { font-family: var(--font-display); font-size: clamp(23px, 2.1vw, 32px); line-height: 1.2; letter-spacing: -.7px; margin: 17px 0 9px; }
+.officine-kpi small { color: var(--muted); font-size: 12px; }
+.officine-kpi.sales { background: #edf7ee; border-color: var(--line); }
+.officine-kpi.caution > span svg { color: #b64012; }
+.officine-analysis-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 22px; margin-bottom: 22px; }
+.officine-feed-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; margin-bottom: 24px; align-items: start; }
+.officine-panel { min-width: 0; padding: 24px; border: 1px solid #dbe9dd; background: #fff; border-radius: 20px; box-shadow: 0 6px 22px #0f3b2705; }
+.officine-panel > header { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.officine-panel h2 { margin: 0; font-size: 21px; line-height: 1.3; }
+.officine-dashboard .text-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.officine-chart-total { font-family: var(--font-display); font-size: 28px; margin: 23px 0 10px; }
+.officine-chart-total span { display: block; font-family: var(--font-sans); font-size: 12px; color: var(--muted); margin-top: 4px; }
+.officine-chart { margin: 0; }
+.officine-chart svg { width: 100%; height: 166px; display: block; }
+.officine-chart-scale { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+.officine-chart-labels { display: grid; margin: 0 0 18px; gap: 0; color: var(--muted); font-size: 12px; text-align: center; }
+.officine-chart-labels span { min-width: 0; overflow-wrap: normal; }
+.officine-chart rect { fill: #277348; }
+.officine-chart g:last-child rect { fill: var(--green); }
+.officine-chart text { fill: var(--muted); font-family: var(--font-sans); font-size: 12px; }
+.officine-chart-grid path { stroke: #e3eee5; fill: none; stroke-dasharray: 4 4; }
+.officine-chart-details { border-top: 1px solid #e3eee5; padding-top: 12px; color: var(--muted); font-size: 12px; }
+.officine-chart-details summary { cursor: pointer; padding: 4px 0; }
+.officine-chart-details caption { padding: 12px; text-align: left; }
+.officine-chart-details table { width: 100%; }
+.officine-chart-details th, .officine-chart-details td { font-size: 12px; padding: 10px; }
+.officine-stock { background: #f0f8f3; }
+.officine-controls { margin: 20px 0; }
+.officine-controls > div { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 17px 0; border-bottom: 1px solid #d8e8dc; }
+.officine-controls dt { color: var(--muted); font-size: 14px; }
+.officine-controls dd { margin: 0; font-family: var(--font-display); font-size: 23px; }
+.officine-count { display: inline-block; margin-left: 5px; background: #edf7ee; border-radius: 7px; padding: 2px 7px; font-size: 14px; vertical-align: middle; }
+.officine-alerts, .officine-activity { padding: 0; margin: 18px 0 0; list-style: none; }
+.officine-alerts li + li, .officine-activity li + li { border-top: 1px solid #edf2ee; }
+.officine-alerts a, .officine-activity a { display: flex; align-items: flex-start; gap: 13px; color: var(--ink); padding: 15px 0; border-radius: 6px; }
+.officine-alerts a:hover, .officine-activity a:hover { background: #f5faf6; }
+.officine-alerts a > div, .officine-activity a > div { min-width: 0; flex: 1; }
+.officine-alerts a > svg, .officine-activity a > svg { align-self: center; flex-shrink: 0; }
+.officine-alerts strong, .officine-activity strong { font-size: 14px; display: block; overflow-wrap: anywhere; }
+.officine-alerts p, .officine-activity p { margin: 5px 0 0; font-size: 14px; color: var(--muted); line-height: 1.6; overflow-wrap: anywhere; }
+.officine-alert-toggle { margin-top: 12px; width: 100%; justify-content: center; }
+.officine-alert-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: #fff0e7; color: #a43910; flex-shrink: 0; }
+.officine-alert-icon.critical { background: #ffe2d4; color: #9d310a; }
+.officine-alert-icon.info { background: #e3f4e6; color: var(--green); }
+.officine-severity { display: block; color: var(--muted); font-size: 12px; margin-bottom: 3px; }
+.officine-activity-dot { width: 8px; height: 8px; border-radius: 50%; background: #43835a; margin: 7px 4px; flex-shrink: 0; }
+.officine-activity time { display: block; font-size: 12px; color: var(--muted); margin-top: 5px; }
+.officine-shortcuts { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-block: 1px solid #dbe9dd; margin-bottom: 22px; }
+.officine-shortcuts a { display: flex; align-items: center; gap: 12px; padding: 22px 12px; color: var(--ink); }
+.officine-shortcuts a:hover { background: #eaf5ec; }
+.officine-shortcuts a > svg { flex-shrink: 0; }
+.officine-shortcuts a > svg:last-child { margin-left: auto; }
+.officine-shortcuts strong { font-size: 14px; display: block; }
+.officine-shortcuts small { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.officine-help { display: flex; align-items: center; gap: 16px; padding: 18px 22px; background: #e8f4f1; border-radius: 14px; }
+.officine-help > svg { flex-shrink: 0; }
+.officine-help > div { flex: 1; }
+.officine-help strong { font-size: 14px; }
+.officine-help p { font-size: 14px; color: var(--muted); margin: 5px 0 0; }
+.officine-error { display: flex; gap: 16px; padding: 24px; background: #fff1e9; border: 1px solid #f2bda5; border-radius: 16px; color: #792e10; }
+.officine-error-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.officine-restore-error { padding: 12px; border: 1px solid #f2bda5; border-radius: 8px; background: #fff1e9; color: #792e10; }
+.officine-empty { color: var(--muted); padding: 18px 0; font-size: 14px; }
+@media (min-width: 801px) {
+  .erp-shell.sidebar-collapsed .sidebar { width: 72px; }
+  .erp-shell.sidebar-collapsed .workspace-main { margin-left: 72px; }
+}
+@media (max-width: 1250px) {
+  .officine-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .officine-shortcuts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .officine-analysis-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+}
+@media (max-width: 1050px) {
+  .officine-analysis-grid, .officine-feed-grid { grid-template-columns: minmax(0, 1fr); }
+  .officine-situation { align-items: flex-start; }
+  .officine-situation-actions { align-self: center; }
+  .officine-help { flex-wrap: wrap; }
+  .officine-help .text-link { margin-left: 39px; }
+}
+@media (max-width: 800px) {
+  .erp-shell .sidebar { width: 256px; }
+  .erp-shell .workspace-main { margin-left: 0; }
+  .erp-shell .topbar { padding-inline: 16px; }
+  .officine-dashboard { padding: 22px 16px; }
+}
+@media (max-width: 560px) {
+  .erp-shell .topbar-left { min-width: 0; }
+  .erp-shell .topbar-left strong { max-width: 110px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .erp-shell .topbar-right { gap: 8px; }
+  .erp-shell .demo-environment { padding: 4px 6px; font-size: 12px; }
+  .erp-shell .header-search { padding: 4px; }
+  .officine-dashboard .page-heading h1 { font-size: 28px; }
+  .officine-heading-actions { width: 100%; justify-content: space-between; }
+  .officine-situation { flex-direction: column; padding: 22px; gap: 20px; }
+  .officine-situation h2 { font-size: 24px; }
+  .officine-situation-actions { align-self: stretch; align-items: flex-start; }
+  .officine-update { justify-content: flex-start; font-size: 12px; }
+  .officine-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .officine-kpi { padding: 16px; }
+  .officine-kpi.sales { grid-column: 1 / -1; }
+  .officine-kpi > strong { font-size: 27px; }
+  .officine-panel { padding: 20px 16px; }
+  .officine-panel > header { flex-wrap: wrap; gap: 12px; }
+  .officine-panel h2 { font-size: 20px; }
+  .officine-chart-total { font-size: 26px; }
+  .officine-shortcuts { grid-template-columns: 1fr; }
+  .officine-shortcuts a { padding: 16px 8px; border-bottom: 1px solid #e3eee5; }
+  .officine-help { padding: 18px; }
+  .officine-help > div { min-width: 180px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .officine-kpi { transition: none; }
+}

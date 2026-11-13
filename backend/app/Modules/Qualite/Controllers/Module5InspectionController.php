@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Modules\Qualite\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Modules\Qualite\Models\Inspection;
 use App\Modules\Qualite\Models\InspectionActionLink;
 use App\Modules\Qualite\Models\InspectionInspector;
@@ -14,11 +13,11 @@ use App\Modules\Qualite\Models\InspectionProgram;
 use App\Modules\Qualite\Models\InspectionReport;
 use App\Modules\Qualite\Models\InspectionResponse;
 use App\Modules\Qualite\Models\InspectorEvaluation;
-use App\Modules\Qualite\Models\QualityAction;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class Module5InspectionController extends Controller
@@ -27,6 +26,7 @@ class Module5InspectionController extends Controller
     {
         $tenantId = app()->bound('tenant.officine_id') ? app('tenant.officine_id') : null;
         $headerId = $request->header('X-Officine-ID');
+
         return (int) ($tenantId ?? $headerId ?? 1);
     }
 
@@ -94,7 +94,7 @@ class Module5InspectionController extends Controller
                 'total' => (clone $inspectionsQuery)->count(),
                 'overdue' => $overdueCount,
                 'coverage_rate' => $coverageRate,
-                'coverage_label' => "{$nbCovered} / " . count($coreProcesses) . " processus inspectés sur 2 ans",
+                'coverage_label' => "{$nbCovered} / ".count($coreProcesses).' processus inspectés sur 2 ans',
                 'by_status' => $byStatus,
                 'definition' => 'Auto-inspections et conformité BPD ABMed (Module 05)',
                 'updated_at' => $now->toIso8601String(),
@@ -226,7 +226,7 @@ class Module5InspectionController extends Controller
                 'regular_service' => null,
                 'conflict_check_passed' => true,
                 'conflict_notes' => 'Indépendance certifiée par la direction.',
-            ]
+            ],
         ];
 
         foreach ($inspectorsList as $insp) {
@@ -315,8 +315,6 @@ class Module5InspectionController extends Controller
         $this->checkPermission($request, 'qualite.write');
         $officineId = $this->getOfficineId($request);
 
-        $inspection = Inspection::where('officine_id', $officineId)->where('id', $id)->firstOrFail();
-
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:180',
             'scope_description' => 'nullable|string|max:2000',
@@ -326,19 +324,23 @@ class Module5InspectionController extends Controller
             'version' => 'required|integer',
         ]);
 
-        if ($validated['version'] !== $inspection->version) {
-            abort(409, "Conflit de modification concurrente. Veuillez recharger l’inspection.");
-        }
+        return DB::transaction(function () use ($officineId, $id, $validated) {
+            $inspection = $this->lockedInspection($officineId, $id);
+            $this->assertEvidenceMutable($inspection);
+            if ($validated['version'] !== $inspection->version) {
+                abort(409, 'Conflit de modification concurrente. Veuillez recharger l’inspection.');
+            }
 
-        $inspection->fill($validated);
-        $inspection->version += 1;
-        $inspection->save();
+            $inspection->fill($validated);
+            $inspection->version += 1;
+            $inspection->save();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Inspection mise à jour.',
-            'data' => $inspection->fresh(['inspectors.user', 'items']),
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Inspection mise à jour.',
+                'data' => $inspection->fresh(['inspectors.user', 'items']),
+            ]);
+        });
     }
 
     /**
@@ -349,46 +351,50 @@ class Module5InspectionController extends Controller
         $this->checkPermission($request, 'qualite.write');
         $officineId = $this->getOfficineId($request);
 
-        $inspection = Inspection::where('officine_id', $officineId)->where('id', $id)->firstOrFail();
-
         $allowedTransitions = ['start', 'complete', 'close'];
         if (! in_array($transition, $allowedTransitions, true)) {
             abort(422, "Transition '{$transition}' non reconnue.");
         }
 
-        if ($transition === 'start') {
-            if (! in_array($inspection->status, ['draft', 'planned'], true)) {
-                abort(422, "Impossible de démarrer une inspection au statut '{$inspection->status}'.");
+        return DB::transaction(function () use ($officineId, $id, $transition) {
+            $inspection = $this->lockedInspection($officineId, $id);
+            if ($transition !== 'close') {
+                $this->assertEvidenceMutable($inspection);
             }
-            $inspection->status = 'in_progress';
-            $inspection->realized_date = $inspection->realized_date ?? Carbon::now()->toDateString();
-        } elseif ($transition === 'complete') {
-            if ($inspection->status !== 'in_progress') {
-                abort(422, "Seule une inspection en cours peut être marquée réalisée.");
+            if ($transition === 'start') {
+                if (! in_array($inspection->status, ['draft', 'planned'], true)) {
+                    abort(422, "Impossible de démarrer une inspection au statut '{$inspection->status}'.");
+                }
+                $inspection->status = 'in_progress';
+                $inspection->realized_date = $inspection->realized_date ?? Carbon::now()->toDateString();
+            } elseif ($transition === 'complete') {
+                if ($inspection->status !== 'in_progress') {
+                    abort(422, 'Seule une inspection en cours peut être marquée réalisée.');
+                }
+                // Vérifier que des questions ont été évaluées
+                $evaluatedCount = InspectionResponse::where('inspection_id', $inspection->id)
+                    ->where('status', '!=', 'non_evalue')
+                    ->count();
+                if ($evaluatedCount === 0) {
+                    abort(422, 'Veuillez évaluer au moins un point de contrôle avant de clore le déroulement terrain.');
+                }
+                $inspection->status = 'completed';
+            } elseif ($transition === 'close') {
+                if ($inspection->status !== 'approved') {
+                    abort(422, 'Seule une inspection dont le rapport est approuvé peut être clôturée.');
+                }
+                $inspection->status = 'closed';
             }
-            // Vérifier que des questions ont été évaluées
-            $evaluatedCount = InspectionResponse::where('inspection_id', $inspection->id)
-                ->where('status', '!=', 'non_evalue')
-                ->count();
-            if ($evaluatedCount === 0) {
-                abort(422, "Veuillez évaluer au moins un point de contrôle avant de clore le déroulement terrain.");
-            }
-            $inspection->status = 'completed';
-        } elseif ($transition === 'close') {
-            if ($inspection->status !== 'approved') {
-                abort(422, "Seule une inspection dont le rapport est approuvé peut être clôturée.");
-            }
-            $inspection->status = 'closed';
-        }
 
-        $inspection->version += 1;
-        $inspection->save();
+            $inspection->version += 1;
+            $inspection->save();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => "Statut de l’inspection mis à jour : {$inspection->status}.",
-            'data' => $inspection,
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => "Statut de l’inspection mis à jour : {$inspection->status}.",
+                'data' => $inspection,
+            ]);
+        });
     }
 
     /**
@@ -399,8 +405,6 @@ class Module5InspectionController extends Controller
         $this->checkPermission($request, 'qualite.write');
         $officineId = $this->getOfficineId($request);
 
-        $inspection = Inspection::where('officine_id', $officineId)->where('id', $id)->firstOrFail();
-
         $validated = $request->validate([
             'responses' => 'required|array|min:1',
             'responses.*.item_id' => 'required|exists:inspection_items,id',
@@ -410,10 +414,13 @@ class Module5InspectionController extends Controller
             'responses.*.finding_type' => 'nullable|in:none,strength,weakness,non_conformity',
         ]);
 
-        $userId = $request->user()?->id ?? $inspection->lead_inspector_id;
-
-        DB::transaction(function () use ($inspection, $validated, $userId) {
+        return DB::transaction(function () use ($officineId, $id, $validated, $request) {
+            $inspection = $this->lockedInspection($officineId, $id);
+            $this->assertEvidenceMutable($inspection);
+            $userId = $request->user()?->id ?? $inspection->lead_inspector_id;
             foreach ($validated['responses'] as $resp) {
+                abort_unless($inspection->items()->whereKey($resp['item_id'])->exists(), 422,
+                    'Le point de contrôle ne fait pas partie de cette inspection.');
                 InspectionResponse::updateOrCreate(
                     [
                         'inspection_id' => $inspection->id,
@@ -433,16 +440,16 @@ class Module5InspectionController extends Controller
             if ($inspection->status === 'planned') {
                 $inspection->status = 'in_progress';
                 $inspection->realized_date = $inspection->realized_date ?? Carbon::now()->toDateString();
-                $inspection->version += 1;
-                $inspection->save();
             }
-        });
+            $inspection->version += 1;
+            $inspection->save();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Constats et évaluations enregistrés.',
-            'data' => $inspection->load(['items.response']),
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Constats et évaluations enregistrés.',
+                'data' => $inspection->load(['items.response']),
+            ]);
+        });
     }
 
     /**
@@ -453,8 +460,6 @@ class Module5InspectionController extends Controller
         $this->checkPermission($request, 'qualite.write');
         $officineId = $this->getOfficineId($request);
 
-        $inspection = Inspection::where('officine_id', $officineId)->where('id', $id)->firstOrFail();
-
         $validated = $request->validate([
             'methodology' => 'required|string|max:4000',
             'summary_findings' => 'required|string|max:5000',
@@ -464,27 +469,33 @@ class Module5InspectionController extends Controller
             'recommendations' => 'required|string|max:4000',
         ]);
 
-        $reportRef = "RAP-{$inspection->reference}";
+        return DB::transaction(function () use ($officineId, $id, $validated) {
+            $inspection = $this->lockedInspection($officineId, $id);
+            $this->assertEvidenceMutable($inspection);
+            $reportRef = "RAP-{$inspection->reference}";
 
-        $report = InspectionReport::updateOrCreate(
-            ['inspection_id' => $inspection->id],
-            [
-                'reference' => $reportRef,
-                'methodology' => trim($validated['methodology']),
-                'summary_findings' => trim($validated['summary_findings']),
-                'strengths' => $validated['strengths'] ?? null,
-                'weaknesses' => $validated['weaknesses'] ?? null,
-                'conclusions' => trim($validated['conclusions']),
-                'recommendations' => trim($validated['recommendations']),
-                'status' => 'submitted',
-            ]
-        );
+            $report = InspectionReport::updateOrCreate(
+                ['inspection_id' => $inspection->id],
+                [
+                    'reference' => $reportRef,
+                    'methodology' => trim($validated['methodology']),
+                    'summary_findings' => trim($validated['summary_findings']),
+                    'strengths' => $validated['strengths'] ?? null,
+                    'weaknesses' => $validated['weaknesses'] ?? null,
+                    'conclusions' => trim($validated['conclusions']),
+                    'recommendations' => trim($validated['recommendations']),
+                    'status' => 'submitted',
+                    'rejection_reason' => null,
+                ]
+            );
+            $inspection->increment('version');
 
-        return response()->json([
-            'status' => 'success',
-            'message' => "Rapport {$report->reference} préparé et soumis pour approbation.",
-            'data' => $report,
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => "Rapport {$report->reference} préparé et soumis pour approbation.",
+                'data' => $report,
+            ]);
+        });
     }
 
     /**
@@ -495,59 +506,115 @@ class Module5InspectionController extends Controller
         $this->checkPermission($request, 'qualite.approve');
         $officineId = $this->getOfficineId($request);
 
-        $inspection = Inspection::where('officine_id', $officineId)->where('id', $id)->firstOrFail();
-        $report = InspectionReport::where('inspection_id', $inspection->id)->firstOrFail();
-
         $validated = $request->validate([
             'decision' => 'required|in:approve,reject',
             'reason' => 'nullable|string|max:1000',
+            // Optional until the signature UI supports mandatory reauthentication.
+            'password' => 'sometimes|required|string',
         ]);
 
-        $userId = $request->user()?->id ?? 1;
-
-        if ($validated['decision'] === 'reject') {
-            $report->update([
-                'status' => 'rejected',
-                'rejection_reason' => $validated['reason'] ?? 'Modifications demandées.',
-            ]);
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Rapport rejeté avec demande de correction.',
-                'data' => $report,
-            ]);
+        if (isset($validated['password'])) {
+            abort_unless($request->user() && Hash::check($validated['password'], $request->user()->getAuthPassword()),
+                422, 'Mot de passe de confirmation incorrect.');
         }
 
-        // Scellement cryptographique immuable SHA-256 (CDC 3.4)
-        $sealedContent = json_encode([
-            'reference' => $report->reference,
-            'inspection_id' => $inspection->id,
-            'officine_id' => $officineId,
-            'methodology' => $report->methodology,
-            'conclusions' => $report->conclusions,
-            'signed_at' => Carbon::now()->toIso8601String(),
-            'approved_by' => $userId,
-        ], JSON_THROW_ON_ERROR);
+        return DB::transaction(function () use ($officineId, $id, $validated, $request) {
+            $inspection = $this->lockedInspection($officineId, $id);
+            $this->assertEvidenceMutable($inspection);
+            $report = InspectionReport::where('inspection_id', $inspection->id)->lockForUpdate()->firstOrFail();
+            abort_unless($report->status === 'submitted', 409, 'Seul un rapport soumis peut être signé ou rejeté.');
+            $userId = $request->user()?->id ?? 1;
 
-        $sha256 = hash('sha256', $sealedContent);
+            if ($validated['decision'] === 'reject') {
+                $report->update([
+                    'status' => 'rejected',
+                    'rejection_reason' => $validated['reason'] ?? 'Modifications demandées.',
+                ]);
 
-        $report->update([
-            'status' => 'approved',
-            'approved_by' => $userId,
-            'approved_at' => Carbon::now(),
-            'sha256_hash' => $sha256,
-            'version' => $report->version + 1,
-        ]);
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Rapport rejeté avec demande de correction.',
+                    'data' => $report,
+                ]);
+            }
 
-        $inspection->update([
-            'status' => 'approved',
-            'version' => $inspection->version + 1,
-        ]);
+            $report->update([
+                'status' => 'approved',
+                'approved_by' => $userId,
+                'approved_at' => Carbon::now(),
+                'rejection_reason' => null,
+                'version' => $report->version + 1,
+            ]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => "Rapport formel d’auto-inspection approuvé et scellé avec l’empreinte SHA-256.",
-            'data' => $report->fresh(['approver']),
-        ]);
+            $inspection->update([
+                'status' => 'approved',
+                'version' => $inspection->version + 1,
+            ]);
+
+            // Hash the persisted values, including the exact stored signature timestamp.
+            $report->refresh();
+            $report->update(['sha256_hash' => $this->evidenceHash($inspection, $report)]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Rapport formel d’auto-inspection approuvé et scellé avec l’empreinte SHA-256.',
+                'data' => $report->fresh(['approver']),
+            ]);
+        });
+    }
+
+    protected function lockedInspection(int $officineId, int $id): Inspection
+    {
+        return Inspection::where('officine_id', $officineId)->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
+    protected function assertEvidenceMutable(Inspection $inspection): void
+    {
+        $sealed = $inspection->report()->where(function ($query) {
+            $query->where('status', 'approved')->orWhereNotNull('approved_at')->orWhereNotNull('sha256_hash');
+        })->exists();
+        abort_if($sealed || in_array($inspection->status, ['approved', 'closed'], true), 409,
+            'Preuve approuvée immuable. Une révision est nécessaire ; aucun parcours de révision n’est disponible.');
+    }
+
+    /** Canonical v1 evidence: lifecycle status/version, CAPA and later evaluations are not signed facts. */
+    protected function evidenceHash(Inspection $inspection, InspectionReport $report): string
+    {
+        $payload = [
+            'schema' => 'inspection-evidence-v1',
+            'inspection' => $inspection->only([
+                'id', 'officine_id', 'program_id', 'reference', 'title', 'process_scope',
+                'scope_description', 'objective', 'planned_date', 'realized_date', 'lead_inspector_id', 'created_by',
+            ]),
+            'report' => $report->only([
+                'id', 'inspection_id', 'reference', 'methodology', 'summary_findings', 'strengths',
+                'weaknesses', 'conclusions', 'recommendations', 'approved_by', 'approved_at', 'version',
+            ]),
+            'inspectors' => $inspection->inspectors()->orderBy('id')->get()->map(fn ($row) => $row->only([
+                'id', 'user_id', 'role', 'regular_service', 'conflict_check_passed', 'conflict_notes',
+            ]))->all(),
+            'items' => $inspection->items()->reorder('id')->get()->map(fn ($row) => $row->only([
+                'id', 'inspection_id', 'bpd_reference', 'chapter', 'requirement', 'guidance', 'sort_order',
+            ]))->all(),
+            'responses' => $inspection->responses()->orderBy('id')->get()->map(fn ($row) => $row->only([
+                'id', 'inspection_id', 'item_id', 'status', 'observed_facts', 'evidence_notes',
+                'finding_type', 'evaluated_by', 'evaluated_at',
+            ]))->all(),
+        ];
+        $canonicalize = function (array $value) use (&$canonicalize): array {
+            if (! array_is_list($value)) {
+                ksort($value, SORT_STRING);
+            }
+            foreach ($value as &$child) {
+                if (is_array($child)) {
+                    $child = $canonicalize($child);
+                }
+            }
+
+            return $value;
+        };
+
+        return hash('sha256', json_encode($canonicalize($payload), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     /**
@@ -573,7 +640,7 @@ class Module5InspectionController extends Controller
         $userId = $request->user()?->id ?? 1;
 
         return DB::transaction(function () use ($officineId, $inspection, $validated, $userId) {
-            $requestKey = 'INSP-CAPA-' . $inspection->id . '-' . Str::random(16);
+            $requestKey = 'INSP-CAPA-'.$inspection->id.'-'.Str::random(16);
             $actionPayload = [
                 'officine_id' => $officineId,
                 'plan_id' => null,
@@ -592,7 +659,7 @@ class Module5InspectionController extends Controller
                 'status' => 'open',
                 'version' => 1,
                 'request_key' => $requestKey,
-                'request_fingerprint' => hash('sha256', $requestKey . $validated['title']),
+                'request_fingerprint' => hash('sha256', $requestKey.$validated['title']),
                 'created_by' => $userId,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),

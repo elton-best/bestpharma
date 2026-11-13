@@ -2,8 +2,15 @@
 declare(strict_types=1);
 use App\Modules\Documents\Controllers\DocumentsController;
 use App\Modules\Documents\Controllers\DocumentLibraryController;
+use App\Modules\Documents\Controllers\ReferenceCorpusController;
 use Illuminate\Support\Facades\Route;
 Route::prefix('api/v1/documents')->middleware(['api','auth:sanctum','tenant.context','module.active:documents'])->group(function (): void {
+    Route::prefix('library/reference-corpus')->controller(ReferenceCorpusController::class)->group(function (): void {
+        Route::get('', 'index');
+        Route::get('{id}', 'show')->where('id', '[a-f0-9]{24}');
+        Route::get('{id}/file', 'download')->where('id', '[a-f0-9]{24}');
+        Route::post('{id}/imports', 'import')->where('id', '[a-f0-9]{24}')->middleware('throttle:identity');
+    });
     Route::get('', [DocumentsController::class,'index']);
     Route::post('', [DocumentsController::class,'store']);
     Route::put('{id}', [DocumentsController::class,'update'])->whereNumber('id');

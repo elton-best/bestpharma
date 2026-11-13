@@ -43,14 +43,8 @@ class Module11ProduitStockController extends Controller
 
         $perms = $request->attributes->get('officine.permissions', []);
 
-        $altPerm = str_starts_with($permission, 'stock.')
-            ? str_replace('stock.', 'qualite.', $permission)
-            : str_replace('qualite.', 'stock.', $permission);
-
         abort_unless(
-            in_array($permission, $perms, true)
-            || in_array($altPerm, $perms, true)
-            || in_array('admin', $perms, true),
+            in_array($permission, $perms, true),
             403,
             "Permission {$permission} requise."
         );

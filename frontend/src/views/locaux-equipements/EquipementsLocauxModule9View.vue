@@ -2,7 +2,9 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import AppModal from '@/components/AppModal.vue'
 import AppIcon from '@/components/AppIcon.vue'
-import { request } from '@/services/quality'
+import { demoMode, request as liveRequest } from '@/services/quality'
+import { boardRequest } from '@/services/cdcBoardsDemo'
+const request = demoMode ? boardRequest : liveRequest
 
 /* ─── Types ─── */
 interface LocationRow {
@@ -278,7 +280,20 @@ const statusColor: Record<string, string> = {
   en_service: '#10b981', en_panne: '#ef4444', en_maintenance: '#f59e0b', hors_service: '#6b7280',
 }
 
-function onTab(t: typeof tab.value) { tab.value = t; load(t) }
+const sections: { key: typeof tab.value; label: string }[] = [
+  { key: 'overview', label: "Vue d'ensemble" },
+  { key: 'equipments', label: 'Inventaire Matériel' },
+  { key: 'maintenance', label: 'Maintenance & Étalonnage' },
+  { key: 'generator', label: 'Groupe Électrogène' },
+  { key: 'cleaning', label: 'Hygiène & Nettoyage' },
+  { key: 'withdrawals', label: 'Retrait / Réforme' },
+]
+
+function onTab(t: string) {
+  const next = t as typeof tab.value
+  tab.value = next
+  load(next)
+}
 
 onMounted(() => load('overview'))
 </script>
@@ -289,26 +304,17 @@ onMounted(() => load('overview'))
     <header class="page-header">
       <div>
         <h1 class="font-display text-2xl font-bold">Équipements & Locaux</h1>
-        <p class="accent-serif text-gray-500">Module 09 — Matériel BPD, maintenance, groupe électrogène, hygiène & retraits</p>
       </div>
     </header>
 
-    <!-- Tabs -->
-    <nav class="tab-bar">
-      <button v-for="t in [
-        { key: 'overview', label: 'Vue d\'ensemble', icon: 'dashboard' },
-        { key: 'equipments', label: 'Inventaire Matériel', icon: 'box' },
-        { key: 'maintenance', label: 'Maintenance & Étalonnage', icon: 'settings' },
-        { key: 'generator', label: 'Groupe Électrogène', icon: 'clock' },
-        { key: 'cleaning', label: 'Hygiène & Nettoyage', icon: 'check' },
-        { key: 'withdrawals', label: 'Retrait / Réforme', icon: 'close' },
-      ]" :key="t.key" :class="['tab-btn', { active: tab === t.key }]" @click="onTab(t.key as any)">
-        <AppIcon :name="t.icon" class="tab-icon" /> {{ t.label }}
-      </button>
-    </nav>
+    <label class="section-filter">Section
+      <select :value="tab" @change="onTab(($event.target as HTMLSelectElement).value)">
+        <option v-for="t in sections" :key="t.key" :value="t.key">{{ t.label }}</option>
+      </select>
+    </label>
 
     <!-- Error -->
-    <div v-if="error" class="err-banner" @click="error = ''">⚠️ {{ error }}</div>
+    <div v-if="error" class="err-banner" @click="error = ''"><AppIcon name="warning" :size="16" /> {{ error }}</div>
 
     <!-- Loading -->
     <div v-if="loading" class="loading-bar"><div class="loading-track" /></div>
@@ -639,7 +645,7 @@ onMounted(() => load('overview'))
           <strong class="text-sm">Historique des déplacements (CDC 7) :</strong>
           <ul class="text-sm mt-1 history-list">
             <li v-for="h in showDetail.location_histories" :key="h.id">
-              📍 <strong>{{ h.location?.name }}</strong> — {{ h.moved_at.slice(0, 10) }}
+              <AppIcon name="pin" :size="16" /> <strong>{{ h.location?.name }}</strong> — {{ h.moved_at.slice(0, 10) }}
               <span v-if="h.reason" class="text-xs text-gray-500">({{ h.reason }})</span>
             </li>
           </ul>
@@ -653,6 +659,8 @@ onMounted(() => load('overview'))
 .module-page { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
 .page-header { margin-bottom: 1.5rem; }
 
+.section-filter { display:grid; gap:6px; font-weight:700; margin:0 0 16px; max-width:420px; width:100%; }
+.section-filter select { min-height:44px; font-size:16px; }
 .tab-bar { display: flex; gap: 0.25rem; border-bottom: 2px solid #e5e7eb; margin-bottom: 1.5rem; overflow-x: auto; }
 .tab-btn { padding: 0.6rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
 .tab-btn:hover { color: #1f2937; background: #f9fafb; }

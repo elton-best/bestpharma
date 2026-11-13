@@ -22,9 +22,25 @@ class Module15AdministrationSaasController extends Controller
 {
     protected function getOfficineId(Request $request): int
     {
-        $tenantId = app()->bound('tenant.officine_id') ? app('tenant.officine_id') : null;
-        $headerId = $request->header('X-Officine-ID');
-        return (int) ($tenantId ?? $headerId ?? 1);
+        // Only the membership-validated middleware context can select a tenant.
+        abort_unless(app()->bound('tenant.officine_id'), 403, 'Contexte officine requis.');
+        return (int) app('tenant.officine_id');
+    }
+
+    protected function checkPlatformAdmin(Request $request): void
+    {
+        abort_unless((bool) $request->user()?->is_platform_admin, 403, 'Administration plateforme requise.');
+    }
+
+    protected function settingsOfficineId(Request $request): ?int
+    {
+        $validated = $request->validate(['scope' => 'sometimes|required|string|in:tenant,global']);
+        if (($validated['scope'] ?? 'tenant') === 'global') {
+            $this->checkPlatformAdmin($request);
+            return null;
+        }
+
+        return $this->getOfficineId($request);
     }
 
     protected function checkAdminOrPermission(Request $request, string $permission): void
@@ -112,7 +128,8 @@ class Module15AdministrationSaasController extends Controller
 
     public function storePlan(Request $request): JsonResponse
     {
-        $this->checkAdminOrPermission($request, 'platformadmin.write');
+        // Plans are shared by all officines, not owned by the selected tenant.
+        $this->checkPlatformAdmin($request);
 
         $validated = $request->validate([
             'code' => 'required|string|max:50',
@@ -345,7 +362,11 @@ class Module15AdministrationSaasController extends Controller
         $officineId = $this->getOfficineId($request);
 
         return response()->json([
-            'data' => SupportTicket::with(['openedBy:id,name', 'accessRequests.requester:id,name'])
+            'data' => SupportTicket::with([
+                'openedBy:id,name',
+                'accessRequests' => fn ($query) => $query->where('officine_id', $officineId),
+                'accessRequests.requester:id,name',
+            ])
                 ->where('officine_id', $officineId)
                 ->orderByDesc('id')
                 ->get(),
@@ -389,7 +410,11 @@ class Module15AdministrationSaasController extends Controller
         $officineId = $this->getOfficineId($request);
 
         return response()->json([
-            'data' => SupportAccessRequest::with(['requester:id,name,email', 'approvedBy:id,name', 'ticket:id,reference,subject'])
+            'data' => SupportAccessRequest::with([
+                'requester:id,name,email',
+                'approvedBy:id,name',
+                'ticket' => fn ($query) => $query->where('officine_id', $officineId)->select('id', 'reference', 'subject'),
+            ])
                 ->where('officine_id', $officineId)
                 ->orderByDesc('id')
                 ->get(),
@@ -399,12 +424,20 @@ class Module15AdministrationSaasController extends Controller
     public function storeAccessRequest(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'officine_id' => 'required|integer',
-            'ticket_id' => 'nullable|integer',
+            'officine_id' => 'required|integer|min:1',
+            'ticket_id' => 'nullable|integer|min:1',
             'reason' => 'required|string|min:5',
             'requested_scope' => 'required|array|min:1',
             'duration_hours' => 'sometimes|integer|min:1|max:72',
         ]);
+
+        // This endpoint has no tenant middleware: validate the target and the
+        // ticket together before creating a relation visible in tenant listings.
+        abort_unless(DB::table('officines')->where('id', $validated['officine_id'])->exists(), 404);
+        if (!empty($validated['ticket_id'])) {
+            abort_unless(SupportTicket::where('officine_id', $validated['officine_id'])
+                ->where('id', $validated['ticket_id'])->exists(), 404);
+        }
 
         $req = SupportAccessRequest::create([
             'officine_id' => $validated['officine_id'],
@@ -491,7 +524,7 @@ class Module15AdministrationSaasController extends Controller
     public function settingsIndex(Request $request): JsonResponse
     {
         $this->checkAdminOrPermission($request, 'platformadmin.read');
-        $officineId = $request->query('scope') === 'global' ? null : $this->getOfficineId($request);
+        $officineId = $this->settingsOfficineId($request);
 
         return response()->json([
             'data' => PlatformSetting::where('officine_id', $officineId)->orderBy('setting_key')->get(),
@@ -501,7 +534,7 @@ class Module15AdministrationSaasController extends Controller
     public function saveSetting(Request $request): JsonResponse
     {
         $this->checkAdminOrPermission($request, 'platformadmin.write');
-        $officineId = $request->input('scope') === 'global' ? null : $this->getOfficineId($request);
+        $officineId = $this->settingsOfficineId($request);
 
         $validated = $request->validate([
             'setting_key' => 'required|string|max:80',

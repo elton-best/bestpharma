@@ -2,7 +2,9 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import AppModal from '@/components/AppModal.vue'
 import AppIcon from '@/components/AppIcon.vue'
-import { request } from '@/services/quality'
+import { demoMode, request as liveRequest } from '@/services/quality'
+import { boardRequest } from '@/services/cdcBoardsDemo'
+const request = demoMode ? boardRequest : liveRequest
 
 /* ─── Types ─── */
 interface SupplierLite { id: number; code: string; name: string }
@@ -247,7 +249,21 @@ async function submitDecideTemp() {
   } catch (e: any) { error.value = e.message }
 }
 
-function onTab(t: typeof tab.value) { tab.value = t; load(t) }
+const sections: { key: typeof tab.value; label: string }[] = [
+  { key: 'overview', label: "Vue d'ensemble" },
+  { key: 'catalogue', label: 'Catalogue Produits' },
+  { key: 'orders', label: 'Commandes & Réappro' },
+  { key: 'receipts', label: 'Réceptions & BL' },
+  { key: 'lots', label: 'Lots FEFO & Quarantaine' },
+  { key: 'inventories', label: 'Inventaires Physiques' },
+  { key: 'cold', label: 'Chaîne du Froid' },
+]
+
+function onTab(t: string) {
+  const next = t as typeof tab.value
+  tab.value = next
+  load(next)
+}
 onMounted(() => load('overview'))
 </script>
 
@@ -256,25 +272,16 @@ onMounted(() => load('overview'))
     <header class="page-header">
       <div>
         <h1 class="font-display text-2xl font-bold">Produits, Approvisionnements & Stocks</h1>
-        <p class="accent-serif text-gray-500">Module 11 — Catalogue, commandes, réceptions idempotentes, lots FEFO, inventaires & chaîne du froid</p>
       </div>
     </header>
 
-    <nav class="tab-bar">
-      <button v-for="t in [
-        { key: 'overview', label: 'Vue d\'ensemble', icon: 'dashboard' },
-        { key: 'catalogue', label: 'Catalogue Produits', icon: 'box' },
-        { key: 'orders', label: 'Commandes & Réappro', icon: 'documents' },
-        { key: 'receipts', label: 'Réceptions & BL', icon: 'check' },
-        { key: 'lots', label: 'Lots FEFO & Quarantaine', icon: 'quality' },
-        { key: 'inventories', label: 'Inventaires Physiques', icon: 'calendar' },
-        { key: 'cold', label: 'Chaîne du Froid', icon: 'info' },
-      ]" :key="t.key" :class="['tab-btn', { active: tab === t.key }]" @click="onTab(t.key as any)">
-        <AppIcon :name="t.icon" class="tab-icon" /> {{ t.label }}
-      </button>
-    </nav>
+    <label class="section-filter">Section
+      <select :value="tab" @change="onTab(($event.target as HTMLSelectElement).value)">
+        <option v-for="t in sections" :key="t.key" :value="t.key">{{ t.label }}</option>
+      </select>
+    </label>
 
-    <div v-if="error" class="err-banner" @click="error = ''">⚠️ {{ error }}</div>
+    <div v-if="error" class="err-banner" @click="error = ''"><AppIcon name="warning" :size="16" /> {{ error }}</div>
     <div v-if="loading" class="loading-bar"><div class="loading-track" /></div>
 
     <!-- ═══════════ OVERVIEW ═══════════ -->
@@ -322,7 +329,7 @@ onMounted(() => load('overview'))
       </div>
 
       <div v-if="suggestions.length" class="alert-box">
-        <h3>📦 Suggestions de commande sous seuil ({{ suggestions.length }})</h3>
+        <h3><AppIcon name="box" :size="18" /> Suggestions de commande sous seuil ({{ suggestions.length }})</h3>
         <ul class="text-xs mt-2">
           <li v-for="s in suggestions" :key="s.product_id">
             <strong>{{ s.code }} — {{ s.name }}</strong> : Stock {{ s.current_sellable_stock }} / Seuil {{ s.min_stock_threshold }} → Qté suggérée : <strong>{{ s.suggested_qty }}</strong>
@@ -611,6 +618,8 @@ onMounted(() => load('overview'))
 .module-page { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
 .page-header { margin-bottom: 1.5rem; }
 
+.section-filter { display:grid; gap:6px; font-weight:700; margin:0 0 16px; max-width:420px; width:100%; }
+.section-filter select { min-height:44px; font-size:16px; }
 .tab-bar { display: flex; gap: 0.25rem; border-bottom: 2px solid #e5e7eb; margin-bottom: 1.5rem; overflow-x: auto; }
 .tab-btn { padding: 0.6rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
 .tab-btn:hover { color: #1f2937; background: #f9fafb; }

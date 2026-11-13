@@ -30,13 +30,14 @@
 </template>
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
+import { httpErrorMessage, readResponseJson, serviceUnavailable } from '@/services/quality'
 type Product={id:number|string;name:string;code:string;unit:string}
 type RequestRow={id:number;kind:string;status:string;prescription_reference?:string|null;prescription_date?:string|null;lines?:Array<{id:number;product_id:number|string;quantity:number}>}
 const products=ref<Product[]>([]),requests=ref<RequestRow[]>([]),canDispense=ref(false),busy=ref(false),error=ref(''),notice=ref('')
 const form=reactive({kind:'prescription',productId:'',quantity:1,prescriptionReference:'',prescriptionDate:'',patientReference:'',dosage:''})
 function headers(){return {Accept:'application/json','Content-Type':'application/json',Authorization:`Bearer ${sessionStorage.getItem('bestpharma.token')||''}`,'X-Officine-ID':sessionStorage.getItem('bestpharma.officine')||''}}
-async function api(path:string,body?:unknown){const res=await fetch(`/api/v1/dispensation/${path}`,{method:body?'POST':'GET',headers:headers(),...(body?{body:JSON.stringify(body)}:{})});const data=await res.json();if(!res.ok)throw Error(Object.values(data.errors||{}).flat().join(' ')||data.message||'Opération impossible.');return data}
-async function load(){try{const data=await api('workspace');products.value=data.products;requests.value=data.requests;canDispense.value=!!data.can_dispense}catch(e){error.value=(e as Error).message}}
+async function api(path:string,body?:unknown){let res:Response;try{res=await fetch(`/api/v1/dispensation/${path}`,{method:body?'POST':'GET',headers:headers(),...(body?{body:JSON.stringify(body)}:{})})}catch{throw Error(serviceUnavailable)}const data=await readResponseJson<{products?:Product[];requests?:RequestRow[];can_dispense?:boolean;errors?:Record<string,string[]>;message?:string}>(res);if(!res.ok)throw Error(httpErrorMessage(res,data,'Opération impossible.'));return data}
+async function load(){try{const data=await api('workspace');products.value=data.products||[];requests.value=data.requests||[];canDispense.value=!!data.can_dispense}catch(e){error.value=(e as Error).message||serviceUnavailable}}
 function key(){return crypto.randomUUID().replace(/-/g,'')}
 function productName(id:number|string){return products.value.find(p=>String(p.id)===String(id))?.name||'Produit'}
 async function createRequest(){busy.value=true;error.value='';notice.value='';try{await api('requests',{request_key:key(),kind:form.kind,...(form.prescriptionReference?{prescription_reference:form.prescriptionReference}:{}),...(form.prescriptionDate?{prescription_date:form.prescriptionDate}:{}),...(form.patientReference?{patient_reference:form.patientReference}:{}),lines:[{product_id:Number(form.productId),quantity:form.quantity,...(form.dosage?{dosage_instructions:form.dosage}:{})}]});notice.value='Demande enregistrée. Aucun stock n’a été décrémenté.';form.productId='';form.quantity=1;await load()}catch(e){error.value=(e as Error).message}finally{busy.value=false}}

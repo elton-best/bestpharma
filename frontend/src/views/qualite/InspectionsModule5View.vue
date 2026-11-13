@@ -3,7 +3,9 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import AppModal from '@/components/AppModal.vue'
 import AppIcon from '@/components/AppIcon.vue'
-import { demoMode, request } from '@/services/quality'
+import { demoMode, request as liveRequest } from '@/services/quality'
+import { boardRequest } from '@/services/cdcBoardsDemo'
+const request = demoMode ? boardRequest : liveRequest
 
 interface ProgramRow {
   id: number
@@ -111,6 +113,22 @@ const selectedInspection = ref<InspectionRow | null>(null)
 const teamMembers = ref<TeamMember[]>([])
 
 const activeTab = ref<'list' | 'programs' | 'audit' | 'report'>('list')
+const sections = computed(() => {
+  const items: { key: typeof activeTab.value; label: string }[] = [
+    { key: 'list', label: `Registre des auto-inspections (${inspections.value.length})` },
+    { key: 'programs', label: `Programmes pluriannuels (${programs.value.length})` },
+  ]
+  if (selectedInspection.value) {
+    items.push(
+      { key: 'audit', label: `Pointage Terrain : ${selectedInspection.value.reference}` },
+      { key: 'report', label: 'Rapport & Scellement SHA-256' },
+    )
+  }
+  return items
+})
+function onTab(value: string) {
+  activeTab.value = value as typeof activeTab.value
+}
 const filterStatus = ref('all')
 const searchQuery = ref('')
 
@@ -206,10 +224,6 @@ const filteredInspections = computed(() => {
 })
 
 async function loadData() {
-  if (demoMode) {
-    error.value = 'Le Module 05 Auto-inspections requiert le mode API connecté.'
-    return
-  }
   loading.value = true
   error.value = ''
   try {
@@ -463,7 +477,7 @@ onMounted(loadData)
   <div class="page">
     <div class="page-heading compact">
       <div>
-        <p class="eyebrow">MODULE 05 · BONNES PRATIQUES DE DISPENSATION (BPD)</p>
+        <p class="eyebrow">BONNES PRATIQUES DE DISPENSATION</p>
         <h1>Auto-inspections <span class="accent-serif">& Conformité.</span></h1>
         <p class="page-subtitle">
           Programmes pluriannuels, audits terrain indépendants, grille BPD ABMed, rapports scellés SHA-256 et boucle CAPA.
@@ -480,7 +494,6 @@ onMounted(loadData)
     </div>
 
     <!-- Bannière de notifications et d'erreurs -->
-    <p v-if="demoMode" class="alert">Connectez-vous au mode API pour utiliser le Module 05.</p>
     <p v-if="error" class="alert error" role="alert">
       {{ error }} <button @click="loadData">Réessayer</button>
     </p>
@@ -528,60 +541,25 @@ onMounted(loadData)
       <span>{{ overview.indicators.by_status.approved || 0 }} <small>rapports scellés</small></span>
     </div>
 
-    <!-- Navigation par onglets -->
-    <div class="tabs-nav">
-      <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'list' }"
-        @click="activeTab = 'list'"
-      >
-        <AppIcon name="calendar" :size="16" /> Registre des auto-inspections ({{ inspections.length }})
-      </button>
-      <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'programs' }"
-        @click="activeTab = 'programs'"
-      >
-        <AppIcon name="documents" :size="16" /> Programmes pluriannuels ({{ programs.length }})
-      </button>
-      <button
-        v-if="selectedInspection"
-        class="tab-btn highlight"
-        :class="{ active: activeTab === 'audit' }"
-        @click="activeTab = 'audit'"
-      >
-        <AppIcon name="quality" :size="16" /> Pointage Terrain : {{ selectedInspection.reference }}
-      </button>
-      <button
-        v-if="selectedInspection"
-        class="tab-btn highlight"
-        :class="{ active: activeTab === 'report' }"
-        @click="activeTab = 'report'"
-      >
-        <AppIcon name="documents" :size="16" /> Rapport & Scellement SHA-256
-      </button>
-    </div>
+    <label class="section-filter">Section
+      <select :value="activeTab" @change="onTab(($event.target as HTMLSelectElement).value)">
+        <option v-for="t in sections" :key="t.key" :value="t.key">{{ t.label }}</option>
+      </select>
+    </label>
 
     <!-- TAB 1: LISTE DES INSPECTIONS -->
     <section v-if="activeTab === 'list'" class="panel">
       <div class="table-toolbar">
-        <div class="tabs">
-          <button
-            v-for="st in [
-              { id: 'all', label: 'Toutes' },
-              { id: 'planned', label: 'Planifiées' },
-              { id: 'in_progress', label: 'En cours' },
-              { id: 'completed', label: 'Réalisées' },
-              { id: 'approved', label: 'Approuvées' },
-              { id: 'closed', label: 'Clôturées' },
-            ]"
-            :key="st.id"
-            :class="{ selected: filterStatus === st.id }"
-            @click="filterStatus = st.id"
-          >
-            {{ st.label }}
-          </button>
-        </div>
+        <label class="section-filter">Statut
+          <select :value="filterStatus" @change="filterStatus = ($event.target as HTMLSelectElement).value">
+            <option value="all">Toutes</option>
+            <option value="planned">Planifiées</option>
+            <option value="in_progress">En cours</option>
+            <option value="completed">Réalisées</option>
+            <option value="approved">Approuvées</option>
+            <option value="closed">Clôturées</option>
+          </select>
+        </label>
         <label class="search-field">
           <AppIcon name="search" :size="16" />
           <input v-model="searchQuery" placeholder="Rechercher par référence, domaine..." />
@@ -1214,6 +1192,9 @@ onMounted(loadData)
   color: #107548;
   font-weight: 500;
 }
+
+.section-filter { display:grid; gap:6px; font-weight:700; margin:0 0 16px; max-width:420px; width:100%; }
+.section-filter select { min-height:44px; font-size:16px; }
 
 .tabs-nav {
   display: flex;

@@ -39,16 +39,8 @@ class Module13CaisseFinancesController extends Controller
 
         $perms = $request->attributes->get('officine.permissions', []);
 
-        $altPerm = str_starts_with($permission, 'tresorerie.')
-            ? str_replace('tresorerie.', 'qualite.', $permission)
-            : str_replace('qualite.', 'tresorerie.', $permission);
-
         abort_unless(
-            in_array($permission, $perms, true)
-            || in_array($altPerm, $perms, true)
-            || in_array('caisse.sell', $perms, true)
-            || in_array('caisse.session.manage', $perms, true)
-            || in_array('admin', $perms, true),
+            in_array($permission, $perms, true),
             403,
             "Permission {$permission} requise."
         );

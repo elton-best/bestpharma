@@ -1,5 +1,15 @@
 import { demoMode, request } from './quality'
-export const permissionLabels: Record<string, string> = { 'qualite.read': 'Consulter les actions qualité', 'qualite.write': 'Créer et modifier les actions qualité', 'dispensation.dispense': 'Valider une délivrance (pharmacien habilité)', 'gardes.read': 'Consulter les déclarations de garde', 'gardes.write': 'Gérer les déclarations de garde', 'caisse.read': 'Consulter les journaux de caisse', 'caisse.sell': 'Enregistrer une vente comptoir', 'caisse.session.manage': 'Ouvrir et clôturer une session de caisse', 'caisse.mouvements.write': 'Saisir les mouvements hors vente' }
+export const permissionLabels: Record<string, string> = {
+ 'qualite.read': 'Consulter les actions qualité', 'qualite.write': 'Créer et modifier les actions qualité', 'qualite.approve': 'Approuver les décisions qualité',
+ 'documents.read': 'Consulter la GED et le catalogue de référence', 'documents.write': 'Créer et importer des documents en quarantaine',
+ 'documents.qualify': 'Qualifier les sources documentaires', 'documents.approve': 'Approuver les sources et documents',
+ 'documents.manage': 'Consulter et télécharger les sources privées du corpus',
+ 'personnel.read': 'Consulter les dossiers du personnel', 'personnel.write': 'Gérer le personnel et les formations',
+ 'stock.read': 'Consulter les produits et les stocks', 'stock.write': 'Gérer les produits et les stocks',
+ 'dispensation.read': 'Consulter les dispensations', 'dispensation.write': 'Gérer les analyses, retours et signalements de dispensation',
+ 'dispensation.dispense': 'Valider une délivrance (pharmacien habilité)', 'tresorerie.read': 'Consulter la trésorerie', 'tresorerie.write': 'Gérer les opérations de trésorerie',
+ 'gardes.read': 'Consulter les déclarations de garde', 'gardes.write': 'Gérer les déclarations de garde', 'caisse.read': 'Consulter les journaux de caisse', 'caisse.sell': 'Enregistrer une vente comptoir', 'caisse.session.manage': 'Ouvrir et clôturer une session de caisse', 'caisse.mouvements.write': 'Saisir les mouvements hors vente',
+}
 export interface TeamRole { id: number; name: string; permissions: string[];description?:string;is_active?:boolean;version?:number;member_count?:number }
 export interface Member { id: number; name: string; email: string; is_admin: boolean; is_active: boolean; role_ids: number[] }
 export interface Invite { id: number; email: string; roles: { is_admin: boolean; role_ids: number[] }; expires_at: string; accepted_at: string | null; revoked_at: string | null }

@@ -2,7 +2,9 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import AppModal from '@/components/AppModal.vue'
 import AppIcon from '@/components/AppIcon.vue'
-import { request } from '@/services/quality'
+import { demoMode, request as liveRequest } from '@/services/quality'
+import { boardRequest } from '@/services/cdcBoardsDemo'
+const request = demoMode ? boardRequest : liveRequest
 
 /* ─── Types ─── */
 interface PlanFeatureRow { id: number; module_key: string; feature_label: string; is_included: boolean }
@@ -134,7 +136,18 @@ async function saveSetting() {
   } catch (e: any) { error.value = e.message }
 }
 
-function onTab(t: typeof tab.value) { tab.value = t; load(t) }
+const sections: { key: typeof tab.value; label: string }[] = [
+  { key: 'overview', label: "Vue d'ensemble" },
+  { key: 'subscriptions', label: 'Forfaits & Souscriptions' },
+  { key: 'support', label: 'Assistance & Accès Support' },
+  { key: 'settings', label: "Paramètres & Journal d'Audit" },
+]
+
+function onTab(t: string) {
+  const next = t as typeof tab.value
+  tab.value = next
+  load(next)
+}
 onMounted(() => load('overview'))
 </script>
 
@@ -143,22 +156,16 @@ onMounted(() => load('overview'))
     <header class="page-header">
       <div>
         <h1 class="font-display text-2xl font-bold">Administration SaaS & Abonnements</h1>
-        <p class="accent-serif text-gray-500">Module 15 — Forfaits, souscriptions, accès support approuvés, paramètres sécurité & audit</p>
       </div>
     </header>
 
-    <nav class="tab-bar">
-      <button v-for="t in [
-        { key: 'overview', label: 'Vue d\'ensemble', icon: 'dashboard' },
-        { key: 'subscriptions', label: 'Forfaits & Souscriptions', icon: 'finance' },
-        { key: 'support', label: 'Assistance & Accès Support', icon: 'support' },
-        { key: 'settings', label: 'Paramètres & Journal d\'Audit', icon: 'settings' },
-      ]" :key="t.key" :class="['tab-btn', { active: tab === t.key }]" @click="onTab(t.key as any)">
-        <AppIcon :name="t.icon" class="tab-icon" /> {{ t.label }}
-      </button>
-    </nav>
+    <label class="section-filter">Section
+      <select :value="tab" @change="onTab(($event.target as HTMLSelectElement).value)">
+        <option v-for="t in sections" :key="t.key" :value="t.key">{{ t.label }}</option>
+      </select>
+    </label>
 
-    <div v-if="error" class="err-banner" @click="error = ''">⚠️ {{ error }}</div>
+    <div v-if="error" class="err-banner" @click="error = ''"><AppIcon name="warning" :size="16" /> {{ error }}</div>
     <div v-if="loading" class="loading-bar"><div class="loading-track" /></div>
 
     <!-- ═══════════ OVERVIEW ═══════════ -->
@@ -334,6 +341,8 @@ onMounted(() => load('overview'))
 <style scoped>
 .module-page { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
 .page-header { margin-bottom: 1.5rem; }
+.section-filter { display:grid; gap:6px; font-weight:700; margin:0 0 16px; max-width:420px; width:100%; }
+.section-filter select { min-height:44px; font-size:16px; }
 .tab-bar { display: flex; gap: 0.25rem; border-bottom: 2px solid #e5e7eb; margin-bottom: 1.5rem; overflow-x: auto; }
 .tab-btn { padding: 0.6rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -2px; }
 .tab-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; font-weight: 600; }

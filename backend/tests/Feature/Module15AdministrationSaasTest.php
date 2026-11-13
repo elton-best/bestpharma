@@ -5,7 +5,11 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Modules\PlatformAdmin\Models\BillingEvent;
 use App\Modules\PlatformAdmin\Models\Entitlement;
+use App\Modules\PlatformAdmin\Models\Plan;
+use App\Modules\PlatformAdmin\Models\PlatformSetting;
 use App\Modules\PlatformAdmin\Models\Subscription;
+use App\Modules\PlatformAdmin\Models\SupportAccessRequest;
+use App\Modules\PlatformAdmin\Models\SupportTicket;
 use App\Modules\Stock\Models\Product;
 use App\Modules\Tenancy\Models\Officine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,8 +34,9 @@ class Module15AdministrationSaasTest extends TestCase
             'name' => 'Admin Officine M15',
             'email' => 'admin-m15@example.test',
             'password' => 'Fictional12345',
-            'is_platform_admin' => true,
         ]);
+        // Privileged flags are intentionally excluded from mass assignment.
+        $this->admin->forceFill(['is_platform_admin' => true])->save();
         $this->supportAgent = User::create([
             'name' => 'Agent Support N2',
             'email' => 'support-m15@example.test',
@@ -239,5 +244,194 @@ class Module15AdministrationSaasTest extends TestCase
         $this->withHeaders(['X-Webhook-Signature' => 'invalid-signature'])
             ->postJson('/api/v1/platformadmin/billing-webhook', $payload)
             ->assertForbidden();
+    }
+
+    private function actingAsTenantAdmin(): void
+    {
+        $this->admin->forceFill(['is_platform_admin' => false])->save();
+        Sanctum::actingAs($this->admin);
+    }
+
+    private function setting(?int $officineId, string $value): PlatformSetting
+    {
+        return PlatformSetting::create([
+            'officine_id' => $officineId,
+            'setting_key' => 'mfa_policy',
+            'setting_value' => ['secret' => $value],
+            'updated_by_user_id' => $this->admin->id,
+            'version' => 1,
+        ]);
+    }
+
+    public function test_tenant_admin_cannot_create_global_plans_even_through_quality_alias(): void
+    {
+        $this->actingAsTenantAdmin();
+        foreach (['/api/v1/platformadmin', '/api/v1/qualite/platformadmin'] as $base) {
+            $this->postJson($base.'/plans', [
+                'code' => 'FORBIDDEN', 'name' => 'Global plan',
+            ])->assertForbidden();
+        }
+        $this->assertDatabaseMissing('plans', ['code' => 'FORBIDDEN']);
+        $this->assertDatabaseMissing('audit_events', ['event_type' => 'plan.created']);
+    }
+
+    public function test_tenant_admin_cannot_read_or_update_global_settings_via_query_or_body(): void
+    {
+        $global = $this->setting(null, 'global-secret');
+        $this->actingAsTenantAdmin();
+
+        foreach (['/api/v1/platformadmin', '/api/v1/qualite/platformadmin'] as $base) {
+            $this->getJson($base.'/settings?scope=global')->assertForbidden()
+                ->assertDontSee('global-secret');
+            $this->postJson($base.'/settings?scope=global', [
+                'setting_key' => 'mfa_policy', 'setting_value' => ['secret' => 'changed'],
+            ])->assertForbidden();
+            $this->postJson($base.'/settings', [
+                'scope' => 'global', 'setting_key' => 'mfa_policy', 'setting_value' => ['secret' => 'changed'],
+            ])->assertForbidden();
+            $this->postJson($base.'/settings', [
+                'scope' => 'global', 'setting_key' => 'new_global', 'setting_value' => ['value' => true],
+            ])->assertForbidden();
+        }
+
+        $this->assertSame(['secret' => 'global-secret'], $global->fresh()->setting_value);
+        $this->assertSame(1, $global->fresh()->version);
+        $this->assertDatabaseCount('platform_settings', 1);
+        $this->assertDatabaseMissing('audit_events', ['event_type' => 'setting.updated']);
+    }
+
+    public function test_tenant_permission_strings_do_not_grant_platform_authority(): void
+    {
+        $this->actingAsTenantAdmin();
+        DB::table('officine_user')->where('user_id', $this->admin->id)->update([
+            'is_admin' => false,
+            'permissions' => json_encode(['admin', 'platformadmin.read', 'platformadmin.write']),
+        ]);
+        $this->postJson('/api/v1/platformadmin/plans', [
+            'code' => 'FORGED', 'name' => 'Forbidden plan',
+        ])->assertForbidden();
+        $this->getJson('/api/v1/platformadmin/settings?scope=global')->assertForbidden();
+        $this->postJson('/api/v1/platformadmin/settings', [
+            'scope' => 'global', 'setting_key' => 'secret', 'setting_value' => ['value' => true],
+        ])->assertForbidden();
+    }
+
+    public function test_platform_admin_can_create_read_and_update_global_settings(): void
+    {
+        $this->setting($this->office->id, 'local-value');
+        $payload = ['scope' => 'global', 'setting_key' => 'mfa_policy', 'setting_value' => ['secret' => 'global-value']];
+        $id = $this->postJson('/api/v1/platformadmin/settings', $payload)
+            ->assertOk()->assertJsonPath('data.officine_id', null)->json('data.id');
+        $payload['setting_value'] = ['secret' => 'updated-global-value'];
+        $this->postJson('/api/v1/platformadmin/settings', $payload)->assertOk()
+            ->assertJsonPath('data.id', $id)->assertJsonPath('data.version', 2);
+        $this->getJson('/api/v1/platformadmin/settings?scope=global')->assertOk()
+            ->assertJsonCount(1, 'data')->assertJsonPath('data.0.setting_value.secret', 'updated-global-value')
+            ->assertDontSee('local-value');
+        $this->assertDatabaseCount('platform_settings', 2);
+    }
+
+    public function test_tenant_settings_use_validated_context_not_payload_ids_and_reject_invalid_scope(): void
+    {
+        $other = Officine::create(['name' => 'Other M15', 'slug' => 'other-settings-m15', 'status' => 'active']);
+        $global = $this->setting(null, 'global-secret');
+        $foreign = $this->setting($other->id, 'foreign-secret');
+        $this->actingAsTenantAdmin();
+
+        $this->postJson('/api/v1/platformadmin/settings', [
+            'officine_id' => $other->id, 'id' => $global->id,
+            'setting_key' => 'mfa_policy', 'setting_value' => ['secret' => 'own-value'],
+        ])->assertOk()->assertJsonPath('data.officine_id', $this->office->id);
+        $this->postJson('/api/v1/platformadmin/settings', [
+            'scope' => 'tenant', 'officine_id' => null,
+            'setting_key' => 'mfa_policy', 'setting_value' => ['secret' => 'own-value'],
+        ])->assertOk()->assertJsonPath('data.officine_id', $this->office->id)->assertJsonPath('data.version', 2);
+        $this->getJson('/api/v1/platformadmin/settings?officine_id='.$other->id)->assertOk()
+            ->assertJsonCount(1, 'data')->assertJsonPath('data.0.setting_value.secret', 'own-value')
+            ->assertDontSee('foreign-secret')->assertDontSee('global-secret');
+        foreach (['GLOBAL', '', 'unknown', ['global']] as $scope) {
+            $this->postJson('/api/v1/platformadmin/settings', [
+                'scope' => $scope, 'setting_key' => 'mfa_policy', 'setting_value' => ['secret' => 'invalid'],
+            ])->assertUnprocessable();
+        }
+        $this->withHeader('X-Officine-ID', (string) $other->id)
+            ->getJson('/api/v1/platformadmin/settings')->assertForbidden();
+        $this->assertSame(['secret' => 'foreign-secret'], $foreign->fresh()->setting_value);
+        $this->assertSame(['secret' => 'global-secret'], $global->fresh()->setting_value);
+    }
+
+    public function test_tenant_admin_keeps_catalog_subscription_ticket_and_access_decision_operations(): void
+    {
+        $plan = Plan::create(['code' => 'LOCAL-CATALOG', 'name' => 'Public catalogue']);
+        $this->actingAsTenantAdmin();
+        $this->getJson('/api/v1/platformadmin/plans')->assertOk()->assertJsonPath('data.0.id', $plan->id);
+        $subId = $this->postJson('/api/v1/platformadmin/subscriptions', [
+            'plan_id' => $plan->id, 'reference' => 'LOCAL-SUB',
+        ])->assertCreated()->assertJsonPath('data.officine_id', $this->office->id)->json('data.id');
+        $this->postJson("/api/v1/platformadmin/subscriptions/{$subId}/state", [
+            'action' => 'suspendre', 'reason' => 'Local cancellation request',
+        ])->assertOk();
+        $ticketId = $this->postJson('/api/v1/platformadmin/tickets', [
+            'reference' => 'LOCAL-TICKET', 'subject' => 'Local issue', 'description' => 'Tenant request',
+        ])->assertCreated()->json('data.id');
+        Sanctum::actingAs($this->supportAgent);
+        $accessId = $this->postJson('/api/v1/platformadmin/support-access-requests', [
+            'officine_id' => $this->office->id, 'ticket_id' => $ticketId,
+            'reason' => 'Investigate local issue', 'requested_scope' => ['reporting.read'],
+        ])->assertCreated()->json('data.id');
+        Sanctum::actingAs($this->admin);
+        $this->postJson("/api/v1/platformadmin/support-access-requests/{$accessId}/decision", [
+            'decision' => 'approuve',
+        ])->assertOk();
+        $this->getJson('/api/v1/platformadmin/subscriptions')->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/platformadmin/tickets')->assertOk()->assertJsonCount(1, 'data');
+    }
+
+    public function test_cross_tenant_subscription_and_support_relations_are_not_accessible(): void
+    {
+        $other = Officine::create(['name' => 'Other M15', 'slug' => 'other-relations-m15', 'status' => 'active']);
+        $plan = Plan::create(['code' => 'CROSS-CATALOG', 'name' => 'Catalogue']);
+        $foreignSub = Subscription::create([
+            'officine_id' => $other->id, 'plan_id' => $plan->id, 'reference' => 'FOREIGN-SUB', 'status' => 'active',
+        ]);
+        $foreignTicket = SupportTicket::create([
+            'officine_id' => $other->id, 'reference' => 'FOREIGN-TICKET', 'subject' => 'foreign-secret',
+            'description' => 'private', 'opened_by_user_id' => $this->admin->id,
+        ]);
+        $foreignAccess = SupportAccessRequest::create([
+            'officine_id' => $other->id, 'requester_user_id' => $this->supportAgent->id,
+            'reason' => 'Foreign access', 'requested_scope' => ['reporting.read'],
+        ]);
+        $this->actingAsTenantAdmin();
+        $this->postJson("/api/v1/platformadmin/subscriptions/{$foreignSub->id}/state", [
+            'action' => 'suspendre', 'reason' => 'Cross tenant attempt',
+        ])->assertNotFound();
+        $this->postJson("/api/v1/platformadmin/support-access-requests/{$foreignAccess->id}/decision", [
+            'decision' => 'approuve',
+        ])->assertNotFound();
+        $this->postJson('/api/v1/platformadmin/support-access-requests', [
+            'officine_id' => $this->office->id, 'ticket_id' => $foreignTicket->id,
+            'reason' => 'Cross tenant ticket', 'requested_scope' => ['reporting.read'],
+        ])->assertNotFound();
+
+        // Legacy inconsistent references must not expose the foreign ticket.
+        SupportAccessRequest::create([
+            'officine_id' => $this->office->id, 'ticket_id' => $foreignTicket->id,
+            'requester_user_id' => $this->supportAgent->id, 'reason' => 'Legacy relation', 'requested_scope' => [],
+        ]);
+        $this->getJson('/api/v1/platformadmin/support-access-requests')->assertOk()
+            ->assertJsonCount(1, 'data')->assertJsonPath('data.0.ticket', null)->assertDontSee('foreign-secret');
+        $this->getJson('/api/v1/platformadmin/subscriptions')->assertOk()->assertJsonCount(0, 'data');
+        $this->getJson('/api/v1/platformadmin/tickets')->assertOk()->assertJsonCount(0, 'data');
+        $this->assertSame('active', $foreignSub->fresh()->status);
+        $this->assertSame('en_attente', $foreignAccess->fresh()->status);
+
+        $ownTicket = SupportTicket::create([
+            'officine_id' => $this->office->id, 'reference' => 'OWN-TICKET', 'subject' => 'Local issue',
+            'description' => 'Local request', 'opened_by_user_id' => $this->admin->id,
+        ]);
+        $foreignAccess->update(['ticket_id' => $ownTicket->id]);
+        $this->getJson('/api/v1/platformadmin/tickets')->assertOk()
+            ->assertJsonCount(1, 'data')->assertJsonCount(0, 'data.0.access_requests');
     }
 }

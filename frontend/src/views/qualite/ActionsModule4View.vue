@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import AppModal from '@/components/AppModal.vue'
-import { demoMode, request } from '@/services/quality'
+import { demoMode, request as liveRequest } from '@/services/quality'
+import { boardRequest } from '@/services/cdcBoardsDemo'
+const request = demoMode ? boardRequest : liveRequest
 
 interface ActionRow { id:number; title:string; description:string; status:string; priority:string; owner_id:number; due_date:string; version:number; overdue:boolean; sources:{source_type:string;label:string}[] }
 interface PlanRow { id:number; reference:string; title:string; objective:string; status:string; starts_on:string; ends_on:string; owner_id:number; version:number }
@@ -13,7 +15,7 @@ const form=ref({title:'',description:'',effectiveness_criteria:'',owner_id:0,due
 let pendingRequestKey=''
 watch(form,()=>{pendingRequestKey=''}, {deep:true})
 const base='/qualite/actions-v2'
-async function load(){if(demoMode){error.value='Le registre M4 nécessite le mode API authentifié.';return}loading.value=true;error.value='';try{const [result,planResult]=await Promise.all([request<Page>(`${base}?per_page=100`),request<{data:{data:PlanRow[]};can_write:boolean;can_approve:boolean}>(`${base}/plans`)]);rows.value=result.data.data;indicators.value=result.indicators;plans.value=planResult.data.data;canWrite.value=planResult.can_write;canApprove.value=planResult.can_approve}catch(e){error.value=(e as Error).message}finally{loading.value=false}}
+async function load(){loading.value=true;error.value='';try{const [result,planResult]=await Promise.all([request<Page>(`${base}?per_page=100`),request<{data:{data:PlanRow[]};can_write:boolean;can_approve:boolean}>(`${base}/plans`)]);rows.value=result.data.data;indicators.value=result.indicators;plans.value=planResult.data.data;canWrite.value=planResult.can_write;canApprove.value=planResult.can_approve}catch(e){error.value=(e as Error).message}finally{loading.value=false}}
 function create(){form.value={title:'',description:'',effectiveness_criteria:'',owner_id:Number(sessionStorage.getItem('bestpharma.user_id')||0),due_date:'',priority:'normal',source_type:'finding',source_id:0,source_label:''};pendingRequestKey='';modal.value=true}
 async function save(){busy.value=true;error.value='';try{pendingRequestKey ||= globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;await request(`${base}/actions`,'POST',{title:form.value.title,description:form.value.description,effectiveness_criteria:form.value.effectiveness_criteria,request_key:pendingRequestKey,owner_id:form.value.owner_id,due_date:form.value.due_date,priority:form.value.priority,sources:[{type:form.value.source_type,id:form.value.source_id||null,label:form.value.source_label}],confirmed:true});pendingRequestKey='';modal.value=false;notice.value='Action ajoutée au registre M4.';await load()}catch(e){error.value=(e as Error).message}finally{busy.value=false}}
 async function show(row:ActionRow){try{detail.value=(await request<{data:ActionRow}>(`${base}/actions/${row.id}`)).data}catch(e){error.value=(e as Error).message}}
@@ -25,8 +27,8 @@ onMounted(load)
 </script>
 
 <template><div class="page">
-  <div class="page-heading compact"><div><p class="eyebrow">MODULE 04 · AMÉLIORATION CONTINUE</p><h1>Plans & actions</h1><p class="page-subtitle">Registre unique des actions, preuves documentaires versionnées et vérification d’efficacité.</p></div><button class="button primary" @click="create">Nouvelle action</button></div>
-  <p v-if="demoMode" class="alert">Connectez-vous au mode API pour accéder au registre M4.</p><p v-if="error" class="alert error" role="alert">{{error}} <button @click="load">Réessayer</button></p><p v-if="notice" class="alert success" role="status">{{notice}}</p>
+  <div class="page-heading compact"><div><p class="eyebrow">AMÉLIORATION CONTINUE</p><h1>Plans & actions</h1><p class="page-subtitle">Registre unique des actions, preuves documentaires versionnées et vérification d’efficacité.</p></div><button class="button primary" @click="create">Nouvelle action</button></div>
+<p v-if="error" class="alert error" role="alert">{{error}} <button @click="load">Réessayer</button></p><p v-if="notice" class="alert success" role="status">{{notice}}</p>
   <div v-if="indicators" class="mini-stats"><span>{{rows.length}} <small>actions affichées</small></span><span>{{indicators.overdue}} <small>en retard</small></span><span>{{indicators.by_status.closed||0}} <small>clôturées</small></span></div>
   <section class="panel"><div class="panel-heading"><h2>Plans d’amélioration</h2><button v-if="canWrite" class="button secondary" @click="editPlan()">Créer un plan</button></div><p v-if="!plans.length" class="empty-state">Aucun plan M4 enregistré.</p><div v-for="plan in plans" :key="plan.id" class="document-row"><div><strong>{{plan.title}}</strong><p>{{plan.reference}} · {{plan.starts_on}} → {{plan.ends_on}} · {{plan.status}} · v{{plan.version}}</p><p>{{plan.objective}}</p></div><div class="heading-actions"><button v-if="canWrite && ['draft','changes_requested'].includes(plan.status)" class="button secondary small" @click="editPlan(plan)">Modifier</button><button v-if="canWrite && plan.status==='draft'" class="button primary small" @click="planTransition(plan,'submit')">Soumettre</button><button v-if="canApprove && plan.status==='submitted'" class="button primary small" @click="planTransition(plan,'decision','approve')">Approuver</button><button v-if="canApprove && plan.status==='submitted'" class="button secondary small" @click="planTransition(plan,'decision','request_changes')">Demander modification</button></div></div></section>
   <section class="panel"><div class="panel-heading"><h2>Registre des actions</h2><span v-if="indicators" class="muted-note">Calcul des retards : {{indicators.definition}}</span></div><p v-if="loading" role="status">Chargement…</p><div v-else-if="!rows.length" class="empty-state">Aucune action enregistrée. Les actions M2 approuvées peuvent être intégrées depuis la mission d’origine.</div>

@@ -2,7 +2,9 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import AppModal from '@/components/AppModal.vue'
 import AppIcon from '@/components/AppIcon.vue'
-import { demoMode, request } from '@/services/quality'
+import { demoMode, request as liveRequest } from '@/services/quality'
+import { boardRequest } from '@/services/cdcBoardsDemo'
+const request = demoMode ? boardRequest : liveRequest
 
 /* ─── Types ─── */
 interface EmployeeRow {
@@ -183,7 +185,20 @@ const leaveStatusColor: Record<string, string> = { brouillon: '#9ca3af', soumis:
 const shiftTypeLabel: Record<string, string> = { jour: 'Jour', garde_nuit: 'Garde nuit', garde_dimanche: 'Garde dimanche', astreinte: 'Astreinte' }
 const trainingTypeLabel: Record<string, string> = { interne_bpd: 'Interne BPD', externe: 'Externe', securite_incendie: 'Sécurité incendie', pharmacovigilance: 'Pharmacovigilance' }
 
-function onTab(t: typeof tab.value) { tab.value = t; load(t) }
+const sections: { key: typeof tab.value; label: string }[] = [
+  { key: 'overview', label: "Vue d'ensemble" },
+  { key: 'employees', label: 'Effectif' },
+  { key: 'leaves', label: 'Congés & Absences' },
+  { key: 'shifts', label: 'Planning' },
+  { key: 'training', label: 'Formations' },
+  { key: 'reviews', label: 'Évaluations' },
+]
+
+function onTab(t: string) {
+  const next = t as typeof tab.value
+  tab.value = next
+  load(next)
+}
 
 onMounted(() => load('overview'))
 </script>
@@ -194,26 +209,17 @@ onMounted(() => load('overview'))
     <header class="page-header">
       <div>
         <h1 class="font-display text-2xl font-bold">Personnel & Formations</h1>
-        <p class="accent-serif text-gray-500">Module 08 — Dossiers, congés, planning, formations & évaluations</p>
       </div>
     </header>
 
-    <!-- Tabs -->
-    <nav class="tab-bar">
-      <button v-for="t in [
-        { key: 'overview', label: 'Vue d\'ensemble', icon: 'dashboard' },
-        { key: 'employees', label: 'Effectif', icon: 'team' },
-        { key: 'leaves', label: 'Congés & Absences', icon: 'calendar' },
-        { key: 'shifts', label: 'Planning', icon: 'clock' },
-        { key: 'training', label: 'Formations', icon: 'quality' },
-        { key: 'reviews', label: 'Évaluations', icon: 'check' },
-      ]" :key="t.key" :class="['tab-btn', { active: tab === t.key }]" @click="onTab(t.key as any)">
-        <AppIcon :name="t.icon" class="tab-icon" /> {{ t.label }}
-      </button>
-    </nav>
+    <label class="section-filter">Section
+      <select :value="tab" @change="onTab(($event.target as HTMLSelectElement).value)">
+        <option v-for="t in sections" :key="t.key" :value="t.key">{{ t.label }}</option>
+      </select>
+    </label>
 
     <!-- Error -->
-    <div v-if="error" class="err-banner" @click="error = ''">⚠️ {{ error }}</div>
+    <div v-if="error" class="err-banner" @click="error = ''"><AppIcon name="warning" :size="16" /> {{ error }}</div>
 
     <!-- Loading -->
     <div v-if="loading" class="loading-bar"><div class="loading-track" /></div>
@@ -233,13 +239,13 @@ onMounted(() => load('overview'))
 
       <!-- Alertes habilitations -->
       <div v-if="expiringCredentials.length" class="alert-box">
-        <h3>🔔 Habilitations expirant sous 30 jours</h3>
+        <h3><AppIcon name="bell" :size="18" /> Habilitations expirant sous 30 jours</h3>
         <div v-for="c in expiringCredentials" :key="c.id" class="alert-row">
           <strong>{{ c.first_name }} {{ c.last_name }}</strong> — {{ c.role_title }}
           <span class="badge-warn">Ordre B {{ c.ordre_b_number }} → {{ c.ordre_b_expiry }}</span>
         </div>
       </div>
-      <p v-else-if="kpis" class="text-sm text-gray-500 mt-4">✅ Aucune habilitation n'expire sous 30 jours.</p>
+      <p v-else-if="kpis" class="text-sm text-gray-500 mt-4"><AppIcon name="check" :size="16" /> Aucune habilitation n'expire sous 30 jours.</p>
     </section>
 
     <!-- ═══════════ EMPLOYEES ═══════════ -->
@@ -343,7 +349,7 @@ onMounted(() => load('overview'))
           </div>
           <div v-if="p.sessions?.length" class="sessions-list">
             <div v-for="s in p.sessions" :key="s.id" class="session-item">
-              📅 {{ s.session_date }} {{ s.start_time || '' }}–{{ s.end_time || '' }}
+              <AppIcon name="calendar" :size="16" /> {{ s.session_date }} {{ s.start_time || '' }}–{{ s.end_time || '' }}
               <span class="badge" :class="s.status">{{ s.status }}</span>
               <span v-if="s.attendances?.length" class="text-xs text-gray-500">({{ s.attendances.length }} participants)</span>
             </div>
@@ -513,6 +519,8 @@ onMounted(() => load('overview'))
 .module-page { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
 .page-header { margin-bottom: 1.5rem; }
 
+.section-filter { display:grid; gap:6px; font-weight:700; margin:0 0 16px; max-width:420px; width:100%; }
+.section-filter select { min-height:44px; font-size:16px; }
 .tab-bar { display: flex; gap: 0.25rem; border-bottom: 2px solid #e5e7eb; margin-bottom: 1.5rem; overflow-x: auto; }
 .tab-btn { padding: 0.6rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
 .tab-btn:hover { color: #1f2937; background: #f9fafb; }

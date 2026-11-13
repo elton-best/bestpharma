@@ -39,9 +39,9 @@ class Module12DispensationVenteTest extends TestCase
         DB::table('officine_user')->insert([
             'user_id' => $this->pharmacist->id,
             'officine_id' => $this->office->id,
-            'is_admin' => true,
+            'is_admin' => false,
             'is_active' => true,
-            'permissions' => '[]',
+            'permissions' => json_encode(['dispensation.read', 'dispensation.write']),
         ]);
         DB::table('officine_modules')->insert([
             ['officine_id' => $this->office->id, 'module' => 'qualite', 'is_active' => true],

@@ -29,7 +29,7 @@ class Module8PersonnelFormationTest extends TestCase
         $this->office = Officine::create(['name' => 'Pharmacie Recette M8', 'slug' => 'pharmacie-recette-m8', 'status' => 'active']);
 
         DB::table('officine_user')->insert([
-            ['user_id' => $this->admin->id, 'officine_id' => $this->office->id, 'is_admin' => true, 'is_active' => true, 'permissions' => '[]'],
+            ['user_id' => $this->admin->id, 'officine_id' => $this->office->id, 'is_admin' => false, 'is_active' => true, 'permissions' => json_encode(['personnel.read', 'personnel.write'])],
             ['user_id' => $this->collaborator->id, 'officine_id' => $this->office->id, 'is_admin' => false, 'is_active' => true, 'permissions' => '[]'],
         ]);
         DB::table('officine_modules')->insert([

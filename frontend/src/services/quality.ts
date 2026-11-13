@@ -22,14 +22,41 @@ export function readDemo(): QualityAction[] {
   } catch { throw new Error('Les données locales sont illisibles. Réinitialisez la démonstration pour continuer.') }
 }
 export function resetDemo() { localStorage.removeItem(key) }
+export const serviceUnavailable = 'Le service est indisponible. Veuillez réessayer.'
+
+export async function readResponseJson<T = Record<string, unknown>>(res: Response): Promise<T> {
+  let text = ''
+  try { text = await res.text() } catch { return {} as T }
+  if (!text.trim()) return {} as T
+  try {
+    const parsed = JSON.parse(text) as T
+    return parsed === null || parsed === undefined ? {} as T : parsed
+  } catch { return {} as T }
+}
+
+export function messageFromPayload(data: unknown, fallback: string): string {
+  if (!data || typeof data !== 'object') return fallback
+  const record = data as { message?: unknown; errors?: unknown }
+  const raw = record.errors && typeof record.errors === 'object' ? Object.values(record.errors as Record<string, unknown>) : []
+  const details = raw.flatMap(value => Array.isArray(value) ? value : [value]).filter((value): value is string => typeof value === 'string' && value.length > 0).join(' ')
+  return details || (typeof record.message === 'string' ? record.message : '') || fallback
+}
+
+export function httpErrorMessage(res: Response, data: unknown, fallback: string): string {
+  return messageFromPayload(data, res.status === 0 || res.status >= 500 ? serviceUnavailable : fallback)
+}
+
 export async function request<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
   const token = sessionStorage.getItem('bestpharma.token')
   const tenant = sessionStorage.getItem('bestpharma.officine')
-  const res = await fetch(`/api/v1${path}`, { method, headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(tenant ? { 'X-Officine-ID': tenant } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) })
-  const data = await res.json().catch(() => ({}))
+  let res: Response
+  try {
+    res = await fetch(`/api/v1${path}`, { method, headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(tenant ? { 'X-Officine-ID': tenant } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) })
+  } catch { throw new Error(serviceUnavailable) }
+  const data = await readResponseJson<Record<string, unknown>>(res)
   if (res.status === 401) { sessionStorage.removeItem('bestpharma.token'); sessionStorage.removeItem('bestpharma.officine'); sessionStorage.removeItem('bestpharma.platform'); window.location.assign('/login') }
   if (res.status===403&&data.code==='mfa_enrollment_required'&&window.location.pathname!=='/dashboard/securite') window.location.assign('/dashboard/securite')
-  if (!res.ok) throw new Error(Object.values(data.errors || {}).flat().join(' ') || data.message || 'Le service est indisponible. Veuillez réessayer.')
+  if (!res.ok) throw new Error(httpErrorMessage(res, data, serviceUnavailable))
   return data as T
 }
 export const qualityService = {

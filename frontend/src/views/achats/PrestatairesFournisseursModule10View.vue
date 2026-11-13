@@ -2,7 +2,9 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import AppModal from '@/components/AppModal.vue'
 import AppIcon from '@/components/AppIcon.vue'
-import { request } from '@/services/quality'
+import { demoMode, request as liveRequest } from '@/services/quality'
+import { boardRequest } from '@/services/cdcBoardsDemo'
+const request = demoMode ? boardRequest : liveRequest
 
 /* ─── Types ─── */
 interface SupplierContact {
@@ -321,7 +323,20 @@ function isExpiringSoon(endDate: string): boolean {
   return diff >= 0 && diff <= 30
 }
 
-function onTab(t: typeof tab.value) { tab.value = t; load(t) }
+const sections: { key: typeof tab.value; label: string }[] = [
+  { key: 'overview', label: "Vue d'ensemble" },
+  { key: 'suppliers', label: 'Référentiel Fournisseurs' },
+  { key: 'selections', label: 'Sélections & Devis' },
+  { key: 'evaluations', label: 'Évaluations (1-5)' },
+  { key: 'complaints', label: 'Réclamations & Litiges' },
+  { key: 'contracts', label: 'Contrats & Échéances' },
+]
+
+function onTab(t: string) {
+  const next = t as typeof tab.value
+  tab.value = next
+  load(next)
+}
 
 onMounted(() => load('overview'))
 </script>
@@ -331,24 +346,16 @@ onMounted(() => load('overview'))
     <header class="page-header">
       <div>
         <h1 class="font-display text-2xl font-bold">Prestataires & Fournisseurs</h1>
-        <p class="accent-serif text-gray-500">Module 10 — Référentiel qualifié, comparaison de devis, évaluations BPD, litiges & contrats</p>
       </div>
     </header>
 
-    <nav class="tab-bar">
-      <button v-for="t in [
-        { key: 'overview', label: 'Vue d\'ensemble', icon: 'dashboard' },
-        { key: 'suppliers', label: 'Référentiel Fournisseurs', icon: 'team' },
-        { key: 'selections', label: 'Sélections & Devis', icon: 'check' },
-        { key: 'evaluations', label: 'Évaluations (1-5)', icon: 'quality' },
-        { key: 'complaints', label: 'Réclamations & Litiges', icon: 'info' },
-        { key: 'contracts', label: 'Contrats & Échéances', icon: 'documents' },
-      ]" :key="t.key" :class="['tab-btn', { active: tab === t.key }]" @click="onTab(t.key as any)">
-        <AppIcon :name="t.icon" class="tab-icon" /> {{ t.label }}
-      </button>
-    </nav>
+    <label class="section-filter">Section
+      <select :value="tab" @change="onTab(($event.target as HTMLSelectElement).value)">
+        <option v-for="t in sections" :key="t.key" :value="t.key">{{ t.label }}</option>
+      </select>
+    </label>
 
-    <div v-if="error" class="err-banner" @click="error = ''">⚠️ {{ error }}</div>
+    <div v-if="error" class="err-banner" @click="error = ''"><AppIcon name="warning" :size="16" /> {{ error }}</div>
     <div v-if="loading" class="loading-bar"><div class="loading-track" /></div>
 
     <!-- ═══════════ OVERVIEW ═══════════ -->
@@ -364,7 +371,7 @@ onMounted(() => load('overview'))
       </div>
 
       <div v-if="kpis && (kpis.open_complaints > 0 || kpis.expiring_contracts > 0)" class="alert-box">
-        <h3>🔔 Alertes Achats & Qualité</h3>
+        <h3><AppIcon name="bell" :size="18" /> Alertes Achats & Qualité</h3>
         <p v-if="kpis.open_complaints > 0" class="text-sm">• <strong>{{ kpis.open_complaints }}</strong> réclamation(s) fournisseur(s) ouverte(s) liée(s) à des actions CAPA.</p>
         <p v-if="kpis.expiring_contracts > 0" class="text-sm">• <strong>{{ kpis.expiring_contracts }}</strong> contrat(s) prestataire(s) arrivant à échéance dans les 30 prochains jours.</p>
       </div>
@@ -711,7 +718,7 @@ onMounted(() => load('overview'))
           <strong class="text-sm">Contacts :</strong>
           <ul class="text-sm mt-1 history-list">
             <li v-for="ct in showDetail.contacts" :key="ct.id">
-              👤 <strong>{{ ct.name }}</strong> <span v-if="ct.is_primary" class="badge conformed">Principal</span>
+              <AppIcon name="user" :size="16" /> <strong>{{ ct.name }}</strong> <span v-if="ct.is_primary" class="badge conformed">Principal</span>
               <span class="text-xs text-gray-500"> — {{ ct.phone || '' }} {{ ct.email || '' }}</span>
             </li>
           </ul>
@@ -725,6 +732,8 @@ onMounted(() => load('overview'))
 .module-page { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
 .page-header { margin-bottom: 1.5rem; }
 
+.section-filter { display:grid; gap:6px; font-weight:700; margin:0 0 16px; max-width:420px; width:100%; }
+.section-filter select { min-height:44px; font-size:16px; }
 .tab-bar { display: flex; gap: 0.25rem; border-bottom: 2px solid #e5e7eb; margin-bottom: 1.5rem; overflow-x: auto; }
 .tab-btn { padding: 0.6rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
 .tab-btn:hover { color: #1f2937; background: #f9fafb; }

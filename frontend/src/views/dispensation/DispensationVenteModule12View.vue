@@ -2,7 +2,9 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import AppModal from '@/components/AppModal.vue'
 import AppIcon from '@/components/AppIcon.vue'
-import { request } from '@/services/quality'
+import { demoMode, request as liveRequest } from '@/services/quality'
+import { boardRequest } from '@/services/cdcBoardsDemo'
+const request = demoMode ? boardRequest : liveRequest
 
 /* ─── Types ─── */
 interface ProductLite { id: number; code: string; name: string; selling_price: number; sellable_stock?: number }
@@ -184,7 +186,19 @@ async function createSafety() {
   } catch (e: any) { error.value = e.message }
 }
 
-function onTab(t: typeof tab.value) { tab.value = t; load(t) }
+const sections: { key: typeof tab.value; label: string }[] = [
+  { key: 'overview', label: "Vue d'ensemble" },
+  { key: 'sales', label: 'Ventes & Ordonnances' },
+  { key: 'returns', label: 'Retours Clients' },
+  { key: 'credits', label: 'Avoirs Commerciaux' },
+  { key: 'safety', label: 'Signalements & Vigilance' },
+]
+
+function onTab(t: string) {
+  const next = t as typeof tab.value
+  tab.value = next
+  load(next)
+}
 onMounted(() => load('overview'))
 </script>
 
@@ -193,23 +207,16 @@ onMounted(() => load('overview'))
     <header class="page-header">
       <div>
         <h1 class="font-display text-2xl font-bold">Dispensation & Vente Comptoir</h1>
-        <p class="accent-serif text-gray-500">Module 12 — Parcours comptoir, ordonnances, analyse pharmaceutique, délivrance FEFO, retours & vigilance</p>
       </div>
     </header>
 
-    <nav class="tab-bar">
-      <button v-for="t in [
-        { key: 'overview', label: 'Vue d\'ensemble', icon: 'dashboard' },
-        { key: 'sales', label: 'Ventes & Ordonnances', icon: 'caisse' },
-        { key: 'returns', label: 'Retours Clients', icon: 'arrow' },
-        { key: 'credits', label: 'Avoirs Commerciaux', icon: 'finance' },
-        { key: 'safety', label: 'Signalements & Vigilance', icon: 'quality' },
-      ]" :key="t.key" :class="['tab-btn', { active: tab === t.key }]" @click="onTab(t.key as any)">
-        <AppIcon :name="t.icon" class="tab-icon" /> {{ t.label }}
-      </button>
-    </nav>
+    <label class="section-filter">Section
+      <select :value="tab" @change="onTab(($event.target as HTMLSelectElement).value)">
+        <option v-for="t in sections" :key="t.key" :value="t.key">{{ t.label }}</option>
+      </select>
+    </label>
 
-    <div v-if="error" class="err-banner" @click="error = ''">⚠️ {{ error }}</div>
+    <div v-if="error" class="err-banner" @click="error = ''"><AppIcon name="warning" :size="16" /> {{ error }}</div>
     <div v-if="loading" class="loading-bar"><div class="loading-track" /></div>
 
     <!-- ═══════════ OVERVIEW ═══════════ -->
@@ -454,6 +461,8 @@ onMounted(() => load('overview'))
 <style scoped>
 .module-page { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
 .page-header { margin-bottom: 1.5rem; }
+.section-filter { display:grid; gap:6px; font-weight:700; margin:0 0 16px; max-width:420px; width:100%; }
+.section-filter select { min-height:44px; font-size:16px; }
 .tab-bar { display: flex; gap: 0.25rem; border-bottom: 2px solid #e5e7eb; margin-bottom: 1.5rem; overflow-x: auto; }
 .tab-btn { padding: 0.6rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.85rem; color: #6b7280; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -2px; }
 .tab-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; font-weight: 600; }

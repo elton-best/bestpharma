@@ -2,7 +2,9 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import AppModal from '@/components/AppModal.vue'
 import AppIcon from '@/components/AppIcon.vue'
-import { demoMode, request } from '@/services/quality'
+import { demoMode, request as liveRequest } from '@/services/quality'
+import { boardRequest } from '@/services/cdcBoardsDemo'
+const request = demoMode ? boardRequest : liveRequest
 
 interface AssessmentRow {
   id: number
@@ -104,6 +106,22 @@ const selectedScenario = ref<ContinuityScenarioRow | null>(null)
 const teamMembers = ref<TeamMember[]>([])
 
 const activeTab = ref<'risks' | 'pca' | 'risk_detail' | 'scenario_detail'>('risks')
+const sections = computed(() => {
+  const items: { key: typeof activeTab.value; label: string }[] = [
+    { key: 'risks', label: `Cartographie des Risques & Opportunités (${risks.value.length})` },
+    { key: 'pca', label: `Plan de Continuité d’Activité (${scenarios.value.length})` },
+  ]
+  if (selectedRisk.value) {
+    items.push({ key: 'risk_detail', label: `Détail : ${selectedRisk.value.reference}` })
+  }
+  if (selectedScenario.value) {
+    items.push({ key: 'scenario_detail', label: `Scénario PCA : ${selectedScenario.value.reference}` })
+  }
+  return items
+})
+function onTab(value: string) {
+  activeTab.value = value as typeof activeTab.value
+}
 const filterType = ref<'all' | 'risk' | 'opportunity'>('all')
 const filterCriticality = ref('all')
 const searchQuery = ref('')
@@ -210,10 +228,6 @@ const filteredRisks = computed(() => {
 })
 
 async function loadData() {
-  if (demoMode) {
-    error.value = 'Le module requiert le mode API connecté.'
-    return
-  }
   loading.value = true
   error.value = ''
   try {
@@ -408,7 +422,7 @@ onMounted(loadData)
   <div class="page">
     <div class="page-heading compact">
       <div>
-        <p class="eyebrow">MODULE 07 · MAÎTRISE DES RISQUES & RÉSILIENCE</p>
+        <p class="eyebrow">MAÎTRISE DES RISQUES</p>
         <h1>Risques, Opportunités <span class="accent-serif">& Continuité (PCA).</span></h1>
         <p class="page-subtitle">
           Cotation matricielle 4×4 (initiale vs résiduelle), plans de traitement CAPA et Plan de Continuité d’Activité officinal.
@@ -425,7 +439,6 @@ onMounted(loadData)
     </div>
 
     <!-- Alertes -->
-    <p v-if="demoMode" class="alert">Connectez-vous au mode API pour utiliser ce module.</p>
     <p v-if="error" class="alert error" role="alert">
       {{ error }} <button @click="loadData">Réessayer</button>
     </p>
@@ -505,57 +518,22 @@ onMounted(loadData)
       <div class="x-axis-label">Gravité / Impact sur l'officine & la santé publique</div>
     </section>
 
-    <!-- Navigation par onglets -->
-    <div class="tabs-nav">
-      <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'risks' }"
-        @click="activeTab = 'risks'"
-      >
-        <AppIcon name="quality" :size="16" /> Cartographie des Risques & Opportunités ({{ risks.length }})
-      </button>
-      <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'pca' }"
-        @click="activeTab = 'pca'"
-      >
-        <AppIcon name="clock" :size="16" /> Plan de Continuité d’Activité ({{ scenarios.length }})
-      </button>
-      <button
-        v-if="selectedRisk"
-        class="tab-btn highlight"
-        :class="{ active: activeTab === 'risk_detail' }"
-        @click="activeTab = 'risk_detail'"
-      >
-        <AppIcon name="chevron" :size="16" /> Détail : {{ selectedRisk.reference }}
-      </button>
-      <button
-        v-if="selectedScenario"
-        class="tab-btn highlight"
-        :class="{ active: activeTab === 'scenario_detail' }"
-        @click="activeTab = 'scenario_detail'"
-      >
-        <AppIcon name="chevron" :size="16" /> Scénario PCA : {{ selectedScenario.reference }}
-      </button>
-    </div>
+    <label class="section-filter">Section
+      <select :value="activeTab" @change="onTab(($event.target as HTMLSelectElement).value)">
+        <option v-for="t in sections" :key="t.key" :value="t.key">{{ t.label }}</option>
+      </select>
+    </label>
 
     <!-- TAB 1: CARTOGRAPHIE DES RISQUES -->
     <section v-if="activeTab === 'risks'" class="panel">
       <div class="table-toolbar">
-        <div class="tabs">
-          <button
-            v-for="t in [
-              { id: 'all', label: 'Tous' },
-              { id: 'risk', label: 'Risques' },
-              { id: 'opportunity', label: 'Opportunités' },
-            ]"
-            :key="t.id"
-            :class="{ selected: filterType === t.id }"
-            @click="filterType = t.id as any"
-          >
-            {{ t.label }}
-          </button>
-        </div>
+        <label class="section-filter">Type
+          <select :value="filterType" @change="filterType = ($event.target as HTMLSelectElement).value as typeof filterType">
+            <option value="all">Tous</option>
+            <option value="risk">Risques</option>
+            <option value="opportunity">Opportunités</option>
+          </select>
+        </label>
         <div class="filters-right">
           <select v-model="filterCriticality" class="select-inline">
             <option value="all">Toutes criticités</option>
@@ -1253,6 +1231,9 @@ onMounted(loadData)
   color: #555;
   margin-top: 0.5rem;
 }
+
+.section-filter { display:grid; gap:6px; font-weight:700; margin:0 0 16px; max-width:420px; width:100%; }
+.section-filter select { min-height:44px; font-size:16px; }
 
 .tabs-nav {
   display: flex;

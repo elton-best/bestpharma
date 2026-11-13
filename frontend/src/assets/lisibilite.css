@@ -1,0 +1,304 @@
+/* Lisibilité : textes trop petits (8–11 px) relevés pour une lecture courante. */
+html { font-size: 17px; }
+body { font-size: 16px; line-height: 1.55; }
+
+h1 { font-size: 36px; }
+.page-heading.compact h1,
+.erp-page h1 { font-size: 34px; }
+h2, .panel-heading h2 { font-size: 22px; }
+h3, .section-toolbar h3 { font-size: 18px; }
+
+label,
+.page-subtitle,
+.button,
+.erp-parent,
+.nav-item,
+.topbar,
+.topbar-left,
+.header-search,
+.search-results a,
+.erp-page .application-summary,
+.alert,
+.empty-state,
+.module-disclaimer,
+.comment-card,
+.document-content,
+.review-note,
+input,
+select,
+textarea { font-size: 15px; }
+
+.erp-children a,
+.sidebar-admin .nav-item,
+.table-title,
+.module-launch strong,
+.text-link,
+.demo-banner,
+footer,
+.erp-shell footer,
+.status-badge,
+.result-count,
+.stat-top,
+.workspace strong,
+.erp-shell .profile strong { font-size: 14px; }
+
+th { font-size: 13px !important; letter-spacing: 0.03em; }
+td,
+.table-subtitle,
+.stat-note,
+.panel-foot,
+.event-list small,
+.module-launch p,
+.getting-started p,
+.overview-welcome p { font-size: 15px; }
+
+.erp-tabs button,
+.erp-tabs > a,
+.tabs button { font-size: 14px; padding-top: 14px; padding-bottom: 14px; }
+
+.page .tab-btn,
+.page .tabs button,
+.module-page .tab-btn { font-size: 15px !important; }
+
+.module-page { font-size: 16px; }
+.module-page h1,
+.module-page .page-header h1 { font-size: 2rem !important; line-height: 1.25; }
+.module-page .page-header p,
+.module-page .accent-serif { font-size: 16px !important; }
+.module-page .data-table,
+.module-page .data-table td,
+.module-page .search-input,
+.module-page .filter-select,
+.module-page .filter-input,
+.module-page .btn-primary,
+.module-page .btn-secondary,
+.module-page .form-row input,
+.module-page .form-row select,
+.module-page .form-row textarea,
+.module-page .empty-state,
+.module-page .err-banner,
+.module-page .subhead { font-size: 15px !important; }
+.module-page .data-table th,
+.module-page .form-row label,
+.module-page .kpi-label,
+.module-page .btn-sm,
+.module-page .badge,
+.module-page .status-pill { font-size: 13px !important; }
+.module-page .kpi-value { font-size: 2rem !important; }
+.module-page .section-toolbar h3 { font-size: 1.2rem !important; }
+
+.module-page .content-section,
+.page > .panel {
+  background: #fff;
+  border: 1px solid #d5dee8;
+  border-radius: 14px;
+  box-shadow: 0 8px 22px #0f172a0a;
+}
+.kpi-card,
+.kpi-card.green,
+.kpi-card.blue,
+.kpi-card.orange,
+.kpi-card.red {
+  border: 1px solid #e5e7eb !important;
+  border-left: 1px solid #e5e7eb !important;
+  background: #fff !important;
+}
+.err-banner,
+.alert-box h3,
+.session-item,
+.history-list li {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+}
+.document-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 1rem 1.5rem;
+  align-items: start;
+  padding: 1rem 0;
+  border-top: 1px solid #e6edf5;
+}
+.document-row > div { min-width: 0; }
+.document-row small {
+  display: block;
+  margin: .35rem 0 .75rem;
+  overflow-wrap: anywhere;
+}
+.document-row .button { margin-top: .65rem; }
+.file-field { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.file-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+.section-filter { display: grid; gap: 6px; font-weight: 700; max-width: 420px; width: 100%; }
+.section-filter select { min-height: 44px; font-size: 16px; width: 100%; }
+@media (max-width: 720px) {
+  .document-row { grid-template-columns: 1fr; }
+}
+.module-page .content-section {
+  padding: 1.25rem 1.35rem 1.5rem;
+  margin-bottom: 1rem;
+  min-height: 220px;
+}
+.page > .panel {
+  overflow: visible;
+  padding: 22px 24px 24px;
+}
+.page > .panel > .panel-heading,
+.page > .panel > form,
+.page > .panel > .form-body {
+  padding: 0;
+}
+.page > .panel > h2,
+.page > .panel > p {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.page .mini-stats,
+.page .mini-stats span,
+.page .mini-stats small { font-size: 15px; }
+.page .mini-stats small { font-size: 13px; }
+
+/* Modales étroites : pleine largeur utile, corps scrollable, en-tête et pied visibles. */
+@media (max-width: 720px) {
+  .modal-backdrop {
+    align-items: flex-start;
+    justify-content: center;
+    padding: 8px 0;
+    overflow-x: hidden;
+  }
+
+  .modal-backdrop > .action-modal.app-modal {
+    width: calc(100% - 16px);
+    max-width: 100%;
+    max-height: calc(100dvh - 16px);
+    margin-inline: auto;
+    min-width: 0;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
+
+  .modal-backdrop .app-modal .modal-header,
+  .modal-backdrop .app-modal .modal-footer {
+    flex-shrink: 0;
+    position: sticky;
+    z-index: 2;
+    background: #fff;
+  }
+
+  .modal-backdrop .app-modal .modal-header {
+    top: 0;
+  }
+
+  .modal-backdrop .app-modal .modal-header > div {
+    min-width: 0;
+  }
+
+  .modal-backdrop .app-modal .modal-header h2,
+  .modal-backdrop .app-modal .modal-header .eyebrow {
+    overflow-wrap: anywhere;
+  }
+
+  .modal-backdrop .app-modal .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .modal-backdrop .app-modal .modal-form {
+    max-height: none;
+    overflow: visible;
+    min-width: 0;
+    padding: 0 16px 16px;
+  }
+
+  .modal-backdrop .app-modal .form-grid,
+  .modal-backdrop .app-modal .detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .modal-backdrop .app-modal .form-grid > *,
+  .modal-backdrop .app-modal .detail-grid > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .modal-backdrop .app-modal input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  .modal-backdrop .app-modal select,
+  .modal-backdrop .app-modal textarea,
+  .modal-backdrop .app-modal .button.primary,
+  .modal-backdrop .app-modal .btn-primary,
+  .modal-backdrop .app-modal .pos-button.primary {
+    min-height: 44px;
+    max-width: 100%;
+  }
+
+  .modal-backdrop .app-modal .modal-footer {
+    bottom: 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-backdrop .app-modal .modal-footer .button,
+  .modal-backdrop .app-modal .modal-footer .btn-primary,
+  .modal-backdrop .app-modal .modal-footer .pos-button,
+  .modal-backdrop .app-modal .modal-footer button {
+    width: 100%;
+    min-height: 44px;
+    flex: 0 0 auto;
+  }
+}
+
+.toast-stack {
+  position: fixed;
+  right: 20px;
+  bottom: 64px;
+  z-index: 4000;
+  display: grid;
+  gap: 10px;
+  width: min(420px, calc(100vw - 40px));
+  pointer-events: none;
+}
+
+.app-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 12px 14px 16px;
+  border-radius: 12px;
+  background: #fff;
+  color: #14261c;
+  border: 1px solid #d7e3db;
+  border-left: 4px solid #146853;
+  box-shadow: 0 12px 32px rgba(15, 59, 39, 0.16);
+  pointer-events: auto;
+}
+
+.app-toast p { margin: 0; flex: 1; font-size: 15px; font-weight: 650; line-height: 1.4; }
+.app-toast button {
+  border: 0;
+  background: transparent;
+  color: #475c50;
+  font-size: 20px;
+  line-height: 1;
+  min-width: 32px;
+  min-height: 32px;
+  cursor: pointer;
+}
+.app-toast.error { border-left-color: #ff7036; }
+.app-toast.warning { border-left-color: #c47b00; }
+.app-toast.info { border-left-color: #475c50; }

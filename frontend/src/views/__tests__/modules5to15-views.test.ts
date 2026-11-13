@@ -5,6 +5,10 @@ import { createPinia } from 'pinia'
 
 const { request } = vi.hoisted(() => ({ request: vi.fn() }))
 vi.mock('@/services/quality', () => ({ request, demoMode: false }))
+vi.mock('vue-router', () => ({
+  useRoute: () => ({ query: {} }),
+  useRouter: () => ({ replace: vi.fn() }),
+}))
 
 import InspectionsModule5View from '../qualite/InspectionsModule5View.vue'
 import NonConformitesModule6View from '../qualite/NonConformitesModule6View.vue'

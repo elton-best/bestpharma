@@ -32,7 +32,7 @@ class Module12DispensationVenteController extends Controller
         return (int) ($tenantId ?? $headerId ?? 1);
     }
 
-    protected function checkPermission(Request $request, string $permission): void
+    protected function checkPermission(Request $request, string $permission, array $alternatives = []): void
     {
         $isAdmin = (bool) $request->attributes->get('officine.is_admin', false);
         if ($isAdmin) {
@@ -41,15 +41,9 @@ class Module12DispensationVenteController extends Controller
 
         $perms = $request->attributes->get('officine.permissions', []);
 
-        $altPerm = str_starts_with($permission, 'dispensation.')
-            ? str_replace('dispensation.', 'qualite.', $permission)
-            : str_replace('qualite.', 'dispensation.', $permission);
-
         abort_unless(
             in_array($permission, $perms, true)
-            || in_array($altPerm, $perms, true)
-            || in_array('caisse.sell', $perms, true)
-            || in_array('admin', $perms, true),
+            || array_intersect($alternatives, $perms) !== [],
             403,
             "Permission {$permission} requise."
         );
@@ -104,7 +98,7 @@ class Module12DispensationVenteController extends Controller
 
     public function salesIndex(Request $request): JsonResponse
     {
-        $this->checkPermission($request, 'dispensation.read');
+        $this->checkPermission($request, 'dispensation.read', ['caisse.sell']);
         $officineId = $this->getOfficineId($request);
 
         $query = Sale::with([
@@ -134,7 +128,7 @@ class Module12DispensationVenteController extends Controller
 
     public function storeSale(Request $request): JsonResponse
     {
-        $this->checkPermission($request, 'dispensation.write');
+        $this->checkPermission($request, 'dispensation.write', ['caisse.sell']);
         $officineId = $this->getOfficineId($request);
         $today = Carbon::today()->toDateString();
 
@@ -317,7 +311,7 @@ class Module12DispensationVenteController extends Controller
      */
     public function confirmSale(Request $request, int $id): JsonResponse
     {
-        $this->checkPermission($request, 'dispensation.write');
+        $this->checkPermission($request, 'dispensation.write', ['caisse.sell']);
         $officineId = $this->getOfficineId($request);
         $today = Carbon::today()->toDateString();
 

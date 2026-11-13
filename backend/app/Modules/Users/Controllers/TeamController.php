@@ -12,7 +12,14 @@ use Illuminate\Validation\Rule;
 
 class TeamController extends Controller
 {
-  public const PERMISSIONS = ['qualite.read', 'qualite.write', 'dispensation.dispense', 'gardes.read', 'gardes.write', 'caisse.read', 'caisse.sell', 'caisse.session.manage', 'caisse.mouvements.write'];
+  public const PERMISSIONS = [
+   'qualite.read', 'qualite.write', 'qualite.approve',
+   'documents.read', 'documents.write', 'documents.qualify', 'documents.approve', 'documents.manage',
+   'personnel.read', 'personnel.write', 'stock.read', 'stock.write',
+   'dispensation.read', 'dispensation.write', 'dispensation.dispense',
+   'tresorerie.read', 'tresorerie.write',
+   'gardes.read', 'gardes.write', 'caisse.read', 'caisse.sell', 'caisse.session.manage', 'caisse.mouvements.write',
+  ];
  private function authorizeAdmin(Request $r): int {
   abort_unless($r->attributes->get('officine.is_admin') === true,403,'Administration de l’officine requise.');
   return (int) app('tenant.officine_id');
@@ -45,7 +52,7 @@ class TeamController extends Controller
  }
  public function saveRole(Request $r,?string $roleId=null): JsonResponse {
   $id=$this->authorizeAdmin($r);
-    $data=$r->validate(['description'=>['nullable','string','max:500'],'version'=>[$roleId?'required':'sometimes','integer','min:1'],'name'=>['required','string','max:80','regex:/\S/u'],'permissions'=>['present','array','max:9'],'permissions.*'=>['string','distinct',Rule::in(self::PERMISSIONS)]]);
+    $data=$r->validate(['description'=>['nullable','string','max:500'],'version'=>[$roleId?'required':'sometimes','integer','min:1'],'name'=>['required','string','max:80','regex:/\S/u'],'permissions'=>['present','array','max:'.count(self::PERMISSIONS)],'permissions.*'=>['string','distinct',Rule::in(self::PERMISSIONS)]]);
   $role=DB::transaction(function()use($r,$id,$data,$roleId){
    $this->lockOfficine($id,$r);
    if($roleId){$old=DB::table('officine_roles')->where('officine_id',$id)->where('id',$roleId)->first();abort_unless($old,404);abort_unless($old->version===(int)$data['version'],409,'Version du rôle périmée.');}

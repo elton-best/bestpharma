@@ -97,7 +97,7 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
         });
 
         // Module 08: Personnel & Formations (CDC 08)
-        Route::prefix('personnel')->controller(Module8PersonnelFormationController::class)->group(function (): void {
+        Route::prefix('personnel')->middleware('module.active:personnel')->controller(Module8PersonnelFormationController::class)->group(function (): void {
             Route::get('overview', 'overview');
             Route::get('employees', 'employeesIndex');
             Route::post('employees', 'storeEmployee')->middleware('throttle:identity');
@@ -169,7 +169,7 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
         });
 
         // Module 11 : Produits, Approvisionnements & Stocks (CDC 11 - alias qualité)
-        Route::prefix('stock')->controller(Module11ProduitStockController::class)->group(function (): void {
+        Route::prefix('stock')->middleware('module.active:stock')->controller(Module11ProduitStockController::class)->group(function (): void {
             Route::get('overview', 'overview');
             Route::get('products', 'productsIndex');
             Route::post('products', 'storeProduct')->middleware('throttle:identity');
@@ -193,7 +193,7 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
         });
 
         // Module 12 : Dispensation & Vente (CDC 12 - alias qualité)
-        Route::prefix('dispensation')->controller(Module12DispensationVenteController::class)->group(function (): void {
+        Route::prefix('dispensation')->middleware('module.active:dispensation')->controller(Module12DispensationVenteController::class)->group(function (): void {
             Route::get('overview', 'overview');
             Route::get('sales', 'salesIndex');
             Route::post('sales', 'storeSale')->middleware('throttle:identity');
@@ -208,7 +208,7 @@ Route::prefix('api/v1/qualite')->middleware(['api', 'auth:sanctum', 'tenant.cont
         });
 
         // Module 13 : Caisse & Finances (CDC 13 - alias qualité)
-        Route::prefix('tresorerie')->controller(Module13CaisseFinancesController::class)->group(function (): void {
+        Route::prefix('tresorerie')->middleware('module.active:tresorerie')->controller(Module13CaisseFinancesController::class)->group(function (): void {
             Route::get('overview', 'overview');
             Route::get('registers', 'registersIndex');
             Route::post('registers', 'storeRegister')->middleware('throttle:identity');

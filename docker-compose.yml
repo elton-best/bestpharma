@@ -23,7 +23,10 @@ services:
     container_name: bestpharma_backend
     restart: unless-stopped
     working_dir: /var/www/backend
-    volumes: ["./backend:/var/www/backend"]
+    volumes:
+      - "./backend:/var/www/backend"
+      - "./references:/var/www/references:ro"
+      - "./0000. DIGIT ABMEB:/var/www/0000. DIGIT ABMEB:ro"
     ports: ["8002:8000"]
     environment:
       APP_NAME: "BEGPHARMA"

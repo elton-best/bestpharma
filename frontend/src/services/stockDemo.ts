@@ -7,12 +7,12 @@ export interface StockEvent {id:string;date:string;type:string;lotId:string;quan
 export interface StockState {revision:number;products:StockProduct[];locations:StockLocation[];lots:StockLot[];events:StockEvent[]}
 export const stockTabs=[['overview','Vue d’ensemble'],['produits','Produits'],['lots','Lots'],['fefo','FEFO'],['emplacements','Emplacements'],['mouvements','Mouvements'],['reception','Réception'],['scan','Scan'],['inventaires','Inventaires'],['peremptions','Péremptions'],['quarantaine','Quarantaine & Rappels'],['dechets','Déchets'],['valorisation','Valorisation']] as const
 export const statusLabels:Record<LotStatus,string>={available:'Disponible',quarantine:'Quarantaine',recalled:'Rappelé'}
-export const eventLabels:Record<string,string>={opening:'Stock initial fictif',receipt:'Réception',transfer:'Transfert',inventory:'Écart d’inventaire',quarantine:'Mise en quarantaine',recall:'Rappel interne simulé',release:'Levée de quarantaine',waste:'Sortie vers déchets',product:'Création produit',location:'Création emplacement'}
+export const eventLabels:Record<string,string>={opening:'Ouverture',receipt:'Réception',transfer:'Transfert',inventory:'Écart d’inventaire',quarantine:'Mise en quarantaine',recall:'Rappel',release:'Levée de quarantaine',waste:'Sortie vers déchets',product:'Création produit',location:'Création emplacement'}
 export function today(){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Africa/Porto-Novo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
 export function daysFromNow(n:number){const d=new Date(today()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}
 export function initialStock():StockState{
  const lots:StockLot[]=[{id:'lot-1',productId:'p-1',batch:'DEMO-A01',expiry:daysFromNow(45),locationId:'reserve',quantity:120,unitCost:500,status:'available'},{id:'lot-2',productId:'p-1',batch:'DEMO-A02',expiry:daysFromNow(240),locationId:'rayon',quantity:60,unitCost:550,status:'available'},{id:'lot-3',productId:'p-2',batch:'DEMO-B01',expiry:daysFromNow(-10),locationId:'reserve',quantity:12,unitCost:1200,status:'quarantine'},{id:'lot-4',productId:'p-3',batch:'DEMO-C01',expiry:daysFromNow(100),locationId:'isole',quantity:24,unitCost:800,status:'recalled'},{id:'lot-5',productId:'p-2',batch:'DEMO-B02',expiry:daysFromNow(180),locationId:'rayon',quantity:8,unitCost:1250,status:'available'}]
- return {revision:1,products:[{id:'p-1',name:'Produit Alpha · fictif',code:'DEMO-001',unit:'Boîte',threshold:30},{id:'p-2',name:'Produit Bêta · fictif',code:'DEMO-002',unit:'Flacon',threshold:15},{id:'p-3',name:'Produit Gamma · fictif',code:'DEMO-003',unit:'Boîte',threshold:10}],locations:[{id:'reserve',name:'Réserve'},{id:'rayon',name:'Rayon A'},{id:'isole',name:'Zone isolée · exemple'}],lots,events:lots.map((l,i)=>({id:'initial-'+i,date:new Date().toISOString(),type:'opening',lotId:l.id,quantity:l.quantity,reason:'Données fictives de démonstration'}))}
+ return {revision:1,products:[{id:'p-1',name:'Paracétamol 500 mg',code:'DEMO-001',unit:'Boîte',threshold:30},{id:'p-2',name:'Amoxicilline 250 mg',code:'DEMO-002',unit:'Flacon',threshold:15},{id:'p-3',name:'Sérum physiologique',code:'DEMO-003',unit:'Boîte',threshold:10}],locations:[{id:'reserve',name:'Réserve'},{id:'rayon',name:'Comptoir'},{id:'isole',name:'Quarantaine'}],lots,events:lots.map((l,i)=>({id:'initial-'+i,date:new Date().toISOString(),type:'opening',lotId:l.id,quantity:l.quantity,reason:'Ouverture du stock'}))}
 }
 export function eligible(l:StockLot){return l.quantity>0&&l.status==='available'&&l.expiry>today()}
 export function fefo(s:StockState,productId:string){return s.lots.filter(l=>l.productId===productId&&eligible(l)).sort((a,b)=>a.expiry.localeCompare(b.expiry)||a.id.localeCompare(b.id))}
@@ -55,7 +55,7 @@ export function applyStock(state:StockState,command:StockCommand,input:Record<st
  }
  s.events.unshift({id:uid(),date:new Date().toISOString(),type:command,lotId,quantity,reason,...(from?{from}:{}),...(to?{to}:{})});s.revision++;return s
 }
-const key=(office:string)=>'bestpharma.demo.stock.v1.'+office
+const key=(office:string)=>'bestpharma.demo.stock.v2.'+office
 export function loadStock(office:string):StockState{
  const raw=localStorage.getItem(key(office));if(!raw)return initialStock()
  try{const s=JSON.parse(raw);if(!Number.isInteger(s.revision)||!Array.isArray(s.products)||!Array.isArray(s.locations)||!Array.isArray(s.lots)||!Array.isArray(s.events))throw Error();return s}catch{throw Error('Données locales illisibles. Restaurez les exemples après confirmation.')}

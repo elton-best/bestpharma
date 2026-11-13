@@ -40,9 +40,9 @@ class Module11ProduitStockTest extends TestCase
         DB::table('officine_user')->insert([
             'user_id' => $this->admin->id,
             'officine_id' => $this->office->id,
-            'is_admin' => true,
+            'is_admin' => false,
             'is_active' => true,
-            'permissions' => '[]',
+            'permissions' => json_encode(['stock.read', 'stock.write']),
         ]);
         DB::table('officine_modules')->insert([
             ['officine_id' => $this->office->id, 'module' => 'qualite', 'is_active' => true],

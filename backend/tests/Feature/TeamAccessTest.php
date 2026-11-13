@@ -46,11 +46,20 @@ class TeamAccessTest extends TestCase
   DB::table('officine_user')->where('id',$this->membership)->update(['is_admin'=>true,'is_active'=>false]);
   $this->getJson('/api/v1/team')->assertForbidden();
  }
- public function test_role_permissions_are_restricted_and_names_unique(): void {
+  public function test_role_permissions_are_restricted_and_names_unique(): void {
   $this->role();
   $this->postJson('/api/v1/team/roles',['name'=>'Quality viewer','permissions'=>[]])->assertUnprocessable();
   $this->postJson('/api/v1/team/roles',['name'=>'Unsafe','permissions'=>['clinical.read']])->assertUnprocessable();
- }
+  }
+  public function test_business_permissions_can_be_assigned_without_platform_or_wildcard_authority(): void {
+   $permissions=['documents.read','documents.write','documents.manage','documents.qualify','documents.approve',
+    'personnel.read','personnel.write','stock.read','stock.write','dispensation.read','dispensation.write','tresorerie.read','tresorerie.write','qualite.approve'];
+   $id=$this->postJson('/api/v1/team/roles',['name'=>'Droits métier explicites','permissions'=>$permissions])->assertCreated()->json('id');
+   $this->assertEquals($permissions,json_decode(DB::table('officine_roles')->where('id',$id)->value('permissions'),true));
+   foreach(['admin','*','platformadmin.write','is_platform_admin'] as $forbidden) {
+    $this->postJson('/api/v1/team/roles',['name'=>'Escalade refusée','permissions'=>[$forbidden]])->assertUnprocessable();
+   }
+  }
  public function test_foreign_roles_members_and_invitations_cannot_be_modified(): void {
   $other=Officine::create(['name'=>'Other','slug'=>'other','status'=>'active']);
   $role=DB::table('officine_roles')->insertGetId(['officine_id'=>$other->id,'name'=>'Other role','permissions'=>'[]']);

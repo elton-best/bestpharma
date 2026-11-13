@@ -24,3 +24,8 @@ build/
 # Python runtime caches
 __pycache__/
 *.py[cod]
+
+# Local reference corpus and CDC working documents (not distributed)
+0000. DIGIT ABMEB/
+references/
+docs/cdc-complet/

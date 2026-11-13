@@ -42,8 +42,8 @@ class Module13CaisseFinancesTest extends TestCase
         ]);
 
         DB::table('officine_user')->insert([
-            ['user_id' => $this->cashier->id, 'officine_id' => $this->office->id, 'is_admin' => true, 'is_active' => true, 'permissions' => '[]'],
-            ['user_id' => $this->incomingCashier->id, 'officine_id' => $this->office->id, 'is_admin' => true, 'is_active' => true, 'permissions' => '[]'],
+            ['user_id' => $this->cashier->id, 'officine_id' => $this->office->id, 'is_admin' => false, 'is_active' => true, 'permissions' => json_encode(['tresorerie.read', 'tresorerie.write'])],
+            ['user_id' => $this->incomingCashier->id, 'officine_id' => $this->office->id, 'is_admin' => false, 'is_active' => true, 'permissions' => json_encode(['tresorerie.read', 'tresorerie.write'])],
         ]);
         DB::table('officine_modules')->insert([
             ['officine_id' => $this->office->id, 'module' => 'qualite', 'is_active' => true],

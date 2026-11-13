@@ -2,7 +2,9 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import AppModal from '@/components/AppModal.vue'
 import AppIcon from '@/components/AppIcon.vue'
-import { demoMode, request } from '@/services/quality'
+import { demoMode, request as liveRequest } from '@/services/quality'
+import { boardRequest } from '@/services/cdcBoardsDemo'
+const request = demoMode ? boardRequest : liveRequest
 
 interface ComplaintRow {
   id: number
@@ -116,6 +118,22 @@ const selectedComplaint = ref<ComplaintRow | null>(null)
 const teamMembers = ref<TeamMember[]>([])
 
 const activeTab = ref<'ncs' | 'complaints' | 'nc_detail' | 'complaint_detail'>('ncs')
+const sections = computed(() => {
+  const items: { key: typeof activeTab.value; label: string }[] = [
+    { key: 'ncs', label: `Registre des Non-conformités (${nonconformities.value.length})` },
+    { key: 'complaints', label: `Réclamations Patients & Tiers (${complaints.value.length})` },
+  ]
+  if (selectedNc.value) {
+    items.push({ key: 'nc_detail', label: `Détail NC : ${selectedNc.value.reference}` })
+  }
+  if (selectedComplaint.value) {
+    items.push({ key: 'complaint_detail', label: `Traitement Réclamation : ${selectedComplaint.value.reference}` })
+  }
+  return items
+})
+function onTab(value: string) {
+  activeTab.value = value as typeof activeTab.value
+}
 const filterNcStatus = ref('all')
 const filterSeverity = ref('all')
 const filterComplaintStatus = ref('all')
@@ -254,10 +272,6 @@ const filteredComplaints = computed(() => {
 })
 
 async function loadData() {
-  if (demoMode) {
-    error.value = 'Le module requiert le mode API connecté.'
-    return
-  }
   loading.value = true
   error.value = ''
   try {
@@ -501,7 +515,7 @@ onMounted(loadData)
   <div class="page">
     <div class="page-heading compact">
       <div>
-        <p class="eyebrow">MODULE 06 · GESTION DE LA QUALITÉ & ÉCARTS</p>
+        <p class="eyebrow">GESTION DE LA QUALITÉ</p>
         <h1>Non-conformités <span class="accent-serif">& Réclamations.</span></h1>
         <p class="page-subtitle">
           Déclaration d'écarts, réclamations patients et tiers, analyse des causes racines (5 Pourquoi), boucle CAPA et revues d’efficacité.
@@ -518,7 +532,6 @@ onMounted(loadData)
     </div>
 
     <!-- Alertes -->
-    <p v-if="demoMode" class="alert">Connectez-vous au mode API pour utiliser ce module.</p>
     <p v-if="error" class="alert error" role="alert">
       {{ error }} <button @click="loadData">Réessayer</button>
     </p>
@@ -559,59 +572,24 @@ onMounted(loadData)
       </div>
     </div>
 
-    <!-- Onglets de navigation -->
-    <div class="tabs-nav">
-      <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'ncs' }"
-        @click="activeTab = 'ncs'"
-      >
-        <AppIcon name="quality" :size="16" /> Registre des Non-conformités ({{ nonconformities.length }})
-      </button>
-      <button
-        class="tab-btn"
-        :class="{ active: activeTab === 'complaints' }"
-        @click="activeTab = 'complaints'"
-      >
-        <AppIcon name="support" :size="16" /> Réclamations Patients & Tiers ({{ complaints.length }})
-      </button>
-      <button
-        v-if="selectedNc"
-        class="tab-btn highlight"
-        :class="{ active: activeTab === 'nc_detail' }"
-        @click="activeTab = 'nc_detail'"
-      >
-        <AppIcon name="chevron" :size="16" /> Détail NC : {{ selectedNc.reference }}
-      </button>
-      <button
-        v-if="selectedComplaint"
-        class="tab-btn highlight"
-        :class="{ active: activeTab === 'complaint_detail' }"
-        @click="activeTab = 'complaint_detail'"
-      >
-        <AppIcon name="chevron" :size="16" /> Traitement Réclamation : {{ selectedComplaint.reference }}
-      </button>
-    </div>
+    <label class="section-filter">Section
+      <select :value="activeTab" @change="onTab(($event.target as HTMLSelectElement).value)">
+        <option v-for="t in sections" :key="t.key" :value="t.key">{{ t.label }}</option>
+      </select>
+    </label>
 
     <!-- TAB 1: REGISTRE DES NON-CONFORMITÉS -->
     <section v-if="activeTab === 'ncs'" class="panel">
       <div class="table-toolbar">
-        <div class="tabs">
-          <button
-            v-for="st in [
-              { id: 'all', label: 'Toutes' },
-              { id: 'declared', label: 'Déclarées' },
-              { id: 'analyzed', label: 'Analysées' },
-              { id: 'action_in_progress', label: 'Actions CAPA' },
-              { id: 'closed', label: 'Clôturées' },
-            ]"
-            :key="st.id"
-            :class="{ selected: filterNcStatus === st.id }"
-            @click="filterNcStatus = st.id"
-          >
-            {{ st.label }}
-          </button>
-        </div>
+        <label class="section-filter">Statut
+          <select :value="filterNcStatus" @change="filterNcStatus = ($event.target as HTMLSelectElement).value">
+            <option value="all">Toutes</option>
+            <option value="declared">Déclarées</option>
+            <option value="analyzed">Analysées</option>
+            <option value="action_in_progress">Actions CAPA</option>
+            <option value="closed">Clôturées</option>
+          </select>
+        </label>
         <div class="filters-right">
           <select v-model="filterSeverity" class="select-inline">
             <option value="all">Toutes sévérités</option>
@@ -686,22 +664,15 @@ onMounted(loadData)
     <!-- TAB 2: RÉCLAMATIONS PATIENTS & TIERS -->
     <section v-if="activeTab === 'complaints'" class="panel">
       <div class="table-toolbar">
-        <div class="tabs">
-          <button
-            v-for="st in [
-              { id: 'all', label: 'Toutes' },
-              { id: 'received', label: 'Reçues' },
-              { id: 'under_review', label: 'En cours' },
-              { id: 'resolved', label: 'Répondues' },
-              { id: 'closed', label: 'Clôturées' },
-            ]"
-            :key="st.id"
-            :class="{ selected: filterComplaintStatus === st.id }"
-            @click="filterComplaintStatus = st.id"
-          >
-            {{ st.label }}
-          </button>
-        </div>
+        <label class="section-filter">Statut
+          <select :value="filterComplaintStatus" @change="filterComplaintStatus = ($event.target as HTMLSelectElement).value">
+            <option value="all">Toutes</option>
+            <option value="received">Reçues</option>
+            <option value="under_review">En cours</option>
+            <option value="resolved">Répondues</option>
+            <option value="closed">Clôturées</option>
+          </select>
+        </label>
         <label class="search-field">
           <AppIcon name="search" :size="16" />
           <input v-model="searchQuery" placeholder="Rechercher réclamation, patient..." />
@@ -1283,6 +1254,9 @@ onMounted(loadData)
 
 .sev-chip.mineure .dot { background: #10b981; }
 .sev-chip.mineure { border-color: #a7f3d0; }
+
+.section-filter { display:grid; gap:6px; font-weight:700; margin:0 0 16px; max-width:420px; width:100%; }
+.section-filter select { min-height:44px; font-size:16px; }
 
 .tabs-nav {
   display: flex;

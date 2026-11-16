@@ -408,7 +408,7 @@ async function submitCapaAction() {
       'POST',
       capaForm
     )
-    notice.value = `Action CAPA #${res.data.action.id} créée avec succès dans le Module 04.`
+    notice.value = `Action CAPA #${res.data.action.id} créée avec succès.`
     createCapaModal.value = false
     await selectNc(selectedNc.value.id)
     await loadData()
@@ -750,7 +750,7 @@ onMounted(loadData)
             <AppIcon name="search" :size="15" /> Analyse 5 Pourquoi
           </button>
           <button class="button primary" @click="openCapaModal">
-            <AppIcon name="plus" :size="15" /> Créer action CAPA (M4)
+            <AppIcon name="plus" :size="15" /> Créer action CAPA
           </button>
           <button class="button secondary" @click="effectivenessModal = true">
             Revue d'efficacité
@@ -816,21 +816,21 @@ onMounted(loadData)
         </div>
       </div>
 
-      <!-- Actions CAPA liées dans Module 04 -->
+      <!-- Actions CAPA liées -->
       <div class="linked-capas-section">
         <div class="box-header">
-          <h3>Actions correctives & préventives liées (Module 04)</h3>
+          <h3>Actions correctives & préventives liées</h3>
           <button class="button small primary" @click="openCapaModal">
             Ajouter une action CAPA
           </button>
         </div>
         <p v-if="!selectedNc.action_links?.length" class="muted-note">
-          Aucune action du Module 04 n'est encore liée à cette non-conformité.
+          Aucune action corrective n'est encore liée à cette non-conformité.
         </p>
         <ul v-else class="capa-list">
           <li v-for="l in selectedNc.action_links" :key="l.id">
-            <span>Action M4 rattachée : <strong>#{{ l.action_id }}</strong></span>
-            <span class="status-badge in_progress">En suivi M4</span>
+            <span>Action rattachée : <strong>#{{ l.action_id }}</strong></span>
+            <span class="status-badge in_progress">En suivi CAPA</span>
           </li>
         </ul>
       </div>
@@ -1084,8 +1084,8 @@ onMounted(loadData)
       </template>
     </AppModal>
 
-    <!-- MODAL 4: CRÉER ACTION CAPA (MODULE 04) -->
-    <AppModal v-model="createCapaModal" title="Créer une action CAPA liée (Module 04)" :busy="busy">
+    <!-- MODAL 4: CRÉER ACTION CAPA -->
+    <AppModal v-model="createCapaModal" title="Créer une action CAPA liée" :busy="busy">
       <form id="form-capa-m6" class="form-body" @submit.prevent="submitCapaAction">
         <label>
           Titre de l'action CAPA *

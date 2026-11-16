@@ -344,7 +344,7 @@ async function submitCapaAction() {
       'POST',
       capaForm
     )
-    notice.value = `Action CAPA #${res.data.action.id} créée avec succès dans le Module 04.`
+    notice.value = `Action CAPA #${res.data.action.id} créée avec succès.`
     createCapaModal.value = false
     await selectRisk(selectedRisk.value.id)
     await loadData()
@@ -671,7 +671,7 @@ onMounted(loadData)
             Cotation Résiduelle (Nette)
           </button>
           <button class="button primary" @click="openCapaModal">
-            Créer mesure CAPA (M4)
+            Créer mesure CAPA
           </button>
         </div>
       </div>
@@ -742,10 +742,10 @@ onMounted(loadData)
         </div>
       </div>
 
-      <!-- Actions CAPA Module 04 liées -->
+      <!-- Actions CAPA liées -->
       <div class="capa-links-box">
         <div class="box-header">
-          <h3>Actions de maîtrise enregistrées (Module 04)</h3>
+          <h3>Actions de maîtrise enregistrées</h3>
           <button class="button small primary" @click="openCapaModal">Ajouter action CAPA</button>
         </div>
         <p v-if="!selectedRisk.action_links?.length" class="muted-note">
@@ -753,8 +753,8 @@ onMounted(loadData)
         </p>
         <ul v-else class="capa-links-list">
           <li v-for="l in selectedRisk.action_links" :key="l.id">
-            <span>Action M4 liée : <strong>#{{ l.action_id }}</strong> (Stratégie : <em>{{ l.mitigation_strategy }}</em>)</span>
-            <span class="status-badge in_progress">En suivi M4</span>
+            <span>Action liée : <strong>#{{ l.action_id }}</strong> (Stratégie : <em>{{ l.mitigation_strategy }}</em>)</span>
+            <span class="status-badge in_progress">En suivi CAPA</span>
           </li>
         </ul>
       </div>
@@ -963,8 +963,8 @@ onMounted(loadData)
       </template>
     </AppModal>
 
-    <!-- MODAL 3: CRÉER ACTION CAPA (M4) -->
-    <AppModal v-model="createCapaModal" title="Créer une action de maîtrise (Module 04)" :busy="busy">
+    <!-- MODAL 3: CRÉER ACTION CAPA -->
+    <AppModal v-model="createCapaModal" title="Créer une action de maîtrise CAPA" :busy="busy">
       <form id="form-capa-m7" class="form-body" @submit.prevent="submitCapaAction">
         <label>
           Titre de l'action *

@@ -40,6 +40,21 @@ class ComptaEcriture extends Model
         'total_credit' => 'float',
     ];
 
+    protected static function booted(): void
+    {
+        static::updating(function (ComptaEcriture $ecriture) {
+            if ($ecriture->getOriginal('status') === 'validee') {
+                throw new \DomainException("RG-31 / RG-38: Une écriture comptable validée est scellée et inaltérable. Passer une écriture de contre-passation (extourne).");
+            }
+        });
+
+        static::deleting(function (ComptaEcriture $ecriture) {
+            if ($ecriture->status === 'validee') {
+                throw new \DomainException("RG-31 / RG-38: Une écriture comptable validée ne peut pas être supprimée.");
+            }
+        });
+    }
+
     public function exercice(): BelongsTo
     {
         return $this->belongsTo(ComptaExercice::class, 'exercice_id');

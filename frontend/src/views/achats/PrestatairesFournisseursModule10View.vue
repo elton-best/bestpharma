@@ -454,7 +454,7 @@ onMounted(() => load('overview'))
       </div>
 
       <table v-if="evaluations.length" class="data-table">
-        <thead><tr><th>Date</th><th>Période</th><th>Fournisseur</th><th>Score / 5</th><th>Décision</th><th>CAPA M4</th></tr></thead>
+        <thead><tr><th>Date</th><th>Période</th><th>Fournisseur</th><th>Score / 5</th><th>Décision</th><th>Action CAPA</th></tr></thead>
         <tbody>
           <tr v-for="ev in evaluations" :key="ev.id">
             <td>{{ ev.evaluation_date }}</td>
@@ -624,8 +624,8 @@ onMounted(() => load('overview'))
           <select v-model="evaluationForm.decision">
             <option value="qualifie">Qualifié / Reconduit</option>
             <option value="sous_reserve">Sous réserve</option>
-            <option value="a_ameliorer">À améliorer (déclenche CAPA M4)</option>
-            <option value="non_reconduit">Non reconduit (déclenche CAPA M4 + suspension)</option>
+            <option value="a_ameliorer">À améliorer (déclenche action CAPA)</option>
+            <option value="non_reconduit">Non reconduit (déclenche action CAPA + suspension)</option>
           </select>
         </div>
         <div class="form-row"><label>Points forts</label><textarea v-model="evaluationForm.strengths" rows="2" /></div>
@@ -661,7 +661,7 @@ onMounted(() => load('overview'))
           <div class="form-row"><label>N° BL</label><input v-model="complaintForm.delivery_note_ref" /></div>
         </div>
         <div class="form-row"><label>Description détaillée</label><textarea v-model="complaintForm.description" required rows="3" /></div>
-        <p class="text-xs text-gray-500">ℹ️ Une action qualité CAPA (Module 04) est automatiquement créée lors de l'enregistrement.</p>
+        <p class="text-xs text-gray-500">ℹ️ Une action qualité CAPA est automatiquement créée lors de l'enregistrement.</p>
         <button type="submit" class="btn-primary mt-4">Enregistrer le litige</button>
       </form>
     </AppModal>

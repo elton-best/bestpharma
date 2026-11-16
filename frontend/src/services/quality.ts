@@ -46,9 +46,42 @@ export function httpErrorMessage(res: Response, data: unknown, fallback: string)
   return messageFromPayload(data, res.status === 0 || res.status >= 500 ? serviceUnavailable : fallback)
 }
 
-export async function request<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
+interface CacheEntry {
+  data: unknown
+  timestamp: number
+}
+
+const sessionCache = new Map<string, CacheEntry>()
+const CACHE_TTL_MS = 60_000 // 60s cache pour requêtes GET en cours de session
+
+export function invalidateSessionCache(pathPrefix?: string): void {
+  if (!pathPrefix) {
+    sessionCache.clear()
+    return
+  }
+  for (const key of sessionCache.keys()) {
+    if (key.includes(pathPrefix)) {
+      sessionCache.delete(key)
+    }
+  }
+}
+
+export function clearSessionCache(): void {
+  sessionCache.clear()
+}
+
+export async function request<T>(path: string, method = 'GET', body?: unknown, options?: { skipCache?: boolean }): Promise<T> {
   const token = sessionStorage.getItem('bestpharma.token')
   const tenant = sessionStorage.getItem('bestpharma.officine')
+  const cacheKey = `${tenant || '0'}:${path}`
+
+  if (method === 'GET' && !options?.skipCache) {
+    const cached = sessionCache.get(cacheKey)
+    if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+      return structuredClone(cached.data) as T
+    }
+  }
+
   let res: Response
   try {
     res = await fetch(`/api/v1${path}`, { method, headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(tenant ? { 'X-Officine-ID': tenant } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) })
@@ -57,6 +90,14 @@ export async function request<T>(path: string, method = 'GET', body?: unknown): 
   if (res.status === 401) { sessionStorage.removeItem('bestpharma.token'); sessionStorage.removeItem('bestpharma.officine'); sessionStorage.removeItem('bestpharma.platform'); window.location.assign('/login') }
   if (res.status===403&&data.code==='mfa_enrollment_required'&&window.location.pathname!=='/dashboard/securite') window.location.assign('/dashboard/securite')
   if (!res.ok) throw new Error(httpErrorMessage(res, data, serviceUnavailable))
+
+  if (method === 'GET') {
+    sessionCache.set(cacheKey, { data, timestamp: Date.now() })
+  } else {
+    // Invalidation automatique du cache de session dès qu'une mutation (POST, PUT, DELETE) est exécutée
+    sessionCache.clear()
+  }
+
   return data as T
 }
 export const qualityService = {

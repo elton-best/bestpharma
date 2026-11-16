@@ -1,0 +1,38 @@
+COMPTES DE DEMONSTRATION - BESTPHARMA (ENVIRONNEMENT LOCAL)
+Date de mise a jour : 13 Novembre 2026
+Source : backend/database/seeders/BestPharmaDemoSeeder.php
+
+--------------------------------------------------------------------------------
+
+1. PHARMACIEN TITULAIRE (ADMINISTRATEUR OFFICINE) - RECOMMANDE
+- Nom          : Pharmacien Titulaire Demo
+- E-mail       : admin@bestpharma.bj
+- Mot de passe : password
+- Role         : Administrateur d'officine (is_admin: true)
+- Officines    : Pharmacie Demo Cotonou / Pharmacie Demo Porto-Novo
+- Acces        : Totalite des modules metier et reglementaires (Qualite,
+                 Stocks, Ventes, Caisse, Comptabilite SYSCOHADA, Paie, etc.)
+
+2. ADMINISTRATEUR PLATEFORME (INSTRUCTION BEG)
+- Nom          : Instruction BEG Demo
+- E-mail       : beg@bestpharma.bj
+- Mot de passe : password
+- Role         : Super-administrateur plateforme (is_platform_admin: true,
+                 is_support_coordinator: true)
+- Acces        : Suivi des inscriptions d'officines, gestion de la plateforme,
+                 supervision globale.
+
+3. ACCOMPAGNATEUR / SUPPORT
+- Nom          : Accompagnateur fictif
+- E-mail       : accompagnateur@bestpharma.bj
+- Mot de passe : password
+- Role         : Staff support (is_support_staff: true)
+- Acces        : Assistance et accompagnement des officines.
+
+--------------------------------------------------------------------------------
+
+COMMANDE D'INITIALISATION DE LA BASE DE DONNEES LOCALE :
+Si ces comptes ne sont pas encore presents dans votre base PostgreSQL locale,
+executez la commande suivante depuis le dossier backend :
+
+  php artisan db:seed --class=BestPharmaDemoSeeder

@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ComptabiliteController extends Controller
 {
@@ -46,6 +47,22 @@ class ComptabiliteController extends Controller
     {
         $this->checkPermission($request, 'comptabilite.read');
         $officineId = $this->getOfficineId($request);
+
+        if (!Schema::hasTable('compta_ecritures')) {
+            return response()->json([
+                'kpis' => [
+                    'exercices_ouverts' => 0,
+                    'journaux_actifs' => 0,
+                    'comptes_actifs' => 0,
+                    'ecritures_brouillon' => 0,
+                    'ecritures_validees' => 0,
+                    'total_debit_valide' => 0.0,
+                    'total_credit_valide' => 0.0,
+                    'equilibre_general' => true,
+                ],
+                'warning' => 'Tables comptables non initialisées. Exécutez php artisan migrate.',
+            ]);
+        }
 
         $valideesQuery = ComptaEcriture::where('officine_id', $officineId)->where('status', 'validee');
         $totalDebit = round((float) (clone $valideesQuery)->sum('total_debit'), 2);
@@ -423,6 +440,10 @@ class ComptabiliteController extends Controller
     {
         $this->checkPermission($request, 'comptabilite.read');
         $officineId = $this->getOfficineId($request);
+
+        if (!Schema::hasTable('compta_ecriture_lignes') || !Schema::hasTable('compta_ecritures')) {
+            return response()->json(['data' => []]);
+        }
 
         $query = ComptaEcritureLigne::query()
             ->join('compta_ecritures as e', 'e.id', '=', 'compta_ecriture_lignes.ecriture_id')

@@ -1,0 +1,30 @@
+# MANIFESTE — CDC BEGPHARMA
+
+Généré le 12 novembre 2026 sur la branche `arena/a2e9c195-bestpharma`.
+Empreintes `sha256` des fichiers du dossier, pour toute vérification d'intégrité.
+
+| Fichier | Octets | sha256 |
+| --- | --- | --- |
+| `00-Document-maitre.md` | 107 746 | `bf9eed1686cade72d944d7313a152ee093e48fe5072c940bfa3ae4ada1c040af` |
+| `01-CDC-fonctionnel-Tableau-de-bord-Comptoir-Caisse-Groupe.md` | 106 845 | `609296b91605e47edf019d14ff97cda07c26892c9dac8a81aa06fe7a02c04197` |
+| `02-CDC-reel-interfaces-telemetrie-Tableau-de-bord-Groupe-Comptoir-Caisse.md` | 82 348 | `ce1c03be5d84b2789d856bc67bd2d3c1519c0a827be9427d0e9199d48fe1ae40` |
+| `03-CDC-reel-cartographie-18-ecrans-restants.md` | 62 012 | `f0c90beb5b169499454f0441164311207a027941cce342502d47535238537d3d` |
+| `04-CDC-reel-Presences-Pointage-Badges.md` | 103 579 | `cd945410521c8bcc069e55a7fd04803899e8cdcf3d0cbce95629144405812b2a` |
+| `05-CDC-reel-Stock-Magasin-Stupefiants-Preparations.md` | 84 505 | `935f2ab16b245e87ae00006b7b163ee58319fbdedb94e1208fbeca1c1fe7b1dd` |
+| `06-CDC-reel-Qualite-GED-Finance-Compte-Securite.md` | 101 491 | `979c9590e2ecd63d373b0311b8ac2d12b8ab20adaf453d0cf21c62b22bbccb48` |
+| `07-Cahier-des-charges-Qualite-BPD-ABMed.md` | 60 637 | `e154a8db177185d0093e6ddf67fe12cafa9b356f148211bfac81813ecd81f751` |
+| `README.md` | 6 709 | `e31da929068f23f7f014957ef1a0054fcde361b6a1958b6af9ce042bf5f56093` |
+| `annexes/A-etat-reel-par-section.md` | 41 558 | `8b85d18cb2ea8181afbef7e3bba1be55eaccb1f57e3a6bbedef120fa35e2cf00` |
+| `annexes/B-index-des-243-modales.md` | 42 312 | `c253b873464aeb0227a557cb1d992a196a25aa2560b21771e2b0d5f7fedeff83` |
+| `annexes/C-index-des-codes.md` | 8 783 | `942ff024d4bb8052fe3bf7d4e06262fff327d7e215f1eebfc655d816788b0cbc` |
+| `annexes/D-criteres-d-acceptation.md` | 12 619 | `0fa702a8f72d7622359ae6f666095859447e8add2442c0f6a769e2c7d3473876` |
+| `annexes/E-parite-api.md` | 11 202 | `fcbf3028dd04e32a62105bfb0a1a9e608f707d23c87d7a095c3abfaf0e81febc` |
+| `annexes/F-sources/Cahier des charges BEGPHARMA.docx` | 58 948 | `e8ebf26abf1cfa02aa18771f3e35872631d8d5277d0a667453445da1e792b8b7` |
+| `annexes/F-sources/on a pas besoin de mettre.txt` | 314 | `faa6a9fd7fb336fa939c0b73358b9b5d3735c047fad85a1ae0984020c85ec364` |
+| `annexes/recette-grep.sh` | 5 881 | `2fd2201df9d9190635074e351223fbf1bcd976ec200476f53207f59dc844f330` |
+
+**Total** : 17 fichiers  897 489 octets décompressés.
+
+> L'archive `CDC-BEGPHARMA.zip` placée à la racine du dépôt contient exactement ces fichiers, sous le même préfixe `CDC-BEGPHARMA/`. Son empreinte à elle est consignée dans le message du commit qui l'ajoute.
+
+> Les cahiers `01` → `07` sont des copies conformes (octet pour octet) des sept fichiers `BEGPHARMA — ….md` présents à la racine du dépôt. En cas de divergence, la racine fait foi pour les cahiers, ce dossier fait foi pour le document maître `00` et les annexes.

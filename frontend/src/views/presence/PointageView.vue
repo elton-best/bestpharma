@@ -385,21 +385,45 @@ function downloadCsv() {
 
 <style scoped>
 .continuity { display: grid; grid-template-columns: 1.4fr .35fr 1.4fr; gap: 4px; margin-bottom: 12px; }
-.continuity span { display: block; height: 14px; border-radius: 7px; }
-.continuity .on { background: #146853; }
-.continuity .off { background: #ff7036; }
+.continuity span { display: block; height: 14px; border-radius: 0 !important; }
+.continuity .on { background: #0f3b27; }
+.continuity .off { background: #e11d48; }
 .continuity p { grid-column: 1 / -1; margin: 6px 0 0; }
 .badge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.badge-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; }
+.badge-card { border: 1px solid #cbd5e1; border-radius: 0 !important; padding: 14px; background: #ffffff; color: #0f172a; }
 .bars { display: grid; gap: 8px; margin: 12px 0; }
 .bars div { display: grid; grid-template-columns: 140px 1fr 48px; gap: 8px; align-items: center; }
-.bars i { display: block; height: 10px; background: #146853; border-radius: 6px; }
+.bars i { display: block; height: 10px; background: #0f3b27; border-radius: 0 !important; }
 .borne { min-height: 100vh; background: #0f3b27; color: #fff; display: grid; grid-template-rows: auto 1fr auto; padding: 24px; }
 .borne header, .borne footer { display: flex; justify-content: space-between; align-items: center; }
 .borne section { max-width: 420px; margin: auto; text-align: center; }
-.borne input { width: 100%; min-height: 52px; font-size: 22px; text-align: center; border-radius: 10px; border: 0; }
+.borne input { width: 100%; min-height: 52px; font-size: 22px; text-align: center; border-radius: 0 !important; border: 1px solid #cbd5e1; outline: none !important; }
+.borne input:focus { border-color: #0f3b27 !important; outline: none !important; box-shadow: none !important; }
 .keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-.keys button { min-height: 52px; font-size: 20px; border-radius: 10px; border: 0; }
+.keys button { min-height: 52px; font-size: 20px; border-radius: 0 !important; border: 1px solid #0f3b27; background: #ffffff; color: #0f3b27; cursor: pointer; }
 .borne a { color: #fff; }
-label { display: grid; gap: 6px; margin: 10px 0; }
+label { display: grid; gap: 6px; margin: 10px 0; font-size: 0.88rem; font-weight: 600; color: #1e293b; }
+input, select, textarea {
+  border-radius: 0 !important;
+  border: 1px solid #cbd5e1;
+  outline: none !important;
+  padding: 0.5rem 0.65rem;
+  background: #ffffff;
+  color: #0f172a;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #0f3b27 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+button {
+  border-radius: 0 !important;
+}
+table, th, td {
+  border-radius: 0 !important;
+}
+th {
+  background: #0f3b27 !important;
+  color: #ffffff !important;
+}
 </style>

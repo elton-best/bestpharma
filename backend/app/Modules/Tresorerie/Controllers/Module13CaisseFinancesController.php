@@ -259,6 +259,16 @@ class Module13CaisseFinancesController extends Controller
                 'version' => $session->version + 1,
             ]);
 
+            // Synchronisation comptable automatique SYSCOHADA (Tâche 4.4 / RG-34)
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('compta_ecritures')) {
+                    $comptaService = new \App\Modules\Comptabilite\Services\ComptabiliteService();
+                    $comptaService->syncFromOperations($officineId, $request->user()?->id);
+                }
+            } catch (\Throwable $e) {
+                // Défensif : ne bloque pas la clôture si la compta n'est pas encore amorcée
+            }
+
             return response()->json(['data' => $session]);
         });
     }

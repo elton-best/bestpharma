@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
+import { clearSessionCache } from '@/services/quality'
 import ReferenceCorpusView from './ReferenceCorpusView.vue'
 
 // Deliberately synthetic test fixtures; no real corpus is bundled in the frontend.
@@ -46,6 +47,7 @@ async function confirmImport() {
 beforeEach(() => {
   fetchMock.mockReset()
   vi.stubGlobal('fetch', fetchMock)
+  clearSessionCache()
   sessionStorage.clear()
   sessionStorage.setItem('bestpharma.token', 'test-token')
   sessionStorage.setItem('bestpharma.officine', 'test-office')

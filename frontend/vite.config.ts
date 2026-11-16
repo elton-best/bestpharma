@@ -13,7 +13,7 @@ export default defineConfig({
    globals: true,
  },
  server: { host: '0.0.0.0', allowedHosts: ['.e2b.app', 'localhost'], proxy: {
- '/api': { target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:8000', changeOrigin: true },
- '/sanctum': { target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:8000', changeOrigin: true }
+ '/api': { target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:8002', changeOrigin: true },
+ '/sanctum': { target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:8002', changeOrigin: true }
  } }
 })
